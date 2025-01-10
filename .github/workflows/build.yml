@@ -15,6 +15,12 @@ jobs:
           
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        
+      - name: Build Swift package
+        run: swift build
         
       - name: Run ipabuild.sh
         run: |

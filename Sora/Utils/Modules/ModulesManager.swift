@@ -136,6 +136,43 @@ class ModulesManager: ObservableObject {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
     
+    func addModules(from urlStrings: String, completion: @escaping (Result<Int, Error>) -> Void) {
+        let urls = urlStrings.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        var successCount = 0
+        let group = DispatchGroup()
+        
+        for urlString in urls {
+            group.enter()
+            addModule(from: urlString) { result in
+                switch result {
+                case .success:
+                    successCount += 1
+                case .failure:
+                    break
+                }
+                group.leave()
+            }
+        }
+        
+        group.notify(queue: .main) {
+            completion(.success(successCount))
+        }
+    }
+    
+    func exportModules() -> Data? {
+        let exportData = ExportData(modules: modules, moduleURLs: moduleURLs)
+        return try? JSONEncoder().encode(exportData)
+    }
+    
+    func importModules(from data: Data) throws {
+        let importData = try JSONDecoder().decode(ExportData.self, from: data)
+        modules = importData.modules
+        moduleURLs = importData.moduleURLs
+        saveModuleData()
+        saveModuleURLs()
+        NotificationCenter.default.post(name: .moduleAdded, object: nil)
+    }
+    
     enum ModuleError: LocalizedError {
         case invalidURL
         case duplicateModule
@@ -151,5 +188,10 @@ class ModulesManager: ObservableObject {
                 return "An unknown error occurred."
             }
         }
+    }
+    
+    private struct ExportData: Codable {
+        let modules: [ModuleStruct]
+        let moduleURLs: [String: String]
     }
 }

@@ -19,6 +19,8 @@ struct SettingsModuleView: View {
     @State private var moduleURL = ""
     @State private var errorMessage: ErrorMessage?
     @State private var previusImageURLs: [String: String] = [:]
+    @State private var isImporting = false
+    @State private var successMessage: String?
     
     var body: some View {
         VStack {
@@ -84,13 +86,42 @@ struct SettingsModuleView: View {
                     .onDelete(perform: deleteModule)
                 }
                 .navigationBarTitle("Modules")
-                .navigationBarItems(trailing: Button(action: {
-                    showAddModuleAlert()
-                }) {
-                    Image(systemName: "plus")
-                        .resizable()
-                        .frame(width: 20, height: 20)
-                })
+                .navigationBarItems(
+                    trailing: HStack {
+                        Button(action: {
+                            // Export all module URLs to clipboard
+                            let urls = modulesManager.modules.compactMap { modulesManager.moduleURLs[$0.name] }
+                            UIPasteboard.general.string = urls.joined(separator: ", ")
+                            successMessage = "Module URLs exported to clipboard"
+                        }) {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                        Button(action: {
+                            showAddModuleAlert()
+                        }) {
+                            Image(systemName: "plus")
+                        }
+                    }
+                )
+                .fileImporter(
+                    isPresented: $isImporting,
+                    allowedContentTypes: [.json],
+                    allowsMultipleSelection: false
+                ) { result in
+                    switch result {
+                    case .success(let urls):
+                        guard let url = urls.first,
+                              let data = try? Data(contentsOf: url) else { return }
+                        do {
+                            try modulesManager.importModules(from: data)
+                            successMessage = "Modules imported successfully"
+                        } catch {
+                            errorMessage = ErrorMessage(message: "Failed to import modules: \(error.localizedDescription)")
+                        }
+                    case .failure(let error):
+                        errorMessage = ErrorMessage(message: "Failed to import file: \(error.localizedDescription)")
+                    }
+                }
                 .refreshable {
                     modulesManager.refreshModules()
                 }
@@ -102,31 +133,66 @@ struct SettingsModuleView: View {
         .alert(item: $errorMessage) { error in
             Alert(title: Text("Error"), message: Text(error.message), dismissButton: .default(Text("OK")))
         }
+        .alert("Success", isPresented: .init(
+            get: { successMessage != nil },
+            set: { if !$0 { successMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { successMessage = nil }
+        } message: {
+            if let message = successMessage {
+                Text(message)
+            }
+        }
     }
     
     func showAddModuleAlert() {
-        let alert = UIAlertController(title: "Add Module", message: "Enter the URL of the module file", preferredStyle: .alert)
+        let alert = UIAlertController(
+            title: "Add Module(s)",
+            message: "Enter the URL(s) of the module file(s), separated by commas",
+            preferredStyle: .alert
+        )
+        
         alert.addTextField { textField in
-            textField.placeholder = "https://real.url/module.json"
+            textField.placeholder = "https://url1.json, https://url2.json"
         }
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        alert.addAction(UIAlertAction(title: "Add", style: .default, handler: { _ in
-            if let url = alert.textFields?.first?.text {
-                modulesManager.addModule(from: url) { result in
+        
+        alert.addAction(UIAlertAction(title: "Import from Clipboard", style: .default) { _ in
+            if let clipboardText = UIPasteboard.general.string {
+                // Split clipboard text by commas and clean up whitespace
+                let urls = clipboardText.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                let urlString = urls.joined(separator: ", ")
+                
+                modulesManager.addModules(from: urlString) { result in
                     switch result {
-                    case .success:
-                        break
+                    case .success(let count):
+                        successMessage = "Successfully added \(count) module(s)"
                     case .failure(let error):
                         errorMessage = ErrorMessage(message: error.localizedDescription)
-                        Logger.shared.log(error.localizedDescription.capitalized)
+                    }
+                }
+            } else {
+                errorMessage = ErrorMessage(message: "No URL found in clipboard")
+            }
+        })
+        
+        alert.addAction(UIAlertAction(title: "Add", style: .default) { _ in
+            if let urls = alert.textFields?.first?.text {
+                modulesManager.addModules(from: urls) { result in
+                    switch result {
+                    case .success(let count):
+                        successMessage = "Successfully added \(count) module(s)"
+                    case .failure(let error):
+                        errorMessage = ErrorMessage(message: error.localizedDescription)
                     }
                 }
             }
-        }))
+        })
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootViewController = windowScene.windows.first?.rootViewController {
-            rootViewController.present(alert, animated: true, completion: nil)
+            rootViewController.present(alert, animated: true)
         }
     }
     

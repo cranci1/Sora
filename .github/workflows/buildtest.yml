@@ -1,0 +1,29 @@
+name: Build and Release IPA
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    name: Build IPA
+    runs-on: macOS-latest
+    steps:
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run ipabuild.sh
+        run: |
+          chmod +x ipabuild.sh
+          ./ipabuild.sh
+          
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sora-IPA
+          path: build/Sora.ipa
+          compression-level: 0

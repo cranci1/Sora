@@ -1,45 +1,51 @@
 import SwiftUI
 
 struct IconSwitcherView: View {
-    let icons = [
-        (name: "Default Icon", iconName: nil), // Default app icon
-        (name: "Alternate Icon", iconName: "AlternateIcon") // Alternate app icon
-    ]
-    
     var body: some View {
-        List(icons, id: \.iconName) { icon in
-            HStack {
-                Text(icon.name)
-                Spacer()
-                if isCurrentIcon(icon.iconName) {
-                    Image(systemName: "checkmark")
-                        .foregroundColor(.blue)
+        VStack {
+            Text("Choose an App Icon")
+                .font(.headline)
+                .padding()
+
+            Button("Set Default Icon") {
+                UIApplication.shared.setAlternateIconName(nil) { error in
+                    if let error = error {
+                        print("Error switching to default icon: \(error.localizedDescription)")
+                    } else {
+                        print("Switched to default icon")
+                    }
                 }
             }
-            .contentShape(Rectangle()) // Make the row tappable
-            .onTapGesture {
-                setAppIcon(to: icon.iconName)
+            .padding()
+
+            Button("Set Alternate Icon 1") {
+                UIApplication.shared.setAlternateIconName("AlternateIcon1") { error in
+                    if let error = error {
+                        print("Error switching to AlternateIcon1: \(error.localizedDescription)")
+                    } else {
+                        print("Switched to AlternateIcon1")
+                    }
+                }
             }
-        }
-        .navigationTitle("Choose App Icon")
-    }
+            .padding()
 
-    func isCurrentIcon(_ iconName: String?) -> Bool {
-        UIApplication.shared.alternateIconName == iconName
-    }
-
-    func setAppIcon(to iconName: String?) {
-        guard UIApplication.shared.supportsAlternateIcons else {
-            print("Alternate icons are not supported.")
-            return
-        }
-
-        UIApplication.shared.setAlternateIconName(iconName) { error in
-            if let error = error {
-                print("Failed to change app icon: \(error.localizedDescription)")
-            } else {
-                print("App icon changed successfully!")
+            Button("Set Alternate Icon 2") {
+                UIApplication.shared.setAlternateIconName("AlternateIcon2") { error in
+                    if let error = error {
+                        print("Error switching to AlternateIcon2: \(error.localizedDescription)")
+                    } else {
+                        print("Switched to AlternateIcon2")
+                    }
+                }
             }
+            .padding()
         }
+        .navigationTitle("App Icon Switcher")
+    }
+}
+
+struct IconSwitcherView_Previews: PreviewProvider {
+    static var previews: some View {
+        IconSwitcherView()
     }
 }

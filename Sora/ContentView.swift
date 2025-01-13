@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  Sora
-//
-//  Created by Francesco on 06/01/25.
-//
-
 import SwiftUI
 import Kingfisher
 
@@ -40,5 +33,11 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
         }
+    }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
     }
 }

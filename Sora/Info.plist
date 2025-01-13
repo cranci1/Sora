@@ -17,16 +17,28 @@
         <array>
             <string>AppIcon</string>
         </array>
+        <key>UIPrerenderedIcon</key>
+        <false/>
     </dict>
     <key>CFBundleAlternateIcons</key>
     <dict>
-        <key>AlternateIcon</key>
+        <key>AlternateIcon1</key>
         <dict>
             <key>CFBundleIconFiles</key>
             <array>
-                <string>AlternateIcon</string>
+                <string>AlternateIcon1</string>
             </array>
+            <key>UIPrerenderedIcon</key>
+            <false/>
+        </dict>
+        <key>AlternateIcon2</key>
+        <dict>
+            <key>CFBundleIconFiles</key>
+            <array>
+                <string>AlternateIcon2</string>
+            </array>
+            <key>UIPrerenderedIcon</key>
+            <false/>
         </dict>
     </dict>
 </dict>
-

@@ -9,3 +9,24 @@
 	</dict>
 </dict>
 </plist>
+<key>CFBundleIcons</key>
+<dict>
+    <key>CFBundlePrimaryIcon</key>
+    <dict>
+        <key>CFBundleIconFiles</key>
+        <array>
+            <string>AppIcon</string>
+        </array>
+    </dict>
+    <key>CFBundleAlternateIcons</key>
+    <dict>
+        <key>AlternateIcon</key>
+        <dict>
+            <key>CFBundleIconFiles</key>
+            <array>
+                <string>AlternateIcon</string>
+            </array>
+        </dict>
+    </dict>
+</dict>
+

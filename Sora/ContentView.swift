@@ -30,3 +30,15 @@ struct ContentView: View {
         }
     }
 }
+
+struct SettingsView: View {
+    var body: some View {
+        NavigationView {
+            VStack {
+                NavigationLink("Choose App Icon", destination: IconSwitcherView())
+                    .padding()
+            }
+            .navigationTitle("Settings")
+        }
+    }
+}

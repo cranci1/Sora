@@ -95,6 +95,7 @@ struct SettingsViewModule: View {
     
     func showAddModuleAlert() {
         let alert = UIAlertController(title: "Add Module", message: "Enter the URL of the module file", preferredStyle: .alert)
+        print("Attempting to add a module.")
         alert.addTextField { textField in
             textField.placeholder = "https://real.url/module.json"
         }

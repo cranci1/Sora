@@ -68,6 +68,9 @@
         }
       }
     },
+    "Clear" : {
+
+    },
     "Copy URL" : {
       "localizations" : {
         "de" : {
@@ -307,6 +310,12 @@
           }
         }
       }
+    },
+    "Logger" : {
+
+    },
+    "Logs" : {
+
     },
     "Mark as Watched" : {
       "localizations" : {

@@ -638,6 +638,7 @@
       }
     },
     "You can bookmark items to find them easily here" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -652,6 +653,9 @@
           }
         }
       }
+    },
+    "You can bookmark items to find them easily here." : {
+
     }
   },
   "version" : "1.0"

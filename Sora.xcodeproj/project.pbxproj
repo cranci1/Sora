@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -31,6 +31,7 @@
 		13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD82D32D98400C1EBD7 /* NormalPlayer.swift */; };
 		13EA2BDC2D32D9FF00C1EBD7 /* MiruDataStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BDB2D32D9FF00C1EBD7 /* MiruDataStruct.swift */; };
 		1EE1DA962D3553C2002AEF73 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1EE1DA952D3553C2002AEF73 /* Localizable.xcstrings */; };
+		1EE46DCA2D39AD71002E826E /* SettingsViewLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EE46DC92D39ACDA002E826E /* SettingsViewLogger.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,7 +60,12 @@
 		13EA2BD82D32D98400C1EBD7 /* NormalPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NormalPlayer.swift; sourceTree = "<group>"; };
 		13EA2BDB2D32D9FF00C1EBD7 /* MiruDataStruct.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MiruDataStruct.swift; sourceTree = "<group>"; };
 		1EE1DA952D3553C2002AEF73 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		1EE46DC92D39ACDA002E826E /* SettingsViewLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewLogger.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		1EE46DC12D39AB6F002E826E /* Logger */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Logger; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		133D7C672D2BE2500075467E /* Frameworks */ = {
@@ -138,6 +144,7 @@
 		133D7C832D2BE2630075467E /* SettingsSubViews */ = {
 			isa = PBXGroup;
 			children = (
+				1EE46DC92D39ACDA002E826E /* SettingsViewLogger.swift */,
 				133D7C842D2BE2630075467E /* SettingsViewModule.swift */,
 			);
 			path = SettingsSubViews;
@@ -146,6 +153,7 @@
 		133D7C852D2BE2640075467E /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				1EE46DC12D39AB6F002E826E /* Logger */,
 				13EA2BDA2D32D9FF00C1EBD7 /* Miru */,
 				133D7C862D2BE2640075467E /* Extensions */,
 				133D7C882D2BE2640075467E /* Modules */,
@@ -247,6 +255,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				1EE46DC12D39AB6F002E826E /* Logger */,
+			);
 			name = Sora;
 			packageProductDependencies = (
 				133D7C962D2BE2AF0075467E /* Kingfisher */,
@@ -326,6 +337,7 @@
 				13EA2BDC2D32D9FF00C1EBD7 /* MiruDataStruct.swift in Sources */,
 				138AA1B82D2D66FD0021F9DF /* EpisodeCell.swift in Sources */,
 				133D7C8C2D2BE2640075467E /* SearchView.swift in Sources */,
+				1EE46DCA2D39AD71002E826E /* SettingsViewLogger.swift in Sources */,
 				133D7C942D2BE2640075467E /* JSController.swift in Sources */,
 				133D7C922D2BE2640075467E /* URLSession.swift in Sources */,
 				133D7C912D2BE2640075467E /* SettingsViewModule.swift in Sources */,

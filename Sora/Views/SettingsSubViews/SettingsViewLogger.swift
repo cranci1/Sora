@@ -8,19 +8,42 @@
 import SwiftUI
 
 struct LogViewer: View {
-    @ObservedObject private var logManager = LogManager.shared
+    @State private var logs: String = ""
 
     var body: some View {
-        NavigationView {
-            List(logManager.logs, id: \.self) { log in
-                Text(log)
-                    .font(.system(size: 14, weight: .regular, design: .monospaced))
-            }
-            .navigationTitle("Logs")
+        
+            VStack {
+                ScrollView {
+                    Text(logs)
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                        .textSelection(.enabled)
+                }
+                .navigationTitle("Logs")
+                .onAppear {
+                    logs = Logger.shared.getLogs()
+                }
+            
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Clear") {
-                        logManager.clearLogs()
+                    Menu {
+                        Button(action: {
+                            UIPasteboard.general.string = logs
+                        }) {
+                            Label("Copy to Clipboard", systemImage: "doc.on.doc")
+                        }
+                        Button(role: .destructive, action: {
+                            Logger.shared.clearLogs()
+                            logs = Logger.shared.getLogs()
+                        }) {
+                            Label("Clear Logs", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .resizable()
+                            .frame(width: 20, height: 20)
                     }
                 }
             }

@@ -22,6 +22,7 @@ struct SoraApp: App {
                 .accentColor(settings.accentColor)
                 .onAppear {
                     settings.updateAppearance()
+                    Logger.shared.log("Started Sora", level: .info) // Log the app start event here
                 }
         }
     }

@@ -26,7 +26,7 @@ struct LibraryView: View {
                             .foregroundColor(.secondary)
                         Text("No Items saved")
                             .font(.headline)
-                        Text("You can bookmark items to find them easily here")
+                        Text("You can bookmark items to find them easily here.")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }

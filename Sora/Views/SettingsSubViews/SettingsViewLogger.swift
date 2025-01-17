@@ -11,7 +11,7 @@ struct LogViewer: View {
     @State private var logs: String = ""
 
     var body: some View {
-        
+        // dont add nav bar bc the proportions get fckd
             VStack {
                 ScrollView {
                     Text(logs)

@@ -34,7 +34,10 @@ struct SettingsView: View {
                     }
                     VStack(){
                         NavigationLink(destination: LogViewer()) {
-                            Text("Logger")
+                            HStack {
+                                Image(systemName: "doc.text.fill")
+                                Text("Logs")
+                            }
                         }
                     }
                 }

@@ -169,6 +169,7 @@ struct SearchView: View {
                     }
                 } catch {
                     print("Error loading module: \(error)")
+                    Logger.shared.log("Error loading module: \(error).", level: .info)
                     isSearching = false
                     hasNoResults = true
                 }

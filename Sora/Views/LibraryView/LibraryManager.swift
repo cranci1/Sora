@@ -32,6 +32,7 @@ class LibraryManager: ObservableObject {
     
     init() {
         loadBookmarks()
+        Logger.shared.log("Started Sora", level: .info)
     }
     
     private func loadBookmarks() {

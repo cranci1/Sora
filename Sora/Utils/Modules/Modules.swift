@@ -99,6 +99,7 @@ class ModuleManager: ObservableObject {
         
         DispatchQueue.main.async {
             self.modules.append(module)
+            Logger.shared.log("Added module \(module.metadata.sourceName).", level: .info)
             self.saveModules()
         }
         
@@ -111,6 +112,7 @@ class ModuleManager: ObservableObject {
         
         modules.removeAll { $0.id == module.id }
         saveModules()
+        Logger.shared.log("Deleted module \(module.metadata.sourceName).", level: .info)
     }
     
     func getModuleContent(_ module: ScrapingModule) throws -> String {

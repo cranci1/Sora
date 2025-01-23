@@ -162,38 +162,45 @@ class JSController: ObservableObject {
     }
     
     func fetchStreamUrl(episodeUrl: String, completion: @escaping (String?) -> Void) {
-        guard let url = URL(string: episodeUrl) else {
-            completion(nil)
-            return
+    if let exception = context.exception {
+        Logger.shared.log("JavaScript exception: \(exception)", type: "Error")
+        completion(nil)
+        return
+    }
+    
+    guard let extractStreamUrlFunction = context.objectForKeyedSubscript("extractStreamUrl") else {
+        Logger.shared.log("No JavaScript function extractStreamUrl found", type: "Error")
+        completion(nil)
+        return
+    }
+    
+    let promiseValue = extractStreamUrlFunction.call(withArguments: [episodeUrl])
+    guard let promise = promiseValue else {
+        Logger.shared.log("extractStreamUrl did not return a Promise", type: "Error")
+        completion(nil)
+        return
+    }
+    
+    let thenBlock: @convention(block) (JSValue) -> Void = { result in
+        let streamUrl = result.toString()
+        Logger.shared.log("Starting stream from: \(streamUrl ?? "nil")", type: "Stream")
+        DispatchQueue.main.async {
+            completion(streamUrl)
         }
-        
-        URLSession.custom.dataTask(with: url) { [weak self] data, _, error in
-            guard let self = self else { return }
-            
-            if let error = error {
-                Logger.shared.log("Network error: \(error)",type: "Error")
-                DispatchQueue.main.async { completion(nil) }
-                return
-            }
-            
-            guard let data = data, let html = String(data: data, encoding: .utf8) else {
-                Logger.shared.log("Failed to decode HTML",type: "Error")
-                DispatchQueue.main.async { completion(nil) }
-                return
-            }
-            
-            Logger.shared.log(html,type: "Debug")
-            if let parseFunction = self.context.objectForKeyedSubscript("extractStreamUrl"),
-               let streamUrl = parseFunction.call(withArguments: [html]).toString() {
-                Logger.shared.log("Staring stream from: \(streamUrl)", type: "Stream")
-                DispatchQueue.main.async {
-                    completion(streamUrl)
-                }
-            } else {
-                Logger.shared.log("Failed to extract stream URL",type: "Error")
-                DispatchQueue.main.async { completion(nil) }
-            }
-        }.resume()
+    }
+    
+    let catchBlock: @convention(block) (JSValue) -> Void = { error in
+        Logger.shared.log("Promise rejected: \(String(describing: error.toString()))", type: "Error")
+        DispatchQueue.main.async {
+            completion(nil)
+        }
+    }
+    
+    let thenFunction = JSValue(object: thenBlock, in: context)
+    let catchFunction = JSValue(object: catchBlock, in: context)
+    
+    promise.invokeMethod("then", withArguments: [thenFunction as Any])
+    promise.invokeMethod("catch", withArguments: [catchFunction as Any])
     }
     
     func fetchJsSearchResults(keyword: String, module: ScrapingModule, completion: @escaping ([SearchItem]) -> Void) {

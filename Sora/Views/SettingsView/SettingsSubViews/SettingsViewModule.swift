@@ -74,16 +74,15 @@ struct SettingsViewModule: View {
                         }
                         .disabled(selectedModuleId == module.id.uuidString)
                     }
-                    .swipeActions {
-                        Button(role: .destructive) {
-                            if selectedModuleId != module.id.uuidString {
+                    .swipeActions(edge: .trailing) {
+                        if selectedModuleId != module.id.uuidString {
+                            Button(role: .destructive) {
                                 moduleManager.deleteModule(module)
                                 DropManager.shared.showDrop(title: "Module Removed", subtitle: "", duration: 1.0, icon: UIImage(systemName: "trash"))
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
-                        } label: {
-                            Label("Delete", systemImage: "trash")
                         }
-                        .disabled(selectedModuleId == module.id.uuidString)
                     }
                 }
             }

@@ -20,6 +20,31 @@
         }
       }
     },
+    "%lld" : {
+
+    },
+    "%lld-%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld-%2$lld"
+          }
+        }
+      }
+    },
+    "25" : {
+
+    },
+    "50" : {
+
+    },
+    "75" : {
+
+    },
+    "100" : {
+
+    },
     "Accent Color" : {
       "localizations" : {
         "de" : {
@@ -75,6 +100,9 @@
       }
     },
     "Clear Logs" : {
+
+    },
+    "Click the plus button to add a module!" : {
 
     },
     "Copy to Clipboard" : {
@@ -163,7 +191,14 @@
         }
       }
     },
+    "Episodes Range" : {
+
+    },
+    "Error" : {
+
+    },
     "External Features" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -178,6 +213,21 @@
           }
         }
       }
+    },
+    "Force Landscape" : {
+
+    },
+    "General" : {
+
+    },
+    "General Settings" : {
+
+    },
+    "Hide 'Watch Next' after 5s" : {
+
+    },
+    "Hold Speed:" : {
+
     },
     "Home" : {
       "localizations" : {
@@ -323,7 +373,13 @@
         }
       }
     },
+    "Log Filters" : {
+
+    },
     "Logs" : {
+
+    },
+    "Main Settings" : {
 
     },
     "Mark as Watched" : {
@@ -341,6 +397,12 @@
           }
         }
       }
+    },
+    "Media Player" : {
+
+    },
+    "Media View" : {
+
     },
     "Modules" : {
       "localizations" : {
@@ -374,6 +436,9 @@
         }
       }
     },
+    "No episodes Found:" : {
+
+    },
     "No Items saved" : {
       "localizations" : {
         "de" : {
@@ -406,6 +471,9 @@
         }
       }
     },
+    "No Modules" : {
+
+    },
     "No Results Found" : {
       "localizations" : {
         "de" : {
@@ -421,6 +489,9 @@
           }
         }
       }
+    },
+    "OK" : {
+
     },
     "Playback Speed" : {
       "localizations" : {
@@ -438,6 +509,9 @@
         }
       }
     },
+    "Player" : {
+
+    },
     "Please select a module from settings" : {
       "localizations" : {
         "de" : {
@@ -453,6 +527,9 @@
           }
         }
       }
+    },
+    "Refresh Modules on Launch" : {
+
     },
     "Report an issue" : {
       "localizations" : {
@@ -485,6 +562,9 @@
           }
         }
       }
+    },
+    "Retry" : {
+
     },
     "Search" : {
       "localizations" : {
@@ -598,7 +678,17 @@
         }
       }
     },
+    "The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1-25, 26-50, and so on), allowing you to navigate through them more easily." : {
+
+    },
+    "The Force Landscape and HoldSpeed only work inside the default iOS player and Sora player." : {
+
+    },
+    "Try different keywords" : {
+
+    },
     "Try different keywords/titles" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

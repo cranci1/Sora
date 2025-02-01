@@ -61,6 +61,15 @@
         }
       }
     },
+    "Add" : {
+
+    },
+    "Add Module(s) URL" : {
+
+    },
+    "Add Source" : {
+
+    },
     "Appearance" : {
       "localizations" : {
         "de" : {
@@ -159,6 +168,12 @@
         }
       }
     },
+    "Dismiss" : {
+
+    },
+    "Enter URLs separated by commas" : {
+
+    },
     "Episode %lld" : {
       "localizations" : {
         "de" : {
@@ -195,6 +210,9 @@
 
     },
     "Error" : {
+
+    },
+    "Export Modules to Clipboard" : {
 
     },
     "External Features" : {
@@ -260,6 +278,9 @@
           }
         }
       }
+    },
+    "Import Modules from Clipboard" : {
+
     },
     "Info" : {
       "localizations" : {

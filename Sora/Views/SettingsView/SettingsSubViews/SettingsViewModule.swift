@@ -15,6 +15,8 @@ struct SettingsViewModule: View {
     @State private var errorMessage: String?
     @State private var isLoading = false
     @State private var isRefreshing = false
+    @State private var showingAddSheet = false
+    @State private var moduleUrls = ""
     
     var body: some View {
         VStack {
@@ -33,78 +35,15 @@ struct SettingsViewModule: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                }
-                else {
+                } else {
                     ForEach(moduleManager.modules) { module in
-                        HStack {
-                            KFImage(URL(string: module.metadata.iconUrl))
-                                .resizable()
-                                .frame(width: 50, height: 50)
-                                .clipShape(Circle())
-                                .padding(.trailing, 10)
-                            
-                            VStack(alignment: .leading) {
-                                HStack(alignment: .bottom, spacing: 4) {
-                                    Text(module.metadata.sourceName)
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                    Text("v\(module.metadata.version)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                                Text("Author: \(module.metadata.author)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                Text("Language: \(module.metadata.language)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            if module.id.uuidString == selectedModuleId {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.accentColor)
-                                    .frame(width: 25, height: 25)
-                            }
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            selectedModuleId = module.id.uuidString
-                        }
-                        .contextMenu {
-                            Button(action: {
-                                UIPasteboard.general.string = module.metadataUrl
-                                DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
-                            }) {
-                                Label("Copy URL", systemImage: "doc.on.doc")
-                            }
-                            Button(role: .destructive) {
-                                if selectedModuleId != module.id.uuidString {
-                                    moduleManager.deleteModule(module)
-                                    DropManager.shared.showDrop(title: "Module Removed", subtitle: "", duration: 1.0, icon: UIImage(systemName: "trash"))
-                                }
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                            .disabled(selectedModuleId == module.id.uuidString)
-                        }
-                        .swipeActions {
-                            if selectedModuleId != module.id.uuidString {
-                                Button(role: .destructive) {
-                                    moduleManager.deleteModule(module)
-                                    DropManager.shared.showDrop(title: "Module Removed", subtitle: "", duration: 1.0, icon: UIImage(systemName: "trash"))
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                            }
-                        }
+                        ModuleRow(module: module, selectedModuleId: $selectedModuleId, moduleManager: moduleManager)
                     }
                 }
             }
             .navigationTitle("Modules")
             .navigationBarItems(trailing: Button(action: {
-                showAddModuleAlert()
+                showingAddSheet = true
             }) {
                 Image(systemName: "plus")
                     .resizable()
@@ -114,6 +53,11 @@ struct SettingsViewModule: View {
                 isRefreshing = true
                 await moduleManager.refreshModules()
                 isRefreshing = false
+            }
+        }
+        .sheet(isPresented: $showingAddSheet) {
+            NavigationView {
+                ModuleManagementSheet(moduleUrls: $moduleUrls, isPresented: $showingAddSheet, moduleManager: moduleManager)
             }
         }
         .alert(isPresented: .constant(errorMessage != nil)) {
@@ -126,47 +70,193 @@ struct SettingsViewModule: View {
             )
         }
     }
+}
+
+struct ModuleRow: View {
+    let module: ScrapingModule
+    @Binding var selectedModuleId: String?
+    @ObservedObject var moduleManager: ModuleManager
     
-    func showAddModuleAlert() {
-        let alert = UIAlertController(title: "Add Module", message: "Enter the URL of the module file", preferredStyle: .alert)
-        alert.addTextField { textField in
-            textField.placeholder = "https://real.url/module.json"
-        }
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        alert.addAction(UIAlertAction(title: "Add", style: .default, handler: { _ in
-            if let url = alert.textFields?.first?.text {
-                addModule(from: url)
+    var body: some View {
+        HStack {
+            KFImage(URL(string: module.metadata.iconUrl))
+                .resizable()
+                .frame(width: 50, height: 50)
+                .clipShape(Circle())
+                .padding(.trailing, 10)
+            
+            VStack(alignment: .leading) {
+                HStack(alignment: .bottom, spacing: 4) {
+                    Text(module.metadata.sourceName)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    Text("v\(module.metadata.version)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                Text("Author: \(module.metadata.author)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Text("Language: \(module.metadata.language)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
-        }))
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootViewController = windowScene.windows.first?.rootViewController {
-            rootViewController.present(alert, animated: true, completion: nil)
+            
+            Spacer()
+            
+            if module.id.uuidString == selectedModuleId {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(.accentColor)
+                    .frame(width: 25, height: 25)
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            selectedModuleId = module.id.uuidString
+        }
+        .contextMenu {
+            Button(action: {
+                UIPasteboard.general.string = module.metadataUrl
+                DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+            }) {
+                Label("Copy URL", systemImage: "doc.on.doc")
+            }
+            Button(role: .destructive) {
+                if selectedModuleId != module.id.uuidString {
+                    moduleManager.deleteModule(module)
+                    DropManager.shared.showDrop(title: "Module Removed", subtitle: "", duration: 1.0, icon: UIImage(systemName: "trash"))
+                }
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+            .disabled(selectedModuleId == module.id.uuidString)
+        }
+        .swipeActions {
+            if selectedModuleId != module.id.uuidString {
+                Button(role: .destructive) {
+                    moduleManager.deleteModule(module)
+                    DropManager.shared.showDrop(title: "Module Removed", subtitle: "", duration: 1.0, icon: UIImage(systemName: "trash"))
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+        }
+    }
+}
+
+struct ModuleManagementSheet: View {
+    @Binding var moduleUrls: String
+    @Binding var isPresented: Bool
+    @ObservedObject var moduleManager: ModuleManager
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    
+    var body: some View {
+        Form {
+            Section(header: Text("Add Module(s) URL")) {
+                TextField("Enter URLs separated by commas", text: $moduleUrls)
+                    .font(.body)
+            }
+            
+            Section {
+                Button(action: {
+                    if let clipboardContent = UIPasteboard.general.string {
+                        moduleUrls = clipboardContent
+                        importModules()
+                    }
+                }) {
+                    HStack {
+                        Text("Import Modules from Clipboard")
+                        Spacer()
+                        if isLoading {
+                            ProgressView()
+                        }
+                    }
+                }
+                .disabled(isLoading)
+                
+                Button(action: {
+                    exportModules()
+                }) {
+                    Text("Export Modules to Clipboard")
+                }
+            }
+        }
+        .navigationTitle("Add Source")
+        .navigationBarItems(
+            leading: Button("Dismiss") {
+                moduleUrls = ""
+                isPresented = false
+            },
+            trailing: Button("Add") {
+                importModules()
+            }
+            .disabled(moduleUrls.isEmpty || isLoading)
+        )
+        .alert(isPresented: .constant(errorMessage != nil)) {
+            Alert(
+                title: Text("Error"),
+                message: Text(errorMessage ?? "Unknown error"),
+                dismissButton: .default(Text("OK")) {
+                    errorMessage = nil
+                }
+            )
         }
     }
     
-    private func addModule(from url: String) {
+    private func importModules() {
         isLoading = true
         errorMessage = nil
+        let urls = moduleUrls.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
         
         Task {
-            do {
-                _ = try await moduleManager.addModule(metadataUrl: url)
-                DispatchQueue.main.async {
-                    isLoading = false
-                    DropManager.shared.showDrop(title: "Module Added", subtitle: "clicking it to select it", duration: 2.0, icon: UIImage(systemName: "app.badge.checkmark"))
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    isLoading = false
-                    if (error as NSError).domain == "Module already exists" {
-                        errorMessage = "Module already exists"
+            var addedCount = 0
+            var duplicateCount = 0
+            var failedCount = 0
+            
+            for url in urls {
+                do {
+                    _ = try await moduleManager.addModule(metadataUrl: url)
+                    addedCount += 1
+                } catch let error as NSError {
+                    if error.domain == "Module already exists" {
+                        duplicateCount += 1
                     } else {
-                        errorMessage = "Failed to add module: \(error.localizedDescription)"
+                        failedCount += 1
                     }
-                    Logger.shared.log("Failed to add module: \(error.localizedDescription)")
+                }
+            }
+            
+            DispatchQueue.main.async {
+                isLoading = false
+                if addedCount > 0 {
+                    DropManager.shared.showDrop(
+                        title: "Added \(addedCount) module(s)",
+                        subtitle: duplicateCount > 0 ? "\(duplicateCount) duplicate(s)" : "",
+                        duration: 2.0,
+                        icon: UIImage(systemName: "app.badge.checkmark")
+                    )
+                    moduleUrls = ""
+                    isPresented = false
+                } else {
+                    if duplicateCount > 0 {
+                        errorMessage = "All modules already exist"
+                    } else {
+                        errorMessage = "Failed to add any modules"
+                    }
                 }
             }
         }
+    }
+    
+    private func exportModules() {
+        let urls = moduleManager.modules.map { $0.metadataUrl }.joined(separator: ",")
+        UIPasteboard.general.string = urls
+        DropManager.shared.showDrop(
+            title: "Modules Exported",
+            subtitle: "\(moduleManager.modules.count) URLs copied to clipboard",
+            duration: 2.0,
+            icon: UIImage(systemName: "doc.on.clipboard.fill")
+        )
     }
 }

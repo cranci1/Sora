@@ -11,44 +11,54 @@ import SwiftUI
 struct SoraApp: App {
     @StateObject private var settings = Settings()
     @StateObject private var moduleManager = ModuleManager()
-    @StateObject private var librarykManager = LibraryManager()
-    
+    @StateObject private var libraryManager = LibraryManager()
+    @State private var moduleUrl: String?
+    @State private var showModuleAdditionView = false
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(moduleManager)
-                .environmentObject(settings)
-                .environmentObject(librarykManager)
-                .accentColor(settings.accentColor)
-                .onAppear {
-                    settings.updateAppearance()
-                    if UserDefaults.standard.bool(forKey: "refreshModulesOnLaunch") {
-                        Task {
-                            await moduleManager.refreshModules()
+            ZStack {
+                ContentView()
+                    .environmentObject(moduleManager)
+                    .environmentObject(settings)
+                    .environmentObject(libraryManager)
+                    .accentColor(settings.accentColor)
+                    .onAppear {
+                        settings.updateAppearance()
+                        if UserDefaults.standard.bool(forKey: "refreshModulesOnLaunch") {
+                            Task {
+                                await moduleManager.refreshModules()
+                            }
                         }
                     }
+                    .onOpenURL { url in
+                        handleURL(url)
+                    }
+            }
+            .sheet(isPresented: $showModuleAdditionView) {
+                ModuleAdditionSettingsView(moduleUrl: moduleUrl ?? "")
+            }
+            .onChange(of: moduleUrl) { newValue in
+                if let newValue = newValue {
+                    Logger.shared.log("Using URL: \(newValue)", type: "General") // Log the URL when it changes
                 }
-                .onOpenURL { url in
-                    handleURL(url)
-                }
+            }
         }
     }
-    
+
     private func handleURL(_ url: URL) {
         guard url.scheme == "sora",
               url.host == "module",
               let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
               let moduleURL = components.queryItems?.first(where: { $0.name == "url" })?.value else {
+              Logger.shared.log("Failed to parse URL: \(url)", type: "General")
                   return
               }
-        
-        Task {
-            do {
-                let module = try await moduleManager.addModule(metadataUrl: moduleURL)
-                DropManager.shared.showDrop(title: "Added \(module.metadata.sourceName)", subtitle: "Check settings to select it", duration: 2.0, icon: UIImage(systemName: "app.badge.checkmark"))
-            } catch {
-                Logger.shared.log("Failed to add module from URL scheme: \(error.localizedDescription)", type: "Error")
-            }
+
+        DispatchQueue.main.async {
+            Logger.shared.log("Parsed Module URL: \(moduleURL)", type: "General")
+            self.moduleUrl = moduleURL
+            self.showModuleAdditionView = true
         }
     }
 }

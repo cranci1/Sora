@@ -214,6 +214,7 @@ struct MediaInfoView: View {
                                                 selectedEpisodeNumber = ep.number
                                                 selectedEpisodeImage = imageUrl
                                                 fetchStream(href: ep.href)
+                                                AnalyticsManager.shared.sendEvent(event: "watch", additionalData: ["title": title, "episode": ep.number])
                                             }
                                         }
                                     )
@@ -268,9 +269,11 @@ struct MediaInfoView: View {
                         itemID = id
                     case .failure(let error):
                         Logger.shared.log("Failed to fetch Item ID: \(error)")
+                        AnalyticsManager.shared.sendEvent(event: "error", additionalData: ["error": error, "message": "Failed to fetch Item ID"])
                     }
                 }
                 hasFetched = true
+                AnalyticsManager.shared.sendEvent(event: "search", additionalData: ["title": title])
             }
             selectedRange = 0..<episodeChunkSize
         }
@@ -476,6 +479,7 @@ struct MediaInfoView: View {
     func handleStreamFailure(error: Error? = nil) {
         if let error = error {
             Logger.shared.log("Error loading module: \(error)", type: "Error")
+            AnalyticsManager.shared.sendEvent(event: "error", additionalData: ["error": error, "message": "Failed to fetch stream"])
         }
         DropManager.shared.showDrop(title: "Stream not Found", subtitle: "", duration: 1.0, icon: UIImage(systemName: "xmark"))
         

@@ -31,6 +31,13 @@ class Logger {
         let entry = LogEntry(message: message, type: type, timestamp: Date())
         logs.append(entry)
         saveLogToFile(entry)
+        
+        // Print to Xcode console
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd-MM HH:mm:ss"
+        let formattedMessage = "[\(dateFormatter.string(from: entry.timestamp))] [\(entry.type)] \(entry.message)"
+        
+        //print(formattedMessage) // TODO: Remove this line in production, DEBUG only
     }
     
     func getLogs() -> String {

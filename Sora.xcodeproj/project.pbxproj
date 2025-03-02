@@ -51,6 +51,8 @@
 		13EA2BD72D32D97400C1EBD7 /* MusicProgressSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD42D32D97400C1EBD7 /* MusicProgressSlider.swift */; };
 		13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD82D32D98400C1EBD7 /* NormalPlayer.swift */; };
 		1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */; };
+		730C73562D726DAB001EC57C /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 730C73552D726DA5001EC57C /* Analytics.swift */; };
+		7374EF382D74AEF400319CEC /* UIDevice+Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7374EF372D74AEEA00319CEC /* UIDevice+Model.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -99,6 +101,8 @@
 		13EA2BD42D32D97400C1EBD7 /* MusicProgressSlider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MusicProgressSlider.swift; sourceTree = "<group>"; };
 		13EA2BD82D32D98400C1EBD7 /* NormalPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NormalPlayer.swift; sourceTree = "<group>"; };
 		1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewLoggerFilter.swift; sourceTree = "<group>"; };
+		730C73552D726DA5001EC57C /* Analytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analytics.swift; sourceTree = "<group>"; };
+		7374EF372D74AEEA00319CEC /* UIDevice+Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIDevice+Model.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -236,6 +240,7 @@
 		133D7C852D2BE2640075467E /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				730C73542D726D83001EC57C /* Analytics */,
 				13C0E5E82D5F85DD00E7F619 /* ContinueWatching */,
 				13103E8C2D58E037000F0673 /* SkeletonCells */,
 				13DC0C442D302C6A00D0F966 /* MediaPlayer */,
@@ -252,6 +257,7 @@
 			isa = PBXGroup;
 			children = (
 				133D7C872D2BE2640075467E /* URLSession.swift */,
+				7374EF372D74AEEA00319CEC /* UIDevice+Model.swift */,
 				13CBEFD92D5F7D1200D011EE /* String.swift */,
 				13103E8A2D58E028000F0673 /* View.swift */,
 			);
@@ -373,6 +379,14 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		730C73542D726D83001EC57C /* Analytics */ = {
+			isa = PBXGroup;
+			children = (
+				730C73552D726DA5001EC57C /* Analytics.swift */,
+			);
+			path = Analytics;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -458,6 +472,7 @@
 				133D7C902D2BE2640075467E /* SettingsView.swift in Sources */,
 				13CBEFDA2D5F7D1200D011EE /* String.swift in Sources */,
 				130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */,
+				730C73562D726DAB001EC57C /* Analytics.swift in Sources */,
 				13EA2BD72D32D97400C1EBD7 /* MusicProgressSlider.swift in Sources */,
 				1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */,
 				13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */,
@@ -475,6 +490,7 @@
 				13103E8E2D58E04A000F0673 /* SkeletonCell.swift in Sources */,
 				133D7C8D2D2BE2640075467E /* HomeView.swift in Sources */,
 				13D842552D45267500EBBFA6 /* DropManager.swift in Sources */,
+				7374EF382D74AEF400319CEC /* UIDevice+Model.swift in Sources */,
 				13103E8B2D58E028000F0673 /* View.swift in Sources */,
 				138AA1B82D2D66FD0021F9DF /* EpisodeCell.swift in Sources */,
 				133D7C8C2D2BE2640075467E /* SearchView.swift in Sources */,
@@ -623,7 +639,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Sora/Preview Content\"";
-				DEVELOPMENT_TEAM = 399LMK6Q2Y;
+				DEVELOPMENT_TEAM = 44V6G67299;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -641,7 +657,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.Sora;
+				PRODUCT_BUNDLE_IDENTIFIER = me.hamzo.Sora;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -659,7 +675,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Sora/Preview Content\"";
-				DEVELOPMENT_TEAM = 399LMK6Q2Y;
+				DEVELOPMENT_TEAM = 44V6G67299;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -677,7 +693,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.Sora;
+				PRODUCT_BUNDLE_IDENTIFIER = me.hamzo.Sora;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;

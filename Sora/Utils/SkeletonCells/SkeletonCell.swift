@@ -8,17 +8,19 @@
 import SwiftUI
 
 struct HomeSkeletonCell: View {
+    let cellWidth: CGFloat
+    
     var body: some View {
         VStack {
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color.gray.opacity(0.3))
-                .frame(width: 130, height: 195)
+                .frame(width: cellWidth, height: cellWidth * 1.5) // Maintains 2:3 aspect ratio
                 .cornerRadius(10)
                 .shimmering()
             
             RoundedRectangle(cornerRadius: 5)
                 .fill(Color.gray.opacity(0.3))
-                .frame(width: 130, height: 20)
+                .frame(width: cellWidth, height: 20)
                 .padding(.top, 4)
                 .shimmering()
         }
@@ -26,15 +28,17 @@ struct HomeSkeletonCell: View {
 }
 
 struct SearchSkeletonCell: View {
+    let cellWidth: CGFloat
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color.gray.opacity(0.3))
-                .frame(width: 150, height: 225)
+                .frame(width: cellWidth, height: cellWidth * 1.5) // Maintains 2:3 aspect ratio
                 .shimmering()
             RoundedRectangle(cornerRadius: 5)
                 .fill(Color.gray.opacity(0.3))
-                .frame(width: 150, height: 20)
+                .frame(width: cellWidth, height: 20)
                 .shimmering()
         }
     }

@@ -12,7 +12,13 @@ struct LibraryView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
     
+    @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
+    @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
+    
+    @Environment(\.verticalSizeClass) var verticalSizeClass
+    
     @State private var continueWatchingItems: [ContinueWatchingItem] = []
+    @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     
     private let columns = [
         GridItem(.adaptive(minimum: 150), spacing: 12)
@@ -21,6 +27,8 @@ struct LibraryView: View {
     var body: some View {
         NavigationView {
             ScrollView {
+                let columnsCount = determineColumns()
+                
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Continue Watching")
                         .font(.title2)
@@ -67,22 +75,27 @@ struct LibraryView: View {
                         .padding()
                         .frame(maxWidth: .infinity)
                     } else {
-                        LazyVGrid(columns: columns, spacing: 12) {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columnsCount), spacing: 12) {
+                            let totalSpacing: CGFloat = 16 * CGFloat(columnsCount + 1) // Spacing between items
+                            let availableWidth = UIScreen.main.bounds.width - totalSpacing
+                            let cellWidth = availableWidth / CGFloat(columnsCount)
+                            
                             ForEach(libraryManager.bookmarks) { item in
                                 if let module = moduleManager.modules.first(where: { $0.id.uuidString == item.moduleId }) {
                                     NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: module)) {
-                                        VStack {
+                                        VStack(alignment: .leading) {
                                             ZStack {
                                                 KFImage(URL(string: item.imageUrl))
                                                     .placeholder {
                                                         RoundedRectangle(cornerRadius: 10)
                                                             .fill(Color.gray.opacity(0.3))
-                                                            .frame(width: 150, height: 225)
+                                                            .aspectRatio(2/3, contentMode: .fit)
                                                             .shimmering()
                                                     }
                                                     .resizable()
-                                                    .aspectRatio(2/3, contentMode: .fill)
-                                                    .frame(width: 150, height: 225)
+                                                    .aspectRatio(contentMode: .fill)
+                                                    .frame(height: cellWidth * 3 / 2)
+                                                    .frame(maxWidth: cellWidth)
                                                     .cornerRadius(10)
                                                     .clipped()
                                                     .overlay(
@@ -94,11 +107,10 @@ struct LibraryView: View {
                                                         alignment: .topLeading
                                                     )
                                             }
-                                            
                                             Text(item.title)
                                                 .font(.subheadline)
                                                 .foregroundColor(.primary)
-                                                .lineLimit(2)
+                                                .lineLimit(1)
                                                 .multilineTextAlignment(.leading)
                                         }
                                     }
@@ -106,6 +118,12 @@ struct LibraryView: View {
                             }
                         }
                         .padding(.horizontal, 20)
+                        .onAppear {
+                            updateOrientation()
+                        }
+                        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+                            updateOrientation()
+                        }
                     }
                 }
                 .padding(.vertical, 20)
@@ -134,6 +152,20 @@ struct LibraryView: View {
     private func removeContinueWatchingItem(item: ContinueWatchingItem) {
         ContinueWatchingManager.shared.remove(item: item)
         continueWatchingItems.removeAll { $0.id == item.id }
+    }
+    
+    private func updateOrientation() {
+        DispatchQueue.main.async {
+            isLandscape = UIDevice.current.orientation.isLandscape
+        }
+    }
+    
+    private func determineColumns() -> Int {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
+        } else {
+            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
+        }
     }
 }
 

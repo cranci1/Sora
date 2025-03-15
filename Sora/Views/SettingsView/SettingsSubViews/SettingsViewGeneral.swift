@@ -14,6 +14,9 @@ struct SettingsViewGeneral: View {
     @AppStorage("analyticsEnabled") private var analyticsEnabled: Bool = false
     @AppStorage("multiThreads") private var multiThreadsEnabled: Bool = false
     @AppStorage("metadataProviders") private var metadataProviders: String = "AniList"
+    @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
+    @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
+    
     private let metadataProvidersList = ["AniList"]
     @EnvironmentObject var settings: Settings
     
@@ -75,6 +78,45 @@ struct SettingsViewGeneral: View {
             //    Toggle("Multi Threads conversion", isOn: $multiThreadsEnabled)
             //        .tint(.accentColor)
             //}
+            
+            Section(header: Text("Media Grid Layout"), footer: Text("Adjust the number of media items per row in portrait and landscape modes.")) {
+                HStack {
+                    Spacer()
+                    if UIDevice.current.userInterfaceIdiom == .pad {
+                        Picker("Portrait Columns", selection: $mediaColumnsPortrait) {
+                            ForEach(1..<6) { i in
+                                Text("\(i)").tag(i)
+                            }
+                        }
+                        .pickerStyle(MenuPickerStyle())
+                    } else {
+                        Picker("Portrait Columns", selection: $mediaColumnsPortrait) {
+                            ForEach(1..<5) { i in
+                                Text("\(i)").tag(i)
+                            }
+                        }
+                        .pickerStyle(MenuPickerStyle())
+                    }
+                }
+                HStack {
+                    Spacer()
+                    if UIDevice.current.userInterfaceIdiom == .pad {
+                        Picker("Landscape Columns", selection: $mediaColumnsLandscape) {
+                            ForEach(2..<9) { i in
+                                Text("\(i)").tag(i)
+                            }
+                        }
+                        .pickerStyle(MenuPickerStyle())
+                    } else {
+                        Picker("Landscape Columns", selection: $mediaColumnsLandscape) {
+                            ForEach(2..<6) { i in
+                                Text("\(i)").tag(i)
+                            }
+                        }
+                        .pickerStyle(MenuPickerStyle())
+                    }
+                }
+            }
             
             Section(header: Text("Modules"), footer: Text("Note that the modules will be replaced only if there is a different version string inside the JSON file.")) {
                 Toggle("Refresh Modules on Launch", isOn: $refreshModulesOnLaunch)

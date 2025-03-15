@@ -65,9 +65,10 @@ struct MediaInfoView: View {
                                         .shimmering()
                                 }
                                 .resizable()
-                                .aspectRatio(2/3, contentMode: .fit)
-                                .cornerRadius(10)
+                                .aspectRatio(contentMode: .fill)
                                 .frame(width: 150, height: 225)
+                                .clipped()
+                                .cornerRadius(10)
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(title)

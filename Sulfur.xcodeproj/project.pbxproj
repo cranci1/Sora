@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		130217CC2D81C55E0011EFF5 /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130217CB2D81C55E0011EFF5 /* DownloadView.swift */; };
 		130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */; };
 		13103E892D58A39A000F0673 /* AniListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E882D58A39A000F0673 /* AniListItem.swift */; };
 		13103E8B2D58E028000F0673 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8A2D58E028000F0673 /* View.swift */; };
@@ -53,8 +52,6 @@
 		13DB46902D900A38008CBC03 /* URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB468F2D900A38008CBC03 /* URL.swift */; };
 		13DB46922D900BCE008CBC03 /* SettingsViewTrackers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB46912D900BCE008CBC03 /* SettingsViewTrackers.swift */; };
 		13DB7CC32D7D99C0004371D3 /* SubtitleSettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB7CC22D7D99C0004371D3 /* SubtitleSettingsManager.swift */; };
-		13DB7CC62D7DC7D2004371D3 /* FFmpeg-iOS-Lame in Frameworks */ = {isa = PBXBuildFile; productRef = 13DB7CC52D7DC7D2004371D3 /* FFmpeg-iOS-Lame */; };
-		13DB7CEC2D7DED5D004371D3 /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB7CEB2D7DED5D004371D3 /* DownloadManager.swift */; };
 		13DC0C462D302C7500D0F966 /* VideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DC0C452D302C7500D0F966 /* VideoPlayer.swift */; };
 		13EA2BD52D32D97400C1EBD7 /* CustomPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD12D32D97400C1EBD7 /* CustomPlayer.swift */; };
 		13EA2BD62D32D97400C1EBD7 /* Double+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD32D32D97400C1EBD7 /* Double+Extension.swift */; };
@@ -65,7 +62,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		130217CB2D81C55E0011EFF5 /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		130C6BF82D53A4C200DC1432 /* Sora.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sora.entitlements; sourceTree = "<group>"; };
 		130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
 		13103E882D58A39A000F0673 /* AniListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AniListItem.swift; sourceTree = "<group>"; };
@@ -111,7 +107,6 @@
 		13DB468F2D900A38008CBC03 /* URL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URL.swift; sourceTree = "<group>"; };
 		13DB46912D900BCE008CBC03 /* SettingsViewTrackers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewTrackers.swift; sourceTree = "<group>"; };
 		13DB7CC22D7D99C0004371D3 /* SubtitleSettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubtitleSettingsManager.swift; sourceTree = "<group>"; };
-		13DB7CEB2D7DED5D004371D3 /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
 		13DC0C412D2EC9BA00D0F966 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		13DC0C452D302C7500D0F966 /* VideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayer.swift; sourceTree = "<group>"; };
 		13EA2BD12D32D97400C1EBD7 /* CustomPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomPlayer.swift; sourceTree = "<group>"; };
@@ -127,7 +122,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13DB7CC62D7DC7D2004371D3 /* FFmpeg-iOS-Lame in Frameworks */,
 				1359ED1A2D76FA7D00C13034 /* Drops in Frameworks */,
 				133D7C972D2BE2AF0075467E /* Kingfisher in Frameworks */,
 			);
@@ -253,7 +247,6 @@
 				1399FAD22D3AB34F00E97C31 /* SettingsView */,
 				133F55B92D33B53E00E08EEA /* LibraryView */,
 				133D7C7C2D2BE2630075467E /* SearchView.swift */,
-				130217CB2D81C55E0011EFF5 /* DownloadView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -284,7 +277,6 @@
 		133D7C852D2BE2640075467E /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				13DB7CEA2D7DED50004371D3 /* DownloadManager */,
 				13C0E5E82D5F85DD00E7F619 /* ContinueWatching */,
 				13103E8C2D58E037000F0673 /* SkeletonCells */,
 				13DC0C442D302C6A00D0F966 /* MediaPlayer */,
@@ -400,14 +392,6 @@
 			path = Auth;
 			sourceTree = "<group>";
 		};
-		13DB7CEA2D7DED50004371D3 /* DownloadManager */ = {
-			isa = PBXGroup;
-			children = (
-				13DB7CEB2D7DED5D004371D3 /* DownloadManager.swift */,
-			);
-			path = DownloadManager;
-			sourceTree = "<group>";
-		};
 		13DC0C442D302C6A00D0F966 /* MediaPlayer */ = {
 			isa = PBXGroup;
 			children = (
@@ -456,7 +440,6 @@
 			packageProductDependencies = (
 				133D7C962D2BE2AF0075467E /* Kingfisher */,
 				1359ED192D76FA7D00C13034 /* Drops */,
-				13DB7CC52D7DC7D2004371D3 /* FFmpeg-iOS-Lame */,
 			);
 			productName = Sora;
 			productReference = 133D7C6A2D2BE2500075467E /* Sulfur.app */;
@@ -488,7 +471,6 @@
 			packageReferences = (
 				133D7C952D2BE2AF0075467E /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				1359ED182D76FA7D00C13034 /* XCRemoteSwiftPackageReference "Drops" */,
-				13DB7CC42D7DC7D2004371D3 /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */,
 			);
 			productRefGroup = 133D7C6B2D2BE2500075467E /* Products */;
 			projectDirPath = "";
@@ -534,7 +516,6 @@
 				133D7C932D2BE2640075467E /* Modules.swift in Sources */,
 				13DB7CC32D7D99C0004371D3 /* SubtitleSettingsManager.swift in Sources */,
 				133D7C702D2BE2500075467E /* ContentView.swift in Sources */,
-				13DB7CEC2D7DED5D004371D3 /* DownloadManager.swift in Sources */,
 				1334FF522D7871B7007E289F /* TMDBItem.swift in Sources */,
 				13D99CF72D4E73C300250A86 /* ModuleAdditionSettingsView.swift in Sources */,
 				13C0E5EC2D5F85F800E7F619 /* ContinueWatchingItem.swift in Sources */,
@@ -554,7 +535,6 @@
 				133D7C942D2BE2640075467E /* JSController.swift in Sources */,
 				133D7C922D2BE2640075467E /* URLSession.swift in Sources */,
 				133D7C912D2BE2640075467E /* SettingsViewModule.swift in Sources */,
-				130217CC2D81C55E0011EFF5 /* DownloadView.swift in Sources */,
 				133F55BB2D33B55100E08EEA /* LibraryManager.swift in Sources */,
 				133D7C8E2D2BE2640075467E /* LibraryView.swift in Sources */,
 				133D7C6E2D2BE2500075467E /* SoraApp.swift in Sources */,
@@ -814,14 +794,6 @@
 				kind = branch;
 			};
 		};
-		13DB7CC42D7DC7D2004371D3 /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kewlbear/FFmpeg-iOS-Lame";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -834,11 +806,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1359ED182D76FA7D00C13034 /* XCRemoteSwiftPackageReference "Drops" */;
 			productName = Drops;
-		};
-		13DB7CC52D7DC7D2004371D3 /* FFmpeg-iOS-Lame */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 13DB7CC42D7DC7D2004371D3 /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */;
-			productName = "FFmpeg-iOS-Lame";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

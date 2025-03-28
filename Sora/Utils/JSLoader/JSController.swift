@@ -36,7 +36,7 @@ class JSController: ObservableObject {
             return
         }
         
-        URLSession.cloudflareCustom.dataTask(with: url) { [weak self] data, _, error in
+        URLSession.custom.dataTask(with: url) { [weak self] data, _, error in
             guard let self = self else { return }
             
             if let error = error {
@@ -77,7 +77,7 @@ class JSController: ObservableObject {
             return
         }
         
-        URLSession.cloudflareCustom.dataTask(with: url) { [weak self] data, _, error in
+        URLSession.custom.dataTask(with: url) { [weak self] data, _, error in
             guard let self = self else { return }
             
             if let error = error {
@@ -130,7 +130,7 @@ class JSController: ObservableObject {
             return
         }
         
-        URLSession.cloudflareCustom.dataTask(with: url) { [weak self] data, _, error in
+        URLSession.custom.dataTask(with: url) { [weak self] data, _, error in
             guard let self = self else { return }
             
             if let error = error {
@@ -430,7 +430,7 @@ class JSController: ObservableObject {
     
     func fetchStreamUrlJSSecond(episodeUrl: String, softsub: Bool = false, completion: @escaping ((stream: String?, subtitles: String?)) -> Void) {
         let url = URL(string: episodeUrl)!
-        let task = URLSession.cloudflareCustom.dataTask(with: url) { data, response, error in
+        let task = URLSession.custom.dataTask(with: url) { data, response, error in
             if let error = error {
                 Logger.shared.log("URLSession error: \(error.localizedDescription)", type: "Error")
                 DispatchQueue.main.async { completion((nil, nil)) }

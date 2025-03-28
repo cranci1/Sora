@@ -29,7 +29,7 @@ class VTTSubtitlesLoader: ObservableObject {
         
         let format = determineSubtitleFormat(from: url)
         
-        URLSession.cloudflareCustom.dataTask(with: url) { data, _, error in
+        URLSession.shared.dataTask(with: url) { data, _, error in
             guard let data = data,
                   let content = String(data: data, encoding: .utf8),
                   error == nil else { return }

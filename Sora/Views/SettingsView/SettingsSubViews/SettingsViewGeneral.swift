@@ -14,9 +14,13 @@ struct SettingsViewGeneral: View {
     @AppStorage("analyticsEnabled") private var analyticsEnabled: Bool = false
     @AppStorage("multiThreads") private var multiThreadsEnabled: Bool = false
     @AppStorage("metadataProviders") private var metadataProviders: String = "AniList"
+    @AppStorage("CustomDNSProvider") private var customDNSProvider: String = "Cloudflare"
+    @AppStorage("customPrimaryDNS") private var customPrimaryDNS: String = ""
+    @AppStorage("customSecondaryDNS") private var customSecondaryDNS: String = ""
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     
+    private let customDNSProviderList = ["Cloudflare", "Google", "OpenDNS", "Quad9", "AdGuard", "CleanBrowsing", "ControlD", "Custom"]
     private let metadataProvidersList = ["AniList"]
     @EnvironmentObject var settings: Settings
     
@@ -24,7 +28,7 @@ struct SettingsViewGeneral: View {
         Form {
             Section(header: Text("Interface")) {
                 ColorPicker("Accent Color", selection: $settings.accentColor)
-                HStack() {
+                HStack {
                     Text("Appearance")
                     Picker("Appearance", selection: $settings.selectedAppearance) {
                         Text("System").tag(Appearance.system)
@@ -40,18 +44,10 @@ struct SettingsViewGeneral: View {
                     Text("Episodes Range")
                     Spacer()
                     Menu {
-                        Button(action: { episodeChunkSize = 25 }) {
-                            Text("25")
-                        }
-                        Button(action: { episodeChunkSize = 50 }) {
-                            Text("50")
-                        }
-                        Button(action: { episodeChunkSize = 75 }) {
-                            Text("75")
-                        }
-                        Button(action: { episodeChunkSize = 100 }) {
-                            Text("100")
-                        }
+                        Button(action: { episodeChunkSize = 25 }) { Text("25") }
+                        Button(action: { episodeChunkSize = 50 }) { Text("50") }
+                        Button(action: { episodeChunkSize = 75 }) { Text("75") }
+                        Button(action: { episodeChunkSize = 100 }) { Text("100") }
                     } label: {
                         Text("\(episodeChunkSize)")
                     }
@@ -63,36 +59,24 @@ struct SettingsViewGeneral: View {
                     Spacer()
                     Menu(metadataProviders) {
                         ForEach(metadataProvidersList, id: \.self) { provider in
-                            Button(action: {
-                                metadataProviders = provider
-                            }) {
+                            Button(action: { metadataProviders = provider }) {
                                 Text(provider)
                             }
                         }
                     }
-                    
                 }
             }
-            
-            //Section(header: Text("Downloads"), footer: Text("Note that the modules will be replaced only if there is a different version string inside the JSON file.")) {
-            //    Toggle("Multi Threads conversion", isOn: $multiThreadsEnabled)
-            //        .tint(.accentColor)
-            //}
             
             Section(header: Text("Media Grid Layout"), footer: Text("Adjust the number of media items per row in portrait and landscape modes.")) {
                 HStack {
                     if UIDevice.current.userInterfaceIdiom == .pad {
                         Picker("Portrait Columns", selection: $mediaColumnsPortrait) {
-                            ForEach(1..<6) { i in
-                                Text("\(i)").tag(i)
-                            }
+                            ForEach(1..<6) { i in Text("\(i)").tag(i) }
                         }
                         .pickerStyle(MenuPickerStyle())
                     } else {
                         Picker("Portrait Columns", selection: $mediaColumnsPortrait) {
-                            ForEach(1..<5) { i in
-                                Text("\(i)").tag(i)
-                            }
+                            ForEach(1..<5) { i in Text("\(i)").tag(i) }
                         }
                         .pickerStyle(MenuPickerStyle())
                     }
@@ -100,16 +84,12 @@ struct SettingsViewGeneral: View {
                 HStack {
                     if UIDevice.current.userInterfaceIdiom == .pad {
                         Picker("Landscape Columns", selection: $mediaColumnsLandscape) {
-                            ForEach(2..<9) { i in
-                                Text("\(i)").tag(i)
-                            }
+                            ForEach(2..<9) { i in Text("\(i)").tag(i) }
                         }
                         .pickerStyle(MenuPickerStyle())
                     } else {
                         Picker("Landscape Columns", selection: $mediaColumnsLandscape) {
-                            ForEach(2..<6) { i in
-                                Text("\(i)").tag(i)
-                            }
+                            ForEach(2..<6) { i in Text("\(i)").tag(i) }
                         }
                         .pickerStyle(MenuPickerStyle())
                     }
@@ -121,7 +101,7 @@ struct SettingsViewGeneral: View {
                     .tint(.accentColor)
             }
             
-            Section(header: Text("Analytics"), footer: Text("Allow Sora to collect anonymous data to improve the app. No personal information is collected. This can be disabled at any time.\n\n Information collected: \n- App version\n- Device model\n- Module Name/Version\n- Error Messages\n- Title of Watched Content")) {
+            Section(header: Text("Advanced"), footer: Text("Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time.")) {
                 Toggle("Enable Analytics", isOn: $analyticsEnabled)
                     .tint(.accentColor)
             }

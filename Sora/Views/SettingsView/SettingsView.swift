@@ -11,9 +11,9 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Main Settings")) {
+                Section(header: Text("Main")) {
                     NavigationLink(destination: SettingsViewGeneral()) {
-                        Text("General Settings")
+                        Text("General Preferences")
                     }
                     NavigationLink(destination: SettingsViewPlayer()) {
                         Text("Media Player")
@@ -21,9 +21,9 @@ struct SettingsView: View {
                     NavigationLink(destination: SettingsViewModule()) {
                         Text("Modules")
                     }
-                    NavigationLink(destination: SettingsViewTrackers()) {
-                        Text("Trackers")
-                    }
+                    //NavigationLink(destination: SettingsViewTrackers()) {
+                    //    Text("Trackers")
+                    //}
                 }
                 
                 Section(header: Text("Info")) {

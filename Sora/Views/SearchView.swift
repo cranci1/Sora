@@ -165,20 +165,24 @@ struct SearchView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
-                        ForEach(moduleManager.modules, id: \.id) { module in
-                            Button {
-                                selectedModuleId = module.id.uuidString
-                            } label: {
-                                HStack {
-                                    KFImage(URL(string: module.metadata.iconUrl))
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 20, height: 20)
-                                        .cornerRadius(4)
-                                    Text(module.metadata.sourceName)
-                                    if module.id.uuidString == selectedModuleId {
-                                        Image(systemName: "checkmark")
-                                            .foregroundColor(.accentColor)
+                        ForEach(getModuleLanguageGroups(), id: \.self) { language in
+                            Menu(language) {
+                                ForEach(getModulesForLanguage(language), id: \.id) { module in
+                                    Button {
+                                        selectedModuleId = module.id.uuidString
+                                    } label: {
+                                        HStack {
+                                            KFImage(URL(string: module.metadata.iconUrl))
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 20, height: 20)
+                                                .cornerRadius(4)
+                                            Text(module.metadata.sourceName)
+                                            if module.id.uuidString == selectedModuleId {
+                                                Image(systemName: "checkmark")
+                                                    .foregroundColor(.accentColor)
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -268,6 +272,41 @@ struct SearchView: View {
         } else {
             return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }
+    }
+    
+    private func cleanLanguageName(_ language: String?) -> String {
+        guard let language = language else { return "Unknown" }
+        
+        let cleaned = language.replacingOccurrences(
+            of: "\\s*\\([^\\)]*\\)",
+            with: "",
+            options: .regularExpression
+        ).trimmingCharacters(in: .whitespaces)
+        
+        return cleaned.isEmpty ? "Unknown" : cleaned
+    }
+    
+    private func getModulesByLanguage() -> [String: [ScrapingModule]] {
+        var result = [String: [ScrapingModule]]()
+        
+        for module in moduleManager.modules {
+            let language = cleanLanguageName(module.metadata.language)
+            if result[language] == nil {
+                result[language] = [module]
+            } else {
+                result[language]?.append(module)
+            }
+        }
+        
+        return result
+    }
+    
+    private func getModuleLanguageGroups() -> [String] {
+        return getModulesByLanguage().keys.sorted()
+    }
+    
+    private func getModulesForLanguage(_ language: String) -> [ScrapingModule] {
+        return getModulesByLanguage()[language] ?? []
     }
 }
 

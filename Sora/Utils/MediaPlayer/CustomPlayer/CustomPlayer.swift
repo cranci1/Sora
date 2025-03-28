@@ -709,20 +709,16 @@ class CustomMediaPlayerViewController: UIViewController {
                 )
             }
             
-            // Watch Next Button Logic:
-            let hideNext = UserDefaults.standard.bool(forKey: "hideNextButton")
             let isNearEnd = (self.duration - self.currentTimeVal) <= (self.duration * 0.10)
                 && self.currentTimeVal != self.duration
                 && self.showWatchNextButton
                 && self.duration != 0
             
             if isNearEnd {
-                // First appearance: show the button in its normal position.
                 if !self.isWatchNextVisible {
                     self.isWatchNextVisible = true
                     self.watchNextButtonAppearedAt = self.currentTimeVal
                     
-                    // Choose constraints based on current controls visibility.
                     if self.isControlsVisible {
                         NSLayoutConstraint.deactivate(self.watchNextButtonNormalConstraints)
                         NSLayoutConstraint.activate(self.watchNextButtonControlsConstraints)
@@ -730,7 +726,6 @@ class CustomMediaPlayerViewController: UIViewController {
                         NSLayoutConstraint.deactivate(self.watchNextButtonControlsConstraints)
                         NSLayoutConstraint.activate(self.watchNextButtonNormalConstraints)
                     }
-                    // Soft fade-in.
                     self.watchNextButton.isHidden = false
                     self.watchNextButton.alpha = 0.0
                     UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseInOut, animations: {
@@ -738,23 +733,19 @@ class CustomMediaPlayerViewController: UIViewController {
                     }, completion: nil)
                 }
                 
-                // When 5 seconds have elapsed from when the button first appeared:
                 if let appearedAt = self.watchNextButtonAppearedAt,
                    (self.currentTimeVal - appearedAt) >= 5,
                    !self.isWatchNextRepositioned {
-                    // Fade out the button first (even if controls are visible).
                     UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseInOut, animations: {
                         self.watchNextButton.alpha = 0.0
                     }, completion: { _ in
                         self.watchNextButton.isHidden = true
-                        // Then lock it to the controls-attached constraints.
                         NSLayoutConstraint.deactivate(self.watchNextButtonNormalConstraints)
                         NSLayoutConstraint.activate(self.watchNextButtonControlsConstraints)
                         self.isWatchNextRepositioned = true
                     })
                 }
             } else {
-                // Not near end: reset the watch-next button state.
                 self.watchNextButtonAppearedAt = nil
                 self.isWatchNextVisible = false
                 self.isWatchNextRepositioned = false
@@ -771,7 +762,6 @@ class CustomMediaPlayerViewController: UIViewController {
     
     func repositionWatchNextButton() {
         self.isWatchNextRepositioned = true
-        // Update constraints so the button is now attached next to the playback controls.
         UIView.animate(withDuration: 0.3, animations: {
             NSLayoutConstraint.deactivate(self.watchNextButtonNormalConstraints)
             NSLayoutConstraint.activate(self.watchNextButtonControlsConstraints)
@@ -799,7 +789,6 @@ class CustomMediaPlayerViewController: UIViewController {
             self.skip85Button.alpha = self.isControlsVisible ? 0.8 : 0
             
             if self.isControlsVisible {
-                // Always use the controls-attached constraints.
                 NSLayoutConstraint.deactivate(self.watchNextButtonNormalConstraints)
                 NSLayoutConstraint.activate(self.watchNextButtonControlsConstraints)
                 if self.isWatchNextRepositioned || self.isWatchNextVisible {
@@ -809,7 +798,6 @@ class CustomMediaPlayerViewController: UIViewController {
                     })
                 }
             } else {
-                // When controls are hidden:
                 if !self.isWatchNextRepositioned && self.isWatchNextVisible {
                     NSLayoutConstraint.deactivate(self.watchNextButtonControlsConstraints)
                     NSLayoutConstraint.activate(self.watchNextButtonNormalConstraints)

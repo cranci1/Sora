@@ -102,7 +102,7 @@ class CustomMediaPlayerViewController: UIViewController {
     
     private var playerItemKVOContext = 0
     private var loadedTimeRangesObservation: NSKeyValueObservation?
-
+    private var playerTimeControlStatusObserver: NSKeyValueObservation?
     
     init(module: ScrapingModule,
          urlString: String,
@@ -179,7 +179,7 @@ class CustomMediaPlayerViewController: UIViewController {
                 self?.updateBufferValue()
             }
         }
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.checkForHLSStream()
         }
@@ -187,6 +187,7 @@ class CustomMediaPlayerViewController: UIViewController {
         if isHoldPauseEnabled {
             holdForPause()
         }
+        
         
         player.play()
         
@@ -371,33 +372,33 @@ class CustomMediaPlayerViewController: UIViewController {
         forwardButton.translatesAutoresizingMaskIntoConstraints = false
         
         let sliderView = MusicProgressSlider(
-                    value: Binding(
-                        get: { self.sliderViewModel.sliderValue },
-                        set: { self.sliderViewModel.sliderValue = $0 }
-                    ),
-                    bufferValue: Binding(
-                        get: { self.sliderViewModel.bufferValue },        // NEW
-                        set: { self.sliderViewModel.bufferValue = $0 }    // NEW
-                    ),
-                    inRange: 0...(duration > 0 ? duration : 1.0),
-                    activeFillColor: .white,
-                    fillColor: .white.opacity(0.5),
-                    emptyColor: .white.opacity(0.3),
-                    height: 30,
-                    onEditingChanged: { editing in
-                        self.isSliderEditing = editing
-                        if !editing {
-                            let target = CMTime(seconds: self.sliderViewModel.sliderValue,
-                                                preferredTimescale: 600)
-                            self.player.seek(to: target) { [weak self] finished in
-                                guard let self = self else { return }
-                                // Re-sync currentTimeVal after the seek
-                                self.currentTimeVal = self.player.currentTime().seconds
-                                self.updateBufferValue()
-                            }
-                        }
+            value: Binding(
+                get: { self.sliderViewModel.sliderValue },
+                set: { self.sliderViewModel.sliderValue = $0 }
+            ),
+            bufferValue: Binding(
+                get: { self.sliderViewModel.bufferValue },        // NEW
+                set: { self.sliderViewModel.bufferValue = $0 }    // NEW
+            ),
+            inRange: 0...(duration > 0 ? duration : 1.0),
+            activeFillColor: .white,
+            fillColor: .white.opacity(0.5),
+            emptyColor: .white.opacity(0.3),
+            height: 30,
+            onEditingChanged: { editing in
+                self.isSliderEditing = editing
+                if !editing {
+                    let target = CMTime(seconds: self.sliderViewModel.sliderValue,
+                                        preferredTimescale: 600)
+                    self.player.seek(to: target) { [weak self] finished in
+                        guard let self = self else { return }
+                        // Re-sync currentTimeVal after the seek
+                        self.currentTimeVal = self.player.currentTime().seconds
+                        self.updateBufferValue()
                     }
-                )
+                }
+            }
+        )
         
         sliderHostingController = UIHostingController(rootView: sliderView)
         guard let sliderHostView = sliderHostingController?.view else { return }
@@ -451,7 +452,7 @@ class CustomMediaPlayerViewController: UIViewController {
             emptyColor: .white.opacity(0.3),
             width: 22,
             onEditingChanged: { editing in
-                }
+            }
         )
         
         let brightnessContainer = UIView()
@@ -850,9 +851,9 @@ class CustomMediaPlayerViewController: UIViewController {
             }
             
             let isNearEnd = (self.duration - self.currentTimeVal) <= (self.duration * 0.10)
-                && self.currentTimeVal != self.duration
-                && self.showWatchNextButton
-                && self.duration != 0
+            && self.currentTimeVal != self.duration
+            && self.showWatchNextButton
+            && self.duration != 0
             
             if isNearEnd {
                 if !self.isWatchNextVisible {
@@ -957,10 +958,10 @@ class CustomMediaPlayerViewController: UIViewController {
             let finalSkip = holdValue > 0 ? holdValue : 30
             currentTimeVal = max(currentTimeVal - finalSkip, 0)
             player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
-                  guard let self = self else { return }
-                  self.updateBufferValue()
-              }
-          }
+                guard let self = self else { return }
+                self.updateBufferValue()
+            }
+        }
     }
     
     @objc func seekForwardLongPress(_ gesture: UILongPressGestureRecognizer) {
@@ -969,10 +970,10 @@ class CustomMediaPlayerViewController: UIViewController {
             let finalSkip = holdValue > 0 ? holdValue : 30
             currentTimeVal = min(currentTimeVal + finalSkip, duration)
             player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
-                  guard let self = self else { return }
-                  self.updateBufferValue()
-              }
-          }
+                guard let self = self else { return }
+                self.updateBufferValue()
+            }
+        }
     }
     
     @objc func seekBackward() {
@@ -980,20 +981,20 @@ class CustomMediaPlayerViewController: UIViewController {
         let finalSkip = skipValue > 0 ? skipValue : 10
         currentTimeVal = max(currentTimeVal - finalSkip, 0)
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
-              guard let self = self else { return }
-              self.updateBufferValue()
-          }
-      }
+            guard let self = self else { return }
+            self.updateBufferValue()
+        }
+    }
     
     @objc func seekForward() {
         let skipValue = UserDefaults.standard.double(forKey: "skipIncrement")
         let finalSkip = skipValue > 0 ? skipValue : 10
         currentTimeVal = min(currentTimeVal + finalSkip, duration)
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
-              guard let self = self else { return }
-              self.updateBufferValue()
-          }
-      }
+            guard let self = self else { return }
+            self.updateBufferValue()
+        }
+    }
     
     @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
         let tapLocation = gesture.location(in: view)
@@ -1015,7 +1016,7 @@ class CustomMediaPlayerViewController: UIViewController {
             player.pause()
             isPlaying = false
             playPauseButton.image = UIImage(systemName: "play.fill")
-
+            
             if !isControlsVisible {
                 isControlsVisible = true
                 UIView.animate(withDuration: 0.2) {
@@ -1049,7 +1050,7 @@ class CustomMediaPlayerViewController: UIViewController {
     
     @objc private func handleHoldForPause(_ gesture: UILongPressGestureRecognizer) {
         guard isHoldPauseEnabled else { return }
-
+        
         if gesture.state == .began {
             togglePlayPause()
         }
@@ -1105,7 +1106,7 @@ class CustomMediaPlayerViewController: UIViewController {
                 if line.contains("#EXT-X-STREAM-INF"), index + 1 < lines.count {
                     if let resolutionRange = line.range(of: "RESOLUTION="),
                        let resolutionEndRange = line[resolutionRange.upperBound...].range(of: ",")
-                          ?? line[resolutionRange.upperBound...].range(of: "\n") {
+                        ?? line[resolutionRange.upperBound...].range(of: "\n") {
                         
                         let resolutionPart = String(line[resolutionRange.upperBound..<resolutionEndRange.lowerBound])
                         if let heightStr = resolutionPart.components(separatedBy: "x").last,
@@ -1119,7 +1120,7 @@ class CustomMediaPlayerViewController: UIViewController {
                                 if let baseURL = self.baseM3U8URL {
                                     let baseURLString = baseURL.deletingLastPathComponent().absoluteString
                                     qualityURL = URL(string: nextLine, relativeTo: baseURL)?.absoluteString
-                                        ?? baseURLString + "/" + nextLine
+                                    ?? baseURLString + "/" + nextLine
                                 }
                             }
                             
@@ -1502,6 +1503,20 @@ class CustomMediaPlayerViewController: UIViewController {
         if UserDefaults.standard.bool(forKey: "rememberPlaySpeed") {
             let lastPlayedSpeed = UserDefaults.standard.float(forKey: "lastPlaybackSpeed")
             player?.rate = lastPlayedSpeed > 0 ? lastPlayedSpeed : 1.0
+        }
+    }
+    
+    func setupTimeControlStatusObservation() {
+        playerTimeControlStatusObserver = player.observe(\.timeControlStatus, options: [.new]) { [weak self] player, _ in
+            guard let self = self else { return }
+            if player.timeControlStatus == .paused,
+               let reason = player.reasonForWaitingToPlay {
+                // If we are paused for a “stall/minimize stalls” reason, forcibly resume:
+                Logger.shared.log("Paused reason: \(reason)", type: "Error")
+                if reason == .toMinimizeStalls || reason == .evaluatingBufferingRate {
+                    player.play()
+                }
+            }
         }
     }
 }

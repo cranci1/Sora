@@ -386,15 +386,24 @@ class CustomMediaPlayerViewController: UIViewController {
             emptyColor: .white.opacity(0.3),
             height: 30,
             onEditingChanged: { editing in
-                self.isSliderEditing = editing
-                if !editing {
-                    let target = CMTime(seconds: self.sliderViewModel.sliderValue,
-                                        preferredTimescale: 600)
-                    self.player.seek(to: target) { [weak self] finished in
+                if editing {
+                    self.isSliderEditing = true
+                } else {
+                    let wasPlaying = self.isPlaying
+                    let targetTime = CMTime(seconds: self.sliderViewModel.sliderValue,
+                                            preferredTimescale: 600)
+                    self.player.seek(to: targetTime) { [weak self] finished in
                         guard let self = self else { return }
-                        // Re-sync currentTimeVal after the seek
-                        self.currentTimeVal = self.player.currentTime().seconds
+                        
+                        let final = self.player.currentTime().seconds
+                        self.sliderViewModel.sliderValue = final
+                        self.currentTimeVal = final
                         self.updateBufferValue()
+                        self.isSliderEditing = false
+                        
+                        if wasPlaying {
+                            self.player.play()
+                        }
                     }
                 }
             }

@@ -371,22 +371,33 @@ class CustomMediaPlayerViewController: UIViewController {
         forwardButton.translatesAutoresizingMaskIntoConstraints = false
         
         let sliderView = MusicProgressSlider(
-            value: Binding(get: { self.sliderViewModel.sliderValue },
-                           set: { self.sliderViewModel.sliderValue = $0 }),
-            inRange: 0...(duration > 0 ? duration : 1.0),
-            bufferValue: self.sliderViewModel.bufferValue,
-            activeFillColor: .white,
-            fillColor: .white.opacity(0.5),
-            bufferColor: .white.opacity(0.2),
-            emptyColor: .white.opacity(0.3),
-            height: 30,
-            onEditingChanged: { editing in
-                self.isSliderEditing = editing
-                if !editing {
-                    self.player.seek(to: CMTime(seconds: self.sliderViewModel.sliderValue, preferredTimescale: 600))
-                }
-            }
-        )
+                    value: Binding(
+                        get: { self.sliderViewModel.sliderValue },
+                        set: { self.sliderViewModel.sliderValue = $0 }
+                    ),
+                    bufferValue: Binding(
+                        get: { self.sliderViewModel.bufferValue },        // NEW
+                        set: { self.sliderViewModel.bufferValue = $0 }    // NEW
+                    ),
+                    inRange: 0...(duration > 0 ? duration : 1.0),
+                    activeFillColor: .white,
+                    fillColor: .white.opacity(0.5),
+                    emptyColor: .white.opacity(0.3),
+                    height: 30,
+                    onEditingChanged: { editing in
+                        self.isSliderEditing = editing
+                        if !editing {
+                            let target = CMTime(seconds: self.sliderViewModel.sliderValue,
+                                                preferredTimescale: 600)
+                            self.player.seek(to: target) { [weak self] finished in
+                                guard let self = self else { return }
+                                // Re-sync currentTimeVal after the seek
+                                self.currentTimeVal = self.player.currentTime().seconds
+                                self.updateBufferValue()
+                            }
+                        }
+                    }
+                )
         
         sliderHostingController = UIHostingController(rootView: sliderView)
         guard let sliderHostView = sliderHostingController?.view else { return }
@@ -789,6 +800,7 @@ class CustomMediaPlayerViewController: UIViewController {
                   let currentItem = self.player.currentItem,
                   currentItem.duration.seconds.isFinite else { return }
             
+            self.updateBufferValue()
             let currentDuration = currentItem.duration.seconds
             if currentDuration.isNaN || currentDuration <= 0 { return }
             
@@ -811,21 +823,24 @@ class CustomMediaPlayerViewController: UIViewController {
             
             DispatchQueue.main.async {
                 self.sliderHostingController?.rootView = MusicProgressSlider(
-                    value: Binding(get: {
-                        max(0, min(self.sliderViewModel.sliderValue, self.duration))
-                    }, set: {
-                        self.sliderViewModel.sliderValue = max(0, min($0, self.duration))
-                    }),
-                    inRange: 0...(self.duration > 0 ? self.duration : 1.0),
-                    bufferValue: self.sliderViewModel.bufferValue,
+                    value: Binding(
+                        get: { max(0, min(self.sliderViewModel.sliderValue, self.duration)) },
+                        set: {
+                            self.sliderViewModel.sliderValue = max(0, min($0, self.duration))
+                        }
+                    ),
+                    bufferValue: Binding(get: { self.sliderViewModel.bufferValue },
+                                         set: { self.sliderViewModel.bufferValue = $0 }), inRange: 0...(self.duration > 0 ? self.duration : 1.0),
                     activeFillColor: .white,
                     fillColor: .white.opacity(0.6),
-                    bufferColor: .white.opacity(0.36),
                     emptyColor: .white.opacity(0.3),
                     height: 30,
                     onEditingChanged: { editing in
                         if !editing {
-                            let targetTime = CMTime(seconds: self.sliderViewModel.sliderValue, preferredTimescale: 600)
+                            let targetTime = CMTime(
+                                seconds: self.sliderViewModel.sliderValue,
+                                preferredTimescale: 600
+                            )
                             self.player.seek(to: targetTime) { [weak self] finished in
                                 self?.updateBufferValue()
                             }

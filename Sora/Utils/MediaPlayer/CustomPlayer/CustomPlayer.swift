@@ -1012,21 +1012,23 @@ class CustomMediaPlayerViewController: UIViewController {
     
     @objc func togglePlayPause() {
         if isPlaying {
+            player.pause()
+            isPlaying = false
+            playPauseButton.image = UIImage(systemName: "play.fill")
+
             if !isControlsVisible {
                 isControlsVisible = true
-                UIView.animate(withDuration: 0.5) {
+                UIView.animate(withDuration: 0.2) {
                     self.controlsContainerView.alpha = 1.0
                     self.skip85Button.alpha = 0.8
                     self.view.layoutIfNeeded()
                 }
             }
-            player.pause()
-            playPauseButton.image = UIImage(systemName: "play.fill")
         } else {
             player.play()
+            isPlaying = true
             playPauseButton.image = UIImage(systemName: "pause.fill")
         }
-        isPlaying.toggle()
     }
     
     @objc func dismissTapped() {

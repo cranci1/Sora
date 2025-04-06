@@ -1,43 +1,51 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "Drops",
-        "repositoryURL": "https://github.com/omaralbeik/Drops.git",
-        "state": {
-          "branch": "main",
-          "revision": "5824681795286c36bdc4a493081a63e64e2a064e",
-          "version": null
-        }
-      },
-      {
-        "package": "FFmpeg-iOS-Lame",
-        "repositoryURL": "https://github.com/kewlbear/FFmpeg-iOS-Lame",
-        "state": {
-          "branch": "main",
-          "revision": "1808fa5a1263c5e216646cd8421fc7dcb70520cc",
-          "version": null
-        }
-      },
-      {
-        "package": "FFmpeg-iOS-Support",
-        "repositoryURL": "https://github.com/kewlbear/FFmpeg-iOS-Support",
-        "state": {
-          "branch": null,
-          "revision": "be3bd9149ac53760e8725652eee99c405b2be47a",
-          "version": "0.0.2"
-        }
-      },
-      {
-        "package": "Kingfisher",
-        "repositoryURL": "https://github.com/onevcat/Kingfisher.git",
-        "state": {
-          "branch": null,
-          "revision": "b6f62758f21a8c03cd64f4009c037cfa580a256e",
-          "version": "7.9.1"
-        }
+  "originHash" : "e772caa8d6a8793d24bf04e3d77695cd5ac695f3605d2b657e40115caedf8863",
+  "pins" : [
+    {
+      "identity" : "drops",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/omaralbeik/Drops.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "5824681795286c36bdc4a493081a63e64e2a064e"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "ffmpeg-ios-lame",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kewlbear/FFmpeg-iOS-Lame",
+      "state" : {
+        "branch" : "main",
+        "revision" : "1808fa5a1263c5e216646cd8421fc7dcb70520cc"
+      }
+    },
+    {
+      "identity" : "ffmpeg-ios-support",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kewlbear/FFmpeg-iOS-Support",
+      "state" : {
+        "revision" : "be3bd9149ac53760e8725652eee99c405b2be47a",
+        "version" : "0.0.2"
+      }
+    },
+    {
+      "identity" : "kingfisher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/onevcat/Kingfisher.git",
+      "state" : {
+        "revision" : "b6f62758f21a8c03cd64f4009c037cfa580a256e",
+        "version" : "7.9.1"
+      }
+    },
+    {
+      "identity" : "marqueelabel",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/cbpowell/MarqueeLabel",
+      "state" : {
+        "revision" : "877e810534cda9afabb8143ae319b7c3341b121b",
+        "version" : "4.5.0"
+      }
+    }
+  ],
+  "version" : 3
 }

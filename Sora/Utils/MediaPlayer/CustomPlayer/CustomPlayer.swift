@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import MarqueeLabel
 import AVKit
 import SwiftUI
 import AVFoundation
@@ -55,6 +56,13 @@ class CustomMediaPlayerViewController: UIViewController {
     var lastDuration: Double = 0.0
     var watchNextButtonAppearedAt: Double?
     
+    // MARK: - Constraint Sets
+    var portraitButtonVisibleConstraints: [NSLayoutConstraint] = []
+    var portraitButtonHiddenConstraints: [NSLayoutConstraint] = []
+    var landscapeButtonVisibleConstraints: [NSLayoutConstraint] = []
+    var landscapeButtonHiddenConstraints: [NSLayoutConstraint] = []
+    var currentMarqueeConstraints: [NSLayoutConstraint] = []
+    
     var subtitleForegroundColor: String = "white"
     var subtitleBackgroundEnabled: Bool = true
     var subtitleFontSize: Double = 20.0
@@ -66,6 +74,7 @@ class CustomMediaPlayerViewController: UIViewController {
         }
     }
     
+    var marqueeLabel: MarqueeLabel!
     var playerViewController: AVPlayerViewController!
     var controlsContainerView: UIView!
     var playPauseButton: UIImageView!
@@ -168,6 +177,7 @@ class CustomMediaPlayerViewController: UIViewController {
         setupSpeedButton()
         setupQualityButton()
         setupMenuButton()
+        setupMarqueeLabel()
         setupSkip85Button()
         setupWatchNextButton()
         addTimeObserver()
@@ -201,6 +211,32 @@ class CustomMediaPlayerViewController: UIViewController {
             NSLayoutConstraint.activate(self.watchNextButtonControlsConstraints)
             self.watchNextButton.alpha = 1.0
             self.view.layoutIfNeeded()
+        }
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        coordinator.animate(alongsideTransition: { _ in
+            self.updateMarqueeConstraints()
+        })
+    }
+    
+    /// In layoutSubviews, check if the text width is larger than the available space and update the label’s properties.
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        // Safely unwrap marqueeLabel
+        guard let marqueeLabel = marqueeLabel else {
+            return  // or handle the error gracefully
+        }
+        
+        let availableWidth = marqueeLabel.frame.width
+        let textWidth = marqueeLabel.intrinsicContentSize.width
+
+        if textWidth > availableWidth {
+            marqueeLabel.lineBreakMode = .byTruncatingTail
+        } else {
+            marqueeLabel.lineBreakMode = .byClipping
         }
     }
     
@@ -637,22 +673,90 @@ class CustomMediaPlayerViewController: UIViewController {
             dismissButton.widthAnchor.constraint(equalToConstant: 40),
             dismissButton.heightAnchor.constraint(equalToConstant: 40)
         ])
+    }
+    
+    func setupMarqueeLabel() {
+        // Create the MarqueeLabel and configure its scrolling behavior
+        marqueeLabel = MarqueeLabel()
+        marqueeLabel.text = "\(titleText) • Ep \(episodeNumber)"
+        marqueeLabel.type = .continuous
+        marqueeLabel.textColor = .white
+        marqueeLabel.font = UIFont.systemFont(ofSize: 15, weight: .medium)
         
-        let episodeLabel = UILabel()
-        episodeLabel.text = "\(titleText) • Ep \(episodeNumber)"
-        episodeLabel.textColor = .white
-        episodeLabel.font = UIFont.systemFont(ofSize: 15, weight: .medium)
-        episodeLabel.numberOfLines = 1
-        episodeLabel.lineBreakMode = .byTruncatingTail
+        marqueeLabel.speed = .rate(30)         // Adjust scrolling speed as needed
+        marqueeLabel.fadeLength = 10.0         // Fading at the label’s edges
+        marqueeLabel.leadingBuffer = 1.0      // Left inset for scrolling
+        marqueeLabel.trailingBuffer = 16.0     // Right inset for scrolling
+        marqueeLabel.animationDelay = 2.5
         
-        controlsContainerView.addSubview(episodeLabel)
-        episodeLabel.translatesAutoresizingMaskIntoConstraints = false
+        // Set default lineBreakMode (will be updated later based on available width)
+        marqueeLabel.lineBreakMode = .byTruncatingTail
+        marqueeLabel.textAlignment = .left
         
-        NSLayoutConstraint.activate([
-            episodeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
-            episodeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: 12),
-            episodeLabel.trailingAnchor.constraint(lessThanOrEqualTo: controlsContainerView.trailingAnchor, constant: -16)
-        ])
+        controlsContainerView.addSubview(marqueeLabel)
+        marqueeLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Define four sets of constraints:
+        // 1. Portrait mode with button visible
+        portraitButtonVisibleConstraints = [
+            marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: 12),
+            marqueeLabel.trailingAnchor.constraint(equalTo: menuButton.leadingAnchor, constant: -16),
+            marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
+        ]
+        
+        // 2. Portrait mode with button hidden
+        portraitButtonHiddenConstraints = [
+            marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: 12),
+            marqueeLabel.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16),
+            marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
+        ]
+        
+        // 3. Landscape mode with button visible (using smaller margins)
+        landscapeButtonVisibleConstraints = [
+            marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: 8),
+            marqueeLabel.trailingAnchor.constraint(equalTo: menuButton.leadingAnchor, constant: -8),
+            marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
+        ]
+        
+        // 4. Landscape mode with button hidden
+        landscapeButtonHiddenConstraints = [
+            marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: 8),
+            marqueeLabel.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -8),
+            marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
+        ]
+        
+        // Activate an initial set based on the current orientation and menuButton state
+        updateMarqueeConstraints()
+    }
+
+    func updateMarqueeConstraints() {
+        // First, remove any existing marquee constraints.
+        NSLayoutConstraint.deactivate(currentMarqueeConstraints)
+        
+        // Decide on spacing constants based on orientation.
+        let isPortrait = UIDevice.current.orientation.isPortrait || view.bounds.height > view.bounds.width
+        let leftSpacing: CGFloat = isPortrait ? 2 : 1
+        let rightSpacing: CGFloat = isPortrait ? 16 : 8
+        
+        // Determine which button to use for the trailing anchor.
+        var trailingAnchor: NSLayoutXAxisAnchor = controlsContainerView.trailingAnchor // default fallback
+        if let menu = menuButton, !menu.isHidden {
+            trailingAnchor = menu.leadingAnchor
+        } else if let quality = qualityButton, !quality.isHidden {
+            trailingAnchor = quality.leadingAnchor
+        } else if let speed = speedButton, !speed.isHidden {
+            trailingAnchor = speed.leadingAnchor
+        }
+        
+        // Create new constraints for the marquee label.
+        currentMarqueeConstraints = [
+            marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: leftSpacing),
+            marqueeLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -rightSpacing),
+            marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
+        ]
+        
+        NSLayoutConstraint.activate(currentMarqueeConstraints)
+        view.layoutIfNeeded()
     }
     
     func setupMenuButton() {
@@ -1249,6 +1353,7 @@ class CustomMediaPlayerViewController: UIViewController {
                 
                 self.qualityButton.isHidden = false
                 self.qualityButton.menu = self.qualitySelectionMenu()
+                self.updateMarqueeConstraints()
             }
         } else {
             isHLSStream = false

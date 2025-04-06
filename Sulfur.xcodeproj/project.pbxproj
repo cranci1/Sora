@@ -62,6 +62,7 @@
 		13EA2BD52D32D97400C1EBD7 /* CustomPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD12D32D97400C1EBD7 /* CustomPlayer.swift */; };
 		13EA2BD62D32D97400C1EBD7 /* Double+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD32D32D97400C1EBD7 /* Double+Extension.swift */; };
 		13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD82D32D98400C1EBD7 /* NormalPlayer.swift */; };
+		1E048A722DA3262900D9DD3F /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = 1E048A712DA3262900D9DD3F /* MarqueeLabel */; };
 		1E3F5EC82D9F16B7003F310F /* VerticalBrightnessSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3F5EC72D9F16B7003F310F /* VerticalBrightnessSlider.swift */; };
 		1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */; };
 		1EAC7A322D888BC50083984D /* MusicProgressSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */; };
@@ -135,6 +136,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1E048A722DA3262900D9DD3F /* MarqueeLabel in Frameworks */,
 				132E35232D959E410007800E /* Kingfisher in Frameworks */,
 				132E35202D959E1D0007800E /* FFmpeg-iOS-Lame in Frameworks */,
 				132E351D2D959DDB0007800E /* Drops in Frameworks */,
@@ -469,6 +471,7 @@
 				132E351C2D959DDB0007800E /* Drops */,
 				132E351F2D959E1D0007800E /* FFmpeg-iOS-Lame */,
 				132E35222D959E410007800E /* Kingfisher */,
+				1E048A712DA3262900D9DD3F /* MarqueeLabel */,
 			);
 			productName = Sora;
 			productReference = 133D7C6A2D2BE2500075467E /* Sulfur.app */;
@@ -501,6 +504,7 @@
 				132E351B2D959DDB0007800E /* XCRemoteSwiftPackageReference "Drops" */,
 				132E351E2D959E1D0007800E /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */,
 				132E35212D959E410007800E /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				1E048A702DA3262900D9DD3F /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
 			);
 			productRefGroup = 133D7C6B2D2BE2500075467E /* Products */;
 			projectDirPath = "";
@@ -838,6 +842,14 @@
 				version = 7.9.1;
 			};
 		};
+		1E048A702DA3262900D9DD3F /* XCRemoteSwiftPackageReference "MarqueeLabel" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/cbpowell/MarqueeLabel";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -855,6 +867,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 132E35212D959E410007800E /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		1E048A712DA3262900D9DD3F /* MarqueeLabel */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1E048A702DA3262900D9DD3F /* XCRemoteSwiftPackageReference "MarqueeLabel" */;
+			productName = MarqueeLabel;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

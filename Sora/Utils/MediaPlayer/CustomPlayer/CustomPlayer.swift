@@ -496,19 +496,19 @@ class CustomMediaPlayerViewController: UIViewController {
             fillColor: .white.opacity(0.5),
             emptyColor: .white.opacity(0.3),
             width: 22,
-            onEditingChanged: { editing in
-            }
+            onEditingChanged: { editing in }
         )
         
+        // Create the container for the brightness slider
         let brightnessContainer = UIView()
         brightnessContainer.translatesAutoresizingMaskIntoConstraints = false
         brightnessContainer.backgroundColor = .clear
         
-        controlsContainerView.addSubview(brightnessContainer)
-        
+        // Add the container to the main view and anchor it to the safe area.
+        view.addSubview(brightnessContainer)
         NSLayoutConstraint.activate([
-            brightnessContainer.leadingAnchor.constraint(equalTo: controlsContainerView.leadingAnchor, constant: -4),
-            brightnessContainer.centerYAnchor.constraint(equalTo: controlsContainerView.centerYAnchor, constant: -10),
+            brightnessContainer.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            brightnessContainer.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor),
             brightnessContainer.widthAnchor.constraint(equalToConstant: 22),
             brightnessContainer.heightAnchor.constraint(equalToConstant: 170)
         ])
@@ -527,6 +527,7 @@ class CustomMediaPlayerViewController: UIViewController {
             brightnessSliderView.trailingAnchor.constraint(equalTo: brightnessContainer.trailingAnchor)
         ])
     }
+
     
     func addInvisibleControlOverlays() {
         let playPauseOverlay = UIButton(type: .custom)

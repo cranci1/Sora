@@ -663,12 +663,11 @@ class CustomMediaPlayerViewController: UIViewController {
     }
     
     func setupMarqueeLabel() {
-        // Create the MarqueeLabel and configure its scrolling behavior
         marqueeLabel = MarqueeLabel()
         marqueeLabel.text = "\(titleText) • Ep \(episodeNumber)"
         marqueeLabel.type = .continuous
         marqueeLabel.textColor = .white
-        marqueeLabel.font = UIFont.systemFont(ofSize: 15, weight: .medium)
+        marqueeLabel.font = UIFont.systemFont(ofSize: 14, weight: .heavy)
         
         marqueeLabel.speed = .rate(30)         // Adjust scrolling speed as needed
         marqueeLabel.fadeLength = 10.0         // Fading at the label’s edges
@@ -676,14 +675,12 @@ class CustomMediaPlayerViewController: UIViewController {
         marqueeLabel.trailingBuffer = 16.0     // Right inset for scrolling
         marqueeLabel.animationDelay = 2.5
         
-        // Set default lineBreakMode (will be updated later based on available width)
         marqueeLabel.lineBreakMode = .byTruncatingTail
         marqueeLabel.textAlignment = .left
         
         controlsContainerView.addSubview(marqueeLabel)
         marqueeLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        // Define four sets of constraints:
         // 1. Portrait mode with button visible
         portraitButtonVisibleConstraints = [
             marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: 12),
@@ -711,8 +708,6 @@ class CustomMediaPlayerViewController: UIViewController {
             marqueeLabel.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -8),
             marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
         ]
-        
-        // Activate an initial set based on the current orientation and menuButton state
         updateMarqueeConstraints()
     }
 

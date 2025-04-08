@@ -67,7 +67,6 @@ class Logger {
         }
     }
     
-    /// Prints log messages to the Xcode console only in DEBUG mode
     private func debugLog(_ entry: LogEntry) {
         #if DEBUG
         let dateFormatter = DateFormatter()

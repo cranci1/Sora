@@ -28,6 +28,7 @@ class LogFilterViewModel: ObservableObject {
         ("General", "General events and activities.", true),
         ("Stream", "Streaming and video playback.", true),
         ("Error", "Errors and critical issues.", true),
+        ("Anilist", "Activities performed by anilist", true),
         ("Debug", "Debugging and troubleshooting.", false),
         ("HTMLStrings", "", false)
     ]

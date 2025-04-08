@@ -495,7 +495,7 @@ class CustomMediaPlayerViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             brightnessContainer.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            brightnessContainer.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor),
+            brightnessContainer.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor, constant: -16),
             brightnessContainer.widthAnchor.constraint(equalToConstant: 22),
             brightnessContainer.heightAnchor.constraint(equalToConstant: 170)
         ])
@@ -783,12 +783,12 @@ class CustomMediaPlayerViewController: UIViewController {
     }
     
     func setupWatchNextButton() {
-        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .regular)
+        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .heavy)
         let image = UIImage(systemName: "forward.fill", withConfiguration: config)
         
         watchNextButton = UIButton(type: .system)
         watchNextButton.setTitle(" Play Next", for: .normal)
-        watchNextButton.titleLabel?.font = UIFont.systemFont(ofSize: 14)
+        watchNextButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         watchNextButton.setImage(image, for: .normal)
         watchNextButton.tintColor = .black
         watchNextButton.backgroundColor = .white
@@ -819,12 +819,12 @@ class CustomMediaPlayerViewController: UIViewController {
     }
     
     func setupSkip85Button() {
-        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .regular)
+        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .heavy)
         let image = UIImage(systemName: "goforward", withConfiguration: config)
         
         skip85Button = UIButton(type: .system)
         skip85Button.setTitle(" Skip 85s", for: .normal)
-        skip85Button.titleLabel?.font = UIFont.systemFont(ofSize: 14)
+        skip85Button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         skip85Button.setImage(image, for: .normal)
         skip85Button.tintColor = .black
         skip85Button.backgroundColor = .white

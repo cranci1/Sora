@@ -50,6 +50,10 @@ class CustomMediaPlayerViewController: UIViewController {
         UserDefaults.standard.bool(forKey: "holdForPauseEnabled")
     }
     
+    private var isSkip85Visible: Bool {
+        return UserDefaults.standard.bool(forKey: "skip85Visible")
+    }
+    
     var showWatchNextButton = true
     var watchNextButtonTimer: Timer?
     var isWatchNextRepositioned: Bool = false
@@ -248,6 +252,8 @@ class CustomMediaPlayerViewController: UIViewController {
                                                selector: #selector(playerItemDidChange),
                                                name: .AVPlayerItemNewAccessLogEntry,
                                                object: nil)
+        
+        skip85Button?.isHidden = !isSkip85Visible
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -841,6 +847,8 @@ class CustomMediaPlayerViewController: UIViewController {
             skip85Button.heightAnchor.constraint(equalToConstant: 47),
             skip85Button.widthAnchor.constraint(greaterThanOrEqualToConstant: 97)
         ])
+        
+        skip85Button.isHidden = !isSkip85Visible
     }
     
     private func setupQualityButton() {

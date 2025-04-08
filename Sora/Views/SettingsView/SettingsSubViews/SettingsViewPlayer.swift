@@ -16,6 +16,8 @@ struct SettingsViewPlayer: View {
     @AppStorage("skipIncrement") private var skipIncrement: Double = 10.0
     @AppStorage("skipIncrementHold") private var skipIncrementHold: Double = 30.0
     @AppStorage("holdForPauseEnabled") private var holdForPauseEnabled = false
+    @AppStorage("skip85Visible") private var skip85Visible: Bool = true
+
     
     private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "Sora"]
     
@@ -74,6 +76,8 @@ struct SettingsViewPlayer: View {
                     Spacer()
                     Stepper("\(Int(skipIncrementHold))s", value: $skipIncrementHold, in: 5...300, step: 5)
                 }
+                Toggle("Show Skip 85s Button", isOn: $skip85Visible)
+                    .tint(.accentColor)
             }
             SubtitleSettingsSection()
         }

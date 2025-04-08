@@ -725,6 +725,7 @@ struct MediaInfoView: View {
                         selectNextEpisode()
                     },
                     subtitlesURL: subtitles,
+                    aniListID: itemID ?? 0,
                     episodeImageUrl: selectedEpisodeImage
                 )
                 customMediaPlayer.modalPresentationStyle = .fullScreen

@@ -248,6 +248,7 @@ struct ContinueWatchingCell: View {
                     episodeNumber: item.episodeNumber,
                     onWatchNext: { },
                     subtitlesURL: item.subtitles,
+                    aniListID: item.aniListID ?? 0,
                     episodeImageUrl: item.imageUrl
                 )
                 customMediaPlayer.modalPresentationStyle = .fullScreen

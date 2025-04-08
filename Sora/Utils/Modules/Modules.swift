@@ -23,6 +23,7 @@ struct ModuleMetadata: Codable, Hashable {
     let softsub: Bool?
     let multiStream: Bool?
     let multiSubs: Bool?
+    let type: String?
 
     struct Author: Codable, Hashable {
         let name: String

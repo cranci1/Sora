@@ -29,6 +29,7 @@ class CustomMediaPlayerViewController: UIViewController {
     let episodeImageUrl: String
     let subtitlesURL: String?
     let onWatchNext: () -> Void
+    let aniListID: Int
     
     var player: AVPlayer!
     var timeObserverToken: Any?
@@ -56,7 +57,6 @@ class CustomMediaPlayerViewController: UIViewController {
     var lastDuration: Double = 0.0
     var watchNextButtonAppearedAt: Double?
     
-    // MARK: - Constraint Sets
     var portraitButtonVisibleConstraints: [NSLayoutConstraint] = []
     var portraitButtonHiddenConstraints: [NSLayoutConstraint] = []
     var landscapeButtonVisibleConstraints: [NSLayoutConstraint] = []
@@ -120,6 +120,7 @@ class CustomMediaPlayerViewController: UIViewController {
          episodeNumber: Int,
          onWatchNext: @escaping () -> Void,
          subtitlesURL: String?,
+         aniListID: Int,
          episodeImageUrl: String) {
         
         self.module = module
@@ -130,6 +131,7 @@ class CustomMediaPlayerViewController: UIViewController {
         self.episodeImageUrl = episodeImageUrl
         self.onWatchNext = onWatchNext
         self.subtitlesURL = subtitlesURL
+        self.aniListID = aniListID
         
         super.init(nibName: nil, bundle: nil)
         
@@ -268,28 +270,9 @@ class CustomMediaPlayerViewController: UIViewController {
             UserDefaults.standard.set(playbackSpeed, forKey: "lastPlaybackSpeed")
         }
         
-        if let currentItem = player.currentItem, currentItem.duration.seconds > 0 {
-            let progress = currentTimeVal / currentItem.duration.seconds
-            let item = ContinueWatchingItem(
-                id: UUID(),
-                imageUrl: episodeImageUrl,
-                episodeNumber: episodeNumber,
-                mediaTitle: titleText,
-                progress: progress,
-                streamUrl: streamURL,
-                fullUrl: fullUrl,
-                subtitles: subtitlesURL,
-                module: module
-            )
-            ContinueWatchingManager.shared.save(item: item)
-        }
     }
     
-    override func observeValue(forKeyPath keyPath: String?,
-                               of object: Any?,
-                               change: [NSKeyValueChangeKey : Any]?,
-                               context: UnsafeMutableRawPointer?) {
-        
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         guard context == &playerItemKVOContext else {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
             return
@@ -1010,6 +993,23 @@ class CustomMediaPlayerViewController: UIViewController {
                     self.watchNextButton.isHidden = true
                 })
             }
+        }
+        
+        if let currentItem = player.currentItem, currentItem.duration.seconds > 0 {
+            let progress = currentTimeVal / currentItem.duration.seconds
+            let item = ContinueWatchingItem(
+                id: UUID(),
+                imageUrl: episodeImageUrl,
+                episodeNumber: episodeNumber,
+                mediaTitle: titleText,
+                progress: progress,
+                streamUrl: streamURL,
+                fullUrl: fullUrl,
+                subtitles: subtitlesURL,
+                aniListID: aniListID,
+                module: module
+            )
+            ContinueWatchingManager.shared.save(item: item)
         }
     }
     

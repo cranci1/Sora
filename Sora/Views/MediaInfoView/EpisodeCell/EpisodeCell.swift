@@ -124,6 +124,11 @@ struct EpisodeCell: View {
     }
     
     private func fetchEpisodeDetails() {
+        guard episodeID != 0 else {
+            isLoading = false
+            return
+        }
+        
         guard let url = URL(string: "https://api.ani.zip/mappings?anilist_id=\(itemID)") else {
             isLoading = false
             return

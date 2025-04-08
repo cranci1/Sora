@@ -124,19 +124,18 @@ struct EpisodeCell: View {
     }
     
     private func fetchEpisodeDetails() {
-        guard episodeID != 0 else {
-            isLoading = false
-            return
-        }
-        
         guard let url = URL(string: "https://api.ani.zip/mappings?anilist_id=\(itemID)") else {
             isLoading = false
             return
         }
         
+        Logger.shared.log("AniList mapping request triggered for itemID: \(itemID), episode: \(episodeID + 1)", type: "AniList")
+        AnalyticsManager.shared.sendEvent(event: "AniListMappingRequest", additionalData: ["itemID": "\(itemID)", "episode": "\(episodeID + 1)"])
+        
         URLSession.custom.dataTask(with: url) { data, _, error in
             if let error = error {
-                Logger.shared.log("Failed to fetch episode details: \(error)", type: "Error")
+                Logger.shared.log("AniList mapping request for itemID: \(itemID), episode: \(episodeID + 1) failed with error: \(error.localizedDescription)", type: "Error")
+                AnalyticsManager.shared.sendEvent(event: "AniListMappingRequestFailed", additionalData: ["itemID": "\(itemID)", "episode": "\(episodeID + 1)", "error": error.localizedDescription])
                 DispatchQueue.main.async {
                     self.isLoading = false
                 }
@@ -144,6 +143,8 @@ struct EpisodeCell: View {
             }
             
             guard let data = data else {
+                Logger.shared.log("AniList mapping request for itemID: \(itemID), episode: \(episodeID + 1) failed: No data received", type: "Error")
+                AnalyticsManager.shared.sendEvent(event: "AniListMappingRequestNoData", additionalData: ["itemID": "\(itemID)", "episode": "\(episodeID + 1)"])
                 DispatchQueue.main.async {
                     self.isLoading = false
                 }
@@ -155,21 +156,28 @@ struct EpisodeCell: View {
                 guard let json = jsonObject as? [String: Any],
                       let episodes = json["episodes"] as? [String: Any],
                       let episodeDetails = episodes["\(episodeID + 1)"] as? [String: Any],
-                      let title = episodeDetails["title"] as? [String: String],
+                      let titleDict = episodeDetails["title"] as? [String: String],
                       let image = episodeDetails["image"] as? String else {
-                          Logger.shared.log("Invalid response format", type: "Error")
-                          DispatchQueue.main.async {
-                              self.isLoading = false
-                          }
-                          return
-                      }
+                    let responseStr = String(data: data, encoding: .utf8) ?? "Unable to convert response data to string"
+                    Logger.shared.log("AniList mapping request for itemID: \(itemID), episode: \(episodeID + 1) returned invalid response. Full response: \(responseStr)", type: "Error")
+                    AnalyticsManager.shared.sendEvent(event: "AniListMappingInvalidResponse", additionalData: ["itemID": "\(itemID)", "episode": "\(episodeID + 1)", "response": responseStr])
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                    }
+                    return
+                }
                 
                 DispatchQueue.main.async {
-                    self.episodeTitle = title["en"] ?? ""
+                    self.episodeTitle = titleDict["en"] ?? ""
                     self.episodeImageUrl = image
                     self.isLoading = false
+                    Logger.shared.log("AniList mapping response for itemID: \(itemID), episode: \(episodeID + 1) succeeded", type: "AniList")
+                    AnalyticsManager.shared.sendEvent(event: "AniListMappingResponse", additionalData: ["itemID": "\(itemID)", "episode": "\(episodeID + 1)", "title": self.episodeTitle])
                 }
             } catch {
+                let responseStr = String(data: data, encoding: .utf8) ?? "Unable to convert response data to string"
+                Logger.shared.log("AniList mapping request for itemID: \(itemID), episode: \(episodeID + 1) failed with error: \(error.localizedDescription). Full response: \(responseStr)", type: "Error")
+                AnalyticsManager.shared.sendEvent(event: "AniListMappingRequestFailed", additionalData: ["itemID": "\(itemID)", "episode": "\(episodeID + 1)", "error": error.localizedDescription, "response": responseStr])
                 DispatchQueue.main.async {
                     self.isLoading = false
                 }

@@ -269,8 +269,8 @@ struct MediaInfoView: View {
                                                     Logger.shared.log("Marked episodes watched within season \(selectedSeason + 1) of \"\(title)\".", type: "General")
                                                 }
                                             )
-                                                .id(refreshTrigger)
-                                                .disabled(isFetchingEpisode)
+                                            .id(refreshTrigger)
+                                            .disabled(isFetchingEpisode)
                                         }
                                     } else {
                                         Text("No episodes available")
@@ -319,8 +319,8 @@ struct MediaInfoView: View {
                                                 Logger.shared.log("Marked \(ep.number - 1) episodes watched within series \"\(title)\".", type: "General")
                                             }
                                         )
-                                            .id(refreshTrigger)
-                                            .disabled(isFetchingEpisode)
+                                        .id(refreshTrigger)
+                                        .disabled(isFetchingEpisode)
                                     }
                                 }
                             }
@@ -366,7 +366,7 @@ struct MediaInfoView: View {
             if !hasFetched {
                 DropManager.shared.showDrop(title: "Fetching Data", subtitle: "Please wait while fetching.", duration: 1.0, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
                 fetchDetails()
-                fetchItemID(byTitle: title) { result in
+                fetchItemIDSmart(byTitle: title) { result in
                     switch result {
                     case .success(let id):
                         itemID = id
@@ -746,9 +746,9 @@ struct MediaInfoView: View {
     private func selectNextEpisode() {
         guard let currentIndex = episodeLinks.firstIndex(where: { $0.number == selectedEpisodeNumber }),
               currentIndex + 1 < episodeLinks.count else {
-                  Logger.shared.log("No more episodes to play", type: "Info")
-                  return
-              }
+            Logger.shared.log("No more episodes to play", type: "Info")
+            return
+        }
         
         let nextEpisode = episodeLinks[currentIndex + 1]
         selectedEpisodeNumber = nextEpisode.number
@@ -768,51 +768,124 @@ struct MediaInfoView: View {
         }
     }
     
-    private func fetchItemID(byTitle title: String, completion: @escaping (Result<Int, Error>) -> Void) {
-        let query = """
-        query {
-            Media(search: "\(title)", type: ANIME) {
+    private func fetchItemIDSmart(byTitle title: String, completion: @escaping (Result<Int, Error>) -> Void) {
+        func fetchAniListTitle(_ search: String, _ callback: @escaping (Result<(Int, String?, String?), Error>) -> Void) {
+            let query = """
+            query {
+              Media(search: "\(search)", type: ANIME) {
                 id
-            }
-        }
-        """
-        
-        guard let url = URL(string: "https://graphql.anilist.co") else {
-            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let parameters: [String: Any] = ["query": query]
-        request.httpBody = try? JSONSerialization.data(withJSONObject: parameters)
-        
-        URLSession.custom.dataTask(with: request) { data, _, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
-                return
-            }
-            
-            do {
-                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                   let data = json["data"] as? [String: Any],
-                   let media = data["Media"] as? [String: Any],
-                   let id = media["id"] as? Int {
-                    completion(.success(id))
-                } else {
-                    let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
-                    completion(.failure(error))
+                title {
+                  english
+                  romaji
                 }
-            } catch {
-                completion(.failure(error))
+              }
             }
-        }.resume()
+            """
+            guard let url = URL(string: "https://graphql.anilist.co") else {
+                callback(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid AniList URL"])))
+                return
+            }
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            let parameters: [String: Any] = ["query": query]
+            request.httpBody = try? JSONSerialization.data(withJSONObject: parameters)
+            
+            URLSession.custom.dataTask(with: request) { data, _, error in
+                if let error = error {
+                    callback(.failure(error))
+                    return
+                }
+                guard let data = data else {
+                    callback(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
+                    return
+                }
+                do {
+                    let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
+                    guard let dict = jsonObject as? [String: Any],
+                          let dataDict = dict["data"] as? [String: Any],
+                          let media = dataDict["Media"] as? [String: Any],
+                          let id = media["id"] as? Int,
+                          let titleObj = media["title"] as? [String: Any] else {
+                        callback(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid AniList response"])))
+                        return
+                    }
+                    let eng = titleObj["english"] as? String
+                    let rom = titleObj["romaji"] as? String
+                    callback(.success((id, eng, rom)))
+                } catch {
+                    callback(.failure(error))
+                }
+            }.resume()
+        }
+        
+        func checkMapping(for aniListID: Int, _ callback: @escaping (Bool) -> Void) {
+            guard let url = URL(string: "https://api.ani.zip/mappings?anilist_id=\(aniListID)") else {
+                callback(false)
+                return
+            }
+            URLSession.custom.dataTask(with: url) { data, _, _ in
+                guard let data = data else {
+                    callback(false)
+                    return
+                }
+                do {
+                    let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
+                    guard let dict = jsonObject as? [String: Any],
+                          let episodes = dict["episodes"] as? [String: Any] else {
+                        callback(false)
+                        return
+                    }
+                    callback(!episodes.isEmpty)
+                } catch {
+                    callback(false)
+                }
+            }.resume()
+        }
+        
+        fetchAniListTitle(title) { result in
+            switch result {
+            case .failure(let err):
+                completion(.failure(err))
+            case .success(let (firstID, firstEng, firstRom)):
+                var candidateIDs: [Int] = [firstID]
+                if let eng = firstEng, let rom = firstRom, eng == title, rom != eng {
+                    fetchAniListTitle(rom) { secondResult in
+                        switch secondResult {
+                        case .failure(_):
+                            tryCandidates(ids: candidateIDs)
+                        case .success(let (secondID, _, _)):
+                            if secondID != firstID {
+                                candidateIDs.append(secondID)
+                            }
+                            tryCandidates(ids: candidateIDs)
+                        }
+                    }
+                } else {
+                    tryCandidates(ids: candidateIDs)
+                }
+            }
+        }
+        
+        func tryCandidates(ids: [Int]) {
+            var checkedCount = 0
+            var isCompleted = false
+            for candidate in ids {
+                checkMapping(for: candidate) { success in
+                    DispatchQueue.main.async {
+                        if isCompleted { return }
+                        checkedCount += 1
+                        if success {
+                            isCompleted = true
+                            completion(.success(candidate))
+                            return
+                        }
+                        if checkedCount == ids.count && !isCompleted {
+                            completion(.success(ids[0]))
+                        }
+                    }
+                }
+            }
+        }
     }
 }

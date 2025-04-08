@@ -123,12 +123,9 @@ struct EpisodeCell: View {
         currentProgress = totalTime > 0 ? min(lastPlayedTime / totalTime, 1.0) : 0
     }
     
-    private func fetchEpisodeDetails() {
-        guard let url = URL(string: "https://api.ani.zip/mappings?anilist_id=\(itemID)") else {
-            isLoading = false
-            return
-        }
-        
+    private func fetchEpisodeDetails() { guard let url = URL(string: "https://api.ani.zip/mappings?anilist_id=\(itemID)")
+        else { isLoading = false
+        return }
         Logger.shared.log("AniList mapping request triggered for itemID: \(itemID), episode: \(episodeID + 1)", type: "AniList")
         AnalyticsManager.shared.sendEvent(event: "AniListMappingRequest", additionalData: ["itemID": "\(itemID)", "episode": "\(episodeID + 1)"])
         
@@ -158,9 +155,8 @@ struct EpisodeCell: View {
                       let episodeDetails = episodes["\(episodeID + 1)"] as? [String: Any],
                       let titleDict = episodeDetails["title"] as? [String: String],
                       let image = episodeDetails["image"] as? String else {
-                    let responseStr = String(data: data, encoding: .utf8) ?? "Unable to convert response data to string"
-                    Logger.shared.log("AniList mapping request for itemID: \(itemID), episode: \(episodeID + 1) returned invalid response. Full response: \(responseStr)", type: "Error")
-                    AnalyticsManager.shared.sendEvent(event: "AniListMappingInvalidResponse", additionalData: ["itemID": "\(itemID)", "episode": "\(episodeID + 1)", "response": responseStr])
+                    Logger.shared.log("AniList mapping request for itemID: \(itemID), episode: \(episodeID + 1) returned invalid response", type: "Error")
+                    AnalyticsManager.shared.sendEvent(event: "AniListMappingInvalidResponse", additionalData: ["itemID": "\(itemID)", "episode": "\(episodeID + 1)"])
                     DispatchQueue.main.async {
                         self.isLoading = false
                     }
@@ -175,9 +171,8 @@ struct EpisodeCell: View {
                     AnalyticsManager.shared.sendEvent(event: "AniListMappingResponse", additionalData: ["itemID": "\(itemID)", "episode": "\(episodeID + 1)", "title": self.episodeTitle])
                 }
             } catch {
-                let responseStr = String(data: data, encoding: .utf8) ?? "Unable to convert response data to string"
-                Logger.shared.log("AniList mapping request for itemID: \(itemID), episode: \(episodeID + 1) failed with error: \(error.localizedDescription). Full response: \(responseStr)", type: "Error")
-                AnalyticsManager.shared.sendEvent(event: "AniListMappingRequestFailed", additionalData: ["itemID": "\(itemID)", "episode": "\(episodeID + 1)", "error": error.localizedDescription, "response": responseStr])
+                Logger.shared.log("AniList mapping request for itemID: \(itemID), episode: \(episodeID + 1) failed with error: \(error.localizedDescription)", type: "Error")
+                AnalyticsManager.shared.sendEvent(event: "AniListMappingRequestFailed", additionalData: ["itemID": "\(itemID)", "episode": "\(episodeID + 1)", "error": error.localizedDescription])
                 DispatchQueue.main.async {
                     self.isLoading = false
                 }

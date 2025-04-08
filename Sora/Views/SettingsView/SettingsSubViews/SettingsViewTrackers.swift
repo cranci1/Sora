@@ -20,7 +20,7 @@ struct SettingsViewTrackers: View {
     
     var body: some View {
         Form {
-            Section(header: Text("AniList"), footer: Text("Sora and cranci1 are not affiliated with AniList in any way.\n\nNote that push updates may not be 100% acurate.")) {
+            Section(header: Text("AniList"), footer: Text("Sora and cranci1 are not affiliated with AniList in any way.\n\nNote that progress syncing may not be 100% acurate.")) {
                 HStack() {
                     KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png"))
                         .placeholder {
@@ -53,7 +53,7 @@ struct SettingsViewTrackers: View {
                     }
                 }
                 if isLoggedIn {
-                    Toggle("Send push updates", isOn: $isSendPushUpdates)
+                    Toggle("Sync progress", isOn: $isSendPushUpdates)
                         .tint(.accentColor)
                 }
                 Button(isLoggedIn ? "Log Out from AniList.co" : "Log In with AniList.co") {

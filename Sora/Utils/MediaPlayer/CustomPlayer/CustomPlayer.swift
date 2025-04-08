@@ -1036,7 +1036,7 @@ class CustomMediaPlayerViewController: UIViewController {
     
     @objc func toggleControls() {
         isControlsVisible.toggle()
-        UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut, animations: {
             self.controlsContainerView.alpha = self.isControlsVisible ? 1 : 0
             self.skip85Button.alpha = self.isControlsVisible ? 0.8 : 0
             
@@ -1045,7 +1045,7 @@ class CustomMediaPlayerViewController: UIViewController {
                 NSLayoutConstraint.activate(self.watchNextButtonControlsConstraints)
                 if self.isWatchNextRepositioned || self.isWatchNextVisible {
                     self.watchNextButton.isHidden = false
-                    UIView.animate(withDuration: 0.5, animations: {
+                    UIView.animate(withDuration: 0.3, animations: {
                         self.watchNextButton.alpha = 0.8
                     })
                 }

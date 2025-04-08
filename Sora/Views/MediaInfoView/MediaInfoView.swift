@@ -694,6 +694,7 @@ struct MediaInfoView: View {
                 videoPlayerViewController.episodeImageUrl = selectedEpisodeImage
                 videoPlayerViewController.mediaTitle = title
                 videoPlayerViewController.subtitles = subtitles ?? ""
+                videoPlayerViewController.aniListID = itemID ?? 0
                 videoPlayerViewController.modalPresentationStyle = .fullScreen
                 
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,

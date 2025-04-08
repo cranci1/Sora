@@ -45,7 +45,6 @@
 		13B7F4C12D58FFDD0045714A /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B7F4C02D58FFDD0045714A /* Shimmer.swift */; };
 		13C0E5EA2D5F85EA00E7F619 /* ContinueWatchingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0E5E92D5F85EA00E7F619 /* ContinueWatchingManager.swift */; };
 		13C0E5EC2D5F85F800E7F619 /* ContinueWatchingItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0E5EB2D5F85F800E7F619 /* ContinueWatchingItem.swift */; };
-		13C285F62DA56B6F009FB0D0 /* SlideOverCard in Frameworks */ = {isa = PBXBuildFile; productRef = 13C285F52DA56B6F009FB0D0 /* SlideOverCard */; };
 		13CBA0882D60F19C00EFE70A /* VTTSubtitlesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CBA0872D60F19C00EFE70A /* VTTSubtitlesLoader.swift */; };
 		13CBEFDA2D5F7D1200D011EE /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CBEFD92D5F7D1200D011EE /* String.swift */; };
 		13D842552D45267500EBBFA6 /* DropManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D842542D45267500EBBFA6 /* DropManager.swift */; };
@@ -129,7 +128,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13C285F62DA56B6F009FB0D0 /* SlideOverCard in Frameworks */,
 				13B77E192DA44F8300126FDF /* MarqueeLabel in Frameworks */,
 				132E35232D959E410007800E /* Kingfisher in Frameworks */,
 				132E35202D959E1D0007800E /* FFmpeg-iOS-Lame in Frameworks */,
@@ -438,7 +436,6 @@
 				132E351F2D959E1D0007800E /* FFmpeg-iOS-Lame */,
 				132E35222D959E410007800E /* Kingfisher */,
 				13B77E182DA44F8300126FDF /* MarqueeLabel */,
-				13C285F52DA56B6F009FB0D0 /* SlideOverCard */,
 			);
 			productName = Sora;
 			productReference = 133D7C6A2D2BE2500075467E /* Sulfur.app */;
@@ -472,7 +469,6 @@
 				132E351E2D959E1D0007800E /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */,
 				132E35212D959E410007800E /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				13B77E172DA44F8300126FDF /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
-				13C285F42DA56B6F009FB0D0 /* XCRemoteSwiftPackageReference "SlideOverCard" */,
 			);
 			productRefGroup = 133D7C6B2D2BE2500075467E /* Products */;
 			projectDirPath = "";
@@ -816,14 +812,6 @@
 				version = 4.2.1;
 			};
 		};
-		13C285F42DA56B6F009FB0D0 /* XCRemoteSwiftPackageReference "SlideOverCard" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/joogps/SlideOverCard";
-			requirement = {
-				kind = exactVersion;
-				version = 3.0.1;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -846,11 +834,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 13B77E172DA44F8300126FDF /* XCRemoteSwiftPackageReference "MarqueeLabel" */;
 			productName = MarqueeLabel;
-		};
-		13C285F52DA56B6F009FB0D0 /* SlideOverCard */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 13C285F42DA56B6F009FB0D0 /* XCRemoteSwiftPackageReference "SlideOverCard" */;
-			productName = SlideOverCard;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

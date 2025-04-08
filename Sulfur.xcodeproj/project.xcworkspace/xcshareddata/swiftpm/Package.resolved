@@ -45,15 +45,6 @@
           "revision": "cffb6938940d3242882e6a2f9170b7890a4729ea",
           "version": "4.2.1"
         }
-      },
-      {
-        "package": "SlideOverCard",
-        "repositoryURL": "https://github.com/joogps/SlideOverCard",
-        "state": {
-          "branch": null,
-          "revision": "e38be074ab7a5b46d0a18f550bf94972a0f582c6",
-          "version": "3.0.1"
-        }
       }
     ]
   },

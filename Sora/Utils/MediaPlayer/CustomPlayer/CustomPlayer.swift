@@ -925,6 +925,20 @@ class CustomMediaPlayerViewController: UIViewController {
             }
             
             DispatchQueue.main.async {
+                let remainingPercentage = (self.duration - self.currentTimeVal) / self.duration
+                
+                if remainingPercentage < 0.1 && self.module.metadata.type == "anime" && self.aniListID != 0 {
+                    let aniListMutation = AniListMutation()
+                    aniListMutation.updateAnimeProgress(animeId: self.aniListID, episodeNumber: self.episodeNumber) { result in
+                        switch result {
+                        case .success:
+                            Logger.shared.log("Successfully updated AniList progress for episode \(self.episodeNumber)", type: "General")
+                        case .failure(let error):
+                            Logger.shared.log("Failed to update AniList progress: \(error.localizedDescription)", type: "Error")
+                        }
+                    }
+                }
+                
                 self.sliderHostingController?.rootView = MusicProgressSlider(
                     value: Binding(
                         get: { max(0, min(self.sliderViewModel.sliderValue, self.duration)) },
@@ -1628,7 +1642,7 @@ class CustomMediaPlayerViewController: UIViewController {
     
     func setupTimeControlStatusObservation() {
         playerTimeControlStatusObserver = player.observe(\.timeControlStatus, options: [.new]) { [weak self] player, _ in
-            guard let self = self else { return }
+            guard self != nil else { return }
             if player.timeControlStatus == .paused,
                let reason = player.reasonForWaitingToPlay {
                 // If we are paused for a “stall/minimize stalls” reason, forcibly resume:

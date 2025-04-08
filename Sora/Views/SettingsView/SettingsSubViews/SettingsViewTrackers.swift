@@ -10,6 +10,8 @@ import Security
 import Kingfisher
 
 struct SettingsViewTrackers: View {
+    @AppStorage("sendPushUpdates") private var isSendPushUpdates = true
+    
     @State private var status: String = "You are not logged in"
     @State private var isLoggedIn: Bool = false
     @State private var username: String = ""
@@ -18,7 +20,7 @@ struct SettingsViewTrackers: View {
     
     var body: some View {
         Form {
-            Section(header: Text("AniList"), footer: Text("Sora and cranci1 are not affiliated with AniList in any way.")) {
+            Section(header: Text("AniList"), footer: Text("Sora and cranci1 are not affiliated with AniList in any way.\n\nNote that push updates may not be 100% acurate.")) {
                 HStack() {
                     KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png"))
                         .placeholder {
@@ -50,6 +52,10 @@ struct SettingsViewTrackers: View {
                             .multilineTextAlignment(.center)
                     }
                 }
+                if isLoggedIn {
+                    Toggle("Send push updates", isOn: $isSendPushUpdates)
+                        .tint(.accentColor)
+                }
                 Button(isLoggedIn ? "Log Out from AniList.co" : "Log In with AniList.co") {
                     if isLoggedIn {
                         logout()
@@ -63,11 +69,38 @@ struct SettingsViewTrackers: View {
         .navigationTitle("Trackers")
         .onAppear {
             updateStatus()
+            setupNotificationObservers()
         }
+        .onDisappear {
+            removeNotificationObservers()
+        }
+    }
+    
+    func setupNotificationObservers() {
+        NotificationCenter.default.addObserver(forName: AniListToken.authSuccessNotification, object: nil, queue: .main) { _ in
+            self.status = "Authentication successful!"
+            self.updateStatus()
+        }
+        
+        NotificationCenter.default.addObserver(forName: AniListToken.authFailureNotification, object: nil, queue: .main) { notification in
+            if let error = notification.userInfo?["error"] as? String {
+                self.status = "Login failed: \(error)"
+            } else {
+                self.status = "Login failed with unknown error"
+            }
+            self.isLoggedIn = false
+            self.isLoading = false
+        }
+    }
+    
+    func removeNotificationObservers() {
+        NotificationCenter.default.removeObserver(self, name: AniListToken.authSuccessNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: AniListToken.authFailureNotification, object: nil)
     }
     
     func login() {
         status = "Starting authentication..."
+        isLoading = true
         AniListLogin.authenticate()
     }
     

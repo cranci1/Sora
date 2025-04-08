@@ -17,6 +17,9 @@ class AniListToken {
     static let serviceName = "me.cranci.sora.AniListToken"
     static let accountName = "AniListAccessToken"
     
+    static let authSuccessNotification = Notification.Name("AniListAuthenticationSuccess")
+    static let authFailureNotification = Notification.Name("AniListAuthenticationFailure")
+    
     static func saveTokenToKeychain(token: String) -> Bool {
         let tokenData = token.data(using: .utf8)!
         
@@ -43,7 +46,10 @@ class AniListToken {
         
         guard let url = URL(string: tokenEndpoint) else {
             Logger.shared.log("Invalid token endpoint URL", type: "Error")
-            completion(false)
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: authFailureNotification, object: nil, userInfo: ["error": "Invalid token endpoint URL"])
+                completion(false)
+            }
             return
         }
         
@@ -55,31 +61,43 @@ class AniListToken {
         request.httpBody = bodyString.data(using: .utf8)
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                Logger.shared.log("Error: \(error.localizedDescription)", type: "Error")
-                completion(false)
-                return
-            }
-            
-            guard let data = data else {
-                Logger.shared.log("No data received", type: "Error")
-                completion(false)
-                return
-            }
-            
-            do {
-                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                    if let accessToken = json["access_token"] as? String {
-                        let success = saveTokenToKeychain(token: accessToken)
-                        completion(success)
-                    } else {
-                        Logger.shared.log("Unexpected response: \(json)", type: "Error")
-                        completion(false)
-                    }
+            DispatchQueue.main.async {
+                if let error = error {
+                    Logger.shared.log("Error: \(error.localizedDescription)", type: "Error")
+                    NotificationCenter.default.post(name: authFailureNotification, object: nil, userInfo: ["error": error.localizedDescription])
+                    completion(false)
+                    return
                 }
-            } catch {
-                Logger.shared.log("Failed to parse JSON: \(error.localizedDescription)", type: "Error")
-                completion(false)
+                
+                guard let data = data else {
+                    Logger.shared.log("No data received", type: "Error")
+                    NotificationCenter.default.post(name: authFailureNotification, object: nil, userInfo: ["error": "No data received"])
+                    completion(false)
+                    return
+                }
+                
+                do {
+                    if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                        if let accessToken = json["access_token"] as? String {
+                            let success = saveTokenToKeychain(token: accessToken)
+                            if success {
+                                NotificationCenter.default.post(name: authSuccessNotification, object: nil)
+                            } else {
+                                NotificationCenter.default.post(name: authFailureNotification, object: nil, userInfo: ["error": "Failed to save token to keychain"])
+                            }
+                            completion(success)
+                        } else {
+                            let errorMessage = (json["error"] as? String) ?? "Unexpected response"
+                            Logger.shared.log("Authentication error: \(errorMessage)", type: "Error")
+                            NotificationCenter.default.post(name: authFailureNotification, object: nil, userInfo: ["error": errorMessage])
+                            completion(false)
+                        }
+                    }
+                } catch {
+                    Logger.shared.log("Failed to parse JSON: \(error.localizedDescription)", type: "Error")
+                    NotificationCenter.default.post(name: authFailureNotification, object: nil, userInfo: ["error": "Failed to parse response: \(error.localizedDescription)"])
+                    completion(false)
+                }
             }
         }
         

@@ -34,6 +34,11 @@ class AniListMutation {
     }
     
     func updateAnimeProgress(animeId: Int, episodeNumber: Int, completion: @escaping (Result<Void, Error>) -> Void) {
+        if let sendPushUpdates = UserDefaults.standard.object(forKey: "sendPushUpdates") as? Bool,
+           sendPushUpdates == false {
+            return
+        }
+        
         guard let userToken = getTokenFromKeychain() else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Access token not found"])))
             return

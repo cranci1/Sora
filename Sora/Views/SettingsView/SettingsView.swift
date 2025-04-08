@@ -21,9 +21,9 @@ struct SettingsView: View {
                     NavigationLink(destination: SettingsViewModule()) {
                         Text("Modules")
                     }
-                    //NavigationLink(destination: SettingsViewTrackers()) {
-                    //    Text("Trackers")
-                    //}
+                    NavigationLink(destination: SettingsViewTrackers()) {
+                        Text("Trackers")
+                    }
                 }
                 
                 Section(header: Text("Info")) {

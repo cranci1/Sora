@@ -1640,7 +1640,6 @@ class CustomMediaPlayerViewController: UIViewController {
             guard self != nil else { return }
             if player.timeControlStatus == .paused,
                let reason = player.reasonForWaitingToPlay {
-                // If we are paused for a “stall/minimize stalls” reason, forcibly resume:
                 Logger.shared.log("Paused reason: \(reason)", type: "Error")
                 if reason == .toMinimizeStalls || reason == .evaluatingBufferingRate {
                     player.play()

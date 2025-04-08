@@ -470,9 +470,7 @@ class CustomMediaPlayerViewController: UIViewController {
         let brightnessSlider = VerticalBrightnessSlider(
             value: Binding(
                 get: { self.brightnessValue },
-                set: { newValue in
-                    self.brightnessValue = newValue
-                }
+                set: { newValue in self.brightnessValue = newValue }
             ),
             inRange: 0...1,
             activeFillColor: .white,
@@ -487,8 +485,8 @@ class CustomMediaPlayerViewController: UIViewController {
         brightnessContainer.translatesAutoresizingMaskIntoConstraints = false
         brightnessContainer.backgroundColor = .clear
         
-        // Add the container to the main view and anchor it to the safe area.
-        view.addSubview(brightnessContainer)
+        controlsContainerView.addSubview(brightnessContainer)
+        
         NSLayoutConstraint.activate([
             brightnessContainer.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
             brightnessContainer.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor),
@@ -511,7 +509,6 @@ class CustomMediaPlayerViewController: UIViewController {
         ])
     }
 
-    
     func addInvisibleControlOverlays() {
         let playPauseOverlay = UIButton(type: .custom)
         playPauseOverlay.backgroundColor = .clear

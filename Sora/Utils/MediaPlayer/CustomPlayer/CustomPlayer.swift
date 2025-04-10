@@ -747,18 +747,31 @@ class CustomMediaPlayerViewController: UIViewController {
     }
     
     func setupSkip85Button() {
-        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .regular)
+        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let image = UIImage(systemName: "goforward", withConfiguration: config)
         
         skip85Button = UIButton(type: .system)
         skip85Button.setTitle(" Skip 85s", for: .normal)
-        skip85Button.titleLabel?.font = UIFont.systemFont(ofSize: 14)
+        skip85Button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skip85Button.setImage(image, for: .normal)
-        skip85Button.tintColor = .black
-        skip85Button.backgroundColor = .white
-        skip85Button.layer.cornerRadius = 25
-        skip85Button.setTitleColor(.black, for: .normal)
-        skip85Button.alpha = 0.8
+        
+        // Your existing background color, corner, alpha, etc.
+        skip85Button.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
+        skip85Button.tintColor = .white
+        skip85Button.setTitleColor(.white, for: .normal)
+        skip85Button.layer.cornerRadius = 21
+        skip85Button.alpha = 0.7
+        
+        // Extra vertical padding inside the button
+        skip85Button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+        
+        // ADD shadow properties below:
+        skip85Button.layer.shadowColor = UIColor.black.cgColor
+        skip85Button.layer.shadowOffset = CGSize(width: 0, height: 2)
+        skip85Button.layer.shadowOpacity = 0.6
+        skip85Button.layer.shadowRadius = 4
+        skip85Button.layer.masksToBounds = false  // Ensure shadow is visible outside bounds
+        
         skip85Button.addTarget(self, action: #selector(skip85Tapped), for: .touchUpInside)
         
         view.addSubview(skip85Button)
@@ -767,12 +780,13 @@ class CustomMediaPlayerViewController: UIViewController {
         NSLayoutConstraint.activate([
             skip85Button.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
             skip85Button.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -5),
-            skip85Button.heightAnchor.constraint(equalToConstant: 47),
+            skip85Button.heightAnchor.constraint(equalToConstant: 40),
             skip85Button.widthAnchor.constraint(greaterThanOrEqualToConstant: 97)
         ])
         
         skip85Button.isHidden = !isSkip85Visible
     }
+
     
     private func setupQualityButton() {
         qualityButton = UIButton(type: .system)

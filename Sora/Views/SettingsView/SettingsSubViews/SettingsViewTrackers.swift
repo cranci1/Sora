@@ -53,7 +53,7 @@ struct SettingsViewTrackers: View {
                     }
                 }
                 if isLoggedIn {
-                    Toggle("Sync progreses", isOn: $isSendPushUpdates)
+                    Toggle("Sync progresses", isOn: $isSendPushUpdates)
                         .tint(.accentColor)
                 }
                 Button(isLoggedIn ? "Log Out from AniList.co" : "Log In with AniList.co") {

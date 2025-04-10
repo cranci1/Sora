@@ -1157,7 +1157,7 @@ class CustomMediaPlayerViewController: UIViewController {
             guard let self = self,
                   let data = data,
                   let content = String(data: data, encoding: .utf8) else {
-                print("Failed to load m3u8 file")
+                Logger.shared.log("Failed to load m3u8 file")
                 DispatchQueue.main.async {
                     self?.qualities = []
                     completion()

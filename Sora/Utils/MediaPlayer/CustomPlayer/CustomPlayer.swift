@@ -34,7 +34,7 @@ class CustomMediaPlayerViewController: UIViewController {
     private var aniListUpdatedSuccessfully = false
     private var aniListUpdateImpossible: Bool = false
     private var aniListRetryCount = 0
-    private let aniListMaxRetries = 3
+    private let aniListMaxRetries = 6
     
     var player: AVPlayer!
     var timeObserverToken: Any?
@@ -235,13 +235,11 @@ class CustomMediaPlayerViewController: UIViewController {
         })
     }
     
-    /// In layoutSubviews, check if the text width is larger than the available space and update the label’s properties.
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
-        // Safely unwrap marqueeLabel
         guard let marqueeLabel = marqueeLabel else {
-            return  // or handle the error gracefully
+            return
         }
         
         let availableWidth = marqueeLabel.frame.width
@@ -716,7 +714,6 @@ class CustomMediaPlayerViewController: UIViewController {
         currentMarqueeConstraints = [
             marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: leftSpacing),
             
-            // Pin directly to the safeAreaLayoutGuide's trailing edge:
             marqueeLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -rightSpacing-20),
             
             marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
@@ -818,22 +815,19 @@ class CustomMediaPlayerViewController: UIViewController {
         skip85Button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skip85Button.setImage(image, for: .normal)
         
-        // Your existing background color, corner, alpha, etc.
         skip85Button.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
         skip85Button.tintColor = .white
         skip85Button.setTitleColor(.white, for: .normal)
         skip85Button.layer.cornerRadius = 21
         skip85Button.alpha = 0.7
         
-        // Extra vertical padding inside the button
         skip85Button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         
-        // ADD shadow properties below:
         skip85Button.layer.shadowColor = UIColor.black.cgColor
         skip85Button.layer.shadowOffset = CGSize(width: 0, height: 2)
         skip85Button.layer.shadowOpacity = 0.6
         skip85Button.layer.shadowRadius = 4
-        skip85Button.layer.masksToBounds = false  // Ensure shadow is visible outside bounds
+        skip85Button.layer.masksToBounds = false
         
         skip85Button.addTarget(self, action: #selector(skip85Tapped), for: .touchUpInside)
         
@@ -955,12 +949,11 @@ class CustomMediaPlayerViewController: UIViewController {
                 
                 let remainingPercentage = (self.duration - self.currentTimeVal) / self.duration
                 
-                // Only attempt if it's anime + valid aniListID + near end + not yet successful:
                 if remainingPercentage < 0.1 &&
                     self.module.metadata.type == "anime" &&
                     self.aniListID != 0 &&
                    !self.aniListUpdatedSuccessfully &&
-                   !self.aniListUpdateImpossible  // <-- also check that it isn’t marked “impossible”
+                   !self.aniListUpdateImpossible
                 {
                     self.tryAniListUpdate()
                 }
@@ -996,21 +989,15 @@ class CustomMediaPlayerViewController: UIViewController {
             && self.showWatchNextButton
             && self.duration != 0
             
-            // 3) Remove or comment out any code that manually hides/shows watchNextButton
-            // at the 10% mark. For example, if you have something like:
+
             if isNearEnd {
                 if !isWatchNextVisible {
                     watchNextButtonAppearedAt = currentTimeVal
-                    // watchNextButton.alpha = 1.0
-                    // watchNextButton.isHidden = false
+
                 }
             } else {
-                // watchNextButton.isHidden = true
-                // watchNextButton.alpha = 0.0
+
             }
-            // etc.
-            // Just comment those out so that your new toggleControls is in full control
-            // of watchNext’s visibility.
         }
     }
     
@@ -1176,18 +1163,14 @@ class CustomMediaPlayerViewController: UIViewController {
                 let errorString = error.localizedDescription.lowercased()
                 Logger.shared.log("AniList progress update failed: \(errorString)", type: "Error")
                 
-                // Check for "Access token not found" specifically:
                 if errorString.contains("access token not found") {
-                    // If so, do NOT retry:
                     Logger.shared.log("AniList update will NOT retry due to missing token.", type: "Error")
                     self.aniListUpdateImpossible = true
                     
                 } else {
-                    // Otherwise, attempt a retry if we haven't hit our limit:
                     if self.aniListRetryCount < self.aniListMaxRetries {
                         self.aniListRetryCount += 1
                         
-                        // Just as an example, we can attempt another update in e.g. 5 seconds:
                         let delaySeconds = 5.0
                         Logger.shared.log("AniList update will retry in \(delaySeconds)s (attempt \(self.aniListRetryCount)).", type: "Debug")
                         

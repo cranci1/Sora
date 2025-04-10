@@ -848,7 +848,7 @@ class CustomMediaPlayerViewController: UIViewController {
         let image = UIImage(systemName: "4k.tv", withConfiguration: config)
         
         qualityButton = UIButton(type: .system)
-        qualityButton.setImage(UIImage(systemName: "4k.tv"), for: .normal)
+        qualityButton.setImage(image, for: .normal)
         qualityButton.tintColor = .white
         qualityButton.showsMenuAsPrimaryAction = true
         qualityButton.menu = qualitySelectionMenu()

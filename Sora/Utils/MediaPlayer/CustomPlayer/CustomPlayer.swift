@@ -357,6 +357,12 @@ class CustomMediaPlayerViewController: UIViewController {
         backwardButton.contentMode = .scaleAspectFit
         backwardButton.isUserInteractionEnabled = true
         
+        backwardButton.layer.shadowColor = UIColor.black.cgColor
+        backwardButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        backwardButton.layer.shadowOpacity = 0.6
+        backwardButton.layer.shadowRadius = 4
+        backwardButton.layer.masksToBounds = false
+        
         let backwardTap = UITapGestureRecognizer(target: self, action: #selector(seekBackward))
         backwardTap.numberOfTapsRequired = 1
         backwardButton.addGestureRecognizer(backwardTap)
@@ -373,7 +379,15 @@ class CustomMediaPlayerViewController: UIViewController {
         playPauseButton.tintColor = .white
         playPauseButton.contentMode = .scaleAspectFit
         playPauseButton.isUserInteractionEnabled = true
+        
+        playPauseButton.layer.shadowColor = UIColor.black.cgColor
+        playPauseButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        playPauseButton.layer.shadowOpacity = 0.6
+        playPauseButton.layer.shadowRadius = 4
+        playPauseButton.layer.masksToBounds = false
+        
         let playPauseTap = UITapGestureRecognizer(target: self, action: #selector(togglePlayPause))
+        
         playPauseButton.addGestureRecognizer(playPauseTap)
         controlsContainerView.addSubview(playPauseButton)
         playPauseButton.translatesAutoresizingMaskIntoConstraints = false
@@ -382,6 +396,12 @@ class CustomMediaPlayerViewController: UIViewController {
         forwardButton.tintColor = .white
         forwardButton.contentMode = .scaleAspectFit
         forwardButton.isUserInteractionEnabled = true
+        
+        forwardButton.layer.shadowColor = UIColor.black.cgColor
+        forwardButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        forwardButton.layer.shadowOpacity = 0.6
+        forwardButton.layer.shadowRadius = 4
+        forwardButton.layer.masksToBounds = false
         
         let forwardTap = UITapGestureRecognizer(target: self, action: #selector(seekForward))
         forwardTap.numberOfTapsRequired = 1
@@ -600,12 +620,21 @@ class CustomMediaPlayerViewController: UIViewController {
     }
     
     func setupDismissButton() {
+        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
+        let image = UIImage(systemName: "xmark", withConfiguration: config)
+        
         dismissButton = UIButton(type: .system)
-        dismissButton.setImage(UIImage(systemName: "xmark"), for: .normal)
+        dismissButton.setImage(image, for: .normal)
         dismissButton.tintColor = .white
         dismissButton.addTarget(self, action: #selector(dismissTapped), for: .touchUpInside)
         controlsContainerView.addSubview(dismissButton)
         dismissButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        dismissButton.layer.shadowColor = UIColor.black.cgColor
+        dismissButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        dismissButton.layer.shadowOpacity = 0.6
+        dismissButton.layer.shadowRadius = 4
+        dismissButton.layer.masksToBounds = false
         
         NSLayoutConstraint.activate([
             dismissButton.leadingAnchor.constraint(equalTo: controlsContainerView.leadingAnchor, constant: 16),
@@ -627,6 +656,12 @@ class CustomMediaPlayerViewController: UIViewController {
         marqueeLabel.leadingBuffer = 1.0      // Left inset for scrolling
         marqueeLabel.trailingBuffer = 16.0     // Right inset for scrolling
         marqueeLabel.animationDelay = 2.5
+        
+        marqueeLabel.layer.shadowColor = UIColor.black.cgColor
+        marqueeLabel.layer.shadowOffset = CGSize(width: 0, height: 2)
+        marqueeLabel.layer.shadowOpacity = 0.6
+        marqueeLabel.layer.shadowRadius = 4
+        marqueeLabel.layer.masksToBounds = false
         
         marqueeLabel.lineBreakMode = .byTruncatingTail
         marqueeLabel.textAlignment = .left
@@ -684,8 +719,11 @@ class CustomMediaPlayerViewController: UIViewController {
     }
     
     func setupMenuButton() {
+        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
+        let image = UIImage(systemName: "text.bubble", withConfiguration: config)
+        
         menuButton = UIButton(type: .system)
-        menuButton.setImage(UIImage(systemName: "text.bubble"), for: .normal)
+        menuButton.setImage(image, for: .normal)
         menuButton.tintColor = .white
         
         if let subtitlesURL = subtitlesURL, !subtitlesURL.isEmpty {
@@ -694,6 +732,12 @@ class CustomMediaPlayerViewController: UIViewController {
         } else {
             menuButton.isHidden = true
         }
+        
+        dismissButton.layer.shadowColor = UIColor.black.cgColor
+        dismissButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        dismissButton.layer.shadowOpacity = 0.6
+        dismissButton.layer.shadowRadius = 4
+        dismissButton.layer.masksToBounds = false
         
         controlsContainerView.addSubview(menuButton)
         menuButton.translatesAutoresizingMaskIntoConstraints = false
@@ -707,8 +751,11 @@ class CustomMediaPlayerViewController: UIViewController {
     }
     
     func setupSpeedButton() {
+        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
+        let image = UIImage(systemName: "speedometer", withConfiguration: config)
+        
         speedButton = UIButton(type: .system)
-        speedButton.setImage(UIImage(systemName: "speedometer"), for: .normal)
+        speedButton.setImage(image, for: .normal)
         speedButton.tintColor = .white
         speedButton.showsMenuAsPrimaryAction = true
         speedButton.menu = speedChangerMenu()
@@ -724,14 +771,22 @@ class CustomMediaPlayerViewController: UIViewController {
         ])
     }
     
-    // 1) Inside `setupWatchNextButton()`, remove the old constraints:
     func setupWatchNextButton() {
+        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
+        let image = UIImage(systemName: "forward.end", withConfiguration: config)
+        
         watchNextButton = UIButton(type: .system)
-        watchNextButton.setImage(UIImage(systemName: "forward.end.fill"), for: .normal)
-        // Appearance *like a normal button* (similar to your quality button):
+        watchNextButton.setImage(image, for: .normal)
         watchNextButton.backgroundColor = .clear
         watchNextButton.tintColor = .white
         watchNextButton.setTitleColor(.white, for: .normal)
+        
+        // The shadow:
+        watchNextButton.layer.shadowColor = UIColor.black.cgColor
+        watchNextButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        watchNextButton.layer.shadowOpacity = 0.6
+        watchNextButton.layer.shadowRadius = 4
+        watchNextButton.layer.masksToBounds = false
         
         watchNextButton.addTarget(self, action: #selector(watchNextTapped), for: .touchUpInside)
         
@@ -789,12 +844,21 @@ class CustomMediaPlayerViewController: UIViewController {
 
     
     private func setupQualityButton() {
+        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
+        let image = UIImage(systemName: "4k.tv", withConfiguration: config)
+        
         qualityButton = UIButton(type: .system)
         qualityButton.setImage(UIImage(systemName: "4k.tv"), for: .normal)
         qualityButton.tintColor = .white
         qualityButton.showsMenuAsPrimaryAction = true
         qualityButton.menu = qualitySelectionMenu()
         qualityButton.isHidden = true
+        
+        speedButton.layer.shadowColor = UIColor.black.cgColor
+        speedButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        speedButton.layer.shadowOpacity = 0.6
+        speedButton.layer.shadowRadius = 4
+        speedButton.layer.masksToBounds = false
         
         controlsContainerView.addSubview(qualityButton)
         qualityButton.translatesAutoresizingMaskIntoConstraints = false

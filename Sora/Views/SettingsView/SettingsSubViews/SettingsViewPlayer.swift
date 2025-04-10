@@ -10,7 +10,6 @@ import SwiftUI
 struct SettingsViewPlayer: View {
     @AppStorage("externalPlayer") private var externalPlayer: String = "Sora"
     @AppStorage("alwaysLandscape") private var isAlwaysLandscape = false
-    @AppStorage("hideNextButton") private var isHideNextButton = false
     @AppStorage("rememberPlaySpeed") private var isRememberPlaySpeed = false
     @AppStorage("holdSpeedPlayer") private var holdSpeedPlayer: Double = 2.0
     @AppStorage("skipIncrement") private var skipIncrement: Double = 10.0
@@ -37,9 +36,6 @@ struct SettingsViewPlayer: View {
                         }
                     }
                 }
-                
-                Toggle("Hide 'Watch Next' after 5s", isOn: $isHideNextButton)
-                    .tint(.accentColor)
                 
                 Toggle("Force Landscape", isOn: $isAlwaysLandscape)
                     .tint(.accentColor)

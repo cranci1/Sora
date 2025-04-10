@@ -335,9 +335,11 @@ struct ContinueWatchingCell: View {
         let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(item.fullUrl)")
         
         if totalTime > 0 {
-            currentProgress = lastPlayedTime / totalTime
+            let ratio = lastPlayedTime / totalTime
+            // Clamp ratio between 0 and 1:
+            currentProgress = max(0, min(ratio, 1))
         } else {
-            currentProgress = item.progress
+            currentProgress = max(0, min(item.progress, 1))
         }
     }
 }

@@ -31,6 +31,11 @@ class CustomMediaPlayerViewController: UIViewController {
     let onWatchNext: () -> Void
     let aniListID: Int
     
+    private var aniListUpdatedSuccessfully = false
+    private var aniListUpdateImpossible: Bool = false
+    private var aniListRetryCount = 0
+    private let aniListMaxRetries = 3
+    
     var player: AVPlayer!
     var timeObserverToken: Any?
     var inactivityTimer: Timer?
@@ -944,18 +949,17 @@ class CustomMediaPlayerViewController: UIViewController {
                     ContinueWatchingManager.shared.save(item: item)
                 }
                 
+                
                 let remainingPercentage = (self.duration - self.currentTimeVal) / self.duration
                 
-                if remainingPercentage < 0.1 && self.module.metadata.type == "anime" && self.aniListID != 0 {
-                    let aniListMutation = AniListMutation()
-                    aniListMutation.updateAnimeProgress(animeId: self.aniListID, episodeNumber: self.episodeNumber) { result in
-                        switch result {
-                        case .success:
-                            Logger.shared.log("Successfully updated AniList progress for episode \(self.episodeNumber)", type: "General")
-                        case .failure(let error):
-                            Logger.shared.log("Failed to update AniList progress: \(error.localizedDescription)", type: "Error")
-                        }
-                    }
+                // Only attempt if it's anime + valid aniListID + near end + not yet successful:
+                if remainingPercentage < 0.1 &&
+                    self.module.metadata.type == "anime" &&
+                    self.aniListID != 0 &&
+                   !self.aniListUpdatedSuccessfully &&
+                   !self.aniListUpdateImpossible  // <-- also check that it isn’t marked “impossible”
+                {
+                    self.tryAniListUpdate()
                 }
                 
                 self.sliderHostingController?.rootView = MusicProgressSlider(
@@ -1153,6 +1157,46 @@ class CustomMediaPlayerViewController: UIViewController {
             }
         }
         return UIMenu(title: "Playback Speed", children: playbackSpeedActions)
+    }
+    
+    private func tryAniListUpdate() {
+        let aniListMutation = AniListMutation()
+        aniListMutation.updateAnimeProgress(animeId: self.aniListID, episodeNumber: self.episodeNumber) { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success:
+                self.aniListUpdatedSuccessfully = true
+                Logger.shared.log("Successfully updated AniList progress for episode \(self.episodeNumber)", type: "General")
+                
+            case .failure(let error):
+                let errorString = error.localizedDescription.lowercased()
+                Logger.shared.log("AniList progress update failed: \(errorString)", type: "Error")
+                
+                // Check for "Access token not found" specifically:
+                if errorString.contains("access token not found") {
+                    // If so, do NOT retry:
+                    Logger.shared.log("AniList update will NOT retry due to missing token.", type: "Error")
+                    self.aniListUpdateImpossible = true
+                    
+                } else {
+                    // Otherwise, attempt a retry if we haven't hit our limit:
+                    if self.aniListRetryCount < self.aniListMaxRetries {
+                        self.aniListRetryCount += 1
+                        
+                        // Just as an example, we can attempt another update in e.g. 5 seconds:
+                        let delaySeconds = 5.0
+                        Logger.shared.log("AniList update will retry in \(delaySeconds)s (attempt \(self.aniListRetryCount)).", type: "Debug")
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + delaySeconds) {
+                            self.tryAniListUpdate()
+                        }
+                    } else {
+                        Logger.shared.log("AniList update reached max retries. No more attempts.", type: "Error")
+                    }
+                }
+            }
+        }
     }
     
     private func parseM3U8(url: URL, completion: @escaping () -> Void) {

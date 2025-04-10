@@ -43,9 +43,6 @@ class CustomMediaPlayerViewController: UIViewController {
     var duration: Double = 0.0
     var isVideoLoaded = false
     
-    var brightnessValue: Double = Double(UIScreen.main.brightness)
-    var brightnessSliderHostingController: UIHostingController<VerticalBrightnessSlider<Double>>?
-    
     private var isHoldPauseEnabled: Bool {
         UserDefaults.standard.bool(forKey: "holdForPauseEnabled")
     }
@@ -175,7 +172,6 @@ class CustomMediaPlayerViewController: UIViewController {
         loadSubtitleSettings()
         setupPlayerViewController()
         setupControls()
-        brightnessControl()
         setupSkipAndDismissGestures()
         addInvisibleControlOverlays()
         setupSubtitleLabel()
@@ -401,10 +397,6 @@ class CustomMediaPlayerViewController: UIViewController {
                 get: { self.sliderViewModel.sliderValue },
                 set: { self.sliderViewModel.sliderValue = $0 }
             ),
-            bufferValue: Binding(
-                get: { self.sliderViewModel.bufferValue },        // NEW
-                set: { self.sliderViewModel.bufferValue = $0 }    // NEW
-            ),
             inRange: 0...(duration > 0 ? duration : 1.0),
             activeFillColor: .white,
             fillColor: .white.opacity(0.5),
@@ -470,49 +462,6 @@ class CustomMediaPlayerViewController: UIViewController {
         holdForPauseGesture.minimumPressDuration = 1
         holdForPauseGesture.numberOfTouchesRequired = 2
         view.addGestureRecognizer(holdForPauseGesture)
-    }
-    
-    func brightnessControl() {
-        let brightnessSlider = VerticalBrightnessSlider(
-            value: Binding(
-                get: { self.brightnessValue },
-                set: { newValue in self.brightnessValue = newValue }
-            ),
-            inRange: 0...1,
-            activeFillColor: .white,
-            fillColor: .white.opacity(0.5),
-            emptyColor: .white.opacity(0.3),
-            width: 22,
-            onEditingChanged: { editing in }
-        )
-        
-        // Create the container for the brightness slider
-        let brightnessContainer = UIView()
-        brightnessContainer.translatesAutoresizingMaskIntoConstraints = false
-        brightnessContainer.backgroundColor = .clear
-        
-        controlsContainerView.addSubview(brightnessContainer)
-        
-        NSLayoutConstraint.activate([
-            brightnessContainer.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            brightnessContainer.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor),
-            brightnessContainer.widthAnchor.constraint(equalToConstant: 22),
-            brightnessContainer.heightAnchor.constraint(equalToConstant: 170)
-        ])
-        
-        brightnessSliderHostingController = UIHostingController(rootView: brightnessSlider)
-        guard let brightnessSliderView = brightnessSliderHostingController?.view else { return }
-        brightnessSliderView.backgroundColor = .clear
-        brightnessSliderView.translatesAutoresizingMaskIntoConstraints = false
-        
-        brightnessContainer.addSubview(brightnessSliderView)
-        
-        NSLayoutConstraint.activate([
-            brightnessSliderView.topAnchor.constraint(equalTo: brightnessContainer.topAnchor),
-            brightnessSliderView.bottomAnchor.constraint(equalTo: brightnessContainer.bottomAnchor),
-            brightnessSliderView.leadingAnchor.constraint(equalTo: brightnessContainer.leadingAnchor),
-            brightnessSliderView.trailingAnchor.constraint(equalTo: brightnessContainer.trailingAnchor)
-        ])
     }
 
     func addInvisibleControlOverlays() {
@@ -959,8 +908,7 @@ class CustomMediaPlayerViewController: UIViewController {
                             self.sliderViewModel.sliderValue = max(0, min($0, self.duration))
                         }
                     ),
-                    bufferValue: Binding(get: { self.sliderViewModel.bufferValue },
-                                         set: { self.sliderViewModel.bufferValue = $0 }), inRange: 0...(self.duration > 0 ? self.duration : 1.0),
+                    inRange: 0...(self.duration > 0 ? self.duration : 1.0),
                     activeFillColor: .white,
                     fillColor: .white.opacity(0.6),
                     emptyColor: .white.opacity(0.3),

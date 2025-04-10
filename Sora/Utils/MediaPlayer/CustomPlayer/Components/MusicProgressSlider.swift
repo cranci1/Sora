@@ -11,14 +11,11 @@ import SwiftUI
 
 struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
     @Binding var value: T
-    @Binding var bufferValue: T                // NEW
     let inRange: ClosedRange<T>
-    
     let activeFillColor: Color
     let fillColor: Color
     let emptyColor: Color
     let height: CGFloat
-    
     let onEditingChanged: (Bool) -> Void
     
     @State private var localRealProgress: T = 0
@@ -29,31 +26,9 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
         GeometryReader { bounds in
             ZStack {
                 VStack {
-                    // Base track + buffer indicator + current progress
                     ZStack(alignment: .center) {
-                        
-                        // Entire background track
                         Capsule()
                             .fill(emptyColor)
-                        
-                        // 1) The buffer fill portion (behind the actual progress)
-                        Capsule()                                    // NEW
-                            .fill(fillColor.opacity(0.3))            // or any "bufferColor"
-                            .mask({
-                                HStack {
-                                    Rectangle()
-                                        .frame(
-                                            width: max(
-                                                bounds.size.width * CGFloat(getPrgPercentage(bufferValue)),
-                                                0
-                                            ),
-                                            alignment: .leading
-                                        )
-                                    Spacer(minLength: 0)
-                                }
-                            })
-                        
-                        // 2) The actual playback progress
                         Capsule()
                             .fill(isActive ? activeFillColor : fillColor)
                             .mask({
@@ -71,7 +46,6 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
                             })
                     }
                     
-                    // Time labels
                     HStack {
                         let shouldShowHours = inRange.upperBound >= 3600
                         Text(value.asTimeString(style: .positional, showHours: shouldShowHours))
@@ -82,8 +56,7 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
                     .font(.system(size: 12))
                     .foregroundColor(isActive ? fillColor : emptyColor)
                 }
-                .frame(width: isActive ? bounds.size.width * 1.04 : bounds.size.width,
-                       alignment: .center)
+                .frame(width: isActive ? bounds.size.width * 1.04 : bounds.size.width, alignment: .center)
                 .animation(animation, value: isActive)
             }
             .frame(width: bounds.size.width, height: bounds.size.height, alignment: .center)
@@ -95,15 +68,15 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
                     }
                     .onChanged { gesture in
                         localTempProgress = T(gesture.translation.width / bounds.size.width)
-                        value = clampValue(getPrgValue())
+                        value = max(min(getPrgValue(), inRange.upperBound), inRange.lowerBound)
                     }
                     .onEnded { _ in
-                        localRealProgress = getPrgPercentage(value)
+                        localRealProgress = max(min(localRealProgress + localTempProgress, 1), 0)
                         localTempProgress = 0
                     }
             )
             .onChange(of: isActive) { newValue in
-                value = clampValue(getPrgValue())
+                value = max(min(getPrgValue(), inRange.upperBound), inRange.lowerBound)
                 onEditingChanged(newValue)
             }
             .onAppear {
@@ -117,26 +90,23 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
         }
         .frame(height: isActive ? height * 1.25 : height, alignment: .center)
     }
-    
+
     private var animation: Animation {
-        isActive
-            ? .spring()
-            : .spring(response: 0.5, dampingFraction: 0.5, blendDuration: 0.6)
+        if isActive {
+            return .spring()
+        } else {
+            return .spring(response: 0.5, dampingFraction: 0.5, blendDuration: 0.6)
+        }
     }
-    
-    private func clampValue(_ val: T) -> T {
-        max(min(val, inRange.upperBound), inRange.lowerBound)
-    }
-    
-    private func getPrgPercentage(_ val: T) -> T {
-        let clampedValue = clampValue(val)
+
+    private func getPrgPercentage(_ value: T) -> T {
         let range = inRange.upperBound - inRange.lowerBound
-        let pct = (clampedValue - inRange.lowerBound) / range
-        return max(min(pct, 1), 0)
+        let correctedStartValue = value - inRange.lowerBound
+        let percentage = correctedStartValue / range
+        return percentage
     }
     
     private func getPrgValue() -> T {
-        ((localRealProgress + localTempProgress) * (inRange.upperBound - inRange.lowerBound))
-        + inRange.lowerBound
+        return ((localRealProgress + localTempProgress) * (inRange.upperBound - inRange.lowerBound)) + inRange.lowerBound
     }
 }

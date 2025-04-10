@@ -59,7 +59,6 @@
 		13EA2BD52D32D97400C1EBD7 /* CustomPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD12D32D97400C1EBD7 /* CustomPlayer.swift */; };
 		13EA2BD62D32D97400C1EBD7 /* Double+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD32D32D97400C1EBD7 /* Double+Extension.swift */; };
 		13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD82D32D98400C1EBD7 /* NormalPlayer.swift */; };
-		1E3F5EC82D9F16B7003F310F /* VerticalBrightnessSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3F5EC72D9F16B7003F310F /* VerticalBrightnessSlider.swift */; };
 		1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */; };
 		1EAC7A322D888BC50083984D /* MusicProgressSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */; };
 		73D164D52D8B5B470011A360 /* JavaScriptCore+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */; };
@@ -117,7 +116,6 @@
 		13EA2BD12D32D97400C1EBD7 /* CustomPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomPlayer.swift; sourceTree = "<group>"; };
 		13EA2BD32D32D97400C1EBD7 /* Double+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Double+Extension.swift"; sourceTree = "<group>"; };
 		13EA2BD82D32D98400C1EBD7 /* NormalPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NormalPlayer.swift; sourceTree = "<group>"; };
-		1E3F5EC72D9F16B7003F310F /* VerticalBrightnessSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalBrightnessSlider.swift; sourceTree = "<group>"; };
 		1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewLoggerFilter.swift; sourceTree = "<group>"; };
 		1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicProgressSlider.swift; sourceTree = "<group>"; };
 		73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JavaScriptCore+Extensions.swift"; sourceTree = "<group>"; };
@@ -408,7 +406,6 @@
 		13EA2BD22D32D97400C1EBD7 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				1E3F5EC72D9F16B7003F310F /* VerticalBrightnessSlider.swift */,
 				13EA2BD32D32D97400C1EBD7 /* Double+Extension.swift */,
 				1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */,
 			);
@@ -537,7 +534,6 @@
 				133D7C8E2D2BE2640075467E /* LibraryView.swift in Sources */,
 				133D7C6E2D2BE2500075467E /* SoraApp.swift in Sources */,
 				138AA1B92D2D66FD0021F9DF /* CircularProgressBar.swift in Sources */,
-				1E3F5EC82D9F16B7003F310F /* VerticalBrightnessSlider.swift in Sources */,
 				13DB468D2D90093A008CBC03 /* Anilist-Login.swift in Sources */,
 				73D164D52D8B5B470011A360 /* JavaScriptCore+Extensions.swift in Sources */,
 				132AF1232D9995C300A0140B /* JSController-Details.swift in Sources */,

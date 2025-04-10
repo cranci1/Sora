@@ -48,6 +48,9 @@ class CustomMediaPlayerViewController: UIViewController {
     }
     
     private var isSkip85Visible: Bool {
+        if UserDefaults.standard.object(forKey: "skip85Visible") == nil {
+            return true
+        }
         return UserDefaults.standard.bool(forKey: "skip85Visible")
     }
     

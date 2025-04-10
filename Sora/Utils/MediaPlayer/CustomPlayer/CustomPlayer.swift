@@ -209,6 +209,9 @@ class CustomMediaPlayerViewController: UIViewController {
             holdForPause()
         }
         
+        if #available(iOS 16.0, *) {
+            playerViewController.allowsVideoFrameAnalysis = false
+        }
         
         player.play()
         

@@ -142,14 +142,56 @@ struct SettingsViewModule: View {
     }
     
     func showAddModuleAlert() {
-        let alert = UIAlertController(title: "Add Module", message: "Enter the URL of the module file", preferredStyle: .alert)
+        // Check clipboard first
+        let pasteboardString = UIPasteboard.general.string ?? ""
+
+        // If there's a valid URL-like string in the pasteboard
+        if !pasteboardString.isEmpty {
+            // Ask user if they want to use that
+            let clipboardAlert = UIAlertController(
+                title: "Clipboard Detected",
+                message: "We found some text in your clipboard. Would you like to use it as the module URL?",
+                preferredStyle: .alert
+            )
+            
+            clipboardAlert.addAction(UIAlertAction(title: "Use Clipboard", style: .default, handler: { _ in
+                // Optionally, validate that pasteboardString looks like a URL
+                self.displayModuleView(url: pasteboardString)
+            }))
+            
+            clipboardAlert.addAction(UIAlertAction(title: "Enter Manually", style: .cancel, handler: { _ in
+                // Fall back to the original "enter URL" prompt
+                self.showManualUrlAlert()
+            }))
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootViewController = windowScene.windows.first?.rootViewController {
+                rootViewController.present(clipboardAlert, animated: true, completion: nil)
+            }
+            
+        } else {
+            // If no clipboard content, just proceed with normal text‐field prompt
+            showManualUrlAlert()
+        }
+    }
+
+    // This is just your original code for “Enter the URL…”
+    func showManualUrlAlert() {
+        let alert = UIAlertController(
+            title: "Add Module",
+            message: "Enter the URL of the module file",
+            preferredStyle: .alert
+        )
+        
         alert.addTextField { textField in
             textField.placeholder = "https://real.url/module.json"
         }
+        
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         alert.addAction(UIAlertAction(title: "Add", style: .default, handler: { _ in
-            if let url = alert.textFields?.first?.text {
-                displayModuleView(url: url)
+            if let url = alert.textFields?.first?.text, !url.isEmpty {
+                // Present the ModuleAdditionSettingsView
+                self.displayModuleView(url: url)
             }
         }))
         
@@ -158,16 +200,19 @@ struct SettingsViewModule: View {
             rootViewController.present(alert, animated: true, completion: nil)
         }
     }
-    
+
+    // The same ‘displayModuleView(url:)’ from your snippet:
     func displayModuleView(url: String) {
         DispatchQueue.main.async {
-            let addModuleView = ModuleAdditionSettingsView(moduleUrl: url).environmentObject(moduleManager)
+            let addModuleView = ModuleAdditionSettingsView(moduleUrl: url)
+                .environmentObject(self.moduleManager)
             let hostingController = UIHostingController(rootView: addModuleView)
-             
-             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                let window = windowScene.windows.first {
-                 window.rootViewController?.present(hostingController, animated: true, completion: nil)
-             }
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first {
+                window.rootViewController?.present(hostingController, animated: true, completion: nil)
+            }
         }
     }
+
 }

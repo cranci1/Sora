@@ -129,6 +129,7 @@ class CustomMediaPlayerViewController: UIViewController {
     private var playerItemKVOContext = 0
     private var loadedTimeRangesObservation: NSKeyValueObservation?
     private var playerTimeControlStatusObserver: NSKeyValueObservation?
+    private var volumeValue: Double = 0.8 // Just an example starting value
     
     init(module: ScrapingModule,
          urlString: String,
@@ -193,6 +194,7 @@ class CustomMediaPlayerViewController: UIViewController {
         setupWatchNextButton()
         setupSubtitleLabel()
         setupDismissButton()
+        volumeSlider()
         setupSpeedButton()
         setupQualityButton()
         setupMenuButton()
@@ -251,7 +253,7 @@ class CustomMediaPlayerViewController: UIViewController {
         
         let availableWidth = marqueeLabel.frame.width
         let textWidth = marqueeLabel.intrinsicContentSize.width
-
+        
         if textWidth > availableWidth {
             marqueeLabel.lineBreakMode = .byTruncatingTail
         } else {
@@ -501,7 +503,7 @@ class CustomMediaPlayerViewController: UIViewController {
         holdForPauseGesture.numberOfTouchesRequired = 2
         view.addGestureRecognizer(holdForPauseGesture)
     }
-
+    
     func addInvisibleControlOverlays() {
         let playPauseOverlay = UIButton(type: .custom)
         playPauseOverlay.backgroundColor = .clear
@@ -515,7 +517,7 @@ class CustomMediaPlayerViewController: UIViewController {
             playPauseOverlay.heightAnchor.constraint(equalTo: playPauseButton.heightAnchor, constant: 20)
         ])
     }
-
+    
     func setupSkipAndDismissGestures() {
         if isDoubleTapSkipEnabled {
             let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
@@ -530,14 +532,14 @@ class CustomMediaPlayerViewController: UIViewController {
                 }
             }
         }
-
+        
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
         view.addGestureRecognizer(panGesture)
     }
     
     func showSkipFeedback(direction: String) {
         let diameter: CGFloat = 600
-
+        
         if let existingFeedback = view.viewWithTag(999) {
             existingFeedback.layer.removeAllAnimations()
             existingFeedback.removeFromSuperview()
@@ -550,7 +552,7 @@ class CustomMediaPlayerViewController: UIViewController {
         circleView.translatesAutoresizingMaskIntoConstraints = false
         circleView.isUserInteractionEnabled = false
         circleView.tag = 999
-
+        
         let iconName = (direction == "forward") ? "goforward" : "gobackward"
         let imageView = UIImageView(image: UIImage(systemName: iconName))
         imageView.tintColor = .black
@@ -713,6 +715,49 @@ class CustomMediaPlayerViewController: UIViewController {
             marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
         ]
         updateMarqueeConstraints()
+    }
+    
+    func volumeSlider() {
+        // 1) Build the SwiftUI VolumeSlider
+        let sliderView = VolumeSlider(
+            value: Binding(
+                get: { self.volumeValue },
+                set: { newVolume in
+                    self.volumeValue = newVolume
+                    // Here you could connect to AVAudioSession or something else
+                    // e.g. player.volume = Float(newVolume)
+                }
+            ),
+            inRange: 0...1,
+            activeFillColor: .white,
+            fillColor: .white.opacity(0.6),
+            emptyColor: .white.opacity(0.3),
+            height: 10,
+            onEditingChanged: { isEditing in
+                // You can respond to "drag began" / "drag ended" here if desired
+            }
+        )
+        
+        // 2) Wrap in a UIHostingController
+        let hostingController = UIHostingController(rootView: sliderView)
+        hostingController.view.backgroundColor = .clear
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        
+        // 3) Add it to your controlsContainerView
+        controlsContainerView.addSubview(hostingController.view)
+        addChild(hostingController)
+        hostingController.didMove(toParent: self)
+        
+        // 4) Constrain it top-right, aligned with the dismiss button & marquee label
+        NSLayoutConstraint.activate([
+            // Align centerY with dismiss button (so they line up horizontally)
+            hostingController.view.topAnchor.constraint(equalTo: controlsContainerView.topAnchor, constant: 26.5),
+            // Pin the trailing edge so it’s on the right
+            hostingController.view.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -20),
+            // Give it some fixed width/height so it’s nicely sized
+            hostingController.view.widthAnchor.constraint(equalToConstant: 160),
+            hostingController.view.heightAnchor.constraint(equalToConstant: 30)
+        ])
     }
 
     func updateMarqueeConstraints() {

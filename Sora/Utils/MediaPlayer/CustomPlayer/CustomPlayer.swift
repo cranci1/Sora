@@ -137,6 +137,8 @@ class CustomMediaPlayerViewController: UIViewController {
     private var systemVolumeSlider: UISlider?
     private var volumeValue: Double = 0.0
     private var volumeViewModel = VolumeViewModel()
+    var volumeSliderHostingView: UIView?
+
     
     init(module: ScrapingModule,
          urlString: String,
@@ -774,6 +776,8 @@ class CustomMediaPlayerViewController: UIViewController {
         controlsContainerView.addSubview(hostingController.view)
         addChild(hostingController)
         hostingController.didMove(toParent: self)
+        
+        self.volumeSliderHostingView = hostingController.view
 
         NSLayoutConstraint.activate([
             hostingController.view.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
@@ -782,18 +786,26 @@ class CustomMediaPlayerViewController: UIViewController {
             hostingController.view.heightAnchor.constraint(equalToConstant: 30)
         ])
     }
+
     
     func updateMarqueeConstraints() {
         NSLayoutConstraint.deactivate(currentMarqueeConstraints)
 
-        let leftSpacing: CGFloat = 8
-        let rightSpacing: CGFloat = 8
+        let leftSpacing: CGFloat = 2
+        let rightSpacing: CGFloat = 6
+        
+        // Use the volume slider hosting view's leading anchor if it exists and is visible;
+        // otherwise, fall back to the safe area trailing anchor.
+        let trailingAnchor: NSLayoutXAxisAnchor
+        if let volumeView = volumeSliderHostingView, !volumeView.isHidden {
+            trailingAnchor = volumeView.leadingAnchor
+        } else {
+            trailingAnchor = view.safeAreaLayoutGuide.trailingAnchor
+        }
 
         currentMarqueeConstraints = [
             marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: leftSpacing),
-            
-            marqueeLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -rightSpacing-20),
-            
+            marqueeLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -rightSpacing - 10),
             marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
         ]
         

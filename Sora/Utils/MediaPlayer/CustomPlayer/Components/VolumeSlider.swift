@@ -116,17 +116,14 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
     }
 
     private func handleIconTap() {
-        // Current slider progress in [0..1]
         let currentProgress = localRealProgress + localTempProgress
         
         withAnimation {
             if currentProgress <= 0 {
-                // We are muted => restore
-                value = lastVolumeValue  // e.g. 0.5 => user’s last real volume
+                value = lastVolumeValue
                 localRealProgress = progress(for: lastVolumeValue)
                 localTempProgress = 0
             } else {
-                // We are nonzero => store current volume in lastVolumeValue & then mute
                 lastVolumeValue = sliderValueInRange()
                 value = T(0)
                 localRealProgress = 0
@@ -135,21 +132,18 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
         }
     }
 
-    /// Returns a spring for the "pressed" expansion
     private var animation: Animation {
         isActive
             ? .spring()
             : .spring(response: 0.5, dampingFraction: 0.5, blendDuration: 0.6)
     }
 
-    /// Convert the bound volume => 0..1 progress
     private func progress(for val: T) -> T {
         let totalRange = inRange.upperBound - inRange.lowerBound
         let adjustedVal = val - inRange.lowerBound
         return adjustedVal / totalRange
     }
 
-    /// Convert localRealProgress+localTempProgress => [inRange.lowerBound..inRange.upperBound]
     private func sliderValueInRange() -> T {
         let totalProgress = localRealProgress + localTempProgress
         let rawVal = totalProgress * (inRange.upperBound - inRange.lowerBound)

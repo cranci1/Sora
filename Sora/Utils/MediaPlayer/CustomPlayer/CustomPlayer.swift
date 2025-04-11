@@ -436,9 +436,10 @@ class CustomMediaPlayerViewController: UIViewController {
             ),
             inRange: 0...(duration > 0 ? duration : 1.0),
             activeFillColor: .white,
-            fillColor: .white.opacity(0.5),
+            fillColor: .white.opacity(0.6),
+            textColor: .white.opacity(0.7),
             emptyColor: .white.opacity(0.3),
-            height: 30,
+            height: 33,
             onEditingChanged: { editing in
                 if editing {
                     self.isSliderEditing = true
@@ -977,8 +978,9 @@ class CustomMediaPlayerViewController: UIViewController {
                     inRange: 0...(self.duration > 0 ? self.duration : 1.0),
                     activeFillColor: .white,
                     fillColor: .white.opacity(0.6),
+                    textColor: .white.opacity(0.7),
                     emptyColor: .white.opacity(0.3),
-                    height: 30,
+                    height: 33,
                     onEditingChanged: { editing in
                         if !editing {
                             let targetTime = CMTime(

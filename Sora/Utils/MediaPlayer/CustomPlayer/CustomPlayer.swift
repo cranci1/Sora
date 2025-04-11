@@ -10,6 +10,7 @@ import MarqueeLabel
 import AVKit
 import SwiftUI
 import AVFoundation
+import MediaPlayer
 
 // MARK: - SliderViewModel
 
@@ -129,7 +130,13 @@ class CustomMediaPlayerViewController: UIViewController {
     private var playerItemKVOContext = 0
     private var loadedTimeRangesObservation: NSKeyValueObservation?
     private var playerTimeControlStatusObserver: NSKeyValueObservation?
-    private var volumeValue: Double = 0.8 // Just an example starting value
+    
+    private var volumeObserver: NSKeyValueObservation?
+    private var audioSession = AVAudioSession.sharedInstance()
+    private var hiddenVolumeView = MPVolumeView(frame: .zero)
+    private var systemVolumeSlider: UISlider?
+    private var volumeValue: Double = 0.0
+    private var volumeViewModel = VolumeViewModel()
     
     init(module: ScrapingModule,
          urlString: String,
@@ -218,6 +225,26 @@ class CustomMediaPlayerViewController: UIViewController {
             holdForPause()
         }
         
+        do {
+            try audioSession.setActive(true)
+        } catch {
+            print("Error activating audio session: \(error)")
+        }
+        
+        // 2) Initialize volumeValue with the *current* iOS system volume
+        volumeViewModel.value = Double(audioSession.outputVolume)
+        
+        
+        volumeObserver = audioSession.observe(\.outputVolume, options: [.new]) { [weak self] session, change in
+            guard let newVol = change.newValue else { return }
+            DispatchQueue.main.async {
+                self?.volumeViewModel.value = Double(newVol)
+                // (Optional) add a debug print here:
+                Logger.shared.log("Hardware volume changed, new value: \(newVol)")
+            }
+        }
+        
+        
         if #available(iOS 16.0, *) {
             playerViewController.allowsVideoFrameAnalysis = false
         }
@@ -234,6 +261,21 @@ class CustomMediaPlayerViewController: UIViewController {
             NSLayoutConstraint.activate(self.watchNextButtonControlsConstraints)
             self.watchNextButton.alpha = 1.0
             self.view.layoutIfNeeded()
+        }
+        
+        hiddenVolumeView.showsRouteButton = false
+        hiddenVolumeView.isHidden = true
+        view.addSubview(hiddenVolumeView)
+        
+        hiddenVolumeView.translatesAutoresizingMaskIntoConstraints = false
+        hiddenVolumeView.widthAnchor.constraint(equalToConstant: 1).isActive = true
+        hiddenVolumeView.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        hiddenVolumeView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        hiddenVolumeView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        
+        
+        if let slider = hiddenVolumeView.subviews.first(where: { $0 is UISlider }) as? UISlider {
+            systemVolumeSlider = slider
         }
     }
     
@@ -718,48 +760,29 @@ class CustomMediaPlayerViewController: UIViewController {
     }
     
     func volumeSlider() {
-        // 1) Build the SwiftUI VolumeSlider
-        let sliderView = VolumeSlider(
-            value: Binding(
-                get: { self.volumeValue },
-                set: { newVolume in
-                    self.volumeValue = newVolume
-                    // Here you could connect to AVAudioSession or something else
-                    // e.g. player.volume = Float(newVolume)
-                }
-            ),
-            inRange: 0...1,
-            activeFillColor: .white,
-            fillColor: .white.opacity(0.6),
-            emptyColor: .white.opacity(0.3),
-            height: 10,
-            onEditingChanged: { isEditing in
-                // You can respond to "drag began" / "drag ended" here if desired
+        let container = VolumeSliderContainer(volumeVM: self.volumeViewModel) { newVal in
+            // Update the MPVolumeView slider for system volume
+            if let sysSlider = self.systemVolumeSlider {
+                sysSlider.value = Float(newVal)
             }
-        )
+        }
         
-        // 2) Wrap in a UIHostingController
-        let hostingController = UIHostingController(rootView: sliderView)
-        hostingController.view.backgroundColor = .clear
+        let hostingController = UIHostingController(rootView: container)
+        hostingController.view.backgroundColor = UIColor.clear
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-        
-        // 3) Add it to your controlsContainerView
+
         controlsContainerView.addSubview(hostingController.view)
         addChild(hostingController)
         hostingController.didMove(toParent: self)
-        
-        // 4) Constrain it top-right, aligned with the dismiss button & marquee label
+
         NSLayoutConstraint.activate([
-            // Align centerY with dismiss button (so they line up horizontally)
-            hostingController.view.topAnchor.constraint(equalTo: controlsContainerView.topAnchor, constant: 26.5),
-            // Pin the trailing edge so it’s on the right
-            hostingController.view.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -20),
-            // Give it some fixed width/height so it’s nicely sized
+            hostingController.view.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16),
             hostingController.view.widthAnchor.constraint(equalToConstant: 160),
             hostingController.view.heightAnchor.constraint(equalToConstant: 30)
         ])
     }
-
+    
     func updateMarqueeConstraints() {
         NSLayoutConstraint.deactivate(currentMarqueeConstraints)
 
@@ -898,7 +921,7 @@ class CustomMediaPlayerViewController: UIViewController {
         
         skip85Button.isHidden = !isSkip85Visible
     }
-
+    
     
     private func setupQualityButton() {
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
@@ -1627,6 +1650,13 @@ class CustomMediaPlayerViewController: UIViewController {
         } catch {
             Logger.shared.log("Didn't set up AVAudioSession: \(error)", type: "Debug")
         }
+        
+        volumeObserver = audioSession.observe(\.outputVolume, options: [.new]) { [weak self] session, change in
+            guard let newVol = change.newValue else { return }
+            DispatchQueue.main.async {
+                self?.volumeViewModel.value = Double(newVol)
+            }
+        }
     }
     
     private func setupHoldGesture() {
@@ -1689,6 +1719,29 @@ class CustomMediaPlayerViewController: UIViewController {
                     player.play()
                 }
             }
+        }
+    }
+    
+    struct VolumeSliderContainer: View {
+        @ObservedObject var volumeVM: VolumeViewModel
+        var updateSystemSlider: ((Double) -> Void)? = nil // Optional callback if needed
+
+        var body: some View {
+            VolumeSlider(
+                value: Binding(
+                    get: { volumeVM.value },
+                    set: { newVal in
+                        volumeVM.value = newVal
+                        updateSystemSlider?(newVal)
+                    }
+                ),
+                inRange: 0...1,
+                activeFillColor: .white,
+                fillColor: .white.opacity(0.6),
+                emptyColor: .white.opacity(0.3),
+                height: 10,
+                onEditingChanged: { _ in }
+            )
         }
     }
 }

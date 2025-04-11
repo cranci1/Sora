@@ -16,6 +16,7 @@ struct SettingsViewPlayer: View {
     @AppStorage("skipIncrementHold") private var skipIncrementHold: Double = 30.0
     @AppStorage("holdForPauseEnabled") private var holdForPauseEnabled = false
     @AppStorage("skip85Visible") private var skip85Visible: Bool = true
+    @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = true
 
     
     private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "Sora"]
@@ -72,6 +73,10 @@ struct SettingsViewPlayer: View {
                     Spacer()
                     Stepper("\(Int(skipIncrementHold))s", value: $skipIncrementHold, in: 5...300, step: 5)
                 }
+                
+                Toggle("Double Tap to Seek", isOn: $doubleTapSeekEnabled)
+                    .tint(.accentColor)
+                
                 Toggle("Show Skip 85s Button", isOn: $skip85Visible)
                     .tint(.accentColor)
             }

@@ -14,6 +14,7 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
     let inRange: ClosedRange<T>
     let activeFillColor: Color
     let fillColor: Color
+    let textColor: Color
     let emptyColor: Color
     let height: CGFloat
     let onEditingChanged: (Bool) -> Void
@@ -25,7 +26,7 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
     var body: some View {
         GeometryReader { bounds in
             ZStack {
-                VStack {
+                VStack (spacing: 8) {
                     ZStack(alignment: .center) {
                         Capsule()
                             .fill(emptyColor)
@@ -53,8 +54,8 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
                         Text("-" + (inRange.upperBound - value)
                             .asTimeString(style: .positional, showHours: shouldShowHours))
                     }
-                    .font(.system(size: 12))
-                    .foregroundColor(isActive ? fillColor : emptyColor)
+                    .font(.system(size: 12.5))
+                    .foregroundColor(textColor)
                 }
                 .frame(width: isActive ? bounds.size.width * 1.04 : bounds.size.width, alignment: .center)
                 .animation(animation, value: isActive)

@@ -8,6 +8,7 @@
 //
 
 import Foundation
+import Combine
 
 extension Double {
     func asTimeString(style: DateComponentsFormatter.UnitsStyle) -> String {
@@ -38,3 +39,8 @@ enum TimeStringStyle {
     case positional
     case standard
 }
+
+class VolumeViewModel: ObservableObject {
+    @Published var value: Double = 0.0
+}
+

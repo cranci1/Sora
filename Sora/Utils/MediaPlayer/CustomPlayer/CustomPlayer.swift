@@ -59,6 +59,13 @@ class CustomMediaPlayerViewController: UIViewController {
         return UserDefaults.standard.bool(forKey: "skip85Visible")
     }
     
+    private var isDoubleTapSkipEnabled: Bool {
+        if UserDefaults.standard.object(forKey: "doubleTapSeekEnabled") == nil {
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: "doubleTapSeekEnabled")
+    }
+    
     var showWatchNextButton = true
     var watchNextButtonTimer: Timer?
     var isWatchNextRepositioned: Bool = false
@@ -509,18 +516,20 @@ class CustomMediaPlayerViewController: UIViewController {
     }
 
     func setupSkipAndDismissGestures() {
-        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
-        doubleTapGesture.numberOfTapsRequired = 2
-        view.addGestureRecognizer(doubleTapGesture)
-        
-        if let gestures = view.gestureRecognizers {
-            for gesture in gestures {
-                if let tapGesture = gesture as? UITapGestureRecognizer, tapGesture.numberOfTapsRequired == 1 {
-                    tapGesture.require(toFail: doubleTapGesture)
+        if isDoubleTapSkipEnabled {
+            let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+            doubleTapGesture.numberOfTapsRequired = 2
+            view.addGestureRecognizer(doubleTapGesture)
+            
+            if let gestures = view.gestureRecognizers {
+                for gesture in gestures {
+                    if let tapGesture = gesture as? UITapGestureRecognizer, tapGesture.numberOfTapsRequired == 1 {
+                        tapGesture.require(toFail: doubleTapGesture)
+                    }
                 }
             }
         }
-        
+
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
         view.addGestureRecognizer(panGesture)
     }

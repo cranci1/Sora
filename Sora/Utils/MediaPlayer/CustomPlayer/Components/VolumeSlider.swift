@@ -45,7 +45,7 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
                     
                     Image(systemName: getIconName)
                         .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .frame(width: 30) // Fixed width keeps layout stable
+                        .frame(width: 30)
                         .foregroundColor(isActive ? activeFillColor : fillColor)
                         .onTapGesture {
                             handleIconTap()
@@ -94,26 +94,27 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
         .frame(height: isActive ? height * 1.25 : height)
     }
 
-    /// Return an SF Symbols speaker icon that matches 0..1 progress
     private var getIconName: String {
-        let p = localRealProgress + localTempProgress
+        let p = max(0, min(localRealProgress + localTempProgress, 1))
+        let muteThreshold: T = 0
+        let lowThreshold: T = 0.2
+        let midThreshold: T = 0.35
+        let highThreshold: T = 0.7
+        
         switch p {
-        case 0:
+        case muteThreshold:
             return "speaker.slash.fill"
-        case 0..<0.2:
+        case muteThreshold..<lowThreshold:
             return "speaker.fill"
-        case 0.2..<0.38:
+        case lowThreshold..<midThreshold:
             return "speaker.wave.1.fill"
-        case 0.38..<0.6:
+        case midThreshold..<highThreshold:
             return "speaker.wave.2.fill"
         default:
             return "speaker.wave.3.fill"
         }
     }
 
-    /// If we tap the icon:
-    /// - If volume is 0, restore lastVolumeValue
-    /// - Else store the current volume as lastVolumeValue, then set volume=0
     private func handleIconTap() {
         // Current slider progress in [0..1]
         let currentProgress = localRealProgress + localTempProgress

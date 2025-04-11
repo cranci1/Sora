@@ -126,9 +126,15 @@ extension JSContext {
                         reject.call(withArguments: ["Response exceeds maximum size"])
                         return
                     }
-                    
+              
                     if let text = String(data: data, encoding: .utf8) {
-                        resolve.call(withArguments: [text])
+                        // Create a response object to return
+                        let responseDict: [String: Any] = [
+                            "status": (response as? HTTPURLResponse)?.statusCode ?? 0,
+                            "headers": (response as? HTTPURLResponse)?.allHeaderFields ?? [:],
+                            "body": text
+                        ]
+                        resolve.call(withArguments: [responseDict])
                     } else {
                         Logger.shared.log("Unable to decode data to text", type: "Error")
                         reject.call(withArguments: ["Unable to decode data"])
@@ -147,34 +153,21 @@ extension JSContext {
         
         let fetchv2Definition = """
                     function fetchv2(url, headers = {}, method = "GET", body = null) {
-                        if (method === "GET") {
-                            return new Promise(function(resolve, reject) {
-                                fetchV2Native(url, headers, method, null, function(rawText) {  // Pass `null` explicitly
-                                    const responseObj = {
-                                        _data: rawText,
-                                        text: function() {
-                                            return Promise.resolve(this._data);
-                                        },
-                                        json: function() {
-                                            try {
-                                                return Promise.resolve(JSON.parse(this._data));
-                                            } catch (e) {
-                                                return Promise.reject("JSON parse error: " + e.message);
-                                            }
-                                        }
-                                    };
-                                    resolve(responseObj);
-                                }, reject);
-                            });
-                        }
-            
+                    
+                    
+                    var processedBody = null;
+                    if(method != "GET")
+                    {
                         // Ensure body is properly serialized
-                        const processedBody = body ? JSON.stringify(body) : null;
+                        processedBody = body ? JSON.stringify(body) : null
+                    }
             
                         return new Promise(function(resolve, reject) {
                             fetchV2Native(url, headers, method, processedBody, function(rawText) {
                                 const responseObj = {
-                                    _data: rawText,
+                                    headers: rawText.headers,
+                                    status: rawText.status,
+                                    _data: rawText.body,
                                     text: function() {
                                         return Promise.resolve(this._data);
                                     },

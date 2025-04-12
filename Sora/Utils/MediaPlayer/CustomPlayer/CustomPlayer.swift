@@ -855,7 +855,7 @@ class CustomMediaPlayerViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             speedButton.topAnchor.constraint(equalTo: watchNextButton.topAnchor),
-            speedButton.trailingAnchor.constraint(equalTo: watchNextButton.leadingAnchor, constant: 20),
+            speedButton.trailingAnchor.constraint(equalTo: watchNextButton.leadingAnchor, constant: 18),
             speedButton.widthAnchor.constraint(equalToConstant: 40),
             speedButton.heightAnchor.constraint(equalToConstant: 40)
         ])

@@ -233,7 +233,6 @@ class CustomMediaPlayerViewController: UIViewController {
             print("Error activating audio session: \(error)")
         }
         
-        // 2) Initialize volumeValue with the *current* iOS system volume
         volumeViewModel.value = Double(audioSession.outputVolume)
         
         
@@ -241,8 +240,7 @@ class CustomMediaPlayerViewController: UIViewController {
             guard let newVol = change.newValue else { return }
             DispatchQueue.main.async {
                 self?.volumeViewModel.value = Double(newVol)
-                // (Optional) add a debug print here:
-                Logger.shared.log("Hardware volume changed, new value: \(newVol)")
+                Logger.shared.log("Hardware volume changed, new value: \(newVol)", type: "Debug")
             }
         }
         
@@ -763,7 +761,6 @@ class CustomMediaPlayerViewController: UIViewController {
     
     func volumeSlider() {
         let container = VolumeSliderContainer(volumeVM: self.volumeViewModel) { newVal in
-            // Update the MPVolumeView slider for system volume
             if let sysSlider = self.systemVolumeSlider {
                 sysSlider.value = Float(newVal)
             }
@@ -794,8 +791,6 @@ class CustomMediaPlayerViewController: UIViewController {
         let leftSpacing: CGFloat = 2
         let rightSpacing: CGFloat = 6
         
-        // Use the volume slider hosting view's leading anchor if it exists and is visible;
-        // otherwise, fall back to the safe area trailing anchor.
         let trailingAnchor: NSLayoutXAxisAnchor
         if let volumeView = volumeSliderHostingView, !volumeView.isHidden {
             trailingAnchor = volumeView.leadingAnchor
@@ -839,7 +834,7 @@ class CustomMediaPlayerViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             menuButton.topAnchor.constraint(equalTo: qualityButton.topAnchor),
-            menuButton.trailingAnchor.constraint(equalTo: qualityButton.leadingAnchor, constant: -8),
+            menuButton.trailingAnchor.constraint(equalTo: qualityButton.leadingAnchor, constant: -6),
             menuButton.widthAnchor.constraint(equalToConstant: 40),
             menuButton.heightAnchor.constraint(equalToConstant: 40)
         ])
@@ -957,7 +952,7 @@ class CustomMediaPlayerViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             qualityButton.topAnchor.constraint(equalTo: speedButton.topAnchor),
-            qualityButton.trailingAnchor.constraint(equalTo: speedButton.leadingAnchor, constant: -8),
+            qualityButton.trailingAnchor.constraint(equalTo: speedButton.leadingAnchor, constant: -6),
             qualityButton.widthAnchor.constraint(equalToConstant: 40),
             qualityButton.heightAnchor.constraint(equalToConstant: 40)
         ])

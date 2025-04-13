@@ -20,8 +20,6 @@ struct EpisodeCell: View {
     let episodeID: Int
     let progress: Double
     let itemID: Int
-    let isAnime: Bool
-    let tmdbID: Int?
     
     let onTap: (String) -> Void
     let onMarkAllPrevious: () -> Void
@@ -32,15 +30,12 @@ struct EpisodeCell: View {
     @State private var currentProgress: Double = 0.0
     
     init(episodeIndex: Int, episode: String, episodeID: Int, progress: Double, 
-         itemID: Int, isAnime: Bool = true, tmdbID: Int? = nil, 
-         onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void) {
+         itemID: Int, onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void) {
         self.episodeIndex = episodeIndex
         self.episode = episode
         self.episodeID = episodeID
         self.progress = progress
         self.itemID = itemID
-        self.isAnime = isAnime
-        self.tmdbID = tmdbID
         self.onTap = onTap
         self.onMarkAllPrevious = onMarkAllPrevious
     }
@@ -140,11 +135,7 @@ struct EpisodeCell: View {
     }
     
     private func fetchEpisodeDetails() {
-        if isAnime {
-            fetchAnimeEpisodeDetails()
-        } else {
-            fetchTMDBEpisodeDetails()
-        }
+        fetchAnimeEpisodeDetails()
     }
     
     private func fetchAnimeEpisodeDetails() {
@@ -189,68 +180,6 @@ struct EpisodeCell: View {
                     self.isLoading = false
                 }
             } catch {
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                }
-            }
-        }.resume()
-    }
-    
-    private func fetchTMDBEpisodeDetails() {
-        guard let tmdbID = tmdbID else {
-            isLoading = false
-            return
-        }
-        
-        let seasonNumber = 1 
-        let apiKey = "738b4edd0a156cc126dc4a4b8aea4aca"
-        let urlString = "https://api.themoviedb.org/3/tv/\(tmdbID)/season/\(seasonNumber)/episode/\(episodeID + 1)?api_key=\(apiKey)"
-        
-        guard let url = URL(string: urlString) else {
-            isLoading = false
-            return
-        }
-        
-        URLSession.custom.dataTask(with: url) { data, response, error in
-            if let error = error {
-                Logger.shared.log("Failed to fetch TMDB episode details: \(error)", type: "Error")
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                }
-                return
-            }
-            
-            guard let data = data else {
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                }
-                return
-            }
-            
-            do {
-                let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
-                guard let episodeDetails = jsonObject as? [String: Any],
-                      let name = episodeDetails["name"] as? String else {
-                    Logger.shared.log("Invalid TMDB response format", type: "Error")
-                    DispatchQueue.main.async {
-                        self.isLoading = false
-                    }
-                    return
-                }
-                
-                let imageBasePath = "https://image.tmdb.org/t/p/w300"
-                var imageUrl = ""
-                if let stillPath = episodeDetails["still_path"] as? String {
-                    imageUrl = imageBasePath + stillPath
-                }
-                
-                DispatchQueue.main.async {
-                    self.episodeTitle = name
-                    self.episodeImageUrl = imageUrl
-                    self.isLoading = false
-                }
-            } catch {
-                Logger.shared.log("Error parsing TMDB data: \(error)", type: "Error")
                 DispatchQueue.main.async {
                     self.isLoading = false
                 }

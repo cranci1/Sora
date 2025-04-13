@@ -50,6 +50,8 @@ struct MediaInfoView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
     
     @State private var selectedRange: Range<Int> = 0..<100
+    @State private var showSettingsMenu = false
+    @State private var customAniListID: Int?
     
     private var isGroupedBySeasons: Bool {
         return groupedEpisodes().count > 1
@@ -126,6 +128,55 @@ struct MediaInfoView: View {
                                         }
                                         .padding(4)
                                         .background(Capsule().fill(Color.accentColor.opacity(0.4)))
+                                    }
+                                    
+                                    Menu {
+                                        Button(action: {
+                                            showCustomIDAlert()
+                                        }) {
+                                            Label("Set Custom AniList ID", systemImage: "number")
+                                        }
+                                        
+                                        if let customID = customAniListID {
+                                            Button(action: {
+                                                customAniListID = nil
+                                                itemID = nil
+                                                fetchItemID(byTitle: cleanTitle(title)) { result in
+                                                    switch result {
+                                                    case .success(let id):
+                                                        itemID = id
+                                                    case .failure(let error):
+                                                        Logger.shared.log("Failed to fetch AniList ID: \(error)")
+                                                    }
+                                                }
+                                            }) {
+                                                Label("Reset AniList ID", systemImage: "arrow.clockwise")
+                                            }
+                                        }
+                                        
+                                        if let id = itemID ?? customAniListID {
+                                            Button(action: {
+                                                if let url = URL(string: "https://anilist.co/anime/\(id)") {
+                                                    openSafariViewController(with: url.absoluteString)
+                                                }
+                                            }) {
+                                                Label("Open in AniList", systemImage: "link")
+                                            }
+                                        }
+                                        
+                                        Divider()
+                                        
+                                        Button(action: {
+                                            Logger.shared.log("Debug Info:\nTitle: \(title)\nHref: \(href)\nModule: \(module.metadata.sourceName)\nAniList ID: \(itemID ?? -1)\nCustom ID: \(customAniListID ?? -1)", type: "Debug")
+                                            DropManager.shared.showDrop(title: "Debug Info Logged", subtitle: "", duration: 1.0, icon: UIImage(systemName: "terminal"))
+                                        }) {
+                                            Label("Log Debug Info", systemImage: "terminal")
+                                        }
+                                    } label: {
+                                        Image(systemName: "ellipsis.circle")
+                                            .resizable()
+                                            .frame(width: 20, height: 20)
+                                            .foregroundColor(.primary)
                                     }
                                 }
                             }
@@ -241,8 +292,6 @@ struct MediaInfoView: View {
                                                 episodeID: ep.number - 1,
                                                 progress: progress,
                                                 itemID: itemID ?? 0,
-                                                isAnime: module.metadata.type?.lowercased() == "anime",
-                                                tmdbID: tmdbID,
                                                 onTap: { imageUrl in
                                                     if !isFetchingEpisode {
                                                         selectedEpisodeNumber = ep.number
@@ -293,8 +342,6 @@ struct MediaInfoView: View {
                                             episodeID: ep.number - 1,
                                             progress: progress,
                                             itemID: itemID ?? 0,
-                                            isAnime: module.metadata.type?.lowercased() == "anime",
-                                            tmdbID: tmdbID,
                                             onTap: { imageUrl in
                                                 if !isFetchingEpisode {
                                                     selectedEpisodeNumber = ep.number
@@ -376,7 +423,11 @@ struct MediaInfoView: View {
                 DropManager.shared.showDrop(title: "Fetching Data", subtitle: "Please wait while fetching.", duration: 0.5, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
                 fetchDetails()
                 
-                if module.metadata.type == "anime" {
+                if let savedID = UserDefaults.standard.object(forKey: "custom_anilist_id_\(href)") as? Int {
+                    customAniListID = savedID
+                    itemID = savedID
+                    Logger.shared.log("Using custom AniList ID: \(savedID)", type: "Debug")
+                } else {
                     fetchItemID(byTitle: cleanTitle(title)) { result in
                         switch result {
                         case .success(let id):
@@ -384,16 +435,6 @@ struct MediaInfoView: View {
                         case .failure(let error):
                             Logger.shared.log("Failed to fetch AniList ID: \(error)")
                             AnalyticsManager.shared.sendEvent(event: "error", additionalData: ["error": error, "message": "Failed to fetch AniList ID"])
-                        }
-                    }
-                } else {
-                    fetchTMDBID(byTitle: cleanTitle(title)) { result in
-                        switch result {
-                        case .success(let id):
-                            tmdbID = id
-                        case .failure(let error):
-                            Logger.shared.log("Failed to fetch TMDB ID: \(error)")
-                            AnalyticsManager.shared.sendEvent(event: "error", additionalData: ["error": error, "message": "Failed to fetch TMDB ID"])
                         }
                     }
                 }
@@ -660,11 +701,34 @@ struct MediaInfoView: View {
         DispatchQueue.main.async {
             let alert = UIAlertController(title: "Select Server", message: "Choose a server to play from", preferredStyle: .actionSheet)
             
-            for (index, stream) in streams.enumerated() {
-                let quality = "Stream \(index + 1)"
-                alert.addAction(UIAlertAction(title: quality, style: .default) { _ in
-                    self.playStream(url: stream, fullURL: fullURL, subtitles: subtitles)
+            var index = 0
+            var streamIndex = 1
+            
+            while index < streams.count {
+                let title: String
+                let streamUrl: String
+                
+                if index + 1 < streams.count {
+                    if !streams[index].lowercased().contains("http") {
+                        title = streams[index]
+                        streamUrl = streams[index + 1]
+                        index += 2
+                    } else {
+                        title = "Stream \(streamIndex)"
+                        streamUrl = streams[index]
+                        index += 1
+                    }
+                } else {
+                    title = "Stream \(streamIndex)"
+                    streamUrl = streams[index]
+                    index += 1
+                }
+                
+                alert.addAction(UIAlertAction(title: title, style: .default) { _ in
+                    self.playStream(url: streamUrl, fullURL: fullURL, subtitles: subtitles)
                 })
+                
+                streamIndex += 1
             }
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -851,41 +915,32 @@ struct MediaInfoView: View {
         }.resume()
     }
     
-    private func fetchTMDBID(byTitle title: String, completion: @escaping (Result<Int, Error>) -> Void) {
-        let encodedTitle = title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        let apiKey = "738b4edd0a156cc126dc4a4b8aea4aca"
+    private func showCustomIDAlert() {
+        let alert = UIAlertController(title: "Set Custom AniList ID", message: "Enter the AniList ID for this media", preferredStyle: .alert)
         
-        let urlString = "https://api.themoviedb.org/3/search/multi?api_key=\(apiKey)&query=\(encodedTitle)"
-        
-        guard let url = URL(string: urlString) else {
-            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
-            return
+        alert.addTextField { textField in
+            textField.placeholder = "AniList ID"
+            textField.keyboardType = .numberPad
+            if let customID = customAniListID {
+                textField.text = "\(customID)"
+            }
         }
         
-        URLSession.custom.dataTask(with: url) { data, _, error in
-            if let error = error {
-                completion(.failure(error))
-                return
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
+            if let text = alert.textFields?.first?.text,
+               let id = Int(text) {
+                customAniListID = id
+                itemID = id
+                UserDefaults.standard.set(id, forKey: "custom_anilist_id_\(href)")
+                Logger.shared.log("Set custom AniList ID: \(id)", type: "General")
             }
-            
-            guard let data = data else {
-                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
-                return
-            }
-            
-            do {
-                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let results = json["results"] as? [[String: Any]],
-                   let firstResult = results.first,
-                   let id = firstResult["id"] as? Int {
-                    completion(.success(id))
-                } else {
-                    let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "No matching TMDB content found"])
-                    completion(.failure(error))
-                }
-            } catch {
-                completion(.failure(error))
-            }
-        }.resume()
+        })
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first,
+           let rootVC = window.rootViewController {
+            findTopViewController.findViewController(rootVC).present(alert, animated: true)
+        }
     }
 }

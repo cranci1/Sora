@@ -10,6 +10,7 @@ import MarqueeLabel
 import AVKit
 import SwiftUI
 import AVFoundation
+import MediaPlayer
 
 // MARK: - SliderViewModel
 
@@ -57,6 +58,13 @@ class CustomMediaPlayerViewController: UIViewController {
             return true
         }
         return UserDefaults.standard.bool(forKey: "skip85Visible")
+    }
+    
+    private var isDoubleTapSkipEnabled: Bool {
+        if UserDefaults.standard.object(forKey: "doubleTapSeekEnabled") == nil {
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: "doubleTapSeekEnabled")
     }
     
     var showWatchNextButton = true
@@ -123,6 +131,14 @@ class CustomMediaPlayerViewController: UIViewController {
     private var loadedTimeRangesObservation: NSKeyValueObservation?
     private var playerTimeControlStatusObserver: NSKeyValueObservation?
     
+    private var volumeObserver: NSKeyValueObservation?
+    private var audioSession = AVAudioSession.sharedInstance()
+    private var hiddenVolumeView = MPVolumeView(frame: .zero)
+    private var systemVolumeSlider: UISlider?
+    private var volumeValue: Double = 0.0
+    private var volumeViewModel = VolumeViewModel()
+    var volumeSliderHostingView: UIView?
+    
     init(module: ScrapingModule,
          urlString: String,
          fullUrl: String,
@@ -186,6 +202,7 @@ class CustomMediaPlayerViewController: UIViewController {
         setupWatchNextButton()
         setupSubtitleLabel()
         setupDismissButton()
+        volumeSlider()
         setupSpeedButton()
         setupQualityButton()
         setupMenuButton()
@@ -209,6 +226,24 @@ class CustomMediaPlayerViewController: UIViewController {
             holdForPause()
         }
         
+        do {
+            try audioSession.setActive(true)
+        } catch {
+            print("Error activating audio session: \(error)")
+        }
+        
+        volumeViewModel.value = Double(audioSession.outputVolume)
+        
+        
+        volumeObserver = audioSession.observe(\.outputVolume, options: [.new]) { [weak self] session, change in
+            guard let newVol = change.newValue else { return }
+            DispatchQueue.main.async {
+                self?.volumeViewModel.value = Double(newVol)
+                Logger.shared.log("Hardware volume changed, new value: \(newVol)", type: "Debug")
+            }
+        }
+        
+        
         if #available(iOS 16.0, *) {
             playerViewController.allowsVideoFrameAnalysis = false
         }
@@ -225,6 +260,20 @@ class CustomMediaPlayerViewController: UIViewController {
             NSLayoutConstraint.activate(self.watchNextButtonControlsConstraints)
             self.watchNextButton.alpha = 1.0
             self.view.layoutIfNeeded()
+        }
+        
+        hiddenVolumeView.showsRouteButton = false
+        hiddenVolumeView.isHidden = true
+        view.addSubview(hiddenVolumeView)
+        
+        hiddenVolumeView.translatesAutoresizingMaskIntoConstraints = false
+        hiddenVolumeView.widthAnchor.constraint(equalToConstant: 1).isActive = true
+        hiddenVolumeView.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        hiddenVolumeView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        hiddenVolumeView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        
+        if let slider = hiddenVolumeView.subviews.first(where: { $0 is UISlider }) as? UISlider {
+            systemVolumeSlider = slider
         }
     }
     
@@ -244,7 +293,7 @@ class CustomMediaPlayerViewController: UIViewController {
         
         let availableWidth = marqueeLabel.frame.width
         let textWidth = marqueeLabel.intrinsicContentSize.width
-
+        
         if textWidth > availableWidth {
             marqueeLabel.lineBreakMode = .byTruncatingTail
         } else {
@@ -429,9 +478,10 @@ class CustomMediaPlayerViewController: UIViewController {
             ),
             inRange: 0...(duration > 0 ? duration : 1.0),
             activeFillColor: .white,
-            fillColor: .white.opacity(0.5),
+            fillColor: .white.opacity(0.6),
+            textColor: .white.opacity(0.7),
             emptyColor: .white.opacity(0.3),
-            height: 30,
+            height: 33,
             onEditingChanged: { editing in
                 if editing {
                     self.isSliderEditing = true
@@ -493,7 +543,7 @@ class CustomMediaPlayerViewController: UIViewController {
         holdForPauseGesture.numberOfTouchesRequired = 2
         view.addGestureRecognizer(holdForPauseGesture)
     }
-
+    
     func addInvisibleControlOverlays() {
         let playPauseOverlay = UIButton(type: .custom)
         playPauseOverlay.backgroundColor = .clear
@@ -507,16 +557,18 @@ class CustomMediaPlayerViewController: UIViewController {
             playPauseOverlay.heightAnchor.constraint(equalTo: playPauseButton.heightAnchor, constant: 20)
         ])
     }
-
+    
     func setupSkipAndDismissGestures() {
-        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
-        doubleTapGesture.numberOfTapsRequired = 2
-        view.addGestureRecognizer(doubleTapGesture)
-        
-        if let gestures = view.gestureRecognizers {
-            for gesture in gestures {
-                if let tapGesture = gesture as? UITapGestureRecognizer, tapGesture.numberOfTapsRequired == 1 {
-                    tapGesture.require(toFail: doubleTapGesture)
+        if isDoubleTapSkipEnabled {
+            let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+            doubleTapGesture.numberOfTapsRequired = 2
+            view.addGestureRecognizer(doubleTapGesture)
+            
+            if let gestures = view.gestureRecognizers {
+                for gesture in gestures {
+                    if let tapGesture = gesture as? UITapGestureRecognizer, tapGesture.numberOfTapsRequired == 1 {
+                        tapGesture.require(toFail: doubleTapGesture)
+                    }
                 }
             }
         }
@@ -527,7 +579,7 @@ class CustomMediaPlayerViewController: UIViewController {
     
     func showSkipFeedback(direction: String) {
         let diameter: CGFloat = 600
-
+        
         if let existingFeedback = view.viewWithTag(999) {
             existingFeedback.layer.removeAllAnimations()
             existingFeedback.removeFromSuperview()
@@ -540,7 +592,7 @@ class CustomMediaPlayerViewController: UIViewController {
         circleView.translatesAutoresizingMaskIntoConstraints = false
         circleView.isUserInteractionEnabled = false
         circleView.tag = 999
-
+        
         let iconName = (direction == "forward") ? "goforward" : "gobackward"
         let imageView = UIImageView(image: UIImage(systemName: iconName))
         imageView.tintColor = .black
@@ -704,18 +756,49 @@ class CustomMediaPlayerViewController: UIViewController {
         ]
         updateMarqueeConstraints()
     }
-
+    
+    func volumeSlider() {
+        let container = VolumeSliderContainer(volumeVM: self.volumeViewModel) { newVal in
+            if let sysSlider = self.systemVolumeSlider {
+                sysSlider.value = Float(newVal)
+            }
+        }
+        
+        let hostingController = UIHostingController(rootView: container)
+        hostingController.view.backgroundColor = UIColor.clear
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        
+        controlsContainerView.addSubview(hostingController.view)
+        addChild(hostingController)
+        hostingController.didMove(toParent: self)
+        
+        self.volumeSliderHostingView = hostingController.view
+        
+        NSLayoutConstraint.activate([
+            hostingController.view.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16),
+            hostingController.view.widthAnchor.constraint(equalToConstant: 160),
+            hostingController.view.heightAnchor.constraint(equalToConstant: 30)
+        ])
+    }
+    
+    
     func updateMarqueeConstraints() {
         NSLayoutConstraint.deactivate(currentMarqueeConstraints)
-
-        let leftSpacing: CGFloat = 8
-        let rightSpacing: CGFloat = 8
-
+        
+        let leftSpacing: CGFloat = 2
+        let rightSpacing: CGFloat = 6
+        
+        let trailingAnchor: NSLayoutXAxisAnchor
+        if let volumeView = volumeSliderHostingView, !volumeView.isHidden {
+            trailingAnchor = volumeView.leadingAnchor
+        } else {
+            trailingAnchor = view.safeAreaLayoutGuide.trailingAnchor
+        }
+        
         currentMarqueeConstraints = [
             marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: leftSpacing),
-            
-            marqueeLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -rightSpacing-20),
-            
+            marqueeLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -rightSpacing - 10),
             marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
         ]
         
@@ -749,7 +832,7 @@ class CustomMediaPlayerViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             menuButton.topAnchor.constraint(equalTo: qualityButton.topAnchor),
-            menuButton.trailingAnchor.constraint(equalTo: qualityButton.leadingAnchor, constant: -8),
+            menuButton.trailingAnchor.constraint(equalTo: qualityButton.leadingAnchor, constant: -6),
             menuButton.widthAnchor.constraint(equalToConstant: 40),
             menuButton.heightAnchor.constraint(equalToConstant: 40)
         ])
@@ -770,7 +853,7 @@ class CustomMediaPlayerViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             speedButton.topAnchor.constraint(equalTo: watchNextButton.topAnchor),
-            speedButton.trailingAnchor.constraint(equalTo: watchNextButton.leadingAnchor, constant: 20),
+            speedButton.trailingAnchor.constraint(equalTo: watchNextButton.leadingAnchor, constant: 18),
             speedButton.widthAnchor.constraint(equalToConstant: 40),
             speedButton.heightAnchor.constraint(equalToConstant: 40)
         ])
@@ -843,7 +926,7 @@ class CustomMediaPlayerViewController: UIViewController {
         
         skip85Button.isHidden = !isSkip85Visible
     }
-
+    
     
     private func setupQualityButton() {
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
@@ -867,7 +950,7 @@ class CustomMediaPlayerViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             qualityButton.topAnchor.constraint(equalTo: speedButton.topAnchor),
-            qualityButton.trailingAnchor.constraint(equalTo: speedButton.leadingAnchor, constant: -8),
+            qualityButton.trailingAnchor.constraint(equalTo: speedButton.leadingAnchor, constant: -6),
             qualityButton.widthAnchor.constraint(equalToConstant: 40),
             qualityButton.heightAnchor.constraint(equalToConstant: 40)
         ])
@@ -950,10 +1033,9 @@ class CustomMediaPlayerViewController: UIViewController {
                 let remainingPercentage = (self.duration - self.currentTimeVal) / self.duration
                 
                 if remainingPercentage < 0.1 &&
-                    self.module.metadata.type == "anime" &&
                     self.aniListID != 0 &&
-                   !self.aniListUpdatedSuccessfully &&
-                   !self.aniListUpdateImpossible
+                    !self.aniListUpdatedSuccessfully &&
+                    !self.aniListUpdateImpossible
                 {
                     self.tryAniListUpdate()
                 }
@@ -968,8 +1050,9 @@ class CustomMediaPlayerViewController: UIViewController {
                     inRange: 0...(self.duration > 0 ? self.duration : 1.0),
                     activeFillColor: .white,
                     fillColor: .white.opacity(0.6),
+                    textColor: .white.opacity(0.7),
                     emptyColor: .white.opacity(0.3),
-                    height: 30,
+                    height: 33,
                     onEditingChanged: { editing in
                         if !editing {
                             let targetTime = CMTime(
@@ -989,14 +1072,14 @@ class CustomMediaPlayerViewController: UIViewController {
             && self.showWatchNextButton
             && self.duration != 0
             
-
+            
             if isNearEnd {
-                if !isWatchNextVisible {
-                    watchNextButtonAppearedAt = currentTimeVal
-
+                if !self.isWatchNextVisible {
+                    self.watchNextButtonAppearedAt = self.currentTimeVal
+                    
                 }
             } else {
-
+                
             }
         }
     }
@@ -1196,13 +1279,13 @@ class CustomMediaPlayerViewController: UIViewController {
             guard let self = self,
                   let data = data,
                   let content = String(data: data, encoding: .utf8) else {
-                Logger.shared.log("Failed to load m3u8 file")
-                DispatchQueue.main.async {
-                    self?.qualities = []
-                    completion()
-                }
-                return
-            }
+                      Logger.shared.log("Failed to load m3u8 file")
+                      DispatchQueue.main.async {
+                          self?.qualities = []
+                          completion()
+                      }
+                      return
+                  }
             
             let lines = content.components(separatedBy: .newlines)
             var qualities: [(String, String)] = []
@@ -1571,6 +1654,13 @@ class CustomMediaPlayerViewController: UIViewController {
         } catch {
             Logger.shared.log("Didn't set up AVAudioSession: \(error)", type: "Debug")
         }
+        
+        volumeObserver = audioSession.observe(\.outputVolume, options: [.new]) { [weak self] session, change in
+            guard let newVol = change.newValue else { return }
+            DispatchQueue.main.async {
+                self?.volumeViewModel.value = Double(newVol)
+            }
+        }
     }
     
     private func setupHoldGesture() {
@@ -1635,8 +1725,30 @@ class CustomMediaPlayerViewController: UIViewController {
             }
         }
     }
+    
+    struct VolumeSliderContainer: View {
+        @ObservedObject var volumeVM: VolumeViewModel
+        var updateSystemSlider: ((Double) -> Void)? = nil // Optional callback if needed
+        
+        var body: some View {
+            VolumeSlider(
+                value: Binding(
+                    get: { volumeVM.value },
+                    set: { newVal in
+                        volumeVM.value = newVal
+                        updateSystemSlider?(newVal)
+                    }
+                ),
+                inRange: 0...1,
+                activeFillColor: .white,
+                fillColor: .white.opacity(0.6),
+                emptyColor: .white.opacity(0.3),
+                height: 10,
+                onEditingChanged: { _ in }
+            )
+        }
+    }
 }
-
 
 // yes? Like the plural of the famous american rapper ye? -IBHRAD
 // low taper fade the meme is massive -cranci

@@ -134,7 +134,7 @@ class VideoPlayerViewController: UIViewController {
             
             let remainingPercentage = (duration - currentTime) / duration
             
-            if remainingPercentage < 0.1 && self.module.metadata.type == "anime" && self.aniListID != 0 {
+            if remainingPercentage < 0.1 && self.aniListID != 0 {
                 let aniListMutation = AniListMutation()
                 aniListMutation.updateAnimeProgress(animeId: self.aniListID, episodeNumber: self.episodeNumber) { result in
                     switch result {

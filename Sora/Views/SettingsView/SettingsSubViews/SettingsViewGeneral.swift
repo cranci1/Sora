@@ -14,13 +14,9 @@ struct SettingsViewGeneral: View {
     @AppStorage("analyticsEnabled") private var analyticsEnabled: Bool = false
     @AppStorage("multiThreads") private var multiThreadsEnabled: Bool = false
     @AppStorage("metadataProviders") private var metadataProviders: String = "AniList"
-    @AppStorage("CustomDNSProvider") private var customDNSProvider: String = "Cloudflare"
-    @AppStorage("customPrimaryDNS") private var customPrimaryDNS: String = ""
-    @AppStorage("customSecondaryDNS") private var customSecondaryDNS: String = ""
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     
-    private let customDNSProviderList = ["Cloudflare", "Google", "OpenDNS", "Quad9", "AdGuard", "CleanBrowsing", "ControlD", "Custom"]
     private let metadataProvidersList = ["AniList"]
     @EnvironmentObject var settings: Settings
     

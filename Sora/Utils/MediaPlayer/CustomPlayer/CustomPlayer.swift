@@ -1746,6 +1746,7 @@ class CustomMediaPlayerViewController: UIViewController {
                 height: 10,
                 onEditingChanged: { _ in }
             )
+            .shadow(color: Color.black.opacity(0.6), radius: 4, x: 0, y: 2)
         }
     }
 }

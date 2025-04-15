@@ -64,12 +64,25 @@ struct SoraApp: App {
                   return
               }
         
-        AniListToken.exchangeAuthorizationCodeForToken(code: code) { success in
-            if success {
-                Logger.shared.log("Token exchange successful")
-            } else {
-                Logger.shared.log("Token exchange failed", type: "Error")
+        switch url.host {
+        case "anilist":
+            AniListToken.exchangeAuthorizationCodeForToken(code: code) { success in
+                if success {
+                    Logger.shared.log("AniList token exchange successful")
+                } else {
+                    Logger.shared.log("AniList token exchange failed", type: "Error")
+                }
             }
+        case "trakt":
+            TraktToken.exchangeAuthorizationCodeForToken(code: code) { success in
+                if success {
+                    Logger.shared.log("Trakt token exchange successful")
+                } else {
+                    Logger.shared.log("Trakt token exchange failed", type: "Error")
+                }
+            }
+        default:
+            Logger.shared.log("Unknown authentication service", type: "Error")
         }
     }
 }

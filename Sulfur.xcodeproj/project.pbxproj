@@ -56,6 +56,9 @@
 		13DB7CC32D7D99C0004371D3 /* SubtitleSettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB7CC22D7D99C0004371D3 /* SubtitleSettingsManager.swift */; };
 		13DB7CEC2D7DED5D004371D3 /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB7CEB2D7DED5D004371D3 /* DownloadManager.swift */; };
 		13DC0C462D302C7500D0F966 /* VideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DC0C452D302C7500D0F966 /* VideoPlayer.swift */; };
+		13E62FC22DABC5830007E259 /* Trakt-Login.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E62FC12DABC5830007E259 /* Trakt-Login.swift */; };
+		13E62FC42DABC58C0007E259 /* Trakt-Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E62FC32DABC58C0007E259 /* Trakt-Token.swift */; };
+		13E62FC72DABFE900007E259 /* TraktPushUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E62FC62DABFE900007E259 /* TraktPushUpdates.swift */; };
 		13EA2BD52D32D97400C1EBD7 /* CustomPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD12D32D97400C1EBD7 /* CustomPlayer.swift */; };
 		13EA2BD62D32D97400C1EBD7 /* Double+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD32D32D97400C1EBD7 /* Double+Extension.swift */; };
 		13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EA2BD82D32D98400C1EBD7 /* NormalPlayer.swift */; };
@@ -114,6 +117,9 @@
 		13DB7CEB2D7DED5D004371D3 /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
 		13DC0C412D2EC9BA00D0F966 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		13DC0C452D302C7500D0F966 /* VideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayer.swift; sourceTree = "<group>"; };
+		13E62FC12DABC5830007E259 /* Trakt-Login.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Trakt-Login.swift"; sourceTree = "<group>"; };
+		13E62FC32DABC58C0007E259 /* Trakt-Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Trakt-Token.swift"; sourceTree = "<group>"; };
+		13E62FC62DABFE900007E259 /* TraktPushUpdates.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TraktPushUpdates.swift; sourceTree = "<group>"; };
 		13EA2BD12D32D97400C1EBD7 /* CustomPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomPlayer.swift; sourceTree = "<group>"; };
 		13EA2BD32D32D97400C1EBD7 /* Double+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Double+Extension.swift"; sourceTree = "<group>"; };
 		13EA2BD82D32D98400C1EBD7 /* NormalPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NormalPlayer.swift; sourceTree = "<group>"; };
@@ -399,6 +405,7 @@
 		13E62FBF2DABC3A20007E259 /* Trakt */ = {
 			isa = PBXGroup;
 			children = (
+				13E62FC52DABFE810007E259 /* Mutations */,
 				13E62FC02DABC3A90007E259 /* Auth */,
 			);
 			path = Trakt;
@@ -407,8 +414,18 @@
 		13E62FC02DABC3A90007E259 /* Auth */ = {
 			isa = PBXGroup;
 			children = (
+				13E62FC12DABC5830007E259 /* Trakt-Login.swift */,
+				13E62FC32DABC58C0007E259 /* Trakt-Token.swift */,
 			);
 			path = Auth;
+			sourceTree = "<group>";
+		};
+		13E62FC52DABFE810007E259 /* Mutations */ = {
+			isa = PBXGroup;
+			children = (
+				13E62FC62DABFE900007E259 /* TraktPushUpdates.swift */,
+			);
+			path = Mutations;
 			sourceTree = "<group>";
 		};
 		13EA2BD02D32D97400C1EBD7 /* CustomPlayer */ = {
@@ -549,9 +566,12 @@
 				133D7C942D2BE2640075467E /* JSController.swift in Sources */,
 				133D7C922D2BE2640075467E /* URLSession.swift in Sources */,
 				133D7C912D2BE2640075467E /* SettingsViewModule.swift in Sources */,
+				13E62FC22DABC5830007E259 /* Trakt-Login.swift in Sources */,
 				130217CC2D81C55E0011EFF5 /* DownloadView.swift in Sources */,
 				133F55BB2D33B55100E08EEA /* LibraryManager.swift in Sources */,
+				13E62FC42DABC58C0007E259 /* Trakt-Token.swift in Sources */,
 				133D7C8E2D2BE2640075467E /* LibraryView.swift in Sources */,
+				13E62FC72DABFE900007E259 /* TraktPushUpdates.swift in Sources */,
 				133D7C6E2D2BE2500075467E /* SoraApp.swift in Sources */,
 				138AA1B92D2D66FD0021F9DF /* CircularProgressBar.swift in Sources */,
 				13DB468D2D90093A008CBC03 /* Anilist-Login.swift in Sources */,

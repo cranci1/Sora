@@ -16,12 +16,11 @@ import MediaPlayer
 
 class SliderViewModel: ObservableObject {
     @Published var sliderValue: Double = 0.0
-    @Published var bufferValue: Double = 0.0
 }
 
 // MARK: - CustomMediaPlayerViewController
 
-class CustomMediaPlayerViewController: UIViewController {
+class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDelegate {
     let module: ScrapingModule
     let streamURL: String
     let fullUrl: String
@@ -178,9 +177,7 @@ class CustomMediaPlayerViewController: UIViewController {
         let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(fullUrl)")
         if lastPlayedTime > 0 {
             let seekTime = CMTime(seconds: lastPlayedTime, preferredTimescale: 1)
-            self.player.seek(to: seekTime) { [weak self] _ in
-                self?.updateBufferValue()
-            }
+            self.player.seek(to: seekTime)
         }
     }
     
@@ -212,11 +209,6 @@ class CustomMediaPlayerViewController: UIViewController {
         startUpdateTimer()
         setupAudioSession()
         
-        if let item = player.currentItem {
-            loadedTimeRangesObservation = item.observe(\.loadedTimeRanges, options: [.new, .initial]) { [weak self] (playerItem, change) in
-                self?.updateBufferValue()
-            }
-        }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.checkForHLSStream()
@@ -340,20 +332,9 @@ class CustomMediaPlayerViewController: UIViewController {
         }
         
         if keyPath == "loadedTimeRanges" {
-            updateBufferValue()
         }
     }
     
-    private func updateBufferValue() {
-        guard let item = player.currentItem else { return }
-        
-        if let timeRange = item.loadedTimeRanges.first?.timeRangeValue {
-            let buffered = CMTimeGetSeconds(timeRange.start) + CMTimeGetSeconds(timeRange.duration)
-            DispatchQueue.main.async {
-                self.sliderViewModel.bufferValue = buffered
-            }
-        }
-    }
     
     @objc private func playerItemDidChange() {
         DispatchQueue.main.async { [weak self] in
@@ -442,6 +423,10 @@ class CustomMediaPlayerViewController: UIViewController {
         playPauseButton.layer.masksToBounds = false
         
         let playPauseTap = UITapGestureRecognizer(target: self, action: #selector(togglePlayPause))
+        playPauseTap.delaysTouchesBegan = false
+        playPauseTap.delegate = self  // Ensure you return true in shouldRecognizeSimultaneouslyWith
+        playPauseButton.addGestureRecognizer(playPauseTap)
+
         
         playPauseButton.addGestureRecognizer(playPauseTap)
         controlsContainerView.addSubview(playPauseButton)
@@ -495,7 +480,6 @@ class CustomMediaPlayerViewController: UIViewController {
                         let final = self.player.currentTime().seconds
                         self.sliderViewModel.sliderValue = final
                         self.currentTimeVal = final
-                        self.updateBufferValue()
                         self.isSliderEditing = false
                         
                         if wasPlaying {
@@ -784,26 +768,23 @@ class CustomMediaPlayerViewController: UIViewController {
     
     
     func updateMarqueeConstraints() {
-        NSLayoutConstraint.deactivate(currentMarqueeConstraints)
-        
-        let leftSpacing: CGFloat = 2
-        let rightSpacing: CGFloat = 6
-        
-        let trailingAnchor: NSLayoutXAxisAnchor
-        if let volumeView = volumeSliderHostingView, !volumeView.isHidden {
-            trailingAnchor = volumeView.leadingAnchor
-        } else {
-            trailingAnchor = view.safeAreaLayoutGuide.trailingAnchor
+        UIView.performWithoutAnimation {
+            NSLayoutConstraint.deactivate(currentMarqueeConstraints)
+            
+            let leftSpacing: CGFloat = 2
+            let rightSpacing: CGFloat = 6
+            let trailingAnchor: NSLayoutXAxisAnchor = (volumeSliderHostingView?.isHidden == false)
+                ? volumeSliderHostingView!.leadingAnchor
+                : view.safeAreaLayoutGuide.trailingAnchor
+            
+            currentMarqueeConstraints = [
+                marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: leftSpacing),
+                marqueeLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -rightSpacing - 10),
+                marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
+            ]
+            NSLayoutConstraint.activate(currentMarqueeConstraints)
+            view.layoutIfNeeded()
         }
-        
-        currentMarqueeConstraints = [
-            marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: leftSpacing),
-            marqueeLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -rightSpacing - 10),
-            marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
-        ]
-        
-        NSLayoutConstraint.activate(currentMarqueeConstraints)
-        view.layoutIfNeeded()
     }
     
     func setupMenuButton() {
@@ -989,7 +970,6 @@ class CustomMediaPlayerViewController: UIViewController {
                   let currentItem = self.player.currentItem,
                   currentItem.duration.seconds.isFinite else { return }
             
-            self.updateBufferValue()
             let currentDuration = currentItem.duration.seconds
             if currentDuration.isNaN || currentDuration <= 0 { return }
             
@@ -1059,9 +1039,7 @@ class CustomMediaPlayerViewController: UIViewController {
                                 seconds: self.sliderViewModel.sliderValue,
                                 preferredTimescale: 600
                             )
-                            self.player.seek(to: targetTime) { [weak self] finished in
-                                self?.updateBufferValue()
-                            }
+                            self.player.seek(to: targetTime)
                         }
                     }
                 )
@@ -1107,10 +1085,10 @@ class CustomMediaPlayerViewController: UIViewController {
     
     @objc func toggleControls() {
         isControlsVisible.toggle()
-        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseInOut, animations: {
             let alphaVal: CGFloat = self.isControlsVisible ? 1 : 0
             self.controlsContainerView.alpha = alphaVal
-            // No need to update the watchNextButton separately.
+            self.skip85Button.alpha = alphaVal
         })
     }
     
@@ -1121,7 +1099,6 @@ class CustomMediaPlayerViewController: UIViewController {
             currentTimeVal = max(currentTimeVal - finalSkip, 0)
             player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
                 guard let self = self else { return }
-                self.updateBufferValue()
             }
         }
     }
@@ -1133,7 +1110,6 @@ class CustomMediaPlayerViewController: UIViewController {
             currentTimeVal = min(currentTimeVal + finalSkip, duration)
             player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
                 guard let self = self else { return }
-                self.updateBufferValue()
             }
         }
     }
@@ -1144,7 +1120,6 @@ class CustomMediaPlayerViewController: UIViewController {
         currentTimeVal = max(currentTimeVal - finalSkip, 0)
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
             guard let self = self else { return }
-            self.updateBufferValue()
         }
     }
     
@@ -1153,9 +1128,7 @@ class CustomMediaPlayerViewController: UIViewController {
         let finalSkip = skipValue > 0 ? skipValue : 10
         currentTimeVal = min(currentTimeVal + finalSkip, duration)
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
-            guard let self = self else { return }
-            self.updateBufferValue()
-        }
+            guard let self = self else { return }        }
     }
     
     @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
@@ -1179,15 +1152,19 @@ class CustomMediaPlayerViewController: UIViewController {
             isPlaying = false
             playPauseButton.image = UIImage(systemName: "play.fill")
             
-            if !isControlsVisible {
-                isControlsVisible = true
-                UIView.animate(withDuration: 0.2) {
-                    self.controlsContainerView.alpha = 1.0
-                    self.skip85Button.alpha = 0.8
-                    self.view.layoutIfNeeded()
+            // Defer the UI animation so that it doesn't block the pause call
+            DispatchQueue.main.async {
+                if !self.isControlsVisible {
+                    self.isControlsVisible = true
+                    UIView.animate(withDuration: 0.1, animations: {
+                        self.controlsContainerView.alpha = 1.0
+                        self.skip85Button.alpha = 0.8
+                        // Removed layoutIfNeeded() to avoid forcing a layout pass here
+                    })
                 }
             }
         } else {
+            // Play immediately
             player.play()
             isPlaying = true
             playPauseButton.image = UIImage(systemName: "pause.fill")
@@ -1656,8 +1633,12 @@ class CustomMediaPlayerViewController: UIViewController {
         
         volumeObserver = audioSession.observe(\.outputVolume, options: [.new]) { [weak self] session, change in
             guard let newVol = change.newValue else { return }
+            if let oldVol = self?.volumeViewModel.value, abs(Double(newVol) - oldVol) < 0.02 {
+                return
+            }
             DispatchQueue.main.async {
                 self?.volumeViewModel.value = Double(newVol)
+                Logger.shared.log("Hardware volume changed, new value: \(newVol)", type: "Debug")
             }
         }
     }
@@ -1718,7 +1699,7 @@ class CustomMediaPlayerViewController: UIViewController {
             if player.timeControlStatus == .paused,
                let reason = player.reasonForWaitingToPlay {
                 Logger.shared.log("Paused reason: \(reason)", type: "Error")
-                if reason == .toMinimizeStalls || reason == .evaluatingBufferingRate {
+                if reason == .toMinimizeStalls {
                     player.play()
                 }
             }
@@ -1727,7 +1708,7 @@ class CustomMediaPlayerViewController: UIViewController {
     
     struct VolumeSliderContainer: View {
         @ObservedObject var volumeVM: VolumeViewModel
-        var updateSystemSlider: ((Double) -> Void)? = nil // Optional callback if needed
+        var updateSystemSlider: ((Double) -> Void)? = nil
         
         var body: some View {
             VolumeSlider(

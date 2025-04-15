@@ -27,6 +27,7 @@ An iOS and macOS modular web scraping app, under the GPLv3.0 License.
 - [x] Local Library
 - [x] Streams support (Jellyfin/Plex like servers)
 - [x] External Media players (VLC, infuse, Outplayer, nPlayer)
+- [x] Tracking Services (AniList, Trakt)
 
 ## Frequently Asked Questions
 

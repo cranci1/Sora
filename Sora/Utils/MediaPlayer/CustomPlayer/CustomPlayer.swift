@@ -1110,8 +1110,7 @@ class CustomMediaPlayerViewController: UIViewController {
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut, animations: {
             let alphaVal: CGFloat = self.isControlsVisible ? 1 : 0
             self.controlsContainerView.alpha = alphaVal
-            self.skip85Button.alpha = alphaVal
-            self.watchNextButton.alpha = alphaVal
+            // No need to update the watchNextButton separately.
         })
     }
     

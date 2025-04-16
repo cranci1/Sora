@@ -16,7 +16,7 @@ struct SettingsViewPlayer: View {
     @AppStorage("skipIncrementHold") private var skipIncrementHold: Double = 30.0
     @AppStorage("holdForPauseEnabled") private var holdForPauseEnabled = false
     @AppStorage("skip85Visible") private var skip85Visible: Bool = true
-    @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = true
+    @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
 
     
     private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "Sora"]

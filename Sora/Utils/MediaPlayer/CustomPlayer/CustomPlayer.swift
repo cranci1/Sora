@@ -61,23 +61,18 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private var isDoubleTapSkipEnabled: Bool {
         if UserDefaults.standard.object(forKey: "doubleTapSeekEnabled") == nil {
-            return true
+            return false
         }
         return UserDefaults.standard.bool(forKey: "doubleTapSeekEnabled")
     }
-    
-    var showWatchNextButton = true
-    var watchNextButtonTimer: Timer?
-    var isWatchNextRepositioned: Bool = false
-    var isWatchNextVisible: Bool = false
-    var lastDuration: Double = 0.0
-    var watchNextButtonAppearedAt: Double?
     
     var portraitButtonVisibleConstraints: [NSLayoutConstraint] = []
     var portraitButtonHiddenConstraints: [NSLayoutConstraint] = []
     var landscapeButtonVisibleConstraints: [NSLayoutConstraint] = []
     var landscapeButtonHiddenConstraints: [NSLayoutConstraint] = []
     var currentMarqueeConstraints: [NSLayoutConstraint] = []
+    private var currentMenuButtonTrailing: NSLayoutConstraint!
+
     
     var subtitleForegroundColor: String = "white"
     var subtitleBackgroundEnabled: Bool = true
@@ -210,7 +205,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupAudioSession()
         
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             self?.checkForHLSStream()
         }
         
@@ -291,6 +286,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         } else {
             marqueeLabel.lineBreakMode = .byClipping
         }
+        updateMenuButtonConstraints()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -340,8 +336,17 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if self.qualityButton.isHidden && self.isHLSStream {
+                // 1) reveal the quality button
                 self.qualityButton.isHidden = false
                 self.qualityButton.menu = self.qualitySelectionMenu()
+
+                // 2) update the trailing constraint for the menuButton
+                self.updateMenuButtonConstraints()
+
+                // 3) animate the shift
+                UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
+                    self.view.layoutIfNeeded()
+                }
             }
         }
     }
@@ -424,7 +429,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         let playPauseTap = UITapGestureRecognizer(target: self, action: #selector(togglePlayPause))
         playPauseTap.delaysTouchesBegan = false
-        playPauseTap.delegate = self  // Ensure you return true in shouldRecognizeSimultaneouslyWith
+        playPauseTap.delegate = self
         playPauseButton.addGestureRecognizer(playPauseTap)
 
         
@@ -813,10 +818,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         NSLayoutConstraint.activate([
             menuButton.topAnchor.constraint(equalTo: qualityButton.topAnchor),
-            menuButton.trailingAnchor.constraint(equalTo: qualityButton.leadingAnchor, constant: -6),
             menuButton.widthAnchor.constraint(equalToConstant: 40),
-            menuButton.heightAnchor.constraint(equalToConstant: 40)
+            menuButton.heightAnchor.constraint(equalToConstant: 40),
         ])
+
+        currentMenuButtonTrailing = menuButton.trailingAnchor.constraint(equalTo: qualityButton.leadingAnchor, constant: -6)
     }
     
     func setupSpeedButton() {
@@ -920,11 +926,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         qualityButton.menu = qualitySelectionMenu()
         qualityButton.isHidden = true
         
-        speedButton.layer.shadowColor = UIColor.black.cgColor
-        speedButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        speedButton.layer.shadowOpacity = 0.6
-        speedButton.layer.shadowRadius = 4
-        speedButton.layer.masksToBounds = false
+        qualityButton.layer.shadowColor = UIColor.black.cgColor
+        qualityButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        qualityButton.layer.shadowOpacity = 0.6
+        qualityButton.layer.shadowRadius = 4
+        qualityButton.layer.masksToBounds = false
         
         controlsContainerView.addSubview(qualityButton)
         qualityButton.translatesAutoresizingMaskIntoConstraints = false
@@ -1044,43 +1050,34 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     }
                 )
             }
-            
-            let isNearEnd = (self.duration - self.currentTimeVal) <= (self.duration * 0.10)
-            && self.currentTimeVal != self.duration
-            && self.showWatchNextButton
-            && self.duration != 0
-            
-            
-            if isNearEnd {
-                if !self.isWatchNextVisible {
-                    self.watchNextButtonAppearedAt = self.currentTimeVal
-                    
-                }
-            } else {
-                
-            }
         }
     }
     
-    func repositionWatchNextButton() {
-        self.isWatchNextRepositioned = true
-        UIView.animate(withDuration: 0.3, animations: {
-            NSLayoutConstraint.deactivate(self.watchNextButtonNormalConstraints)
-            NSLayoutConstraint.activate(self.watchNextButtonControlsConstraints)
-            self.view.layoutIfNeeded()
-            self.watchNextButton.alpha = 0.0
-        }, completion: { _ in
-            self.watchNextButton.isHidden = true
-        })
-        self.watchNextButtonTimer?.invalidate()
-        self.watchNextButtonTimer = nil
-    }
     
     func startUpdateTimer() {
         updateTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             self.currentTimeVal = self.player.currentTime().seconds
         }
+    }
+    
+    func updateMenuButtonConstraints() {
+      // tear down last one
+      currentMenuButtonTrailing.isActive = false
+
+      // pick the “next” visible control
+      let anchor: NSLayoutXAxisAnchor
+      if !qualityButton.isHidden {
+        anchor = qualityButton.leadingAnchor
+      } else if !speedButton.isHidden {
+        anchor = speedButton.leadingAnchor
+      } else {
+        anchor = controlsContainerView.trailingAnchor
+      }
+
+      // rebuild & activate
+      currentMenuButtonTrailing = menuButton.trailingAnchor.constraint(equalTo: anchor, constant: -6)
+      currentMenuButtonTrailing.isActive = true
     }
     
     @objc func toggleControls() {
@@ -1097,9 +1094,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             let holdValue = UserDefaults.standard.double(forKey: "skipIncrementHold")
             let finalSkip = holdValue > 0 ? holdValue : 30
             currentTimeVal = max(currentTimeVal - finalSkip, 0)
-            player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
-                guard let self = self else { return }
-            }
+            player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
         }
     }
     
@@ -1108,9 +1103,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             let holdValue = UserDefaults.standard.double(forKey: "skipIncrementHold")
             let finalSkip = holdValue > 0 ? holdValue : 30
             currentTimeVal = min(currentTimeVal + finalSkip, duration)
-            player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
-                guard let self = self else { return }
-            }
+            player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
         }
     }
     
@@ -1118,17 +1111,14 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let skipValue = UserDefaults.standard.double(forKey: "skipIncrement")
         let finalSkip = skipValue > 0 ? skipValue : 10
         currentTimeVal = max(currentTimeVal - finalSkip, 0)
-        player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
-            guard let self = self else { return }
-        }
+        player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
     }
     
     @objc func seekForward() {
         let skipValue = UserDefaults.standard.double(forKey: "skipIncrement")
         let finalSkip = skipValue > 0 ? skipValue : 10
         currentTimeVal = min(currentTimeVal + finalSkip, duration)
-        player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
-            guard let self = self else { return }        }
+        player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
     }
     
     @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
@@ -1407,19 +1397,23 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             
             parseM3U8(url: url) { [weak self] in
                 guard let self = self else { return }
-                
-                if let lastSelectedQuality = UserDefaults.standard.string(forKey: "lastSelectedQuality"),
-                   self.qualities.contains(where: { $0.1 == lastSelectedQuality }) {
-                    self.switchToQuality(urlString: lastSelectedQuality)
+                if let last = UserDefaults.standard.string(forKey: "lastSelectedQuality"),
+                   self.qualities.contains(where: { $0.1 == last }) {
+                    self.switchToQuality(urlString: last)
                 }
                 
+                // reveal + animate
                 self.qualityButton.isHidden = false
                 self.qualityButton.menu = self.qualitySelectionMenu()
-                self.updateMarqueeConstraints()
+                self.updateMenuButtonConstraints()
+                UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
+                    self.view.layoutIfNeeded()
+                }
             }
         } else {
             isHLSStream = false
             qualityButton.isHidden = true
+            updateMenuButtonConstraints()
         }
     }
     

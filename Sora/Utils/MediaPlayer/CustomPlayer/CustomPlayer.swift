@@ -205,7 +205,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupAudioSession()
         
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.checkForHLSStream()
         }
         

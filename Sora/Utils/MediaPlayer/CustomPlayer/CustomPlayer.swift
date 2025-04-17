@@ -1095,6 +1095,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             let finalSkip = holdValue > 0 ? holdValue : 30
             currentTimeVal = max(currentTimeVal - finalSkip, 0)
             player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
+            animateButtonRotation(backwardButton, clockwise: false)
         }
     }
     
@@ -1104,21 +1105,24 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             let finalSkip = holdValue > 0 ? holdValue : 30
             currentTimeVal = min(currentTimeVal + finalSkip, duration)
             player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
+            animateButtonRotation(forwardButton)
         }
     }
     
     @objc func seekBackward() {
-        let skipValue = UserDefaults.standard.double(forKey: "skipIncrement")
-        let finalSkip = skipValue > 0 ? skipValue : 10
-        currentTimeVal = max(currentTimeVal - finalSkip, 0)
-        player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
-    }
+           let skipValue = UserDefaults.standard.double(forKey: "skipIncrement")
+           let finalSkip = skipValue > 0 ? skipValue : 10
+           currentTimeVal = max(currentTimeVal - finalSkip, 0)
+           player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
+           animateButtonRotation(backwardButton, clockwise: false)
+       }
     
     @objc func seekForward() {
         let skipValue = UserDefaults.standard.double(forKey: "skipIncrement")
         let finalSkip = skipValue > 0 ? skipValue : 10
         currentTimeVal = min(currentTimeVal + finalSkip, duration)
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
+        animateButtonRotation(forwardButton)
     }
     
     @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
@@ -1233,6 +1237,30 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
         }
     }
+    
+    private func animateButtonRotation(_ button: UIView, clockwise: Bool = true) {
+        if button.layer.animation(forKey: "rotate360") != nil {
+            return
+        }
+        button.superview?.layoutIfNeeded()
+
+        button.layer.shouldRasterize = true
+        button.layer.rasterizationScale = UIScreen.main.scale
+        button.layer.allowsEdgeAntialiasing = true
+
+        let rotation = CABasicAnimation(keyPath: "transform.rotation.z")
+        rotation.fromValue = 0
+        rotation.toValue   = CGFloat.pi * 2 * (clockwise ? 1 : -1)
+        rotation.duration  = 0.43
+        rotation.timingFunction = CAMediaTimingFunction(name: .linear)
+
+        button.layer.add(rotation, forKey: "rotate360")
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + rotation.duration) {
+            button.layer.shouldRasterize = false
+        }
+    }
+
     
     private func parseM3U8(url: URL, completion: @escaping () -> Void) {
         var request = URLRequest(url: url)

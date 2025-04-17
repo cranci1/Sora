@@ -13,6 +13,10 @@ struct SoraApp: App {
     @StateObject private var moduleManager = ModuleManager()
     @StateObject private var librarykManager = LibraryManager()
     
+    init() {
+        _ = iCloudSyncManager.shared
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()

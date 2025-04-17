@@ -33,6 +33,14 @@ class LibraryManager: ObservableObject {
     
     init() {
         loadBookmarks()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
+    }
+    
+    @objc private func handleiCloudSync() {
+        DispatchQueue.main.async {
+            self.loadBookmarks()
+        }
     }
     
     func removeBookmark(item: LibraryItem) {

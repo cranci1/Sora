@@ -11,7 +11,13 @@ class ContinueWatchingManager {
     static let shared = ContinueWatchingManager()
     private let storageKey = "continueWatchingItems"
     
-    private init() {}
+    private init() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
+    }
+    
+    @objc private func handleiCloudSync() {
+        NotificationCenter.default.post(name: .ContinueWatchingDidUpdate, object: nil)
+    }
     
     func save(item: ContinueWatchingItem) {
         if item.progress >= 0.9 {

@@ -9,10 +9,6 @@ import Foundation
 import FFmpegSupport
 import UIKit
 
-extension Notification.Name {
-    static let DownloadManagerStatusUpdate = Notification.Name("DownloadManagerStatusUpdate")
-}
-
 class DownloadManager {
     static let shared = DownloadManager()
     

@@ -17,10 +17,12 @@ struct SettingsViewGeneral: View {
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     @AppStorage("hideEmptySections") private var hideEmptySections: Bool = false
+    @AppStorage("currentAppIcon") private var currentAppIcon: String = "Default"
 
     private let metadataProvidersList = ["AniList"]
     @EnvironmentObject var settings: Settings
-    
+    @State var showAppIconPicker: Bool = false
+
     var body: some View {
         Form {
             Section(header: Text("Interface")) {
@@ -33,6 +35,17 @@ struct SettingsViewGeneral: View {
                         Text("Dark").tag(Appearance.dark)
                     }
                     .pickerStyle(SegmentedPickerStyle())
+                }
+                HStack {
+                    Text("App Icon")
+                    Spacer()
+                    Button(action: {
+                        showAppIconPicker.toggle()
+                    }) {
+                        Text(currentAppIcon.isEmpty ? "Default" : currentAppIcon)
+                            .font(.body)
+                            .foregroundColor(.gray)
+                    }
                 }
                 Toggle("Hide Empty Sections", isOn: $hideEmptySections)
                     .tint(.accentColor)
@@ -106,5 +119,13 @@ struct SettingsViewGeneral: View {
             }
         }
         .navigationTitle("General")
+        .sheet(isPresented: $showAppIconPicker) {
+            if #available(iOS 16.0, *) {
+                    SettingsViewAlternateAppIconPicker(isPresented: $showAppIconPicker)
+                        .presentationDetents([.height(200)])
+                } else {
+                    SettingsViewAlternateAppIconPicker(isPresented: $showAppIconPicker)
+                }
+        }
     }
 }

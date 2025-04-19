@@ -43,7 +43,7 @@ struct SettingsViewAlternateAppIconPicker: View {
 
                             Text(icon.name)
                                 .font(.caption)
-                                .foregroundColor(currentAppIcon == icon.name ? .accentColor : .black)
+                                .foregroundColor(currentAppIcon == icon.name ? .accentColor : .label)
                         }
                         .onTapGesture {
                             currentAppIcon = icon.name

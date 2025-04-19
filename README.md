@@ -9,6 +9,12 @@
 
 An iOS and macOS modular web scraping app, under the GPLv3.0 License.
 
+<p align="center">
+    <a href="http://itunes.apple.com/us/app/sulfur/id6742741043">
+        <img src="./.github/app-store-badge.svg" alt="Download on the App Store">
+    </a>
+</p>
+
 </div>
 
 ## Table of Contents

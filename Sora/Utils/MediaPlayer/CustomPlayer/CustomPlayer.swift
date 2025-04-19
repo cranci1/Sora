@@ -245,8 +245,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             self.watchNextButton.alpha = 1.0
             self.view.layoutIfNeeded()
         }
-        
-        hiddenVolumeView.showsRouteButton = false
+
+        if #unavailable(iOS 13) {
+            hiddenVolumeView.showsRouteButton = false
+        }
         hiddenVolumeView.isHidden = true
         view.addSubview(hiddenVolumeView)
         
@@ -902,9 +904,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skip85Button.setTitleColor(.white, for: .normal)
         skip85Button.layer.cornerRadius = 21
         skip85Button.alpha = 0.7
-        
-        skip85Button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
-        
+
+        if #unavailable(iOS 15) {
+            skip85Button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+        }
+
         skip85Button.layer.shadowColor = UIColor.black.cgColor
         skip85Button.layer.shadowOffset = CGSize(width: 0, height: 2)
         skip85Button.layer.shadowOpacity = 0.6

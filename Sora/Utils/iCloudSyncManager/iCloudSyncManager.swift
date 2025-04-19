@@ -30,6 +30,7 @@ class iCloudSyncManager {
         "analyticsEnabled",
         "refreshModulesOnLaunch",
         "fetchEpisodeMetadata",
+        "hideEmptySections",
         "multiThreads",
         "metadataProviders"
     ]

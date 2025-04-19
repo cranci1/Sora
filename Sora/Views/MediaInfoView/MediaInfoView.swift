@@ -137,7 +137,7 @@ struct MediaInfoView: View {
                                             Label("Set Custom AniList ID", systemImage: "number")
                                         }
                                         
-                                        if let customID = customAniListID {
+                                        if let _ = customAniListID {
                                             Button(action: {
                                                 customAniListID = nil
                                                 itemID = nil

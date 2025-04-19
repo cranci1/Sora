@@ -11,7 +11,8 @@ import Kingfisher
 struct LibraryView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
-    
+
+    @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     
@@ -50,102 +51,100 @@ struct LibraryView: View {
                 let columnsCount = determineColumns()
                 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Continue Watching")
-                        .font(.title2)
-                        .bold()
-                        .padding(.horizontal, 20)
-                    
-                    if continueWatchingItems.isEmpty {
-                        VStack(spacing: 8) {
-                            Image(systemName: "play.circle")
-                                .font(.largeTitle)
-                                .foregroundColor(.secondary)
-                            Text("No items to continue watching.")
-                                .font(.headline)
-                            Text("Recently watched content will appear here.")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                    if !(hideEmptySections ?? false) && continueWatchingItems.isEmpty {
+                        Text("Continue Watching")
+                            .font(.title2)
+                            .bold()
+                            .padding(.horizontal, 20)
+
+                        if continueWatchingItems.isEmpty {
+                            VStack(spacing: 8) {
+                                Image(systemName: "play.circle")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.secondary)
+                                Text("No items to continue watching.")
+                                    .font(.headline)
+                                Text("Recently watched content will appear here.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                        } else {
+                            ContinueWatchingSection(items: $continueWatchingItems, markAsWatched: { item in
+                                markContinueWatchingItemAsWatched(item: item)
+                            }, removeItem: { item in
+                                removeContinueWatchingItem(item: item)
+                            })
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                    } else {
-                        ContinueWatchingSection(items: $continueWatchingItems, markAsWatched: { item in
-                            markContinueWatchingItemAsWatched(item: item)
-                        }, removeItem: { item in
-                            removeContinueWatchingItem(item: item)
-                        })
                     }
-                    
-                    Text("Bookmarks")
-                        .font(.title2)
-                        .bold()
-                        .padding(.horizontal, 20)
-                    
-                    if libraryManager.bookmarks.isEmpty {
-                        VStack(spacing: 8) {
-                            Image(systemName: "magazine")
-                                .font(.largeTitle)
-                                .foregroundColor(.secondary)
-                            Text("You have no items saved.")
-                                .font(.headline)
-                            Text("Bookmark items for an easier access later.")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                    } else {
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columnsCount), spacing: 12) {
-                            ForEach(libraryManager.bookmarks) { item in
-                                if let module = moduleManager.modules.first(where: { $0.id.uuidString == item.moduleId }) {
-                                    NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: module)) {
-                                        VStack(alignment: .leading) {
-                                            ZStack {
-                                                KFImage(URL(string: item.imageUrl))
-                                                    .placeholder {
-                                                        RoundedRectangle(cornerRadius: 10)
-                                                            .fill(Color.gray.opacity(0.3))
-                                                            .aspectRatio(2/3, contentMode: .fit)
-                                                            .shimmering()
-                                                    }
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fill)
-                                                    .frame(height: cellWidth * 3 / 2)
-                                                    .frame(maxWidth: cellWidth)
-                                                    .cornerRadius(10)
-                                                    .clipped()
-                                                    .overlay(
-                                                        KFImage(URL(string: module.metadata.iconUrl))
-                                                            .resizable()
-                                                            .frame(width: 24, height: 24)
-                                                            .cornerRadius(4)
-                                                            .padding(4),
-                                                        alignment: .topLeading
-                                                    )
+
+                    if !(hideEmptySections ?? false) && libraryManager.bookmarks.isEmpty {
+                        Text("Bookmarks")
+                            .font(.title2)
+                            .bold()
+                            .padding(.horizontal, 20)
+
+                        if libraryManager.bookmarks.isEmpty {
+                            VStack(spacing: 8) {
+                                Image(systemName: "magazine")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.secondary)
+                                Text("You have no items saved.")
+                                    .font(.headline)
+                                Text("Bookmark items for an easier access later.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                        } else {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columnsCount), spacing: 12) {
+                                ForEach(libraryManager.bookmarks) { item in
+                                    if let module = moduleManager.modules.first(where: { $0.id.uuidString == item.moduleId }) {
+                                        NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: module)) {
+                                            VStack(alignment: .leading) {
+                                                ZStack {
+                                                    KFImage(URL(string: item.imageUrl))
+                                                        .placeholder {
+                                                            RoundedRectangle(cornerRadius: 10)
+                                                                .fill(Color.gray.opacity(0.3))
+                                                                .aspectRatio(2/3, contentMode: .fit)
+                                                                .shimmering()
+                                                        }
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fill)
+                                                        .frame(height: cellWidth * 3 / 2)
+                                                        .frame(maxWidth: cellWidth)
+                                                        .cornerRadius(10)
+                                                        .clipped()
+                                                        .overlay(
+                                                            KFImage(URL(string: module.metadata.iconUrl))
+                                                                .resizable()
+                                                                .frame(width: 24, height: 24)
+                                                                .cornerRadius(4)
+                                                                .padding(4),
+                                                            alignment: .topLeading
+                                                        )
+                                                }
+                                                Text(item.title)
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.primary)
+                                                    .lineLimit(1)
+                                                    .multilineTextAlignment(.leading)
                                             }
-                                            Text(item.title)
-                                                .font(.subheadline)
-                                                .foregroundColor(.primary)
-                                                .lineLimit(1)
-                                                .multilineTextAlignment(.leading)
                                         }
-                                    }
-                                    .contextMenu {
-                                        Button(role: .destructive, action: {
-                                            libraryManager.removeBookmark(item: item)
-                                        }) {
-                                            Label("Remove from Bookmarks", systemImage: "trash")
+                                        .contextMenu {
+                                            Button(role: .destructive, action: {
+                                                libraryManager.removeBookmark(item: item)
+                                            }) {
+                                                Label("Remove from Bookmarks", systemImage: "trash")
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                        .padding(.horizontal, 20)
-                        .onAppear {
-                            updateOrientation()
-                        }
-                        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-                            updateOrientation()
+                            .padding(.horizontal, 20)
                         }
                     }
                 }
@@ -153,7 +152,11 @@ struct LibraryView: View {
             }
             .navigationTitle("Library")
             .onAppear {
+                updateOrientation()
                 fetchContinueWatching()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+                updateOrientation()
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())

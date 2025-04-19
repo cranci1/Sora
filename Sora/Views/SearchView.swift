@@ -16,6 +16,7 @@ struct SearchItem: Identifiable {
 }
 
 struct SearchView: View {
+    @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
@@ -87,7 +88,7 @@ struct SearchView: View {
                         }
                     }
                     
-                    if selectedModule == nil {
+                    if !(hideEmptySections ?? false) && selectedModule == nil {
                         VStack(spacing: 8) {
                             Image(systemName: "questionmark.app")
                                 .font(.largeTitle)

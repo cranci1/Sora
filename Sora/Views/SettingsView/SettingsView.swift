@@ -76,6 +76,19 @@ struct SettingsView: View {
                         }
                     }
                     Button(action: {
+                        if let url = URL(string: "https://github.com/cranci1/Sora/graphs/contributors") {
+                            UIApplication.shared.open(url)
+                        }
+                    }) {
+                        HStack {
+                            Text("Contributors")
+                                .foregroundColor(.primary)
+                            Spacer()
+                            Image(systemName: "safari")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    Button(action: {
                         if let url = URL(string: "https://github.com/cranci1/Sora/blob/dev/LICENSE") {
                             UIApplication.shared.open(url)
                         }

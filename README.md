@@ -11,10 +11,10 @@ An iOS and macOS modular web scraping app, under the GPLv3.0 License.
 
 <div style="display: flex; justify-content: center; gap: 20px;">
     <a href="http://itunes.apple.com/us/app/sulfur/id6742741043">
-        <img src="./github/app-store-badge.png" alt="Download on the App Store" style="height: 50px; padding-top: 10px;">
+        <img src="./.github/app-store-badge.png" alt="Download on the App Store" style="height: 50px; padding-top: 10px;">
     </a>
     <a href="https://itunes.apple.com/us/app/bookplayer-audio-book-player/id1138219998?ls=1&amp;mt=8">
-        <img src="./github/testflight-badge.png" alt="Download on Testflight" height="60";>
+        <img src="./.github/testflight-badge.png" alt="Download on Testflight" height="60";>
     </a>
 </div>
 

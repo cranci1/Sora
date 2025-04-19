@@ -126,6 +126,29 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var loadedTimeRangesObservation: NSKeyValueObservation?
     private var playerTimeControlStatusObserver: NSKeyValueObservation?
     
+    private var isDimmed = false
+    private var dimButton: UIButton!
+    private var dimButtonToSlider: NSLayoutConstraint!
+    private var dimButtonToRight: NSLayoutConstraint!
+    private var dimButtonTimer: Timer?
+
+    private lazy var controlsToHide: [UIView] = [
+        dismissButton,
+        playPauseButton,
+        backwardButton,
+        forwardButton,
+        sliderHostingController!.view,
+        skip85Button,
+        marqueeLabel,
+        menuButton,
+        qualityButton,
+        speedButton,
+        watchNextButton,
+        volumeSliderHostingView!
+    ]
+
+    private var originalHiddenStates: [UIView: Bool] = [:]
+    
     private var volumeObserver: NSKeyValueObservation?
     private var audioSession = AVAudioSession.sharedInstance()
     private var hiddenVolumeView = MPVolumeView(frame: .zero)
@@ -195,6 +218,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupSubtitleLabel()
         setupDismissButton()
         volumeSlider()
+        setupDimButton()
         setupSpeedButton()
         setupQualityButton()
         setupMenuButton()
@@ -204,6 +228,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         startUpdateTimer()
         setupAudioSession()
         
+        controlsToHide.forEach { originalHiddenStates[$0] = $0.isHidden }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.checkForHLSStream()
@@ -641,7 +666,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0
         subtitleLabel.font = UIFont.systemFont(ofSize: CGFloat(subtitleFontSize))
-        updateSubtitleLabelAppearance()
         view.addSubview(subtitleLabel)
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         
@@ -661,6 +685,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         topSubtitleLabel.isHidden = true
         view.addSubview(topSubtitleLabel)
         topSubtitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        updateSubtitleLabelAppearance()
         
         NSLayoutConstraint.activate([
             topSubtitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -783,6 +809,38 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         ])
     }
     
+    private func setupDimButton() {
+        let cfg = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
+        dimButton = UIButton(type: .system)
+        dimButton.setImage(UIImage(systemName: "moon.fill", withConfiguration: cfg), for: .normal)
+        dimButton.tintColor = .white
+        dimButton.addTarget(self, action: #selector(dimTapped), for: .touchUpInside)
+        controlsContainerView.addSubview(dimButton)
+        dimButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        dimButton.layer.shadowColor = UIColor.black.cgColor
+        dimButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        dimButton.layer.shadowOpacity = 0.6
+        dimButton.layer.shadowRadius = 4
+        dimButton.layer.masksToBounds = false
+
+        NSLayoutConstraint.activate([
+          dimButton.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
+          dimButton.widthAnchor.constraint(equalToConstant: 24),
+          dimButton.heightAnchor.constraint(equalToConstant: 24),
+        ])
+
+        dimButtonToSlider = dimButton.trailingAnchor.constraint(
+          equalTo: volumeSliderHostingView!.leadingAnchor,
+          constant: -8
+        )
+        dimButtonToRight = dimButton.trailingAnchor.constraint(
+          equalTo: controlsContainerView.trailingAnchor,
+          constant: -16
+        )
+
+        dimButtonToSlider.isActive = true
+    }
     
     func updateMarqueeConstraints() {
         UIView.performWithoutAnimation {
@@ -956,25 +1014,31 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     func updateSubtitleLabelAppearance() {
-        subtitleLabel.font = UIFont.systemFont(ofSize: CGFloat(subtitleFontSize))
-        subtitleLabel.textColor = subtitleUIColor()
-        subtitleLabel.backgroundColor = subtitleBackgroundEnabled ? UIColor.black.withAlphaComponent(0.6) : .clear
-        subtitleLabel.layer.cornerRadius = 5
-        subtitleLabel.clipsToBounds = true
-        subtitleLabel.layer.shadowColor = UIColor.black.cgColor
-        subtitleLabel.layer.shadowRadius = CGFloat(subtitleShadowRadius)
-        subtitleLabel.layer.shadowOpacity = 1.0
-        subtitleLabel.layer.shadowOffset = CGSize.zero
-        
-        topSubtitleLabel.font = UIFont.systemFont(ofSize: CGFloat(subtitleFontSize))
-        topSubtitleLabel.textColor = subtitleUIColor()
-        topSubtitleLabel.backgroundColor = subtitleBackgroundEnabled ? UIColor.black.withAlphaComponent(0.6) : .clear
-        topSubtitleLabel.layer.cornerRadius = 5
-        topSubtitleLabel.clipsToBounds = true
-        topSubtitleLabel.layer.shadowColor = UIColor.black.cgColor
-        topSubtitleLabel.layer.shadowRadius = CGFloat(subtitleShadowRadius)
-        topSubtitleLabel.layer.shadowOpacity = 1.0
-        topSubtitleLabel.layer.shadowOffset = CGSize.zero
+        // subtitleLabel always exists here:
+        subtitleLabel.font            = UIFont.systemFont(ofSize: CGFloat(subtitleFontSize))
+        subtitleLabel.textColor       = subtitleUIColor()
+        subtitleLabel.backgroundColor = subtitleBackgroundEnabled
+            ? UIColor.black.withAlphaComponent(0.6)
+            : .clear
+        subtitleLabel.layer.cornerRadius   = 5
+        subtitleLabel.clipsToBounds        = true
+        subtitleLabel.layer.shadowColor    = UIColor.black.cgColor
+        subtitleLabel.layer.shadowRadius   = CGFloat(subtitleShadowRadius)
+        subtitleLabel.layer.shadowOpacity  = 1.0
+        subtitleLabel.layer.shadowOffset   = .zero
+
+        // only style it if it’s been created already
+        topSubtitleLabel?.font            = UIFont.systemFont(ofSize: CGFloat(subtitleFontSize))
+        topSubtitleLabel?.textColor       = subtitleUIColor()
+        topSubtitleLabel?.backgroundColor = subtitleBackgroundEnabled
+            ? UIColor.black.withAlphaComponent(0.6)
+            : .clear
+        topSubtitleLabel?.layer.cornerRadius   = 5
+        topSubtitleLabel?.clipsToBounds        = true
+        topSubtitleLabel?.layer.shadowColor    = UIColor.black.cgColor
+        topSubtitleLabel?.layer.shadowRadius   = CGFloat(subtitleShadowRadius)
+        topSubtitleLabel?.layer.shadowOpacity  = 1.0
+        topSubtitleLabel?.layer.shadowOffset   = .zero
     }
     
     func subtitleUIColor() -> UIColor {
@@ -1119,12 +1183,24 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     @objc func toggleControls() {
-        isControlsVisible.toggle()
-        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseInOut, animations: {
-            let alphaVal: CGFloat = self.isControlsVisible ? 1 : 0
-            self.controlsContainerView.alpha = alphaVal
-            self.skip85Button.alpha = alphaVal
-        })
+        if isDimmed {
+            dimButton.isHidden = false
+            dimButton.alpha = 1.0
+            dimButtonTimer?.invalidate()
+            dimButtonTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
+                guard let self = self else { return }
+                UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) {
+                    self.dimButton.alpha = 0
+                }
+            }
+        } else {
+            isControlsVisible.toggle()
+            UIView.animate(withDuration: 0.2) {
+                let a: CGFloat = self.isControlsVisible ? 1 : 0
+                self.controlsContainerView.alpha = a
+                self.skip85Button.alpha = a
+            }
+        }
     }
     
     @objc func seekBackwardLongPress(_ gesture: UILongPressGestureRecognizer) {
@@ -1231,6 +1307,43 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         if gesture.state == .began {
             togglePlayPause()
+        }
+    }
+    
+    @objc private func dimTapped() {
+        isDimmed.toggle()
+
+        if isDimmed {
+            originalHiddenStates = [:]
+            for view in controlsToHide {
+                originalHiddenStates[view] = view.isHidden
+                view.isHidden = true
+            }
+
+            blackCoverView.alpha = 1.0
+
+            dimButtonToSlider.isActive = false
+            dimButtonToRight.isActive = true
+
+            dimButton.isHidden = true
+
+            dimButtonTimer?.invalidate()
+        } else {
+            for view in controlsToHide {
+                if let wasHidden = originalHiddenStates[view] {
+                    view.isHidden = wasHidden
+                }
+            }
+
+            blackCoverView.alpha = 0.4
+
+            dimButtonToRight.isActive = false
+            dimButtonToSlider.isActive = true
+
+            dimButton.isHidden = false
+            dimButton.alpha = 1.0
+
+            dimButtonTimer?.invalidate()
         }
     }
     

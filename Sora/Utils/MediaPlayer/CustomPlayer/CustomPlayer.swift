@@ -1267,19 +1267,16 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             isPlaying = false
             playPauseButton.image = UIImage(systemName: "play.fill")
             
-            // Defer the UI animation so that it doesn't block the pause call
             DispatchQueue.main.async {
                 if !self.isControlsVisible {
                     self.isControlsVisible = true
                     UIView.animate(withDuration: 0.1, animations: {
                         self.controlsContainerView.alpha = 1.0
                         self.skip85Button.alpha = 0.8
-                        // Removed layoutIfNeeded() to avoid forcing a layout pass here
                     })
                 }
             }
         } else {
-            // Play immediately
             player.play()
             isPlaying = true
             playPauseButton.image = UIImage(systemName: "pause.fill")
@@ -1312,39 +1309,26 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     @objc private func dimTapped() {
         isDimmed.toggle()
+        dimButtonTimer?.invalidate()
 
-        if isDimmed {
-            originalHiddenStates = [:]
-            for view in controlsToHide {
-                originalHiddenStates[view] = view.isHidden
-                view.isHidden = true
-            }
-
-            blackCoverView.alpha = 1.0
-
-            dimButtonToSlider.isActive = false
-            dimButtonToRight.isActive = true
-
-            dimButton.isHidden = true
-
-            dimButtonTimer?.invalidate()
-        } else {
-            for view in controlsToHide {
-                if let wasHidden = originalHiddenStates[view] {
-                    view.isHidden = wasHidden
-                }
-            }
-
-            blackCoverView.alpha = 0.4
-
-            dimButtonToRight.isActive = false
-            dimButtonToSlider.isActive = true
-
-            dimButton.isHidden = false
-            dimButton.alpha = 1.0
-
-            dimButtonTimer?.invalidate()
+        // animate black overlay
+        UIView.animate(withDuration: 0.25) {
+          self.blackCoverView.alpha = self.isDimmed ? 1.0 : 0.4
         }
+
+        // fade controls instead of hiding
+        UIView.animate(withDuration: 0.25) {
+          for view in self.controlsToHide {
+            view.alpha = self.isDimmed ? 0 : 1
+          }
+          // keep the dim button visible/in front
+          self.dimButton.alpha = self.isDimmed ? 0 : 1
+        }
+
+        // swap your trailing constraints on the dim‑button
+        dimButtonToSlider.isActive = !isDimmed
+        dimButtonToRight.isActive  = isDimmed
+        UIView.animate(withDuration: 0.25) { self.view.layoutIfNeeded() }
     }
     
     func speedChangerMenu() -> UIMenu {

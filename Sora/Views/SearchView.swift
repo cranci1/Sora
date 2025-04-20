@@ -164,6 +164,18 @@ struct SearchView: View {
             .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    NavigationLink(destination: SettingsViewProfile(),
+                    label: {
+                        Circle()
+                            .fill(Color.secondary.opacity(0.3))
+                            .frame(width: 32, height: 32)
+                            .overlay(
+                                Text("🍏")
+                                    .font(.system(size: 20))
+                            )
+                    })
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         ForEach(getModuleLanguageGroups(), id: \.self) { language in

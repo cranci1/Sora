@@ -151,6 +151,20 @@ struct LibraryView: View {
                 .padding(.vertical, 20)
             }
             .navigationTitle("Library")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    NavigationLink(destination: SettingsViewProfile(),
+                    label: {
+                        Circle()
+                            .fill(Color.secondary.opacity(0.3))
+                            .frame(width: 32, height: 32)
+                            .overlay(
+                                Text("🍏")
+                                    .font(.system(size: 20))
+                            )
+                    })
+                }
+            }
             .onAppear {
                 updateOrientation()
                 fetchContinueWatching()

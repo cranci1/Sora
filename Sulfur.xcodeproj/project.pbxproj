@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		12D1E2692DB45CBE00EFCDAB /* SettingsViewAlternateAppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E2682DB45CB500EFCDAB /* SettingsViewAlternateAppIconPicker.swift */; };
+		12D1E26B2DB4BA9E00EFCDAB /* SettingsViewProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E26A2DB4BA9D00EFCDAB /* SettingsViewProfile.swift */; };
 		130217CC2D81C55E0011EFF5 /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130217CB2D81C55E0011EFF5 /* DownloadView.swift */; };
 		130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */; };
 		13103E8B2D58E028000F0673 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8A2D58E028000F0673 /* View.swift */; };
@@ -73,6 +74,7 @@
 
 /* Begin PBXFileReference section */
 		12D1E2682DB45CB500EFCDAB /* SettingsViewAlternateAppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewAlternateAppIconPicker.swift; sourceTree = "<group>"; };
+		12D1E26A2DB4BA9D00EFCDAB /* SettingsViewProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewProfile.swift; sourceTree = "<group>"; };
 		130217CB2D81C55E0011EFF5 /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		130C6BF82D53A4C200DC1432 /* Sora.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sora.entitlements; sourceTree = "<group>"; };
 		130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
@@ -257,6 +259,7 @@
 				135CCBE12D4D1138008B9C0E /* SettingsViewPlayer.swift */,
 				130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */,
 				13DB46912D900BCE008CBC03 /* SettingsViewTrackers.swift */,
+				12D1E26A2DB4BA9D00EFCDAB /* SettingsViewProfile.swift */,
 			);
 			path = SettingsSubViews;
 			sourceTree = "<group>";
@@ -562,6 +565,7 @@
 				136BBE802DB1038000906B5E /* Notification+Name.swift in Sources */,
 				13DB46902D900A38008CBC03 /* URL.swift in Sources */,
 				130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */,
+				12D1E26B2DB4BA9E00EFCDAB /* SettingsViewProfile.swift in Sources */,
 				1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */,
 				13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */,
 				133D7C932D2BE2640075467E /* Modules.swift in Sources */,

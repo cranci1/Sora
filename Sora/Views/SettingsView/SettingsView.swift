@@ -11,6 +11,12 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
+                Section {
+                    NavigationLink(destination: SettingsViewProfile()) {
+                        ProfileCell(profile: Profile(name: "undeaD_D", emoji: "🍏"))
+                    }
+                }
+
                 Section(header: Text("Main")) {
                     NavigationLink(destination: SettingsViewGeneral()) {
                         Text("General Preferences")

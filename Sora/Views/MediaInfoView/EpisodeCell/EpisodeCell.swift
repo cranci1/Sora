@@ -29,7 +29,7 @@ struct EpisodeCell: View {
     @State private var isLoading: Bool = true
     @State private var currentProgress: Double = 0.0
     
-    init(episodeIndex: Int, episode: String, episodeID: Int, progress: Double, 
+    init(episodeIndex: Int, episode: String, episodeID: Int, progress: Double,
          itemID: Int, onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void) {
         self.episodeIndex = episodeIndex
         self.episode = episode
@@ -92,13 +92,9 @@ struct EpisodeCell: View {
         }
         .onAppear {
             updateProgress()
-            
-            if UserDefaults.standard.object(forKey: "fetchEpisodeMetadata") == nil
-                || UserDefaults.standard.bool(forKey: "fetchEpisodeMetadata") {
-                fetchEpisodeDetails()
-            }
+            fetchEpisodeDetails()
         }
-        .onChange(of: progress) { newProgress in
+        .onChange(of: progress) { _ in
             updateProgress()
         }
         .onTapGesture {
@@ -147,16 +143,12 @@ struct EpisodeCell: View {
         URLSession.custom.dataTask(with: url) { data, _, error in
             if let error = error {
                 Logger.shared.log("Failed to fetch anime episode details: \(error)", type: "Error")
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                }
+                DispatchQueue.main.async { self.isLoading = false }
                 return
             }
             
             guard let data = data else {
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                }
+                DispatchQueue.main.async { self.isLoading = false }
                 return
             }
             
@@ -168,21 +160,21 @@ struct EpisodeCell: View {
                       let title = episodeDetails["title"] as? [String: String],
                       let image = episodeDetails["image"] as? String else {
                           Logger.shared.log("Invalid anime response format", type: "Error")
-                          DispatchQueue.main.async {
-                              self.isLoading = false
-                          }
+                          DispatchQueue.main.async { self.isLoading = false }
                           return
                       }
                 
                 DispatchQueue.main.async {
-                    self.episodeTitle = title["en"] ?? ""
-                    self.episodeImageUrl = image
+                    // Always stop loading
                     self.isLoading = false
+                    // Only display metadata if enabled
+                    if UserDefaults.standard.bool(forKey: "fetchEpisodeMetadata") {
+                        self.episodeTitle = title["en"] ?? ""
+                        self.episodeImageUrl = image
+                    }
                 }
             } catch {
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                }
+                DispatchQueue.main.async { self.isLoading = false }
             }
         }.resume()
     }

@@ -18,6 +18,29 @@ class SliderViewModel: ObservableObject {
     @Published var sliderValue: Double = 0.0
 }
 
+struct AniListMediaResponse: Decodable {
+  struct DataField: Decodable {
+    struct Media: Decodable { let idMal: Int? }
+    let Media: Media?
+  }
+  let data: DataField
+}
+
+struct AniSkipResponse: Decodable {
+  struct Result: Decodable {
+    struct Interval: Decodable {
+      let startTime: Double
+      let endTime:   Double
+    }
+    let interval: Interval
+    let skipType: String
+  }
+  let found:      Bool
+  let results:    [Result]
+  let statusCode: Int
+}
+
+
 // MARK: - CustomMediaPlayerViewController
 
 class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDelegate {
@@ -122,6 +145,12 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         }
     }
     
+    private var malID: Int?
+    private var skipIntervals: (op: CMTimeRange?, ed: CMTimeRange?) = (nil, nil)
+    
+    private var skipIntroButton: UIButton!
+    private var skipOutroButton: UIButton!
+    
     private var playerItemKVOContext = 0
     private var loadedTimeRangesObservation: NSKeyValueObservation?
     private var playerTimeControlStatusObserver: NSKeyValueObservation?
@@ -208,6 +237,17 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         super.viewDidLoad()
         view.backgroundColor = .black
         
+        AniListMutation().fetchMalID(animeId: aniListID) { [weak self] result in
+            switch result {
+            case .success(let mal):
+                self?.malID = mal
+                self?.fetchSkipTimes(type: "op")
+                self?.fetchSkipTimes(type: "ed")
+            case .failure(let error):
+                print("⚠️ Unable to fetch MAL ID:", error)
+            }
+        }
+        
         setupHoldGesture()
         loadSubtitleSettings()
         setupPlayerViewController()
@@ -224,6 +264,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupMenuButton()
         setupMarqueeLabel()
         setupSkip85Button()
+        setupSkipButtons()
         addTimeObserver()
         startUpdateTimer()
         setupAudioSession()
@@ -809,6 +850,57 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         ])
     }
     
+    private func fetchSkipTimes(type: String) {
+        guard let mal = malID else { return }
+        let url = URL(string: "https://api.aniskip.com/v2/skip-times/\(mal)/\(episodeNumber)?types=\(type)&episodeLength=0")!
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            guard let d = data,
+                  let resp = try? JSONDecoder().decode(AniSkipResponse.self, from: d),
+                  resp.found,
+                  let interval = resp.results.first?.interval else { return }
+
+            let range = CMTimeRange(
+              start: CMTime(seconds: interval.startTime, preferredTimescale: 600),
+              end:   CMTime(seconds: interval.endTime,   preferredTimescale: 600)
+            )
+            DispatchQueue.main.async {
+              if type == "op" {
+                self.skipIntervals.op = range
+                print("→ OP interval:", range)
+              } else {
+                self.skipIntervals.ed = range
+                print("→ ED interval:", range)
+              }
+            }
+        }.resume()
+    }
+    
+    private func setupSkipButtons() {
+        skipIntroButton = UIButton(type: .system)
+        skipIntroButton.setTitle("Skip Intro", for: .normal)
+        skipIntroButton.addTarget(self, action: #selector(skipIntro), for: .touchUpInside)
+        skipIntroButton.isHidden = true
+        view.addSubview(skipIntroButton)
+        skipIntroButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            skipIntroButton.leadingAnchor.constraint(equalTo: skip85Button.trailingAnchor, constant: 12),
+            skipIntroButton.centerYAnchor.constraint(equalTo: skip85Button.centerYAnchor),
+        ])
+        view.bringSubviewToFront(skipIntroButton)
+
+        skipOutroButton = UIButton(type: .system)
+        skipOutroButton.setTitle("Skip Outro", for: .normal)
+        skipOutroButton.addTarget(self, action: #selector(skipOutro), for: .touchUpInside)
+        skipOutroButton.isHidden = true
+        view.addSubview(skipOutroButton)
+        skipOutroButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            skipOutroButton.leadingAnchor.constraint(equalTo: skipIntroButton.trailingAnchor, constant: 12),
+            skipOutroButton.centerYAnchor.constraint(equalTo: skip85Button.centerYAnchor),
+        ])
+        view.bringSubviewToFront(skipOutroButton)
+    }
+    
     private func setupDimButton() {
         let cfg = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
         dimButton = UIButton(type: .system)
@@ -1098,6 +1190,18 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self.topSubtitleLabel.isHidden = true
             }
             
+            let current = self.currentTimeVal
+
+            if let op = self.skipIntervals.op {
+              let show = current >= op.start.seconds && current <= op.end.seconds
+              self.skipIntroButton.isHidden = !show
+            }
+
+            if let ed = self.skipIntervals.ed {
+              let show = current >= ed.start.seconds && current <= ed.end.seconds
+              self.skipOutroButton.isHidden = !show
+            }
+            
             DispatchQueue.main.async {
                 if let currentItem = self.player.currentItem, currentItem.duration.seconds > 0 {
                     let progress = min(max(self.currentTimeVal / self.duration, 0), 1.0)
@@ -1153,6 +1257,21 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 )
             }
         }
+    }
+    
+    @objc private func skipIntro() {
+      if let range = skipIntervals.op {
+        player.seek(to: range.end)
+        // optionally hide button immediately:
+        skipIntroButton.isHidden = true
+      }
+    }
+
+    @objc private func skipOutro() {
+      if let range = skipIntervals.ed {
+        player.seek(to: range.end)
+        skipOutroButton.isHidden = true
+      }
     }
     
     

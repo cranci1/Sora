@@ -13,6 +13,7 @@
 		12D1E2702DB6702700EFCDAB /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E26F2DB6702500EFCDAB /* Profile.swift */; };
 		12D1E2722DB6771100EFCDAB /* ProfileButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E2712DB6770D00EFCDAB /* ProfileButtonStyle.swift */; };
 		12D1E2742DB67EB200EFCDAB /* UIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E2732DB67EA900EFCDAB /* UIKit.swift */; };
+		12D1E27A2DB69D7F00EFCDAB /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E2792DB69D7F00EFCDAB /* ExploreView.swift */; };
 		130217CC2D81C55E0011EFF5 /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130217CB2D81C55E0011EFF5 /* DownloadView.swift */; };
 		130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */; };
 		13103E8B2D58E028000F0673 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8A2D58E028000F0673 /* View.swift */; };
@@ -82,6 +83,7 @@
 		12D1E26F2DB6702500EFCDAB /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		12D1E2712DB6770D00EFCDAB /* ProfileButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileButtonStyle.swift; sourceTree = "<group>"; };
 		12D1E2732DB67EA900EFCDAB /* UIKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKit.swift; sourceTree = "<group>"; };
+		12D1E2792DB69D7F00EFCDAB /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
 		130217CB2D81C55E0011EFF5 /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		130C6BF82D53A4C200DC1432 /* Sora.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sora.entitlements; sourceTree = "<group>"; };
 		130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
@@ -168,6 +170,14 @@
 			path = ProfileStore;
 			sourceTree = "<group>";
 		};
+		12D1E2782DB69D7900EFCDAB /* ExploreView */ = {
+			isa = PBXGroup;
+			children = (
+				12D1E2792DB69D7F00EFCDAB /* ExploreView.swift */,
+			);
+			path = ExploreView;
+			sourceTree = "<group>";
+		};
 		13103E802D589D6C000F0673 /* Tracking Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -237,6 +247,7 @@
 		133D7C7B2D2BE2630075467E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				12D1E2782DB69D7900EFCDAB /* ExploreView */,
 				133D7C7F2D2BE2630075467E /* MediaInfoView */,
 				1399FAD22D3AB34F00E97C31 /* SettingsView */,
 				133F55B92D33B53E00E08EEA /* LibraryView */,
@@ -607,6 +618,7 @@
 				13E62FC42DABC58C0007E259 /* Trakt-Token.swift in Sources */,
 				133D7C8E2D2BE2640075467E /* LibraryView.swift in Sources */,
 				13E62FC72DABFE900007E259 /* TraktPushUpdates.swift in Sources */,
+				12D1E27A2DB69D7F00EFCDAB /* ExploreView.swift in Sources */,
 				133D7C6E2D2BE2500075467E /* SoraApp.swift in Sources */,
 				12D1E2702DB6702700EFCDAB /* Profile.swift in Sources */,
 				138AA1B92D2D66FD0021F9DF /* CircularProgressBar.swift in Sources */,

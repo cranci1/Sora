@@ -9,6 +9,7 @@ import UIKit
 
 // TODO: sync all profile user default suits
 // TODO: add migration for legacy app users without profiles
+// TODO: update "clear data" feature
 // TODO: tests
 class iCloudSyncManager {
     static let shared = iCloudSyncManager()

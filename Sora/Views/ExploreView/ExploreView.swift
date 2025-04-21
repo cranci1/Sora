@@ -10,6 +10,7 @@ import Kingfisher
 
 struct ExploreView: View {
     @EnvironmentObject private var moduleManager: ModuleManager
+    @EnvironmentObject private var profileStore: ProfileStore
 
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
@@ -18,7 +19,8 @@ struct ExploreView: View {
     
     @Environment(\.verticalSizeClass) var verticalSizeClass
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
-
+    @State private var showProfileSettings = false
+    
     private var selectedModule: ScrapingModule? {
         guard let id = selectedModuleId else { return nil }
         return moduleManager.modules.first { $0.id.uuidString == id }
@@ -58,6 +60,39 @@ struct ExploreView: View {
             }
             .navigationTitle("Explore")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Menu {
+                        ForEach(profileStore.profiles) { profile in
+                            Button {
+                                profileStore.setCurrentProfile(profile)
+                            } label: {
+                                if profile == profileStore.currentProfile {
+                                    Label("\(profile.emoji) \(profile.name)", systemImage: "checkmark")
+                                } else {
+                                    Text("\(profile.emoji) \(profile.name)")
+                                }
+                            }
+                        }
+
+                        Divider()
+
+                        Button {
+                            showProfileSettings = true
+                        } label: {
+                            Label("Edit Profiles", systemImage: "slider.horizontal.3")
+                        }
+
+                    } label: {
+                        Circle()
+                            .fill(Color.secondary.opacity(0.3))
+                            .frame(width: 32, height: 32)
+                            .overlay(
+                                Text(profileStore.currentProfile.emoji)
+                                    .font(.system(size: 20))
+                                    .foregroundStyle(.primary)
+                            )
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         ForEach(getModuleLanguageGroups(), id: \.self) { language in
@@ -100,6 +135,13 @@ struct ExploreView: View {
                     .fixedSize()
                 }
             }
+            
+            NavigationLink(
+                destination: SettingsViewProfile(),
+                isActive: $showProfileSettings,
+                label: { EmptyView() }
+            )
+            .hidden()
         }
                 .navigationViewStyle(StackNavigationViewStyle())
                 .onAppear {

@@ -11,6 +11,7 @@ import Kingfisher
 struct LibraryView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
+    @EnvironmentObject private var profileStore: ProfileStore
 
     @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
@@ -159,8 +160,9 @@ struct LibraryView: View {
                             .fill(Color.secondary.opacity(0.3))
                             .frame(width: 32, height: 32)
                             .overlay(
-                                Text("🍏")
+                                Text(profileStore.currentProfile.emoji)
                                     .font(.system(size: 20))
+                                    .foregroundStyle(.primary)
                             )
                     })
                 }

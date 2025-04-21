@@ -8,12 +8,14 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject var profileStore: ProfileStore
+
     var body: some View {
         NavigationView {
             Form {
                 Section {
                     NavigationLink(destination: SettingsViewProfile()) {
-                        ProfileCell(profile: Profile(name: "undeaD_D", emoji: "🍏"))
+                        ProfileCell(profile: profileStore.currentProfile)
                     }
                 }
 

@@ -12,7 +12,8 @@ struct SoraApp: App {
     @StateObject private var settings = Settings()
     @StateObject private var moduleManager = ModuleManager()
     @StateObject private var librarykManager = LibraryManager()
-    
+    @StateObject private var profileStore = ProfileStore()
+
     init() {
         _ = iCloudSyncManager.shared
         
@@ -31,6 +32,7 @@ struct SoraApp: App {
                 .environmentObject(moduleManager)
                 .environmentObject(settings)
                 .environmentObject(librarykManager)
+                .environmentObject(profileStore)
                 .accentColor(settings.accentColor)
                 .onAppear {
                     settings.updateAppearance()

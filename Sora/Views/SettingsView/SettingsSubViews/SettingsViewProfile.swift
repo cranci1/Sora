@@ -4,13 +4,8 @@
 //
 //  Created by Dominic on 20.04.25.
 //
-import SwiftUI
 
-struct Profile: Identifiable, Equatable, Codable {
-    var id: UUID = UUID()
-    var name: String
-    var emoji: String
-}
+import SwiftUI
 
 struct ProfileCell: View {
     let profile: Profile
@@ -24,6 +19,7 @@ struct ProfileCell: View {
                 .overlay(
                     Text(profile.emoji)
                         .font(.system(size: 28))
+                        .foregroundStyle(.primary)
                 )
 
             Text(profile.name)
@@ -41,53 +37,86 @@ struct ProfileCell: View {
     }
 }
 
-
-// TODO: add persistence
 // TODO: filter media and modules by profile
 // TODO: tests
 struct SettingsViewProfile: View {
-    @State private var currentProfile = Profile(name: "undeaD_D", emoji: "👤")
-    @State private var profiles: [Profile] = [
-        Profile(name: "undeaD_D", emoji: "👤"),
-        Profile(name: "PlayerTwo", emoji: "🧑‍🚀")
-    ]
-    
+    @EnvironmentObject var profileStore: ProfileStore
+    @State private var showDeleteAlert = false
+
     var body: some View {
         Form {
-            Section(header: Text("Edit Current Profile")) {
-                HStack {
-                    Text("Image")
-                    Spacer()
-                    TextField("Emoji", text: $currentProfile.emoji)
-                        .multilineTextAlignment(.trailing)
-                        .frame(width: 50)
-                }
-                
-                HStack {
-                    Text("Name")
-                    Spacer()
-                    TextField("Name", text: $currentProfile.name)
-                        .multilineTextAlignment(.trailing)
+            Section(header: Text("Select Profile")) {
+                ForEach(profileStore.profiles) { profile in
+                    Button {
+                        profileStore.setCurrentProfile(profile)
+                    } label: {
+                        ProfileCell(profile: profile,
+                            isSelected: profile.id == profileStore.currentProfile.id
+                        )
+                    }
                 }
             }
-            
-            Section(header: Text("Select Current Profile")) {
-                ForEach(profiles) { profile in
-                    Button {
-                        currentProfile = profile
-                    } label: {
-                        ProfileCell(profile: profile, isSelected: profile == currentProfile)
+
+            Section(header: Text("Edit Selected Profile")) {
+                HStack {
+                    Text("Avatar")
+                    TextField("Avatar", text: Binding(
+                        get: { profileStore.currentProfile.emoji },
+                        set: { newValue in
+
+                            // handle multi unicode emojis like "👨‍👩‍👧‍👦" or "🧙‍♂️"
+                            let emoji = String(newValue
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                                .prefix(2)
+                            )
+
+                            profileStore.editCurrentProfile(name: profileStore.currentProfile.name, emoji: emoji)
+                        }
+                    ))
+                        .lineLimit(1)
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: .infinity)
+                }
+
+                HStack {
+                    Text("Name")
+                    TextField("Name", text: Binding(
+                        get: { profileStore.currentProfile.name },
+                        set: { newValue in
+                            profileStore.editCurrentProfile(name: newValue, emoji: profileStore.currentProfile.emoji)
+                        }
+                    ))
+                        .lineLimit(1)
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: .infinity)
+                }
+
+                if profileStore.profiles.count > 1 {
+                    Button(action: {
+                        showDeleteAlert = true
+                    }) {
+                        Text("Delete Selected Profile")
+                            .fontWeight(.semibold)
+                            .foregroundColor(.red)
                     }
                 }
             }
         }
-        .navigationTitle("Profile")
+        .navigationTitle("Profiles")
+        .alert(isPresented: $showDeleteAlert) {
+            Alert(
+                title: Text("Delete Profile"),
+                message: Text("Are you sure you want to delete this profile? This action cannot be undone."),
+                primaryButton: .destructive(Text("Delete")) {
+                    profileStore.deleteCurrentProfile()
+                },
+                secondaryButton: .cancel()
+            )
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    let newProfile = Profile(name: "New Profile", emoji: "🧙‍♂️")
-                    profiles.append(newProfile)
-                    currentProfile = newProfile
+                    profileStore.addProfile(name: "New Profile", emoji: "🧙‍♂️")
                 } label: {
                     Image(systemName: "plus")
                         .foregroundColor(.accentColor)

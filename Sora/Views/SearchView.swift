@@ -22,7 +22,8 @@ struct SearchView: View {
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     
     @StateObject private var jsController = JSController()
-    @EnvironmentObject var moduleManager: ModuleManager
+    @EnvironmentObject private var moduleManager: ModuleManager
+    @EnvironmentObject private var profileStore: ProfileStore
     @Environment(\.verticalSizeClass) var verticalSizeClass
     
     @State private var searchItems: [SearchItem] = []
@@ -165,14 +166,14 @@ struct SearchView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    NavigationLink(destination: SettingsViewProfile(),
-                    label: {
+                    NavigationLink(destination: SettingsViewProfile(), label: {
                         Circle()
                             .fill(Color.secondary.opacity(0.3))
                             .frame(width: 32, height: 32)
                             .overlay(
-                                Text("🍏")
+                                Text(profileStore.currentProfile.emoji)
                                     .font(.system(size: 20))
+                                    .foregroundStyle(.primary)
                             )
                     })
                 }

@@ -130,6 +130,7 @@ class Settings: ObservableObject {
             saveAccentColor(accentColor)
         }
     }
+
     @Published var selectedAppearance: Appearance {
         didSet {
             UserDefaults.standard.set(selectedAppearance.rawValue, forKey: "selectedAppearance")
@@ -144,15 +145,25 @@ class Settings: ObservableObject {
         } else {
             self.accentColor = .accentColor
         }
+
+
         if let appearanceRawValue = UserDefaults.standard.string(forKey: "selectedAppearance"),
            let appearance = Appearance(rawValue: appearanceRawValue) {
             self.selectedAppearance = appearance
         } else {
             self.selectedAppearance = .system
         }
+
+        applyColorToUIKit(accentColor)
         updateAppearance()
     }
-    
+
+    private func applyColorToUIKit(_ color: Color) {
+        let tempStepper = UIStepper()
+        UIStepper.appearance().setDecrementImage(tempStepper.decrementImage(for: .normal), for: .normal)
+        UIStepper.appearance().setIncrementImage(tempStepper.incrementImage(for: .normal), for: .normal)
+    }
+
     private func saveAccentColor(_ color: Color) {
         let uiColor = UIColor(color)
         do {

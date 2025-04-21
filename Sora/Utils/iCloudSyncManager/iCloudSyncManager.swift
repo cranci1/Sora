@@ -32,7 +32,9 @@ class iCloudSyncManager {
         "fetchEpisodeMetadata",
         "hideEmptySections",
         "multiThreads",
-        "metadataProviders"
+        "metadataProviders",
+        "profilesData",
+        "currentProfileID"
     ]
     
     private let modulesFileName = "modules.json"

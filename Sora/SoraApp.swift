@@ -27,7 +27,7 @@ struct SoraApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .environmentObject(moduleManager)
                 .environmentObject(settings)
                 .environmentObject(libraryManager)

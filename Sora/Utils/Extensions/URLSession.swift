@@ -63,6 +63,7 @@ extension URLSession {
         configuration.httpAdditionalHeaders = ["User-Agent": randomUserAgent]
         return URLSession(configuration: configuration)
     }()
+    
     // return url session that redirects based on input
     static func fetchData(allowRedirects:Bool) -> URLSession
     {

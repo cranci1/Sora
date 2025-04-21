@@ -205,41 +205,24 @@ struct MediaInfoView: View {
                                     .font(.system(size: 14))
                             }
                         }
-                        
-                        HStack {
-                            Button(action: {
-                                playFirstUnwatchedEpisode()
-                            }) {
-                                HStack {
-                                    Image(systemName: "play.fill")
-                                        .foregroundColor(.primary)
-                                    Text(startWatchingText)
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                }
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color.accentColor)
-                                .cornerRadius(10)
+
+                        Button(action: {
+                            playFirstUnwatchedEpisode()
+                        }) {
+                            HStack {
+                                Image(systemName: "play.fill")
+                                    .foregroundColor(.primary)
+                                Text(startWatchingText)
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
                             }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.accentColor)
+                            .cornerRadius(10)
+                        }
                             .disabled(isFetchingEpisode)
                             .id(buttonRefreshTrigger)
-                            
-                            Button(action: {
-                                libraryManager.toggleBookmark(
-                                    title: title,
-                                    imageUrl: imageUrl,
-                                    href: href,
-                                    moduleId: module.id.uuidString,
-                                    moduleName: module.metadata.sourceName
-                                )
-                            }) {
-                                Image(systemName: libraryManager.isBookmarked(href: href, moduleName: module.metadata.sourceName) ? "bookmark.fill" : "bookmark")
-                                    .resizable()
-                                    .frame(width: 20, height: 27)
-                                    .foregroundColor(Color.accentColor)
-                            }
-                        }
                         
                         if !episodeLinks.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
@@ -411,6 +394,23 @@ struct MediaInfoView: View {
                         }
                     }
                     .padding()
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(action: {
+                                libraryManager.toggleBookmark(
+                                    title: title,
+                                    imageUrl: imageUrl,
+                                    href: href,
+                                    moduleId: module.id.uuidString,
+                                    moduleName: module.metadata.sourceName
+                                )
+                            }) {
+                                Image(systemName: libraryManager.isBookmarked(href: href, moduleName: module.metadata.sourceName) ? "bookmark.fill" : "bookmark")
+                                    .resizable()
+                                    .foregroundColor(Color.accentColor)
+                            }
+                        }
+                    }
                     .navigationBarTitleDisplayMode(.inline)
                     .navigationBarTitle("")
                     .navigationViewStyle(StackNavigationViewStyle())

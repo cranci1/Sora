@@ -6,9 +6,8 @@
 //
 
 import SwiftUI
-import Kingfisher
 
-struct ContentView: View {
+struct RootView: View {
     var body: some View {
         TabView {
             ExploreView()

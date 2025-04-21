@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -28,7 +28,7 @@
 		132E35202D959E1D0007800E /* FFmpeg-iOS-Lame in Frameworks */ = {isa = PBXBuildFile; productRef = 132E351F2D959E1D0007800E /* FFmpeg-iOS-Lame */; };
 		132E35232D959E410007800E /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 132E35222D959E410007800E /* Kingfisher */; };
 		133D7C6E2D2BE2500075467E /* SoraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6D2D2BE2500075467E /* SoraApp.swift */; };
-		133D7C702D2BE2500075467E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6F2D2BE2500075467E /* ContentView.swift */; };
+		133D7C702D2BE2500075467E /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6F2D2BE2500075467E /* RootView.swift */; };
 		133D7C722D2BE2520075467E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 133D7C712D2BE2520075467E /* Assets.xcassets */; };
 		133D7C8C2D2BE2640075467E /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C7C2D2BE2630075467E /* SearchView.swift */; };
 		133D7C8E2D2BE2640075467E /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C7E2D2BE2630075467E /* LibraryView.swift */; };
@@ -77,6 +77,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		120764652DB6F6E0003621E9 /* SulfurTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SulfurTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		12D1E2682DB45CB500EFCDAB /* SettingsViewAlternateAppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewAlternateAppIconPicker.swift; sourceTree = "<group>"; };
 		12D1E26A2DB4BA9D00EFCDAB /* SettingsViewProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewProfile.swift; sourceTree = "<group>"; };
 		12D1E26D2DB66F9600EFCDAB /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
@@ -97,7 +98,7 @@
 		132AF1242D9995F900A0140B /* JSController-Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Search.swift"; sourceTree = "<group>"; };
 		133D7C6A2D2BE2500075467E /* Sulfur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sulfur.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		133D7C6D2D2BE2500075467E /* SoraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoraApp.swift; sourceTree = "<group>"; };
-		133D7C6F2D2BE2500075467E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		133D7C6F2D2BE2500075467E /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		133D7C712D2BE2520075467E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		133D7C7C2D2BE2630075467E /* SearchView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		133D7C7E2D2BE2630075467E /* LibraryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
@@ -145,7 +146,18 @@
 		73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JavaScriptCore+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		120764662DB6F6E0003621E9 /* SulfurTV */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SulfurTV; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
+		120764622DB6F6E0003621E9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		133D7C672D2BE2500075467E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -160,6 +172,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1207649E2DB6FA7F003621E9 /* SearchView */ = {
+			isa = PBXGroup;
+			children = (
+				133D7C7C2D2BE2630075467E /* SearchView.swift */,
+			);
+			path = SearchView;
+			sourceTree = "<group>";
+		};
+		1207649F2DB6FA88003621E9 /* DownloadView */ = {
+			isa = PBXGroup;
+			children = (
+				130217CB2D81C55E0011EFF5 /* DownloadView.swift */,
+			);
+			path = DownloadView;
+			sourceTree = "<group>";
+		};
+		120764A02DB6FA9D003621E9 /* RootView */ = {
+			isa = PBXGroup;
+			children = (
+				133D7C6F2D2BE2500075467E /* RootView.swift */,
+			);
+			path = RootView;
+			sourceTree = "<group>";
+		};
 		12D1E26C2DB66F8B00EFCDAB /* ProfileStore */ = {
 			isa = PBXGroup;
 			children = (
@@ -217,6 +253,7 @@
 			isa = PBXGroup;
 			children = (
 				133D7C6C2D2BE2500075467E /* Sora */,
+				120764662DB6F6E0003621E9 /* SulfurTV */,
 				133D7C6B2D2BE2500075467E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -225,6 +262,7 @@
 			isa = PBXGroup;
 			children = (
 				133D7C6A2D2BE2500075467E /* Sulfur.app */,
+				120764652DB6F6E0003621E9 /* SulfurTV.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -238,7 +276,6 @@
 				133D7C852D2BE2640075467E /* Utils */,
 				133D7C7B2D2BE2630075467E /* Views */,
 				133D7C6D2D2BE2500075467E /* SoraApp.swift */,
-				133D7C6F2D2BE2500075467E /* ContentView.swift */,
 				133D7C712D2BE2520075467E /* Assets.xcassets */,
 			);
 			path = Sora;
@@ -247,12 +284,13 @@
 		133D7C7B2D2BE2630075467E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				120764A02DB6FA9D003621E9 /* RootView */,
+				1207649F2DB6FA88003621E9 /* DownloadView */,
+				1207649E2DB6FA7F003621E9 /* SearchView */,
 				12D1E2782DB69D7900EFCDAB /* ExploreView */,
 				133D7C7F2D2BE2630075467E /* MediaInfoView */,
 				1399FAD22D3AB34F00E97C31 /* SettingsView */,
 				133F55B92D33B53E00E08EEA /* LibraryView */,
-				133D7C7C2D2BE2630075467E /* SearchView.swift */,
-				130217CB2D81C55E0011EFF5 /* DownloadView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -491,6 +529,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		120764642DB6F6E0003621E9 /* SulfurTV */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1207646F2DB6F6E1003621E9 /* Build configuration list for PBXNativeTarget "SulfurTV" */;
+			buildPhases = (
+				120764612DB6F6E0003621E9 /* Sources */,
+				120764622DB6F6E0003621E9 /* Frameworks */,
+				120764632DB6F6E0003621E9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				120764662DB6F6E0003621E9 /* SulfurTV */,
+			);
+			name = SulfurTV;
+			packageProductDependencies = (
+			);
+			productName = SulfurTV;
+			productReference = 120764652DB6F6E0003621E9 /* SulfurTV.app */;
+			productType = "com.apple.product-type.application";
+		};
 		133D7C692D2BE2500075467E /* Sulfur */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 133D7C782D2BE2520075467E /* Build configuration list for PBXNativeTarget "Sulfur" */;
@@ -521,9 +581,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1320;
+				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
+					120764642DB6F6E0003621E9 = {
+						CreatedOnToolsVersion = 16.3;
+					};
 					133D7C692D2BE2500075467E = {
 						CreatedOnToolsVersion = 13.2.1;
 					};
@@ -548,11 +611,19 @@
 			projectRoot = "";
 			targets = (
 				133D7C692D2BE2500075467E /* Sulfur */,
+				120764642DB6F6E0003621E9 /* SulfurTV */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		120764632DB6F6E0003621E9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		133D7C682D2BE2500075467E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -564,6 +635,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		120764612DB6F6E0003621E9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		133D7C662D2BE2500075467E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -590,7 +668,7 @@
 				12D1E2742DB67EB200EFCDAB /* UIKit.swift in Sources */,
 				133D7C932D2BE2640075467E /* Modules.swift in Sources */,
 				13DB7CC32D7D99C0004371D3 /* SubtitleSettingsManager.swift in Sources */,
-				133D7C702D2BE2500075467E /* ContentView.swift in Sources */,
+				133D7C702D2BE2500075467E /* RootView.swift in Sources */,
 				13DB7CEC2D7DED5D004371D3 /* DownloadManager.swift in Sources */,
 				13D99CF72D4E73C300250A86 /* ModuleAdditionSettingsView.swift in Sources */,
 				13C0E5EC2D5F85F800E7F619 /* ContinueWatchingItem.swift in Sources */,
@@ -636,6 +714,67 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		1207646D2DB6F6E1003621E9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = AXLC3PQNC8;
+				ENABLE_PREVIEWS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.devsforge.tvos.SulfurTV;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.4;
+			};
+			name = Debug;
+		};
+		1207646E2DB6F6E1003621E9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = AXLC3PQNC8;
+				ENABLE_PREVIEWS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.devsforge.tvos.SulfurTV;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.4;
+			};
+			name = Release;
+		};
 		133D7C762D2BE2520075467E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -849,6 +988,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1207646F2DB6F6E1003621E9 /* Build configuration list for PBXNativeTarget "SulfurTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1207646D2DB6F6E1003621E9 /* Debug */,
+				1207646E2DB6F6E1003621E9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		133D7C652D2BE2500075467E /* Build configuration list for PBXProject "Sulfur" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

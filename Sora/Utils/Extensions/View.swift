@@ -9,6 +9,6 @@ import SwiftUI
 
 extension View {
     func shimmering() -> some View {
-        self.modifier(Shimmer())
+        self.modifier(ShimmeringEffect())
     }
 }

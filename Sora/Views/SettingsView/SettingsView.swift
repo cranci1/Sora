@@ -125,6 +125,11 @@ enum Appearance: String, CaseIterable, Identifiable {
 }
 
 class Settings: ObservableObject {
+    @Published var shimmerType: ShimmerType {
+        didSet {
+            UserDefaults.standard.set(shimmerType.rawValue, forKey: "shimmerType")
+        }
+    }
     @Published var accentColor: Color {
         didSet {
             saveAccentColor(accentColor)
@@ -139,6 +144,13 @@ class Settings: ObservableObject {
     }
     
     init() {
+        if let shimmerRawValue = UserDefaults.standard.string(forKey: "shimmerType"),
+           let shimmer = ShimmerType(rawValue: shimmerRawValue) {
+            self.shimmerType = shimmer
+        } else {
+            self.shimmerType = .default
+        }
+
         if let colorData = UserDefaults.standard.data(forKey: "accentColor"),
            let uiColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: colorData) {
             self.accentColor = Color(uiColor)

@@ -19,8 +19,6 @@ struct ExploreView: View {
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     
     @Environment(\.verticalSizeClass) var verticalSizeClass
-
-    @State private var continueWatchingItems: [ContinueWatchingItem] = []
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var showProfileSettings = false
 
@@ -56,105 +54,8 @@ struct ExploreView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                let columnsCount = determineColumns()
-
                 VStack(alignment: .leading, spacing: 12) {
-                    if hideEmptySections != true || !continueWatchingItems.isEmpty {
-                        Text("Continue Watching")
-                            .font(.title2)
-                            .bold()
-                            .padding(.horizontal, 20)
-
-                        if continueWatchingItems.isEmpty {
-                            VStack(spacing: 8) {
-                                Image(systemName: "play.circle")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.secondary)
-                                Text("No items to continue watching.")
-                                    .font(.headline)
-                                Text("Recently watched content will appear here.")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                        } else {
-                            ContinueWatchingSection(items: $continueWatchingItems, markAsWatched: { item in
-                                markContinueWatchingItemAsWatched(item: item)
-                            }, removeItem: { item in
-                                removeContinueWatchingItem(item: item)
-                            })
-                        }
-                    }
-
-                    if !(hideEmptySections ?? false) && libraryManager.bookmarks.isEmpty {
-                        Text("Bookmarks")
-                            .font(.title2)
-                            .bold()
-                            .padding(.horizontal, 20)
-
-                        if libraryManager.bookmarks.isEmpty {
-                            VStack(spacing: 8) {
-                                Image(systemName: "magazine")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.secondary)
-                                Text("You have no items saved.")
-                                    .font(.headline)
-                                Text("Bookmark items for an easier access later.")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                        } else {
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columnsCount), spacing: 12) {
-                                ForEach(libraryManager.bookmarks) { item in
-                                    if let module = moduleManager.modules.first(where: { $0.id.uuidString == item.moduleId }) {
-                                        NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: module)) {
-                                            VStack(alignment: .leading) {
-                                                ZStack {
-                                                    KFImage(URL(string: item.imageUrl))
-                                                        .placeholder {
-                                                            RoundedRectangle(cornerRadius: 10)
-                                                                .fill(Color.gray.opacity(0.3))
-                                                                .aspectRatio(2/3, contentMode: .fit)
-                                                                .shimmering()
-                                                        }
-                                                        .resizable()
-                                                        .aspectRatio(contentMode: .fill)
-                                                        .frame(height: cellWidth * 3 / 2)
-                                                        .frame(maxWidth: cellWidth)
-                                                        .cornerRadius(10)
-                                                        .clipped()
-                                                        .overlay(
-                                                            KFImage(URL(string: module.metadata.iconUrl))
-                                                                .resizable()
-                                                                .frame(width: 24, height: 24)
-                                                                .cornerRadius(4)
-                                                                .padding(4),
-                                                            alignment: .topLeading
-                                                        )
-                                                }
-                                                Text(item.title)
-                                                    .font(.subheadline)
-                                                    .foregroundColor(.primary)
-                                                    .lineLimit(1)
-                                                    .multilineTextAlignment(.leading)
-                                            }
-                                        }
-                                        .contextMenu {
-                                            Button(role: .destructive, action: {
-                                                libraryManager.removeBookmark(item: item)
-                                            }) {
-                                                Label("Remove from Bookmarks", systemImage: "trash")
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 20)
-                        }
-                    }
+                    //TODO: add explore content views
                 }
                 .padding(.vertical, 20)
 
@@ -246,42 +147,16 @@ struct ExploreView: View {
                 .navigationViewStyle(StackNavigationViewStyle())
                 .onAppear {
                     updateOrientation()
-                    fetchContinueWatching()
+                    //TODO: fetch explore content here
                 }
                 .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
                     updateOrientation()
                 }
     }
     
-    private func fetchContinueWatching() {
-        continueWatchingItems = ContinueWatchingManager.shared.fetchItems()
-    }
-    
-    private func markContinueWatchingItemAsWatched(item: ContinueWatchingItem) {
-        let key = "lastPlayedTime_\(item.fullUrl)"
-        let totalKey = "totalTime_\(item.fullUrl)"
-        UserDefaults.standard.set(99999999.0, forKey: key)
-        UserDefaults.standard.set(99999999.0, forKey: totalKey)
-        ContinueWatchingManager.shared.remove(item: item)
-        continueWatchingItems.removeAll { $0.id == item.id }
-    }
-    
-    private func removeContinueWatchingItem(item: ContinueWatchingItem) {
-        ContinueWatchingManager.shared.remove(item: item)
-        continueWatchingItems.removeAll { $0.id == item.id }
-    }
-    
     private func updateOrientation() {
         DispatchQueue.main.async {
             isLandscape = UIDevice.current.orientation.isLandscape
-        }
-    }
-    
-    private func determineColumns() -> Int {
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
-        } else {
-            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }
     }
 

@@ -1110,6 +1110,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     let progress = min(max(self.currentTimeVal / self.duration, 0), 1.0)
 
                     let item = ContinueWatchingItem(
+                        profileId: self.continueWatchingManager.profile?.id,
                         id: UUID(),
                         imageUrl: self.episodeImageUrl,
                         episodeNumber: self.episodeNumber,

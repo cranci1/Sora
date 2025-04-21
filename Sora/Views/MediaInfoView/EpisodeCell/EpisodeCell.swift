@@ -168,8 +168,9 @@ struct EpisodeCell: View {
                     // Always stop loading
                     self.isLoading = false
                     // Only display metadata if enabled
-                    if UserDefaults.standard.bool(forKey: "fetchEpisodeMetadata") {
-                        self.episodeTitle = title["en"] ?? ""
+                    if UserDefaults.standard.object(forKey: "fetchEpisodeMetadata") == nil
+                        || UserDefaults.standard.bool(forKey: "fetchEpisodeMetadata") {
+                        self.episodeTitle   = title["en"] ?? ""
                         self.episodeImageUrl = image
                     }
                 }

@@ -33,7 +33,8 @@ struct SearchView: View {
     @State private var hasNoResults = false
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var isModuleSelectorPresented = false
-    
+    @State private var showProfileSettings = false
+
     private var selectedModule: ScrapingModule? {
         guard let id = selectedModuleId else { return nil }
         return moduleManager.modules.first { $0.id.uuidString == id }
@@ -160,12 +161,40 @@ struct SearchView: View {
                         }
                     }
                 }
+                
+                NavigationLink(
+                    destination: SettingsViewProfile(),
+                    isActive: $showProfileSettings,
+                    label: { EmptyView() }
+                )
+                .hidden()
             }
             .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    NavigationLink(destination: SettingsViewProfile(), label: {
+                    Menu {
+                        ForEach(profileStore.profiles) { profile in
+                            Button {
+                                profileStore.setCurrentProfile(profile)
+                            } label: {
+                                if profile == profileStore.currentProfile {
+                                    Label("\(profile.emoji) \(profile.name)", systemImage: "checkmark")
+                                } else {
+                                    Text("\(profile.emoji) \(profile.name)")
+                                }
+                            }
+                        }
+
+                        Divider()
+
+                        Button {
+                            showProfileSettings = true
+                        } label: {
+                            Label("Edit Profiles", systemImage: "slider.horizontal.3")
+                        }
+
+                    } label: {
                         Circle()
                             .fill(Color.secondary.opacity(0.3))
                             .frame(width: 32, height: 32)
@@ -174,7 +203,7 @@ struct SearchView: View {
                                     .font(.system(size: 20))
                                     .foregroundStyle(.primary)
                             )
-                    })
+                    }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {

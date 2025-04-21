@@ -50,7 +50,7 @@ struct SettingsViewGeneral: View {
                     }) {
                         Text(currentAppIcon.isEmpty ? "Default" : currentAppIcon)
                             .font(.body)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.accentColor)
                     }
                 }
                 Toggle("Hide Empty Sections", isOn: $hideEmptySections)

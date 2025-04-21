@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-// TODO: filter continueWatchingItems by profile
 class ContinueWatchingManager: ObservableObject {
     var userDefaultsSuite = UserDefaults.standard
     @Published var items: [ContinueWatchingItem] = []

@@ -104,7 +104,7 @@ struct ExploreView: View {
                 .navigationViewStyle(StackNavigationViewStyle())
                 .onAppear {
                     updateOrientation()
-                    //TODO: fetch explore content here
+                    //TODO: fetch explore content
                 }
                 .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
                     updateOrientation()

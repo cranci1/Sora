@@ -11,7 +11,8 @@ import Kingfisher
 struct SettingsViewModule: View {
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @EnvironmentObject var moduleManager: ModuleManager
-    
+    @EnvironmentObject var settings: Settings
+
     @State private var errorMessage: String?
     @State private var isLoading = false
     @State private var isRefreshing = false
@@ -150,7 +151,7 @@ struct SettingsViewModule: View {
                 message: "We found some text in your clipboard. Would you like to use it as the module URL?",
                 preferredStyle: .alert
             )
-            
+
             clipboardAlert.addAction(UIAlertAction(title: "Use Clipboard", style: .default, handler: { _ in
                 self.displayModuleView(url: pasteboardString)
             }))
@@ -161,6 +162,7 @@ struct SettingsViewModule: View {
             
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let rootViewController = windowScene.windows.first?.rootViewController {
+                windowScene.windows.first?.tintColor = UIColor(settings.accentColor)
                 rootViewController.present(clipboardAlert, animated: true, completion: nil)
             }
             
@@ -189,6 +191,7 @@ struct SettingsViewModule: View {
         
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootViewController = windowScene.windows.first?.rootViewController {
+            windowScene.windows.first?.tintColor = UIColor(settings.accentColor)
             rootViewController.present(alert, animated: true, completion: nil)
         }
     }
@@ -201,6 +204,7 @@ struct SettingsViewModule: View {
             
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first {
+                window.tintColor = UIColor(settings.accentColor)
                 window.rootViewController?.present(hostingController, animated: true, completion: nil)
             }
         }

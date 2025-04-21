@@ -12,7 +12,7 @@
 		12D1E26E2DB66F9800EFCDAB /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E26D2DB66F9600EFCDAB /* ProfileStore.swift */; };
 		12D1E2702DB6702700EFCDAB /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E26F2DB6702500EFCDAB /* Profile.swift */; };
 		12D1E2722DB6771100EFCDAB /* ProfileButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E2712DB6770D00EFCDAB /* ProfileButtonStyle.swift */; };
-		12D1E2742DB67EB200EFCDAB /* UIApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E2732DB67EA900EFCDAB /* UIApplication.swift */; };
+		12D1E2742DB67EB200EFCDAB /* UIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E2732DB67EA900EFCDAB /* UIKit.swift */; };
 		130217CC2D81C55E0011EFF5 /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130217CB2D81C55E0011EFF5 /* DownloadView.swift */; };
 		130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */; };
 		13103E8B2D58E028000F0673 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8A2D58E028000F0673 /* View.swift */; };
@@ -81,7 +81,7 @@
 		12D1E26D2DB66F9600EFCDAB /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
 		12D1E26F2DB6702500EFCDAB /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		12D1E2712DB6770D00EFCDAB /* ProfileButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileButtonStyle.swift; sourceTree = "<group>"; };
-		12D1E2732DB67EA900EFCDAB /* UIApplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIApplication.swift; sourceTree = "<group>"; };
+		12D1E2732DB67EA900EFCDAB /* UIKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKit.swift; sourceTree = "<group>"; };
 		130217CB2D81C55E0011EFF5 /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		130C6BF82D53A4C200DC1432 /* Sora.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sora.entitlements; sourceTree = "<group>"; };
 		130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
@@ -293,7 +293,7 @@
 		133D7C862D2BE2640075467E /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				12D1E2732DB67EA900EFCDAB /* UIApplication.swift */,
+				12D1E2732DB67EA900EFCDAB /* UIKit.swift */,
 				73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */,
 				136BBE7F2DB1038000906B5E /* Notification+Name.swift */,
 				1327FBA82D758DEA00FC6689 /* UIDevice+Model.swift */,
@@ -576,7 +576,7 @@
 				12D1E26B2DB4BA9E00EFCDAB /* SettingsViewProfile.swift in Sources */,
 				1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */,
 				13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */,
-				12D1E2742DB67EB200EFCDAB /* UIApplication.swift in Sources */,
+				12D1E2742DB67EB200EFCDAB /* UIKit.swift in Sources */,
 				133D7C932D2BE2640075467E /* Modules.swift in Sources */,
 				13DB7CC32D7D99C0004371D3 /* SubtitleSettingsManager.swift in Sources */,
 				133D7C702D2BE2500075467E /* ContentView.swift in Sources */,

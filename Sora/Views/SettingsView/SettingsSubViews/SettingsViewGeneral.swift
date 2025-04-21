@@ -29,12 +29,18 @@ struct SettingsViewGeneral: View {
                 ColorPicker("Accent Color", selection: $settings.accentColor)
                 HStack {
                     Text("Appearance")
-                    Picker("Appearance", selection: $settings.selectedAppearance) {
-                        Text("System").tag(Appearance.system)
-                        Text("Light").tag(Appearance.light)
-                        Text("Dark").tag(Appearance.dark)
+                    Spacer()
+                    Menu {
+                        ForEach(Appearance.allCases) { appearance in
+                            Button {
+                                settings.selectedAppearance = appearance
+                            } label: {
+                                Label(appearance.rawValue.capitalized, systemImage: settings.selectedAppearance == appearance ? "checkmark" : "")
+                            }
+                        }
+                    } label: {
+                        Text(settings.selectedAppearance.rawValue.capitalized)
                     }
-                    .pickerStyle(SegmentedPickerStyle())
                 }
                 HStack {
                     Text("App Icon")

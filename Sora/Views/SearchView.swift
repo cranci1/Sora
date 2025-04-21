@@ -103,7 +103,6 @@ struct SearchView: View {
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(Color(.systemBackground))
-                        .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
                     }
                     
                     if !searchText.isEmpty {

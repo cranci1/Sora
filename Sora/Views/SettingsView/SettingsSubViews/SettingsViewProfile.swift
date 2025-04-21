@@ -41,6 +41,7 @@ struct ProfileCell: View {
 // TODO: tests
 struct SettingsViewProfile: View {
     @EnvironmentObject var profileStore: ProfileStore
+
     @State private var showDeleteAlert = false
 
     var body: some View {
@@ -102,9 +103,6 @@ struct SettingsViewProfile: View {
                 }
             }
         }
-        .onTapGesture {
-            UIApplication.shared.dismissKeyboard(true)
-        }
         .navigationTitle("Profiles")
         .alert(isPresented: $showDeleteAlert) {
             Alert(
@@ -117,6 +115,17 @@ struct SettingsViewProfile: View {
             )
         }
         .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button {
+                    UIApplication.shared.dismissKeyboard(true)
+                } label: {
+                    Text("Done")
+                        .foregroundColor(.accentColor)
+                        .fontWeight(.semibold)
+                }
+            }
+
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     profileStore.addProfile(name: "New Profile", emoji: "🧙‍♂️")

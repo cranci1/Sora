@@ -9,16 +9,13 @@ import SwiftUI
 
 struct SettingsViewAlternateAppIconPicker: View {
     @Binding var isPresented: Bool
-    @AppStorage("currentAppIcon") private var currentAppIcon: String?
+    @AppStorage("currentAppIcon") private var currentAppIcon: String = "Default"
 
-    // TODO: add alternate app icons
-    // TODO: add icons in Assets folder
-    // TODO: testing
     let icons: [(name: String, icon: String)] = [
-        ("Default", "AppIcon"),
-        ("Icon 1", "AppIcon1"),
-        ("Icon 2", "AppIcon2"),
-        ("Icon 3", "AppIcon3")
+        ("Default", "Default"),
+        ("Original", "Original"),
+        ("Pixel", "Pixel"),
+        ("Pride", "Pride")
     ]
 
     var body: some View {
@@ -31,10 +28,11 @@ struct SettingsViewAlternateAppIconPicker: View {
                 HStack(spacing: 20) {
                     ForEach(icons, id: \.name) { icon in
                         VStack {
-                            Image(icon.icon)
+                            Image("AppIcon_\(icon.icon)_Preview", bundle: .main)
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 60, height: 60)
+                                .cornerRadius(10)
                                 .padding()
                                 .background(
                                     currentAppIcon == icon.name ? Color.accentColor.opacity(0.3) : Color.clear
@@ -48,7 +46,6 @@ struct SettingsViewAlternateAppIconPicker: View {
                         .onTapGesture {
                             currentAppIcon = icon.name
                             setAppIcon(named: icon.icon)
-                            self.isPresented = false
                         }
                     }
                 }
@@ -61,7 +58,7 @@ struct SettingsViewAlternateAppIconPicker: View {
 
     private func setAppIcon(named iconName: String) {
         if UIApplication.shared.supportsAlternateIcons {
-            UIApplication.shared.setAlternateIconName(iconName == "AppIcon" ? nil : iconName, completionHandler: { error in
+            UIApplication.shared.setAlternateIconName(iconName == "Default" ? nil : "AppIcon_\(iconName)", completionHandler: { error in
                 if let error = error {
                     print("Failed to set alternate icon: \(error.localizedDescription)")
                 }

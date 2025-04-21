@@ -46,7 +46,8 @@ class VolumeViewModel: ObservableObject {
 
 class SliderViewModel: ObservableObject {
     @Published var sliderValue: Double = 0.0
-    @Published var segments: [ClosedRange<Double>] = [] // Added
+    @Published var introSegments: [ClosedRange<Double>] = []
+    @Published var outroSegments: [ClosedRange<Double>] = []
 }
 
 struct AniListMediaResponse: Decodable {

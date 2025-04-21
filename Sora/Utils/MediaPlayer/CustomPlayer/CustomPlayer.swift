@@ -530,7 +530,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     }
                 }
             },
-            segments: sliderViewModel.segments
+            introSegments: sliderViewModel.introSegments,  // Added
+            outroSegments: sliderViewModel.outroSegments,  // Added
+            introColor: .yellow,  // Add your colors here
+            outroColor: .yellow   // Or use settings.accentColor
         )
         
         sliderHostingController = UIHostingController(rootView: sliderView)
@@ -860,24 +863,20 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     private func updateSegments() {
-        guard duration > 0 else { return }
-        
-        var normalizedSegments: [ClosedRange<Double>] = []
+        sliderViewModel.introSegments.removeAll()
+        sliderViewModel.outroSegments.removeAll()
         
         if let op = skipIntervals.op {
-            let start = op.start.seconds / duration
-            let end = op.end.seconds / duration
-            normalizedSegments.append(start...end)
+            let start = max(0, op.start.seconds / duration)
+            let end = min(1, op.end.seconds / duration)
+            sliderViewModel.introSegments.append(start...end)
         }
         
         if let ed = skipIntervals.ed {
-            let start = ed.start.seconds / duration
-            let end = ed.end.seconds / duration
-            normalizedSegments.append(start...end)
+            let start = max(0, ed.start.seconds / duration)
+            let end = min(1, ed.end.seconds / duration)
+            sliderViewModel.outroSegments.append(start...end)
         }
-        
-        sliderViewModel.segments = normalizedSegments
-        
         // Force SwiftUI to update
         DispatchQueue.main.async {
             self.sliderHostingController?.rootView = MusicProgressSlider(
@@ -900,7 +899,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                         self.player.seek(to: targetTime)
                     }
                 },
-                segments: self.sliderViewModel.segments
+                introSegments: self.sliderViewModel.introSegments,
+                outroSegments: self.sliderViewModel.outroSegments,
+                introColor: .yellow,  // Match your color choices
+                outroColor: .yellow
             )
         }
     }
@@ -1346,7 +1348,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                             self.player.seek(to: targetTime)
                         }
                     },
-                    segments: self.sliderViewModel.segments
+                    introSegments: self.sliderViewModel.introSegments,
+                    outroSegments: self.sliderViewModel.outroSegments,
+                    introColor: .yellow,  // Match your color choices
+                    outroColor: .yellow
                 )
             }
         }

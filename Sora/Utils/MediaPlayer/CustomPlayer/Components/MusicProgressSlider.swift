@@ -18,7 +18,10 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
     let emptyColor: Color
     let height: CGFloat
     let onEditingChanged: (Bool) -> Void
-    let segments: [ClosedRange<T>]
+    let introSegments: [ClosedRange<T>]  // Changed
+    let outroSegments: [ClosedRange<T>]  // Changed
+    let introColor: Color
+    let outroColor: Color
     
     @State private var localRealProgress: T = 0
     @State private var localTempProgress: T = 0
@@ -27,28 +30,39 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
     var body: some View {
         GeometryReader { bounds in
             ZStack {
-                VStack (spacing: 8) {
+                VStack(spacing: 8) {
                     ZStack(alignment: .center) {
                         ZStack(alignment: .center) {
-                            Capsule()
-                                .fill(emptyColor)
-                            
-                            // Add this segment rendering code
-                            ForEach(segments, id: \.self) { segment in
+                            // Intro Segments
+                            ForEach(introSegments, id: \.self) { segment in
                                 HStack(spacing: 0) {
-                                    Rectangle()
-                                        .fill(Color.blue.opacity(0.4))
+                                    Spacer()
                                         .frame(width: bounds.size.width * CGFloat(segment.lowerBound))
                                     Rectangle()
-                                        .fill(Color.blue)
+                                        .fill(introColor.opacity(0.5))
                                         .frame(width: bounds.size.width * CGFloat(segment.upperBound - segment.lowerBound))
                                     Spacer()
                                 }
-                                .cornerRadius(height / 2)
                             }
-                        }
                             
+                            // Outro Segments
+                            ForEach(outroSegments, id: \.self) { segment in
+                                HStack(spacing: 0) {
+                                    Spacer()
+                                        .frame(width: bounds.size.width * CGFloat(segment.lowerBound))
+                                    Rectangle()
+                                        .fill(outroColor.opacity(0.5))
+                                        .frame(width: bounds.size.width * CGFloat(segment.upperBound - segment.lowerBound))
+                                    Spacer()
+                                }
+                            }
+                            
+                            // Rest of the existing code...
                             Capsule()
+                                .fill(emptyColor)
+                        }
+
+                        Capsule()
                             .fill(isActive ? activeFillColor : fillColor)
                             .mask({
                                 HStack {

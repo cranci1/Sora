@@ -18,7 +18,9 @@ struct SettingsViewPlayer: View {
     @AppStorage("skip85Visible") private var skip85Visible: Bool = true
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
-
+    
+  //  @AppStorage("introColor") private var introColor: Color = .yellow
+    //@AppStorage("outroColor") private var outroColor: Color = .yellow
     
     private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "Sora"]
     
@@ -62,6 +64,12 @@ struct SettingsViewPlayer: View {
                     }
                 }
             }
+            
+            Section(header: Text("Progress bar Marker Colors")) {
+               // ColorPicker("Intro Color", selection: $introColor)
+                //ColorPicker("Outro Color", selection: $outroColor)
+            }
+            
             Section(header: Text("Skip Settings"), footer : Text("Double tapping the screen on it's sides will skip with the short tap setting.")) {
                 HStack {
                     Text("Tap Skip:")

@@ -102,6 +102,9 @@ struct SettingsViewProfile: View {
                 }
             }
         }
+        .onTapGesture {
+            UIApplication.shared.dismissKeyboard(true)
+        }
         .navigationTitle("Profiles")
         .alert(isPresented: $showDeleteAlert) {
             Alert(

@@ -82,12 +82,12 @@ struct SettingsView: View {
                         }
                     }
                     Button(action: {
-                        if let url = URL(string: "https://github.com/cranci1/Sora/graphs/contributors") {
+                        if let url = URL(string: "https://github.com/cranci1/Sora/blob/dev/LICENSE") {
                             UIApplication.shared.open(url)
                         }
                     }) {
                         HStack {
-                            Text("Contributors")
+                            Text("License (GPLv3.0)")
                                 .foregroundColor(.primary)
                             Spacer()
                             Image(systemName: "safari")
@@ -95,12 +95,12 @@ struct SettingsView: View {
                         }
                     }
                     Button(action: {
-                        if let url = URL(string: "https://github.com/cranci1/Sora/blob/dev/LICENSE") {
+                        if let url = URL(string: "https://github.com/cranci1/Sora/graphs/contributors") {
                             UIApplication.shared.open(url)
                         }
                     }) {
                         HStack {
-                            Text("License (GPLv3.0)")
+                            Text("Contributors")
                                 .foregroundColor(.primary)
                             Spacer()
                             Image(systemName: "safari")

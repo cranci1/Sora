@@ -150,6 +150,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private var skipIntroButton: UIButton!
     private var skipOutroButton: UIButton!
+    private let skipButtonBaseAlpha: CGFloat = 0.9   // same translucency you set in setup
     
     private var playerItemKVOContext = 0
     private var loadedTimeRangesObservation: NSKeyValueObservation?
@@ -257,6 +258,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         addTimeObserver()
         startUpdateTimer()
         setupAudioSession()
+        updateSkipButtonsVisibility()
         
         
         AniListMutation().fetchMalID(animeId: aniListID) { [weak self] result in
@@ -851,6 +853,40 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         ])
     }
     
+    private func updateSkipButtonsVisibility() {
+        let t               = currentTimeVal
+        let controlsShowing = isControlsVisible        // true ⇒ main UI is on‑screen
+        
+        func handle(_ button: UIButton, range: CMTimeRange?) {
+            guard let r = range else { button.isHidden = true; return }
+            
+            let inInterval = t >= r.start.seconds && t <= r.end.seconds
+            let target     = controlsShowing ? 0.0 : skipButtonBaseAlpha
+            
+            if inInterval {
+                if button.isHidden {
+                    button.alpha = 0
+                }
+                button.isHidden = false
+                
+                UIView.animate(withDuration: 0.25) {
+                    button.alpha = target
+                }
+                return
+            }
+            
+            guard !button.isHidden else { return }
+            UIView.animate(withDuration: 0.15, animations: {
+                button.alpha = 0
+            }) { _ in
+                button.isHidden = true
+            }
+        }
+        
+        handle(skipIntroButton,  range: skipIntervals.op)
+        handle(skipOutroButton,  range: skipIntervals.ed)
+    }
+    
     private func fetchSkipTimes(type: String) {
         guard let mal = malID else { return }
         let url = URL(string: "https://api.aniskip.com/v2/skip-times/\(mal)/\(episodeNumber)?types=\(type)&episodeLength=0")!
@@ -890,7 +926,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             skipIntroButton.tintColor = .white
             skipIntroButton.setTitleColor(.white, for: .normal)
             skipIntroButton.layer.cornerRadius = 15
-            skipIntroButton.alpha = 0.7
+            skipIntroButton.alpha = skipButtonBaseAlpha
             skipIntroButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
             skipIntroButton.layer.shadowColor = UIColor.black.cgColor
             skipIntroButton.layer.shadowOffset = CGSize(width: 0, height: 2)
@@ -901,11 +937,12 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             skipIntroButton.addTarget(self, action: #selector(skipIntro), for: .touchUpInside)
             view.addSubview(skipIntroButton)
             skipIntroButton.translatesAutoresizingMaskIntoConstraints = false
-            // add your constraints…
         
         NSLayoutConstraint.activate([
-            skipIntroButton.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
-            skipIntroButton.centerYAnchor.constraint(equalTo: skip85Button.centerYAnchor,constant: -40),
+            skipIntroButton.leadingAnchor.constraint(
+                equalTo: sliderHostingController!.view.leadingAnchor),
+            skipIntroButton.bottomAnchor.constraint(
+                equalTo: sliderHostingController!.view.topAnchor, constant: -5)
         ])
             
             // MARK: – Skip Outro Button
@@ -935,9 +972,12 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skipOutroButton.translatesAutoresizingMaskIntoConstraints = false
             
         NSLayoutConstraint.activate([
-            skipOutroButton.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
-            skipOutroButton.centerYAnchor.constraint(equalTo: skip85Button.centerYAnchor,constant: -40),
+            skipOutroButton.leadingAnchor.constraint(
+                equalTo: sliderHostingController!.view.leadingAnchor),
+            skipOutroButton.bottomAnchor.constraint(
+                equalTo: sliderHostingController!.view.topAnchor, constant: -5)
         ])
+        
         view.bringSubviewToFront(skipOutroButton)
     }
     
@@ -980,13 +1020,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             
             let leftSpacing: CGFloat = 2
             let rightSpacing: CGFloat = 6
-            let trailingAnchor: NSLayoutXAxisAnchor = (volumeSliderHostingView?.isHidden == false)
-                ? volumeSliderHostingView!.leadingAnchor
-                : view.safeAreaLayoutGuide.trailingAnchor
-            
+            let trailingAnchor: NSLayoutXAxisAnchor = dimButton.leadingAnchor
+
             currentMarqueeConstraints = [
-                marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: leftSpacing),
-                marqueeLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -rightSpacing - 10),
+                marqueeLabel.leadingAnchor.constraint(
+                    equalTo: dismissButton.trailingAnchor, constant: leftSpacing),
+                marqueeLabel.trailingAnchor.constraint(
+                    equalTo: trailingAnchor, constant: -rightSpacing - 10),
                 marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
             ]
             NSLayoutConstraint.activate(currentMarqueeConstraints)
@@ -1232,15 +1272,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             
             let current = self.currentTimeVal
 
-            if let op = self.skipIntervals.op {
-              let show = current >= op.start.seconds && current <= op.end.seconds
-              self.skipIntroButton.isHidden = !show
-            }
-
-            if let ed = self.skipIntervals.ed {
-              let show = current >= ed.start.seconds && current <= ed.end.seconds
-              self.skipOutroButton.isHidden = !show
-            }
             
             DispatchQueue.main.async {
                 if let currentItem = self.player.currentItem, currentItem.duration.seconds > 0 {
@@ -1359,6 +1390,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self.controlsContainerView.alpha = a
                 self.skip85Button.alpha = a
             }
+            self.updateSkipButtonsVisibility()
         }
     }
     

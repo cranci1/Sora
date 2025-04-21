@@ -37,7 +37,12 @@ class LibraryManager: ObservableObject {
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
     }
-    
+
+    public func updateProfile(_ newValue: Profile) {
+        self.profile = newValue
+        loadBookmarks()
+    }
+
     @objc private func handleiCloudSync() {
         DispatchQueue.main.async {
             self.loadBookmarks()

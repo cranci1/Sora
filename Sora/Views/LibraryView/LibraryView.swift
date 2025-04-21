@@ -19,8 +19,7 @@ struct LibraryView: View {
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     
     @Environment(\.verticalSizeClass) var verticalSizeClass
-    
-    @State private var continueWatchingItems: [ContinueWatchingItem] = []
+
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var showProfileSettings = false
 
@@ -55,14 +54,14 @@ struct LibraryView: View {
                 
                 VStack(alignment: .leading, spacing: 12) {
 
-                    if hideEmptySections != true || !continueWatchingItems.isEmpty {
+                    if hideEmptySections != true || !continueWatchingManager.items.isEmpty {
                         Text("Continue Watching")
                             .font(.title2)
                             .bold()
                             .padding(.horizontal, 20)
                     }
 
-                    if !(hideEmptySections ?? false) && continueWatchingItems.isEmpty {
+                    if !(hideEmptySections ?? false) && continueWatchingManager.items.isEmpty {
                         VStack(spacing: 8) {
                             Image(systemName: "play.circle")
                                 .font(.largeTitle)
@@ -76,7 +75,7 @@ struct LibraryView: View {
                         .padding()
                         .frame(maxWidth: .infinity)
                     } else {
-                        ContinueWatchingSection(items: $continueWatchingItems, markAsWatched: { item in
+                        ContinueWatchingSection(items: $continueWatchingManager.items, markAsWatched: { item in
                             markContinueWatchingItemAsWatched(item: item)
                         }, removeItem: { item in
                             removeContinueWatchingItem(item: item)
@@ -201,15 +200,11 @@ struct LibraryView: View {
         .navigationViewStyle(StackNavigationViewStyle())
         .onAppear {
             updateOrientation()
-            fetchContinueWatching()
+            continueWatchingManager.loadItems()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
             updateOrientation()
         }
-    }
-    
-    private func fetchContinueWatching() {
-        continueWatchingItems = continueWatchingManager.fetchItems()
     }
     
     private func markContinueWatchingItemAsWatched(item: ContinueWatchingItem) {
@@ -218,12 +213,10 @@ struct LibraryView: View {
         UserDefaults.standard.set(99999999.0, forKey: key)
         UserDefaults.standard.set(99999999.0, forKey: totalKey)
         continueWatchingManager.remove(item: item)
-        continueWatchingItems.removeAll { $0.id == item.id }
     }
     
     private func removeContinueWatchingItem(item: ContinueWatchingItem) {
         continueWatchingManager.remove(item: item)
-        continueWatchingItems.removeAll { $0.id == item.id }
     }
     
     private func updateOrientation() {

@@ -9,13 +9,20 @@ import SwiftUI
 
 // TODO: filter continueWatchingItems by profile
 class ContinueWatchingManager: ObservableObject {
+    @Published var items: [ContinueWatchingItem] = []
+
     public var profile: Profile? = nil
     private let storageKey = "continueWatchingItems"
 
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
     }
-    
+
+    public func updateProfile(_ newValue: Profile) {
+        self.profile = newValue
+        loadItems()
+    }
+
     @objc private func handleiCloudSync() {
         NotificationCenter.default.post(name: .ContinueWatchingDidUpdate, object: nil)
     }
@@ -25,8 +32,7 @@ class ContinueWatchingManager: ObservableObject {
             remove(item: item)
             return
         }
-        
-        var items = fetchItems()
+
         if let index = items.firstIndex(where: { $0.streamUrl == item.streamUrl && $0.episodeNumber == item.episodeNumber }) {
             items[index] = item
         } else {
@@ -37,16 +43,15 @@ class ContinueWatchingManager: ObservableObject {
         }
     }
     
-    func fetchItems() -> [ContinueWatchingItem] {
-        if let data = UserDefaults.standard.data(forKey: storageKey),
-           let items = try? JSONDecoder().decode([ContinueWatchingItem].self, from: data) {
-            return items
+    func loadItems() {
+        if let data = UserDefaults.standard.data(forKey: storageKey) {
+            items = (try? JSONDecoder().decode([ContinueWatchingItem].self, from: data)) ?? []
+        } else {
+            items = []
         }
-        return []
     }
     
     func remove(item: ContinueWatchingItem) {
-        var items = fetchItems()
         items.removeAll { $0.id == item.id }
         if let data = try? JSONEncoder().encode(items) {
             UserDefaults.standard.set(data, forKey: storageKey)

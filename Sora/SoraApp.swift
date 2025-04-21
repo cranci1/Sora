@@ -58,8 +58,8 @@ struct SoraApp: App {
                 }
                 .onChange(of: profileStore.currentProfile) { newValue in
                     // pass changed profile value to other manager
-                    libraryManager.profile = newValue
-                    continueWatchingManager.profile = newValue
+                    libraryManager.updateProfile(newValue)
+                    continueWatchingManager.updateProfile(newValue)
                 }
         }
     }

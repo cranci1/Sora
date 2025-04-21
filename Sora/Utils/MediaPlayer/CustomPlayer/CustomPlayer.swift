@@ -11,36 +11,6 @@ import AVKit
 import SwiftUI
 import AVFoundation
 import MediaPlayer
-
-// MARK: - SliderViewModel
-
-class SliderViewModel: ObservableObject {
-    @Published var sliderValue: Double = 0.0
-}
-
-struct AniListMediaResponse: Decodable {
-  struct DataField: Decodable {
-    struct Media: Decodable { let idMal: Int? }
-    let Media: Media?
-  }
-  let data: DataField
-}
-
-struct AniSkipResponse: Decodable {
-  struct Result: Decodable {
-    struct Interval: Decodable {
-      let startTime: Double
-      let endTime:   Double
-    }
-    let interval: Interval
-    let skipType: String
-  }
-  let found:      Bool
-  let results:    [Result]
-  let statusCode: Int
-}
-
-
 // MARK: - CustomMediaPlayerViewController
 
 class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDelegate {
@@ -151,6 +121,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var skipIntroButton: UIButton!
     private var skipOutroButton: UIButton!
     private let skipButtonBaseAlpha: CGFloat = 0.9   // same translucency you set in setup
+    @Published var segments: [ClosedRange<Double>] = []
     
     private var playerItemKVOContext = 0
     private var loadedTimeRangesObservation: NSKeyValueObservation?
@@ -558,7 +529,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                         }
                     }
                 }
-            }
+            },
+            segments: sliderViewModel.segments
         )
         
         sliderHostingController = UIHostingController(rootView: sliderView)
@@ -887,6 +859,52 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         handle(skipOutroButton,  range: skipIntervals.ed)
     }
     
+    private func updateSegments() {
+        guard duration > 0 else { return }
+        
+        var normalizedSegments: [ClosedRange<Double>] = []
+        
+        if let op = skipIntervals.op {
+            let start = op.start.seconds / duration
+            let end = op.end.seconds / duration
+            normalizedSegments.append(start...end)
+        }
+        
+        if let ed = skipIntervals.ed {
+            let start = ed.start.seconds / duration
+            let end = ed.end.seconds / duration
+            normalizedSegments.append(start...end)
+        }
+        
+        sliderViewModel.segments = normalizedSegments
+        
+        // Force SwiftUI to update
+        DispatchQueue.main.async {
+            self.sliderHostingController?.rootView = MusicProgressSlider(
+                value: Binding(
+                    get: { max(0, min(self.sliderViewModel.sliderValue, self.duration)) }, // Remove extra ')'
+                    set: { self.sliderViewModel.sliderValue = max(0, min($0, self.duration)) } // Remove extra ')'
+                ),
+                inRange: 0...(self.duration > 0 ? self.duration : 1.0),
+                activeFillColor: .white,
+                fillColor: .white.opacity(0.6),
+                textColor: .white.opacity(0.7),
+                emptyColor: .white.opacity(0.3),
+                height: 33,
+                onEditingChanged: { editing in
+                    if !editing {
+                        let targetTime = CMTime(
+                            seconds: self.sliderViewModel.sliderValue,
+                            preferredTimescale: 600
+                        )
+                        self.player.seek(to: targetTime)
+                    }
+                },
+                segments: self.sliderViewModel.segments
+            )
+        }
+    }
+    
     private func fetchSkipTimes(type: String) {
         guard let mal = malID else { return }
         let url = URL(string: "https://api.aniskip.com/v2/skip-times/\(mal)/\(episodeNumber)?types=\(type)&episodeLength=0")!
@@ -897,17 +915,19 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                   let interval = resp.results.first?.interval else { return }
 
             let range = CMTimeRange(
-              start: CMTime(seconds: interval.startTime, preferredTimescale: 600),
-              end:   CMTime(seconds: interval.endTime,   preferredTimescale: 600)
+                start: CMTime(seconds: interval.startTime, preferredTimescale: 600),
+                end: CMTime(seconds: interval.endTime, preferredTimescale: 600)
             )
             DispatchQueue.main.async {
-              if type == "op" {
-                self.skipIntervals.op = range
-                print("→ OP interval:", range)
-              } else {
-                self.skipIntervals.ed = range
-                print("→ ED interval:", range)
-              }
+                if type == "op" {
+                    self.skipIntervals.op = range
+                } else {
+                    self.skipIntervals.ed = range
+                }
+                // Update segments only if duration is available
+                if self.duration > 0 {
+                    self.updateSegments()
+                }
             }
         }.resume()
     }
@@ -1239,6 +1259,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             
             self.currentTimeVal = time.seconds
             self.duration = currentDuration
+            self.updateSegments()
             
             if !self.isSliderEditing {
                 self.sliderViewModel.sliderValue = max(0, min(self.currentTimeVal, self.duration))
@@ -1324,7 +1345,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                             )
                             self.player.seek(to: targetTime)
                         }
-                    }
+                    },
+                    segments: self.sliderViewModel.segments
                 )
             }
         }

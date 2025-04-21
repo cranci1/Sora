@@ -18,6 +18,7 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
     let emptyColor: Color
     let height: CGFloat
     let onEditingChanged: (Bool) -> Void
+    let segments: [ClosedRange<T>]
     
     @State private var localRealProgress: T = 0
     @State private var localTempProgress: T = 0
@@ -28,9 +29,26 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
             ZStack {
                 VStack (spacing: 8) {
                     ZStack(alignment: .center) {
-                        Capsule()
-                            .fill(emptyColor)
-                        Capsule()
+                        ZStack(alignment: .center) {
+                            Capsule()
+                                .fill(emptyColor)
+                            
+                            // Add this segment rendering code
+                            ForEach(segments, id: \.self) { segment in
+                                HStack(spacing: 0) {
+                                    Rectangle()
+                                        .fill(Color.blue.opacity(0.4))
+                                        .frame(width: bounds.size.width * CGFloat(segment.lowerBound))
+                                    Rectangle()
+                                        .fill(Color.blue)
+                                        .frame(width: bounds.size.width * CGFloat(segment.upperBound - segment.lowerBound))
+                                    Spacer()
+                                }
+                                .cornerRadius(height / 2)
+                            }
+                        }
+                            
+                            Capsule()
                             .fill(isActive ? activeFillColor : fillColor)
                             .mask({
                                 HStack {

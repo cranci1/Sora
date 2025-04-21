@@ -165,9 +165,7 @@ struct EpisodeCell: View {
                       }
                 
                 DispatchQueue.main.async {
-                    // Always stop loading
                     self.isLoading = false
-                    // Only display metadata if enabled
                     if UserDefaults.standard.object(forKey: "fetchEpisodeMetadata") == nil
                         || UserDefaults.standard.bool(forKey: "fetchEpisodeMetadata") {
                         self.episodeTitle   = title["en"] ?? ""

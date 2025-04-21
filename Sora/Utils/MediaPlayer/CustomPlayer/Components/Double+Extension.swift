@@ -44,3 +44,29 @@ class VolumeViewModel: ObservableObject {
     @Published var value: Double = 0.0
 }
 
+class SliderViewModel: ObservableObject {
+    @Published var sliderValue: Double = 0.0
+    @Published var segments: [ClosedRange<Double>] = [] // Added
+}
+
+struct AniListMediaResponse: Decodable {
+  struct DataField: Decodable {
+    struct Media: Decodable { let idMal: Int? }
+    let Media: Media?
+  }
+  let data: DataField
+}
+
+struct AniSkipResponse: Decodable {
+  struct Result: Decodable {
+    struct Interval: Decodable {
+      let startTime: Double
+      let endTime:   Double
+    }
+    let interval: Interval
+    let skipType: String
+  }
+  let found:      Bool
+  let results:    [Result]
+  let statusCode: Int
+}

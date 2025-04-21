@@ -17,6 +17,7 @@ struct SettingsViewPlayer: View {
     @AppStorage("holdForPauseEnabled") private var holdForPauseEnabled = false
     @AppStorage("skip85Visible") private var skip85Visible: Bool = true
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
+    @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
 
     
     private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "Sora"]
@@ -78,6 +79,9 @@ struct SettingsViewPlayer: View {
                     .tint(.accentColor)
                 
                 Toggle("Show Skip 85s Button", isOn: $skip85Visible)
+                    .tint(.accentColor)
+                
+                Toggle("Show Skip Intro / Outro Buttons", isOn: $skipIntroOutroVisible)
                     .tint(.accentColor)
             }
             SubtitleSettingsSection()

@@ -34,7 +34,7 @@ struct SettingsView: View {
                     }
                 }
                 
-                Section(header: Text("Info")) {
+                Section(header: Text("Diagnostics & Storage")) {
                     NavigationLink(destination: SettingsViewData()) {
                         Text("Data")
                     }

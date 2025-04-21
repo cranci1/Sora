@@ -54,13 +54,13 @@ struct LibraryView: View {
                 
                 VStack(alignment: .leading, spacing: 12) {
 
-                    if hideEmptySections != true || !libraryManager.bookmarks.isEmpty {
+                    if hideEmptySections != true || !continueWatchingItems.isEmpty {
                         Text("Continue Watching")
                             .font(.title2)
                             .bold()
                             .padding(.horizontal, 20)
                     }
-                    
+
                     if !(hideEmptySections ?? false) && continueWatchingItems.isEmpty {
                         VStack(spacing: 8) {
                             Image(systemName: "play.circle")

@@ -59,7 +59,7 @@ struct ExploreView: View {
                 let columnsCount = determineColumns()
 
                 VStack(alignment: .leading, spacing: 12) {
-                    if hideEmptySections != true || !libraryManager.bookmarks.isEmpty {
+                    if hideEmptySections != true || !continueWatchingItems.isEmpty {
                         Text("Continue Watching")
                             .font(.title2)
                             .bold()

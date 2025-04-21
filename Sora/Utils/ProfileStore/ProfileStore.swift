@@ -39,6 +39,16 @@ class ProfileStore: ObservableObject {
         }
     }
 
+    public func getUserDefaultsSuite() -> UserDefaults {
+        guard let suite = UserDefaults(suiteName: currentProfile.id.uuidString) else {
+            fatalError("This can only fail if suiteName == app bundle id ...")
+        }
+
+        Logger.shared.log("loaded UserDefaults suite for \(currentProfile.name) (\(currentProfile.id.uuidString))", type: "Profile")
+
+        return suite
+    }
+
     private func saveProfiles() {
         profilesData = (try? JSONEncoder().encode(profiles)) ?? Data()
     }
@@ -67,6 +77,12 @@ class ProfileStore: ObservableObject {
 
     public func deleteCurrentProfile() {
         if (profiles.count == 1) { return }
+
+        if let suite = UserDefaults(suiteName: currentProfile.id.uuidString) {
+            for key in suite.dictionaryRepresentation().keys {
+                suite.removeObject(forKey: key)
+            }
+        }
         
         profiles.removeAll { $0.id == currentProfile.id }
 

@@ -36,8 +36,9 @@ struct SoraApp: App {
                 .accentColor(settings.accentColor)
                 .onAppear {
                     // pass initial profile value to other manager
-                    self.libraryManager.profile = self.profileStore.currentProfile
-                    self.continueWatchingManager.profile = self.profileStore.currentProfile
+                    let suite = self.profileStore.getUserDefaultsSuite()
+                    self.libraryManager.userDefaultsSuite = suite
+                    self.continueWatchingManager.userDefaultsSuite = suite
 
                     _ = iCloudSyncManager.shared
 
@@ -56,10 +57,11 @@ struct SoraApp: App {
                         handleURL(url)
                     }
                 }
-                .onChange(of: profileStore.currentProfile) { newValue in
-                    // pass changed profile value to other manager
-                    libraryManager.updateProfile(newValue)
-                    continueWatchingManager.updateProfile(newValue)
+                .onChange(of: profileStore.currentProfile) { _ in
+                    // pass changed suite value to other manager
+                    let suite = self.profileStore.getUserDefaultsSuite()
+                    libraryManager.updateProfileSuite(suite)
+                    continueWatchingManager.updateProfileSuite(suite)
                 }
         }
     }

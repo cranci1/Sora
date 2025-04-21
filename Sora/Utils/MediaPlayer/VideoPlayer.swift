@@ -120,7 +120,6 @@ class VideoPlayerViewController: UIViewController {
                 let progress = min(max(currentTime / duration, 0), 1.0)
                 
                 let item = ContinueWatchingItem(
-                    profileId: continueWatchingManager.profile?.id,
                     id: UUID(),
                     imageUrl: self.episodeImageUrl,
                     episodeNumber: self.episodeNumber,

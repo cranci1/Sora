@@ -8,8 +8,6 @@
 import Foundation
 
 struct ContinueWatchingItem: Codable, Identifiable {
-    let profileId: UUID?
-
     let id: UUID
     let imageUrl: String
     let episodeNumber: Int

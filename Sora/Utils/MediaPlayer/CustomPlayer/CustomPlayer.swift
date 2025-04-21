@@ -237,17 +237,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         super.viewDidLoad()
         view.backgroundColor = .black
         
-        AniListMutation().fetchMalID(animeId: aniListID) { [weak self] result in
-            switch result {
-            case .success(let mal):
-                self?.malID = mal
-                self?.fetchSkipTimes(type: "op")
-                self?.fetchSkipTimes(type: "ed")
-            case .failure(let error):
-                print("⚠️ Unable to fetch MAL ID:", error)
-            }
-        }
-        
         setupHoldGesture()
         loadSubtitleSettings()
         setupPlayerViewController()
@@ -268,6 +257,18 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         addTimeObserver()
         startUpdateTimer()
         setupAudioSession()
+        
+        
+        AniListMutation().fetchMalID(animeId: aniListID) { [weak self] result in
+            switch result {
+            case .success(let mal):
+                self?.malID = mal
+                self?.fetchSkipTimes(type: "op")
+                self?.fetchSkipTimes(type: "ed")
+            case .failure(let error):
+                Logger.shared.log("⚠️ Unable to fetch MAL ID: \(error)",type:"Error")
+            }
+        }
         
         controlsToHide.forEach { originalHiddenStates[$0] = $0.isHidden }
         
@@ -876,27 +877,66 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     private func setupSkipButtons() {
-        skipIntroButton = UIButton(type: .system)
-        skipIntroButton.setTitle("Skip Intro", for: .normal)
-        skipIntroButton.addTarget(self, action: #selector(skipIntro), for: .touchUpInside)
-        skipIntroButton.isHidden = true
-        view.addSubview(skipIntroButton)
-        skipIntroButton.translatesAutoresizingMaskIntoConstraints = false
+        let introConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
+            let introImage = UIImage(systemName: "forward.frame", withConfiguration: introConfig)
+            
+            skipIntroButton = UIButton(type: .system)
+            skipIntroButton.setImage(introImage, for: .normal)
+            skipIntroButton.setTitle(" Skip Intro", for: .normal)
+            skipIntroButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+            
+            // match skip85Button styling:
+            skipIntroButton.backgroundColor = UIColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 0.8)
+            skipIntroButton.tintColor = .white
+            skipIntroButton.setTitleColor(.white, for: .normal)
+            skipIntroButton.layer.cornerRadius = 15
+            skipIntroButton.alpha = 0.7
+            skipIntroButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+            skipIntroButton.layer.shadowColor = UIColor.black.cgColor
+            skipIntroButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+            skipIntroButton.layer.shadowOpacity = 0.6
+            skipIntroButton.layer.shadowRadius = 4
+            skipIntroButton.layer.masksToBounds = false
+            
+            skipIntroButton.addTarget(self, action: #selector(skipIntro), for: .touchUpInside)
+            view.addSubview(skipIntroButton)
+            skipIntroButton.translatesAutoresizingMaskIntoConstraints = false
+            // add your constraints…
+        
         NSLayoutConstraint.activate([
-            skipIntroButton.leadingAnchor.constraint(equalTo: skip85Button.trailingAnchor, constant: 12),
-            skipIntroButton.centerYAnchor.constraint(equalTo: skip85Button.centerYAnchor),
+            skipIntroButton.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
+            skipIntroButton.centerYAnchor.constraint(equalTo: skip85Button.centerYAnchor,constant: -40),
         ])
-        view.bringSubviewToFront(skipIntroButton)
-
-        skipOutroButton = UIButton(type: .system)
-        skipOutroButton.setTitle("Skip Outro", for: .normal)
+            
+            // MARK: – Skip Outro Button
+            let outroConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
+            let outroImage = UIImage(systemName: "forward.frame", withConfiguration: outroConfig)
+            
+            skipOutroButton = UIButton(type: .system)
+            skipOutroButton.setImage(outroImage, for: .normal)
+            skipOutroButton.setTitle(" Skip Outro", for: .normal)
+            skipOutroButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+            
+            // same styling as above
+            skipOutroButton.backgroundColor = skipIntroButton.backgroundColor
+            skipOutroButton.tintColor = skipIntroButton.tintColor
+            skipOutroButton.setTitleColor(.white, for: .normal)
+            skipOutroButton.layer.cornerRadius = skipIntroButton.layer.cornerRadius
+            skipOutroButton.alpha = skipIntroButton.alpha
+            skipOutroButton.contentEdgeInsets = skipIntroButton.contentEdgeInsets
+            skipOutroButton.layer.shadowColor = skipIntroButton.layer.shadowColor
+            skipOutroButton.layer.shadowOffset = skipIntroButton.layer.shadowOffset
+            skipOutroButton.layer.shadowOpacity = skipIntroButton.layer.shadowOpacity
+            skipOutroButton.layer.shadowRadius = skipIntroButton.layer.shadowRadius
+            skipOutroButton.layer.masksToBounds = false
+        
         skipOutroButton.addTarget(self, action: #selector(skipOutro), for: .touchUpInside)
-        skipOutroButton.isHidden = true
         view.addSubview(skipOutroButton)
         skipOutroButton.translatesAutoresizingMaskIntoConstraints = false
+            
         NSLayoutConstraint.activate([
-            skipOutroButton.leadingAnchor.constraint(equalTo: skipIntroButton.trailingAnchor, constant: 12),
-            skipOutroButton.centerYAnchor.constraint(equalTo: skip85Button.centerYAnchor),
+            skipOutroButton.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
+            skipOutroButton.centerYAnchor.constraint(equalTo: skip85Button.centerYAnchor,constant: -40),
         ])
         view.bringSubviewToFront(skipOutroButton)
     }

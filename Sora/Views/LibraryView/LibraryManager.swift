@@ -59,6 +59,7 @@ class LibraryManager: ObservableObject {
     private func loadBookmarks() {
         guard let data = userDefaultsSuite.data(forKey: bookmarksKey) else {
             Logger.shared.log("No bookmarks data found in UserDefaults.", type: "Debug")
+            bookmarks = []
             return
         }
 
@@ -66,6 +67,7 @@ class LibraryManager: ObservableObject {
             bookmarks = try JSONDecoder().decode([LibraryItem].self, from: data)
         } catch {
             Logger.shared.log("Failed to decode bookmarks: \(error.localizedDescription)", type: "Error")
+            bookmarks = []
         }
     }
     

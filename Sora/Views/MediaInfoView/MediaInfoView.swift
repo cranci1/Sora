@@ -48,7 +48,8 @@ struct MediaInfoView: View {
     @StateObject private var jsController = JSController()
     @EnvironmentObject var moduleManager: ModuleManager
     @EnvironmentObject private var libraryManager: LibraryManager
-    
+    @EnvironmentObject private var continueWatchingManager: ContinueWatchingManager
+
     @State private var selectedRange: Range<Int> = 0..<100
     @State private var showSettingsMenu = false
     @State private var customAniListID: Int?
@@ -774,7 +775,7 @@ struct MediaInfoView: View {
             case "nPlayer":
                 scheme = "nplayer-\(url)"
             case "Default":
-                let videoPlayerViewController = VideoPlayerViewController(module: module)
+                let videoPlayerViewController = VideoPlayerViewController(module: module, continueWatchingManager: continueWatchingManager)
                 videoPlayerViewController.streamUrl = url
                 videoPlayerViewController.fullUrl = fullURL
                 videoPlayerViewController.episodeNumber = selectedEpisodeNumber
@@ -805,6 +806,7 @@ struct MediaInfoView: View {
                 
                 let customMediaPlayer = CustomMediaPlayerViewController(
                     module: module,
+                    continueWatchingManager: continueWatchingManager,
                     urlString: url.absoluteString,
                     fullUrl: fullURL,
                     title: title,

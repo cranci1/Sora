@@ -27,6 +27,7 @@ struct LibraryItem: Codable, Identifiable {
     }
 }
 
+// TODO: filter bookmarks by profile
 class LibraryManager: ObservableObject {
     @Published var bookmarks: [LibraryItem] = []
     private let bookmarksKey = "bookmarkedItems"

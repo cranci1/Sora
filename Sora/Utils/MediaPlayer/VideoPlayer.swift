@@ -10,7 +10,8 @@ import AVKit
 
 class VideoPlayerViewController: UIViewController {
     let module: ScrapingModule
-    
+    let continueWatchingManager: ContinueWatchingManager
+
     var player: AVPlayer?
     var playerViewController: NormalPlayer?
     var timeObserverToken: Any?
@@ -23,8 +24,9 @@ class VideoPlayerViewController: UIViewController {
     var episodeImageUrl: String = ""
     var mediaTitle: String = ""
     
-    init(module: ScrapingModule) {
+    init(module: ScrapingModule, continueWatchingManager: ContinueWatchingManager) {
         self.module = module
+        self.continueWatchingManager = continueWatchingManager
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -129,7 +131,7 @@ class VideoPlayerViewController: UIViewController {
                     aniListID: self.aniListID,
                     module: self.module
                 )
-                ContinueWatchingManager.shared.save(item: item)
+                continueWatchingManager.save(item: item)
             }
             
             let remainingPercentage = (duration - currentTime) / duration

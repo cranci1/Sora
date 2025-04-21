@@ -10,6 +10,7 @@ import Kingfisher
 
 struct LibraryView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
+    @EnvironmentObject private var continueWatchingManager: ContinueWatchingManager
     @EnvironmentObject private var moduleManager: ModuleManager
     @EnvironmentObject private var profileStore: ProfileStore
 
@@ -208,7 +209,7 @@ struct LibraryView: View {
     }
     
     private func fetchContinueWatching() {
-        continueWatchingItems = ContinueWatchingManager.shared.fetchItems()
+        continueWatchingItems = continueWatchingManager.fetchItems()
     }
     
     private func markContinueWatchingItemAsWatched(item: ContinueWatchingItem) {
@@ -216,12 +217,12 @@ struct LibraryView: View {
         let totalKey = "totalTime_\(item.fullUrl)"
         UserDefaults.standard.set(99999999.0, forKey: key)
         UserDefaults.standard.set(99999999.0, forKey: totalKey)
-        ContinueWatchingManager.shared.remove(item: item)
+        continueWatchingManager.remove(item: item)
         continueWatchingItems.removeAll { $0.id == item.id }
     }
     
     private func removeContinueWatchingItem(item: ContinueWatchingItem) {
-        ContinueWatchingManager.shared.remove(item: item)
+        continueWatchingManager.remove(item: item)
         continueWatchingItems.removeAll { $0.id == item.id }
     }
     
@@ -265,6 +266,8 @@ struct ContinueWatchingSection: View {
 }
 
 struct ContinueWatchingCell: View {
+    @EnvironmentObject private var continueWatchingManager: ContinueWatchingManager
+    
     let item: ContinueWatchingItem
     var markAsWatched: () -> Void
     var removeItem: () -> Void
@@ -274,7 +277,7 @@ struct ContinueWatchingCell: View {
     var body: some View {
         Button(action: {
             if UserDefaults.standard.string(forKey: "externalPlayer") == "Default" {
-                let videoPlayerViewController = VideoPlayerViewController(module: item.module)
+                let videoPlayerViewController = VideoPlayerViewController(module: item.module, continueWatchingManager: continueWatchingManager)
                 videoPlayerViewController.streamUrl = item.streamUrl
                 videoPlayerViewController.fullUrl = item.fullUrl
                 videoPlayerViewController.episodeImageUrl = item.imageUrl
@@ -291,6 +294,7 @@ struct ContinueWatchingCell: View {
             } else {
                 let customMediaPlayer = CustomMediaPlayerViewController(
                     module: item.module,
+                    continueWatchingManager: continueWatchingManager,
                     urlString: item.streamUrl,
                     fullUrl: item.fullUrl,
                     title: item.mediaTitle,

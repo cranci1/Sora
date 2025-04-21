@@ -37,8 +37,6 @@ struct ProfileCell: View {
     }
 }
 
-// TODO: filter media and modules by profile
-// TODO: tests
 struct SettingsViewProfile: View {
     @EnvironmentObject var profileStore: ProfileStore
 

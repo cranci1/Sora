@@ -22,6 +22,7 @@ class SliderViewModel: ObservableObject {
 
 class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDelegate {
     let module: ScrapingModule
+    let continueWatchingManager: ContinueWatchingManager
     let streamURL: String
     let fullUrl: String
     let titleText: String
@@ -158,6 +159,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var volumeSliderHostingView: UIView?
 
     init(module: ScrapingModule,
+         continueWatchingManager: ContinueWatchingManager,
          urlString: String,
          fullUrl: String,
          title: String,
@@ -168,6 +170,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
          episodeImageUrl: String) {
 
         self.module = module
+        self.continueWatchingManager = continueWatchingManager
         self.streamURL = urlString
         self.fullUrl = fullUrl
         self.titleText = title
@@ -1118,7 +1121,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                         aniListID: self.aniListID,
                         module: self.module
                     )
-                    ContinueWatchingManager.shared.save(item: item)
+                    self.continueWatchingManager.save(item: item)
                 }
 
 

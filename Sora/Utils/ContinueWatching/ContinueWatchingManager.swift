@@ -7,11 +7,11 @@
 
 import Foundation
 
-class ContinueWatchingManager {
-    static let shared = ContinueWatchingManager()
+// TODO: filter continueWatchingItems by profile
+class ContinueWatchingManager: ObservableObject {
     private let storageKey = "continueWatchingItems"
     
-    private init() {
+    init() {
         NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
     }
     

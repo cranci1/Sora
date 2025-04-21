@@ -12,6 +12,7 @@ struct SoraApp: App {
     @StateObject private var settings = Settings()
     @StateObject private var moduleManager = ModuleManager()
     @StateObject private var librarykManager = LibraryManager()
+    @StateObject private var continueWatchingManager = ContinueWatchingManager()
     @StateObject private var profileStore = ProfileStore()
 
     init() {
@@ -32,6 +33,7 @@ struct SoraApp: App {
                 .environmentObject(moduleManager)
                 .environmentObject(settings)
                 .environmentObject(librarykManager)
+                .environmentObject(continueWatchingManager)
                 .environmentObject(profileStore)
                 .accentColor(settings.accentColor)
                 .onAppear {

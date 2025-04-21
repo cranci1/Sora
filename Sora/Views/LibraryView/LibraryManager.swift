@@ -5,7 +5,7 @@
 //  Created by Francesco on 12/01/25.
 //
 
-import Foundation
+import SwiftUI
 
 struct LibraryItem: Codable, Identifiable {
     let id: UUID
@@ -29,12 +29,12 @@ struct LibraryItem: Codable, Identifiable {
 
 // TODO: filter bookmarks by profile
 class LibraryManager: ObservableObject {
+    public var profile: Profile? = nil
+
     @Published var bookmarks: [LibraryItem] = []
     private let bookmarksKey = "bookmarkedItems"
     
     init() {
-        loadBookmarks()
-        
         NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
     }
     
@@ -57,7 +57,7 @@ class LibraryManager: ObservableObject {
             Logger.shared.log("No bookmarks data found in UserDefaults.", type: "Debug")
             return
         }
-        
+
         do {
             bookmarks = try JSONDecoder().decode([LibraryItem].self, from: data)
         } catch {

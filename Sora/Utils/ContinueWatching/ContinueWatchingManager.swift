@@ -5,12 +5,13 @@
 //  Created by Francesco on 14/02/25.
 //
 
-import Foundation
+import SwiftUI
 
 // TODO: filter continueWatchingItems by profile
 class ContinueWatchingManager: ObservableObject {
+    public var profile: Profile? = nil
     private let storageKey = "continueWatchingItems"
-    
+
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
     }

@@ -11,13 +11,11 @@ import SwiftUI
 struct SoraApp: App {
     @StateObject private var settings = Settings()
     @StateObject private var moduleManager = ModuleManager()
-    @StateObject private var librarykManager = LibraryManager()
-    @StateObject private var continueWatchingManager = ContinueWatchingManager()
     @StateObject private var profileStore = ProfileStore()
+    @StateObject private var libraryManager = LibraryManager()
+    @StateObject private var continueWatchingManager = ContinueWatchingManager()
 
     init() {
-        _ = iCloudSyncManager.shared
-        
         TraktToken.checkAuthenticationStatus { isAuthenticated in
             if isAuthenticated {
                 Logger.shared.log("Trakt authentication is valid")
@@ -32,11 +30,17 @@ struct SoraApp: App {
             ContentView()
                 .environmentObject(moduleManager)
                 .environmentObject(settings)
-                .environmentObject(librarykManager)
+                .environmentObject(libraryManager)
                 .environmentObject(continueWatchingManager)
                 .environmentObject(profileStore)
                 .accentColor(settings.accentColor)
                 .onAppear {
+                    // pass initial profile value to other manager
+                    self.libraryManager.profile = self.profileStore.currentProfile
+                    self.continueWatchingManager.profile = self.profileStore.currentProfile
+
+                    _ = iCloudSyncManager.shared
+
                     settings.updateAppearance()
                     iCloudSyncManager.shared.syncModulesFromiCloud()
                     Task {
@@ -51,6 +55,11 @@ struct SoraApp: App {
                     } else {
                         handleURL(url)
                     }
+                }
+                .onChange(of: profileStore.currentProfile) { newValue in
+                    // pass changed profile value to other manager
+                    libraryManager.profile = newValue
+                    continueWatchingManager.profile = newValue
                 }
         }
     }

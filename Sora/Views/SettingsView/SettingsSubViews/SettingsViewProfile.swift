@@ -19,7 +19,7 @@ struct ProfileCell: View {
                 .overlay(
                     Text(profile.emoji)
                         .font(.system(size: 28))
-                        .foregroundStyle(.primary)
+                        .foregroundColor(.primary)
                 )
 
             Text(profile.name)

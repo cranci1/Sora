@@ -43,7 +43,7 @@ struct SettingsViewPlayer: View {
                 
                 Toggle("Force Landscape", isOn: $isAlwaysLandscape)
                     .tint(.accentColor)
-                
+
                 Toggle("Two Finger Hold for Pause",isOn: $holdForPauseEnabled)
                     .tint(.accentColor)
             }
@@ -51,7 +51,7 @@ struct SettingsViewPlayer: View {
             Section(header: Text("Speed Settings")) {
                 Toggle("Remember Playback speed", isOn: $isRememberPlaySpeed)
                     .tint(.accentColor)
-                
+
                 HStack {
                     Text("Hold Speed:")
                     Spacer()
@@ -85,10 +85,10 @@ struct SettingsViewPlayer: View {
                 
                 Toggle("Double Tap to Seek", isOn: $doubleTapSeekEnabled)
                     .tint(.accentColor)
-                
+
                 Toggle("Show Skip 85s Button", isOn: $skip85Visible)
                     .tint(.accentColor)
-                
+
                 Toggle("Show Skip Intro / Outro Buttons", isOn: $skipIntroOutroVisible)
                     .tint(.accentColor)
             }

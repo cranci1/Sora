@@ -9,23 +9,25 @@ import SwiftUI
 
 struct RootView: View {
     var body: some View {
-        TabView {
-            ExploreView()
-                .tabItem {
-                    Label("Explore", systemImage: "star.fill")
-                }
-            LibraryView()
-                .tabItem {
-                    Label("Library", systemImage: "books.vertical.fill")
-                }
-            SearchView()
-                .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
-                }
-            SettingsView()
-                .tabItem {
-                    Label("Settings", systemImage: "gear")
-                }
+        NavigationStack {
+            TabView {
+                ExploreView()
+                    .tabItem {
+                        Label("Explore", systemImage: "star.fill")
+                    }
+                LibraryView()
+                    .tabItem {
+                        Label("Library", systemImage: "books.vertical.fill")
+                    }
+                SearchView()
+                    .tabItem {
+                        Label("Search", systemImage: "magnifyingglass")
+                    }
+                SettingsView()
+                    .tabItem {
+                        Label("Settings", systemImage: "gear")
+                    }
+            }
         }
     }
 }

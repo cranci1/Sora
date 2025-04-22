@@ -9,34 +9,59 @@ import SwiftUI
 
 struct SettingsView: View {
     @FocusState private var focusedSetting: Int?
-    private let screenWidth = UIScreen.main.bounds.width
+    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "BETA"
+
+    private let settings: [Setting] = [
+        Setting(id: 1, title: "General Preferences", destination: .general),
+        Setting(id: 2, title: "Media Player", destination: .media),
+        Setting(id: 3, title: "Modules", destination: .modules),
+        Setting(id: 4, title: "Trackers", destination: .trackers),
+        Setting(id: 5, title: "Data", destination: .data),
+        Setting(id: 6, title: "Logs", destination: .logs),
+        Setting(id: 7, title: "Info", destination: .info)
+    ]
 
     var body: some View {
-        HStack(spacing: 0) {
-            VStack {
-                Group {
-                    RoundedRectangle(cornerRadius: 90, style: .circular)
-                        .fill(.gray.opacity(0.3))
-                        .frame(width: UIScreen.main.bounds.width * 0.3, height: UIScreen.main.bounds.width * 0.3)
-                        .shadow(radius: 12)
-                }
-            }
-            .frame(width: screenWidth / 2.0)
+        NavigationView {
+            HStack(spacing: 0) {
 
-            VStack {
-                ForEach(1..<7) { index in
-                    Button(action: {
-                        print("Selected Index: \(index)")
-                    }) {
-                        Text("Random Setting \(index)")
-                            .frame(maxWidth: screenWidth / 2.5)
-                            .scaleEffect(focusedSetting == index ? 1.0 : 0.85)
-                            .animation(.easeInOut(duration: 0.2), value: focusedSetting == index)
-                    }
-                        .focused($focusedSetting, equals: index)
+                // Logo block
+                VStack {
+                    Button(action: { }, label: {
+                        Image("Logo")
+                            .resizable()
+                            .padding(80)
+                            .background(
+                                Image("Background")
+                                    .resizable()
+                                    .scaledToFill()
+                            )
+                    })
+                    .aspectRatio(1.0, contentMode: .fill)
+                    .buttonStyle(.card)
+                    .focused($focusedSetting, equals: 0)
+                    .cornerRadius(100)
+                    .shadow(radius: 30)
+                    .padding(.horizontal, 100)
+
+                    Text("Running Sora \(version)\nby cranci1")
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.secondary)
+                        .padding()
                 }
+                    .padding(100)
+                    .frame(maxWidth: .infinity)
+
+                // Settings list
+                VStack {
+                    ForEach(settings) { setting in
+                        SettingsCellButton(setting: setting)
+                            .focused($focusedSetting, equals: setting.id)
+                    }
+                }
+                    .frame(maxWidth: .infinity)
             }
-                .frame(width: screenWidth / 2.0)
         }
     }
 }

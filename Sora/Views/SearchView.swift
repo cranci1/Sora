@@ -15,6 +15,7 @@ struct SearchItem: Identifiable {
     let href: String
 }
 
+
 struct SearchView: View {
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2

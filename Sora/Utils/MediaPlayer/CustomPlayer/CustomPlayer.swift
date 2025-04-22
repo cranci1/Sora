@@ -290,8 +290,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             self.watchNextButton.alpha = 1.0
             self.view.layoutIfNeeded()
         }
-        
-        hiddenVolumeView.showsRouteButton = false
+
+        if #unavailable(iOS 15) {
+            hiddenVolumeView.showsRouteButton = false
+        }
         hiddenVolumeView.isHidden = true
         view.addSubview(hiddenVolumeView)
         
@@ -968,7 +970,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skipIntroButton.setTitleColor(.white, for: .normal)
         skipIntroButton.layer.cornerRadius = 15
         skipIntroButton.alpha = skipButtonBaseAlpha
-        skipIntroButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+
+        if #unavailable(iOS 15) {
+            skipIntroButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+        }
+
         skipIntroButton.layer.shadowColor = UIColor.black.cgColor
         skipIntroButton.layer.shadowOffset = CGSize(width: 0, height: 2)
         skipIntroButton.layer.shadowOpacity = 0.6
@@ -1001,7 +1007,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skipOutroButton.setTitleColor(.white, for: .normal)
         skipOutroButton.layer.cornerRadius = skipIntroButton.layer.cornerRadius
         skipOutroButton.alpha = skipIntroButton.alpha
-        skipOutroButton.contentEdgeInsets = skipIntroButton.contentEdgeInsets
+
+        if #unavailable(iOS 15) {
+            skipOutroButton.contentEdgeInsets = skipIntroButton.contentEdgeInsets
+        }
+
         skipOutroButton.layer.shadowColor = skipIntroButton.layer.shadowColor
         skipOutroButton.layer.shadowOffset = skipIntroButton.layer.shadowOffset
         skipOutroButton.layer.shadowOpacity = skipIntroButton.layer.shadowOpacity
@@ -1173,9 +1183,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skip85Button.setTitleColor(.white, for: .normal)
         skip85Button.layer.cornerRadius = 21
         skip85Button.alpha = 0.7
-        
-        skip85Button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
-        
+
+        if #unavailable(iOS 15) {
+            skip85Button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+        }
+
         skip85Button.layer.shadowColor = UIColor.black.cgColor
         skip85Button.layer.shadowOffset = CGSize(width: 0, height: 2)
         skip85Button.layer.shadowOpacity = 0.6
@@ -1311,9 +1323,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self.topSubtitleLabel.text = ""
                 self.topSubtitleLabel.isHidden = true
             }
-            
-            let current = self.currentTimeVal
-            
             
             DispatchQueue.main.async {
                 if let currentItem = self.player.currentItem, currentItem.duration.seconds > 0 {

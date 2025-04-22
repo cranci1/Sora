@@ -33,6 +33,7 @@ struct SettingsViewAlternateAppIconPicker: View {
                                 .scaledToFit()
                                 .frame(width: 60, height: 60)
                                 .cornerRadius(10)
+                                .shadow(radius: 6)
                                 .padding()
                                 .background(
                                     currentAppIcon == icon.name ? Color.accentColor.opacity(0.3) : Color.clear

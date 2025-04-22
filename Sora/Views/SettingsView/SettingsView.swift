@@ -148,7 +148,7 @@ class Settings: ObservableObject {
            let shimmer = ShimmerType(rawValue: shimmerRawValue) {
             self.shimmerType = shimmer
         } else {
-            self.shimmerType = .default
+            self.shimmerType = .shimmer
         }
 
         if let colorData = UserDefaults.standard.data(forKey: "accentColor"),

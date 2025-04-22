@@ -53,10 +53,8 @@ struct SettingsViewGeneral: View {
                             .foregroundColor(.accentColor)
                     }
                 }
-                Toggle("Hide Empty Sections", isOn: $hideEmptySections)
-                    .tint(.accentColor)
                 HStack {
-                    Text("Shimmer Effect")
+                    Text("Loading Animation")
                     Spacer()
                     Menu {
                         ForEach(ShimmerType.allCases) { shimmerType in
@@ -70,6 +68,8 @@ struct SettingsViewGeneral: View {
                         Text(settings.shimmerType.rawValue.capitalized)
                     }
                 }
+                Toggle("Hide Empty Sections", isOn: $hideEmptySections)
+                    .tint(.accentColor)
             }
             
             Section(header: Text("Media View"), footer: Text("The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1-25, 26-50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata it is refering to the episode thumbnail and title, since sometimes it can contain spoilers.")) {

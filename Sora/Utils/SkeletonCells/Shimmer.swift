@@ -8,8 +8,7 @@
 import SwiftUI
 
 enum ShimmerType: String, CaseIterable, Identifiable {
-    case `default`, pulse
-
+    case shimmer, pulse, none
     var id: String { self.rawValue }
 }
 
@@ -20,8 +19,10 @@ struct ShimmeringEffect: ViewModifier {
         switch settings.shimmerType {
         case .pulse:
             return AnyView(content.modifier(ShimmerPulse()))
-        default:
+        case .shimmer:
             return AnyView(content.modifier(ShimmerDefault()))
+        default:
+            return AnyView(content.modifier(ShimmerNone()))
         }
     }
 }
@@ -71,5 +72,21 @@ struct ShimmerPulse: ViewModifier {
                     self.opacity = 0.8
                 }
             }
+    }
+}
+
+struct ShimmerNone: ViewModifier {
+    @Environment(\.colorScheme) var colorScheme
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                (colorScheme == .light ?
+                    Color.black.opacity(0.3) :
+                    Color.white.opacity(0.3)
+                )
+                .blendMode(.overlay)
+            )
+            .mask(content)
     }
 }

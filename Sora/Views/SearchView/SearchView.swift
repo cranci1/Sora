@@ -15,6 +15,7 @@ struct SearchItem: Identifiable {
     let href: String
 }
 
+
 struct SearchView: View {
     @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
     @AppStorage("selectedModuleId") private var selectedModuleId: String?

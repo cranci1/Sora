@@ -116,6 +116,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         }
     }
     
+    private var wasPlayingBeforeSeek = false
+    
     private var malID: Int?
     private var skipIntervals: (op: CMTimeRange?, ed: CMTimeRange?) = (nil, nil)
     
@@ -525,25 +527,39 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             height: 33,
             onEditingChanged: { editing in
                 if editing {
-                    self.isSliderEditing = true
+                  // 1) start of scrub
+                  self.isSliderEditing = true
+                  
+                  // remember if we were playing, and at what rate
+                  self.wasPlayingBeforeSeek = (self.player.timeControlStatus == .playing)
+                  self.originalRate = self.player.rate
+                  
+                  // pause the player immediately
+                  self.player.pause()
                 } else {
-                    let wasPlaying = self.isPlaying
-                    let targetTime = CMTime(seconds: self.sliderViewModel.sliderValue,
-                                            preferredTimescale: 600)
-                    self.player.seek(to: targetTime) { [weak self] finished in
-                        guard let self = self else { return }
-                        
-                        let final = self.player.currentTime().seconds
-                        self.sliderViewModel.sliderValue = final
-                        self.currentTimeVal = final
-                        self.isSliderEditing = false
-                        
-                        if wasPlaying {
-                            self.player.play()
-                        }
+                  // 2) end of scrub — seek exactly to the new spot
+                  let target = CMTime(seconds: self.sliderViewModel.sliderValue,
+                                      preferredTimescale: 600)
+                  self.player.seek(
+                    to: target,
+                    toleranceBefore: .zero,
+                    toleranceAfter: .zero
+                  ) { [weak self] _ in
+                    guard let self = self else { return }
+                    
+                    // update our UI‑model
+                    let final = self.player.currentTime().seconds
+                    self.sliderViewModel.sliderValue = final
+                    self.currentTimeVal = final
+                    self.isSliderEditing = false
+                    
+                    // 3) resume at exactly the same rate
+                    if self.wasPlayingBeforeSeek {
+                      self.player.playImmediately(atRate: self.originalRate)
                     }
+                  }
                 }
-            },
+              },
             introSegments: sliderViewModel.introSegments,  // Added
             outroSegments: sliderViewModel.outroSegments,  // Added
             introColor: segmentsColor,  // Add your colors here
@@ -921,14 +937,40 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 emptyColor: .white.opacity(0.3),
                 height: 33,
                 onEditingChanged: { editing in
-                    if !editing {
-                        let targetTime = CMTime(
-                            seconds: self.sliderViewModel.sliderValue,
-                            preferredTimescale: 600
-                        )
-                        self.player.seek(to: targetTime)
+                    if editing {
+                      // 1) start of scrub
+                      self.isSliderEditing = true
+                      
+                      // remember if we were playing, and at what rate
+                      self.wasPlayingBeforeSeek = (self.player.timeControlStatus == .playing)
+                      self.originalRate = self.player.rate
+                      
+                      // pause the player immediately
+                      self.player.pause()
+                    } else {
+                      // 2) end of scrub — seek exactly to the new spot
+                      let target = CMTime(seconds: self.sliderViewModel.sliderValue,
+                                          preferredTimescale: 600)
+                      self.player.seek(
+                        to: target,
+                        toleranceBefore: .zero,
+                        toleranceAfter: .zero
+                      ) { [weak self] _ in
+                        guard let self = self else { return }
+                        
+                        // update our UI‑model
+                        let final = self.player.currentTime().seconds
+                        self.sliderViewModel.sliderValue = final
+                        self.currentTimeVal = final
+                        self.isSliderEditing = false
+                        
+                        // 3) resume at exactly the same rate
+                        if self.wasPlayingBeforeSeek {
+                          self.player.playImmediately(atRate: self.originalRate)
+                        }
+                      }
                     }
-                },
+                  },
                 introSegments: self.sliderViewModel.introSegments,
                 outroSegments: self.sliderViewModel.outroSegments,
                 introColor: segmentsColor,  // Match your color choices
@@ -1371,14 +1413,40 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     emptyColor: .white.opacity(0.3),
                     height: 33,
                     onEditingChanged: { editing in
-                        if !editing {
-                            let targetTime = CMTime(
-                                seconds: self.sliderViewModel.sliderValue,
-                                preferredTimescale: 600
-                            )
-                            self.player.seek(to: targetTime)
+                        if editing {
+                          // 1) start of scrub
+                          self.isSliderEditing = true
+                          
+                          // remember if we were playing, and at what rate
+                          self.wasPlayingBeforeSeek = (self.player.timeControlStatus == .playing)
+                          self.originalRate = self.player.rate
+                          
+                          // pause the player immediately
+                          self.player.pause()
+                        } else {
+                          // 2) end of scrub — seek exactly to the new spot
+                          let target = CMTime(seconds: self.sliderViewModel.sliderValue,
+                                              preferredTimescale: 600)
+                          self.player.seek(
+                            to: target,
+                            toleranceBefore: .zero,
+                            toleranceAfter: .zero
+                          ) { [weak self] _ in
+                            guard let self = self else { return }
+                            
+                            // update our UI‑model
+                            let final = self.player.currentTime().seconds
+                            self.sliderViewModel.sliderValue = final
+                            self.currentTimeVal = final
+                            self.isSliderEditing = false
+                            
+                            // 3) resume at exactly the same rate
+                            if self.wasPlayingBeforeSeek {
+                              self.player.playImmediately(atRate: self.originalRate)
+                            }
+                          }
                         }
-                    },
+                      },
                     introSegments: self.sliderViewModel.introSegments,
                     outroSegments: self.sliderViewModel.outroSegments,
                     introColor: segmentsColor,  // Match your color choices

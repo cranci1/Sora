@@ -19,9 +19,6 @@ struct SettingsViewPlayer: View {
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
     
-  //  @AppStorage("introColor") private var introColor: Color = .yellow
-    //@AppStorage("outroColor") private var outroColor: Color = .yellow
-    
     private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "Sora"]
     
     var body: some View {
@@ -65,9 +62,25 @@ struct SettingsViewPlayer: View {
                 }
             }
             
-            Section(header: Text("Progress bar Marker Colors")) {
-               // ColorPicker("Intro Color", selection: $introColor)
-                //ColorPicker("Outro Color", selection: $outroColor)
+            Section(header: Text("Progress bar Marker Color")) {
+                ColorPicker("Segments Color", selection: Binding(
+                    get: {
+                        if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
+                           let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
+                            return Color(uiColor)
+                        }
+                        return .yellow
+                    },
+                    set: { newColor in
+                        let uiColor = UIColor(newColor)
+                        if let data = try? NSKeyedArchiver.archivedData(
+                            withRootObject: uiColor,
+                            requiringSecureCoding: false
+                        ) {
+                            UserDefaults.standard.set(data, forKey: "segmentsColorData")
+                        }
+                    }
+                )g)
             }
             
             Section(header: Text("Skip Settings"), footer : Text("Double tapping the screen on it's sides will skip with the short tap setting.")) {

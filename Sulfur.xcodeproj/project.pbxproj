@@ -3,10 +3,17 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		12D1E2692DB45CBE00EFCDAB /* SettingsViewAlternateAppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E2682DB45CB500EFCDAB /* SettingsViewAlternateAppIconPicker.swift */; };
+		12D1E26B2DB4BA9E00EFCDAB /* SettingsViewProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E26A2DB4BA9D00EFCDAB /* SettingsViewProfile.swift */; };
+		12D1E26E2DB66F9800EFCDAB /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E26D2DB66F9600EFCDAB /* ProfileStore.swift */; };
+		12D1E2702DB6702700EFCDAB /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E26F2DB6702500EFCDAB /* Profile.swift */; };
+		12D1E2722DB6771100EFCDAB /* ProfileButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E2712DB6770D00EFCDAB /* ProfileButtonStyle.swift */; };
+		12D1E2742DB67EB200EFCDAB /* UIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E2732DB67EA900EFCDAB /* UIKit.swift */; };
+		12D1E27A2DB69D7F00EFCDAB /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E2792DB69D7F00EFCDAB /* ExploreView.swift */; };
 		130217CC2D81C55E0011EFF5 /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130217CB2D81C55E0011EFF5 /* DownloadView.swift */; };
 		130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */; };
 		13103E8B2D58E028000F0673 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8A2D58E028000F0673 /* View.swift */; };
@@ -21,9 +28,8 @@
 		132E35202D959E1D0007800E /* FFmpeg-iOS-Lame in Frameworks */ = {isa = PBXBuildFile; productRef = 132E351F2D959E1D0007800E /* FFmpeg-iOS-Lame */; };
 		132E35232D959E410007800E /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 132E35222D959E410007800E /* Kingfisher */; };
 		133D7C6E2D2BE2500075467E /* SoraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6D2D2BE2500075467E /* SoraApp.swift */; };
-		133D7C702D2BE2500075467E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6F2D2BE2500075467E /* ContentView.swift */; };
+		133D7C702D2BE2500075467E /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6F2D2BE2500075467E /* RootView.swift */; };
 		133D7C722D2BE2520075467E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 133D7C712D2BE2520075467E /* Assets.xcassets */; };
-		133D7C752D2BE2520075467E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 133D7C742D2BE2520075467E /* Preview Assets.xcassets */; };
 		133D7C8C2D2BE2640075467E /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C7C2D2BE2630075467E /* SearchView.swift */; };
 		133D7C8E2D2BE2640075467E /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C7E2D2BE2630075467E /* LibraryView.swift */; };
 		133D7C8F2D2BE2640075467E /* MediaInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C802D2BE2630075467E /* MediaInfoView.swift */; };
@@ -71,6 +77,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		120764652DB6F6E0003621E9 /* SulfurTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SulfurTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		12D1E2682DB45CB500EFCDAB /* SettingsViewAlternateAppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewAlternateAppIconPicker.swift; sourceTree = "<group>"; };
+		12D1E26A2DB4BA9D00EFCDAB /* SettingsViewProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewProfile.swift; sourceTree = "<group>"; };
+		12D1E26D2DB66F9600EFCDAB /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
+		12D1E26F2DB6702500EFCDAB /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
+		12D1E2712DB6770D00EFCDAB /* ProfileButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileButtonStyle.swift; sourceTree = "<group>"; };
+		12D1E2732DB67EA900EFCDAB /* UIKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKit.swift; sourceTree = "<group>"; };
+		12D1E2792DB69D7F00EFCDAB /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
 		130217CB2D81C55E0011EFF5 /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		130C6BF82D53A4C200DC1432 /* Sora.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sora.entitlements; sourceTree = "<group>"; };
 		130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
@@ -84,9 +98,8 @@
 		132AF1242D9995F900A0140B /* JSController-Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Search.swift"; sourceTree = "<group>"; };
 		133D7C6A2D2BE2500075467E /* Sulfur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sulfur.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		133D7C6D2D2BE2500075467E /* SoraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoraApp.swift; sourceTree = "<group>"; };
-		133D7C6F2D2BE2500075467E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		133D7C6F2D2BE2500075467E /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		133D7C712D2BE2520075467E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		133D7C742D2BE2520075467E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		133D7C7C2D2BE2630075467E /* SearchView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		133D7C7E2D2BE2630075467E /* LibraryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		133D7C802D2BE2630075467E /* MediaInfoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaInfoView.swift; sourceTree = "<group>"; };
@@ -119,7 +132,7 @@
 		13DB46912D900BCE008CBC03 /* SettingsViewTrackers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewTrackers.swift; sourceTree = "<group>"; };
 		13DB7CC22D7D99C0004371D3 /* SubtitleSettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubtitleSettingsManager.swift; sourceTree = "<group>"; };
 		13DB7CEB2D7DED5D004371D3 /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
-		13DC0C412D2EC9BA00D0F966 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		13DC0C412D2EC9BA00D0F966 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		13DC0C452D302C7500D0F966 /* VideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayer.swift; sourceTree = "<group>"; };
 		13E62FC12DABC5830007E259 /* Trakt-Login.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Trakt-Login.swift"; sourceTree = "<group>"; };
 		13E62FC32DABC58C0007E259 /* Trakt-Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Trakt-Token.swift"; sourceTree = "<group>"; };
@@ -133,7 +146,18 @@
 		73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JavaScriptCore+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		120764662DB6F6E0003621E9 /* SulfurTV */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SulfurTV; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
+		120764622DB6F6E0003621E9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		133D7C672D2BE2500075467E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -148,6 +172,48 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1207649E2DB6FA7F003621E9 /* SearchView */ = {
+			isa = PBXGroup;
+			children = (
+				133D7C7C2D2BE2630075467E /* SearchView.swift */,
+			);
+			path = SearchView;
+			sourceTree = "<group>";
+		};
+		1207649F2DB6FA88003621E9 /* DownloadView */ = {
+			isa = PBXGroup;
+			children = (
+				130217CB2D81C55E0011EFF5 /* DownloadView.swift */,
+			);
+			path = DownloadView;
+			sourceTree = "<group>";
+		};
+		120764A02DB6FA9D003621E9 /* RootView */ = {
+			isa = PBXGroup;
+			children = (
+				133D7C6F2D2BE2500075467E /* RootView.swift */,
+			);
+			path = RootView;
+			sourceTree = "<group>";
+		};
+		12D1E26C2DB66F8B00EFCDAB /* ProfileStore */ = {
+			isa = PBXGroup;
+			children = (
+				12D1E2712DB6770D00EFCDAB /* ProfileButtonStyle.swift */,
+				12D1E26F2DB6702500EFCDAB /* Profile.swift */,
+				12D1E26D2DB66F9600EFCDAB /* ProfileStore.swift */,
+			);
+			path = ProfileStore;
+			sourceTree = "<group>";
+		};
+		12D1E2782DB69D7900EFCDAB /* ExploreView */ = {
+			isa = PBXGroup;
+			children = (
+				12D1E2792DB69D7F00EFCDAB /* ExploreView.swift */,
+			);
+			path = ExploreView;
+			sourceTree = "<group>";
+		};
 		13103E802D589D6C000F0673 /* Tracking Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -187,6 +253,7 @@
 			isa = PBXGroup;
 			children = (
 				133D7C6C2D2BE2500075467E /* Sora */,
+				120764662DB6F6E0003621E9 /* SulfurTV */,
 				133D7C6B2D2BE2500075467E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -195,6 +262,7 @@
 			isa = PBXGroup;
 			children = (
 				133D7C6A2D2BE2500075467E /* Sulfur.app */,
+				120764652DB6F6E0003621E9 /* SulfurTV.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -202,35 +270,27 @@
 		133D7C6C2D2BE2500075467E /* Sora */ = {
 			isa = PBXGroup;
 			children = (
-				130C6BF82D53A4C200DC1432 /* Sora.entitlements */,
 				13DC0C412D2EC9BA00D0F966 /* Info.plist */,
+				133D7C712D2BE2520075467E /* Assets.xcassets */,
+				130C6BF82D53A4C200DC1432 /* Sora.entitlements */,
+				133D7C6D2D2BE2500075467E /* SoraApp.swift */,
 				13103E802D589D6C000F0673 /* Tracking Services */,
 				133D7C852D2BE2640075467E /* Utils */,
 				133D7C7B2D2BE2630075467E /* Views */,
-				133D7C6D2D2BE2500075467E /* SoraApp.swift */,
-				133D7C6F2D2BE2500075467E /* ContentView.swift */,
-				133D7C712D2BE2520075467E /* Assets.xcassets */,
-				133D7C732D2BE2520075467E /* Preview Content */,
 			);
 			path = Sora;
-			sourceTree = "<group>";
-		};
-		133D7C732D2BE2520075467E /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				133D7C742D2BE2520075467E /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		133D7C7B2D2BE2630075467E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				120764A02DB6FA9D003621E9 /* RootView */,
+				1207649F2DB6FA88003621E9 /* DownloadView */,
+				1207649E2DB6FA7F003621E9 /* SearchView */,
+				12D1E2782DB69D7900EFCDAB /* ExploreView */,
 				133D7C7F2D2BE2630075467E /* MediaInfoView */,
 				1399FAD22D3AB34F00E97C31 /* SettingsView */,
 				133F55B92D33B53E00E08EEA /* LibraryView */,
-				133D7C7C2D2BE2630075467E /* SearchView.swift */,
-				130217CB2D81C55E0011EFF5 /* DownloadView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -247,6 +307,7 @@
 		133D7C832D2BE2630075467E /* SettingsSubViews */ = {
 			isa = PBXGroup;
 			children = (
+				12D1E2682DB45CB500EFCDAB /* SettingsViewAlternateAppIconPicker.swift */,
 				1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */,
 				1399FAD32D3AB38C00E97C31 /* SettingsViewLogger.swift */,
 				133D7C842D2BE2630075467E /* SettingsViewModule.swift */,
@@ -254,6 +315,7 @@
 				135CCBE12D4D1138008B9C0E /* SettingsViewPlayer.swift */,
 				130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */,
 				13DB46912D900BCE008CBC03 /* SettingsViewTrackers.swift */,
+				12D1E26A2DB4BA9D00EFCDAB /* SettingsViewProfile.swift */,
 			);
 			path = SettingsSubViews;
 			sourceTree = "<group>";
@@ -261,6 +323,7 @@
 		133D7C852D2BE2640075467E /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				12D1E26C2DB66F8B00EFCDAB /* ProfileStore */,
 				136BBE7C2DB102BE00906B5E /* iCloudSyncManager */,
 				13DB7CEA2D7DED50004371D3 /* DownloadManager */,
 				13C0E5E82D5F85DD00E7F619 /* ContinueWatching */,
@@ -279,6 +342,7 @@
 		133D7C862D2BE2640075467E /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				12D1E2732DB67EA900EFCDAB /* UIKit.swift */,
 				73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */,
 				136BBE7F2DB1038000906B5E /* Notification+Name.swift */,
 				1327FBA82D758DEA00FC6689 /* UIDevice+Model.swift */,
@@ -465,6 +529,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		120764642DB6F6E0003621E9 /* SulfurTV */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1207646F2DB6F6E1003621E9 /* Build configuration list for PBXNativeTarget "SulfurTV" */;
+			buildPhases = (
+				120764612DB6F6E0003621E9 /* Sources */,
+				120764622DB6F6E0003621E9 /* Frameworks */,
+				120764632DB6F6E0003621E9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				120764662DB6F6E0003621E9 /* SulfurTV */,
+			);
+			name = SulfurTV;
+			packageProductDependencies = (
+			);
+			productName = SulfurTV;
+			productReference = 120764652DB6F6E0003621E9 /* SulfurTV.app */;
+			productType = "com.apple.product-type.application";
+		};
 		133D7C692D2BE2500075467E /* Sulfur */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 133D7C782D2BE2520075467E /* Build configuration list for PBXNativeTarget "Sulfur" */;
@@ -495,9 +581,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1320;
-				LastUpgradeCheck = 1320;
+				LastSwiftUpdateCheck = 1630;
+				LastUpgradeCheck = 1630;
 				TargetAttributes = {
+					120764642DB6F6E0003621E9 = {
+						CreatedOnToolsVersion = 16.3;
+					};
 					133D7C692D2BE2500075467E = {
 						CreatedOnToolsVersion = 13.2.1;
 					};
@@ -522,16 +611,23 @@
 			projectRoot = "";
 			targets = (
 				133D7C692D2BE2500075467E /* Sulfur */,
+				120764642DB6F6E0003621E9 /* SulfurTV */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		120764632DB6F6E0003621E9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		133D7C682D2BE2500075467E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				133D7C752D2BE2520075467E /* Preview Assets.xcassets in Resources */,
 				133D7C722D2BE2520075467E /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -539,6 +635,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		120764612DB6F6E0003621E9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		133D7C662D2BE2500075467E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -550,6 +653,7 @@
 				1399FAD62D3AB3DB00E97C31 /* Logger.swift in Sources */,
 				13B7F4C12D58FFDD0045714A /* Shimmer.swift in Sources */,
 				139935662D468C450065CEFF /* ModuleManager.swift in Sources */,
+				12D1E2692DB45CBE00EFCDAB /* SettingsViewAlternateAppIconPicker.swift in Sources */,
 				133D7C902D2BE2640075467E /* SettingsView.swift in Sources */,
 				132AF1252D9995F900A0140B /* JSController-Search.swift in Sources */,
 				13CBEFDA2D5F7D1200D011EE /* String.swift in Sources */,
@@ -558,11 +662,13 @@
 				136BBE802DB1038000906B5E /* Notification+Name.swift in Sources */,
 				13DB46902D900A38008CBC03 /* URL.swift in Sources */,
 				130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */,
+				12D1E26B2DB4BA9E00EFCDAB /* SettingsViewProfile.swift in Sources */,
 				1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */,
 				13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */,
+				12D1E2742DB67EB200EFCDAB /* UIKit.swift in Sources */,
 				133D7C932D2BE2640075467E /* Modules.swift in Sources */,
 				13DB7CC32D7D99C0004371D3 /* SubtitleSettingsManager.swift in Sources */,
-				133D7C702D2BE2500075467E /* ContentView.swift in Sources */,
+				133D7C702D2BE2500075467E /* RootView.swift in Sources */,
 				13DB7CEC2D7DED5D004371D3 /* DownloadManager.swift in Sources */,
 				13D99CF72D4E73C300250A86 /* ModuleAdditionSettingsView.swift in Sources */,
 				13C0E5EC2D5F85F800E7F619 /* ContinueWatchingItem.swift in Sources */,
@@ -572,6 +678,7 @@
 				132AF1212D99951700A0140B /* JSController-Streams.swift in Sources */,
 				131845F92D47C62D00CA7A54 /* SettingsViewGeneral.swift in Sources */,
 				13103E8E2D58E04A000F0673 /* SkeletonCell.swift in Sources */,
+				12D1E26E2DB66F9800EFCDAB /* ProfileStore.swift in Sources */,
 				13D842552D45267500EBBFA6 /* DropManager.swift in Sources */,
 				13103E8B2D58E028000F0673 /* View.swift in Sources */,
 				1327FBA92D758DEA00FC6689 /* UIDevice+Model.swift in Sources */,
@@ -585,10 +692,13 @@
 				13E62FC22DABC5830007E259 /* Trakt-Login.swift in Sources */,
 				130217CC2D81C55E0011EFF5 /* DownloadView.swift in Sources */,
 				133F55BB2D33B55100E08EEA /* LibraryManager.swift in Sources */,
+				12D1E2722DB6771100EFCDAB /* ProfileButtonStyle.swift in Sources */,
 				13E62FC42DABC58C0007E259 /* Trakt-Token.swift in Sources */,
 				133D7C8E2D2BE2640075467E /* LibraryView.swift in Sources */,
 				13E62FC72DABFE900007E259 /* TraktPushUpdates.swift in Sources */,
+				12D1E27A2DB69D7F00EFCDAB /* ExploreView.swift in Sources */,
 				133D7C6E2D2BE2500075467E /* SoraApp.swift in Sources */,
+				12D1E2702DB6702700EFCDAB /* Profile.swift in Sources */,
 				138AA1B92D2D66FD0021F9DF /* CircularProgressBar.swift in Sources */,
 				13DB468D2D90093A008CBC03 /* Anilist-Login.swift in Sources */,
 				73D164D52D8B5B470011A360 /* JavaScriptCore+Extensions.swift in Sources */,
@@ -604,10 +714,72 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		1207646D2DB6F6E1003621E9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = AXLC3PQNC8;
+				ENABLE_PREVIEWS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.devsforge.tvos.SulfurTV;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.4;
+			};
+			name = Debug;
+		};
+		1207646E2DB6F6E1003621E9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = AXLC3PQNC8;
+				ENABLE_PREVIEWS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.devsforge.tvos.SulfurTV;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.4;
+			};
+			name = Release;
+		};
 		133D7C762D2BE2520075467E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
@@ -639,8 +811,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = AXLC3PQNC8;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -670,6 +844,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
@@ -701,8 +876,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = AXLC3PQNC8;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -725,15 +902,15 @@
 		133D7C792D2BE2520075467E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon_Pride AppIcon_Original AppIcon_Pixel";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon_Default;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = Sora/Sora.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Sora/Preview Content\"";
-				DEVELOPMENT_TEAM = 399LMK6Q2Y;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -754,7 +931,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.2.2;
-				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur;
+				PRODUCT_BUNDLE_IDENTIFIER = de.devsforge.sulfur.fork;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
@@ -768,15 +945,15 @@
 		133D7C7A2D2BE2520075467E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon_Pride AppIcon_Original AppIcon_Pixel";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon_Default;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = Sora/Sora.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Sora/Preview Content\"";
-				DEVELOPMENT_TEAM = 399LMK6Q2Y;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -797,7 +974,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.2.2;
-				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur;
+				PRODUCT_BUNDLE_IDENTIFIER = de.devsforge.sulfur.fork;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
@@ -811,6 +988,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1207646F2DB6F6E1003621E9 /* Build configuration list for PBXNativeTarget "SulfurTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1207646D2DB6F6E1003621E9 /* Debug */,
+				1207646E2DB6F6E1003621E9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		133D7C652D2BE2500075467E /* Build configuration list for PBXProject "Sulfur" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

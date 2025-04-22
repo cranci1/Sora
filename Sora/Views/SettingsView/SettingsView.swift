@@ -8,9 +8,17 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject var profileStore: ProfileStore
+
     var body: some View {
         NavigationView {
             Form {
+                Section {
+                    NavigationLink(destination: SettingsViewProfile()) {
+                        ProfileCell(profile: profileStore.currentProfile)
+                    }
+                }
+
                 Section(header: Text("Main")) {
                     NavigationLink(destination: SettingsViewGeneral()) {
                         Text("General Preferences")
@@ -26,7 +34,7 @@ struct SettingsView: View {
                     }
                 }
                 
-                Section(header: Text("Info")) {
+                Section(header: Text("Diagnostics & Storage")) {
                     NavigationLink(destination: SettingsViewData()) {
                         Text("Data")
                     }
@@ -88,6 +96,19 @@ struct SettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
+                    Button(action: {
+                        if let url = URL(string: "https://github.com/cranci1/Sora/graphs/contributors") {
+                            UIApplication.shared.open(url)
+                        }
+                    }) {
+                        HStack {
+                            Text("Contributors")
+                                .foregroundColor(.primary)
+                            Spacer()
+                            Image(systemName: "safari")
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
                 Section(footer: Text("Running Sora 0.2.2 - cranci1")) {}
             }
@@ -104,11 +125,17 @@ enum Appearance: String, CaseIterable, Identifiable {
 }
 
 class Settings: ObservableObject {
+    @Published var shimmerType: ShimmerType {
+        didSet {
+            UserDefaults.standard.set(shimmerType.rawValue, forKey: "shimmerType")
+        }
+    }
     @Published var accentColor: Color {
         didSet {
             saveAccentColor(accentColor)
         }
     }
+
     @Published var selectedAppearance: Appearance {
         didSet {
             UserDefaults.standard.set(selectedAppearance.rawValue, forKey: "selectedAppearance")
@@ -117,21 +144,38 @@ class Settings: ObservableObject {
     }
     
     init() {
+        if let shimmerRawValue = UserDefaults.standard.string(forKey: "shimmerType"),
+           let shimmer = ShimmerType(rawValue: shimmerRawValue) {
+            self.shimmerType = shimmer
+        } else {
+            self.shimmerType = .shimmer
+        }
+
         if let colorData = UserDefaults.standard.data(forKey: "accentColor"),
            let uiColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: colorData) {
             self.accentColor = Color(uiColor)
         } else {
             self.accentColor = .accentColor
         }
+
+
         if let appearanceRawValue = UserDefaults.standard.string(forKey: "selectedAppearance"),
            let appearance = Appearance(rawValue: appearanceRawValue) {
             self.selectedAppearance = appearance
         } else {
             self.selectedAppearance = .system
         }
+
+        applyColorToUIKit(accentColor)
         updateAppearance()
     }
-    
+
+    private func applyColorToUIKit(_ color: Color) {
+        let tempStepper = UIStepper()
+        UIStepper.appearance().setDecrementImage(tempStepper.decrementImage(for: .normal), for: .normal)
+        UIStepper.appearance().setIncrementImage(tempStepper.incrementImage(for: .normal), for: .normal)
+    }
+
     private func saveAccentColor(_ color: Color) {
         let uiColor = UIColor(color)
         do {

@@ -6,11 +6,14 @@
 //
 
 import SwiftUI
-import Kingfisher
 
-struct ContentView: View {
+struct RootView: View {
     var body: some View {
         TabView {
+            ExploreView()
+                .tabItem {
+                    Label("Explore", systemImage: "star")
+                }
             LibraryView()
                 .tabItem {
                     Label("Library", systemImage: "books.vertical")

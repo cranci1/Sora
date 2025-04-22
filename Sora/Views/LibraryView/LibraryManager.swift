@@ -5,7 +5,7 @@
 //  Created by Francesco on 12/01/25.
 //
 
-import Foundation
+import SwiftUI
 
 struct LibraryItem: Codable, Identifiable {
     let id: UUID
@@ -28,15 +28,19 @@ struct LibraryItem: Codable, Identifiable {
 }
 
 class LibraryManager: ObservableObject {
+    var userDefaultsSuite = UserDefaults.standard
     @Published var bookmarks: [LibraryItem] = []
     private let bookmarksKey = "bookmarkedItems"
     
     init() {
-        loadBookmarks()
-        
         NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
     }
-    
+
+    public func updateProfileSuite(_ newSuite: UserDefaults) {
+        userDefaultsSuite = newSuite
+        loadBookmarks()
+    }
+
     @objc private func handleiCloudSync() {
         DispatchQueue.main.async {
             self.loadBookmarks()
@@ -46,28 +50,31 @@ class LibraryManager: ObservableObject {
     func removeBookmark(item: LibraryItem) {
         if let index = bookmarks.firstIndex(where: { $0.id == item.id }) {
             bookmarks.remove(at: index)
+
             Logger.shared.log("Removed series \(item.id) from bookmarks.",type: "Debug")
             saveBookmarks()
         }
     }
     
     private func loadBookmarks() {
-        guard let data = UserDefaults.standard.data(forKey: bookmarksKey) else {
+        guard let data = userDefaultsSuite.data(forKey: bookmarksKey) else {
             Logger.shared.log("No bookmarks data found in UserDefaults.", type: "Debug")
+            bookmarks = []
             return
         }
-        
+
         do {
             bookmarks = try JSONDecoder().decode([LibraryItem].self, from: data)
         } catch {
             Logger.shared.log("Failed to decode bookmarks: \(error.localizedDescription)", type: "Error")
+            bookmarks = []
         }
     }
     
     private func saveBookmarks() {
         do {
             let encoded = try JSONEncoder().encode(bookmarks)
-            UserDefaults.standard.set(encoded, forKey: bookmarksKey)
+            userDefaultsSuite.set(encoded, forKey: bookmarksKey)
         } catch {
             Logger.shared.log("Failed to encode bookmarks: \(error.localizedDescription)", type: "Error")
         }

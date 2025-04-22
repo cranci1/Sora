@@ -5,16 +5,22 @@
 //  Created by Francesco on 14/02/25.
 //
 
-import Foundation
+import SwiftUI
 
-class ContinueWatchingManager {
-    static let shared = ContinueWatchingManager()
+class ContinueWatchingManager: ObservableObject {
+    var userDefaultsSuite = UserDefaults.standard
+    @Published var items: [ContinueWatchingItem] = []
     private let storageKey = "continueWatchingItems"
-    
-    private init() {
+
+    init() {
         NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
     }
-    
+
+    public func updateProfileSuite(_ newSuite: UserDefaults) {
+        userDefaultsSuite = newSuite
+        loadItems()
+    }
+
     @objc private func handleiCloudSync() {
         NotificationCenter.default.post(name: .ContinueWatchingDidUpdate, object: nil)
     }
@@ -24,31 +30,33 @@ class ContinueWatchingManager {
             remove(item: item)
             return
         }
-        
-        var items = fetchItems()
-        if let index = items.firstIndex(where: { $0.streamUrl == item.streamUrl && $0.episodeNumber == item.episodeNumber }) {
+
+        if let index = items.firstIndex(where: {
+            $0.streamUrl == item.streamUrl &&
+            $0.episodeNumber == item.episodeNumber }) {
             items[index] = item
         } else {
             items.append(item)
         }
+
         if let data = try? JSONEncoder().encode(items) {
-            UserDefaults.standard.set(data, forKey: storageKey)
+            userDefaultsSuite.set(data, forKey: storageKey)
         }
     }
     
-    func fetchItems() -> [ContinueWatchingItem] {
-        if let data = UserDefaults.standard.data(forKey: storageKey),
-           let items = try? JSONDecoder().decode([ContinueWatchingItem].self, from: data) {
-            return items
+    func loadItems() {
+        if let data = userDefaultsSuite.data(forKey: storageKey),
+        let parsedItems = try? JSONDecoder().decode([ContinueWatchingItem].self, from: data) {
+            items = parsedItems
+        } else {
+            items = []
         }
-        return []
     }
     
     func remove(item: ContinueWatchingItem) {
-        var items = fetchItems()
         items.removeAll { $0.id == item.id }
         if let data = try? JSONEncoder().encode(items) {
-            UserDefaults.standard.set(data, forKey: storageKey)
+            userDefaultsSuite.set(data, forKey: storageKey)
         }
     }
 }

@@ -7,6 +7,21 @@
 
 import UIKit
 
+// TODO: sync all profile user default suits
+/*
+     profileStore.profiles.forEach { profile in
+         let suite = UserDefaults(suiteName: profile.id.uuidString)
+         ...
+     }
+ */
+
+// TODO: add migration for legacy app users without profiles
+/*
+    add all bookmarks and continue watching items to the first profile ?!
+ */
+
+// TODO: update "clear data" feature
+// TODO: tests
 class iCloudSyncManager {
     static let shared = iCloudSyncManager()
     
@@ -30,8 +45,11 @@ class iCloudSyncManager {
         "analyticsEnabled",
         "refreshModulesOnLaunch",
         "fetchEpisodeMetadata",
+        "hideEmptySections",
         "multiThreads",
-        "metadataProviders"
+        "metadataProviders",
+        "profilesData",
+        "currentProfileID"
     ]
     
     private let modulesFileName = "modules.json"

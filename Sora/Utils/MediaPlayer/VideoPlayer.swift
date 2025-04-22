@@ -10,7 +10,8 @@ import AVKit
 
 class VideoPlayerViewController: UIViewController {
     let module: ScrapingModule
-    
+    let continueWatchingManager: ContinueWatchingManager
+
     var player: AVPlayer?
     var playerViewController: NormalPlayer?
     var timeObserverToken: Any?
@@ -23,8 +24,9 @@ class VideoPlayerViewController: UIViewController {
     var episodeImageUrl: String = ""
     var mediaTitle: String = ""
     
-    init(module: ScrapingModule) {
+    init(module: ScrapingModule, continueWatchingManager: ContinueWatchingManager) {
         self.module = module
+        self.continueWatchingManager = continueWatchingManager
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -42,7 +44,7 @@ class VideoPlayerViewController: UIViewController {
         var request = URLRequest(url: url)
         request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Referer")
         request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Origin")
-        request.addValue("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
+        request.addValue(URLSession.randomUserAgent, forHTTPHeaderField: "User-Agent")
         
         let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": request.allHTTPHeaderFields ?? [:]])
         let playerItem = AVPlayerItem(asset: asset)
@@ -129,7 +131,7 @@ class VideoPlayerViewController: UIViewController {
                     aniListID: self.aniListID,
                     module: self.module
                 )
-                ContinueWatchingManager.shared.save(item: item)
+                continueWatchingManager.save(item: item)
             }
             
             let remainingPercentage = (duration - currentTime) / duration

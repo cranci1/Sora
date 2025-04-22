@@ -16,23 +16,60 @@ struct SettingsViewGeneral: View {
     @AppStorage("metadataProviders") private var metadataProviders: String = "AniList"
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
-    
+    @AppStorage("hideEmptySections") private var hideEmptySections: Bool = false
+    @AppStorage("currentAppIcon") private var currentAppIcon: String = "Default"
+
     private let metadataProvidersList = ["AniList"]
     @EnvironmentObject var settings: Settings
-    
+    @State var showAppIconPicker: Bool = false
+
     var body: some View {
         Form {
             Section(header: Text("Interface")) {
                 ColorPicker("Accent Color", selection: $settings.accentColor)
                 HStack {
                     Text("Appearance")
-                    Picker("Appearance", selection: $settings.selectedAppearance) {
-                        Text("System").tag(Appearance.system)
-                        Text("Light").tag(Appearance.light)
-                        Text("Dark").tag(Appearance.dark)
+                    Spacer()
+                    Menu {
+                        ForEach(Appearance.allCases) { appearance in
+                            Button {
+                                settings.selectedAppearance = appearance
+                            } label: {
+                                Label(appearance.rawValue.capitalized, systemImage: settings.selectedAppearance == appearance ? "checkmark" : "")
+                            }
+                        }
+                    } label: {
+                        Text(settings.selectedAppearance.rawValue.capitalized)
                     }
-                    .pickerStyle(SegmentedPickerStyle())
                 }
+                HStack {
+                    Text("App Icon")
+                    Spacer()
+                    Button(action: {
+                        showAppIconPicker.toggle()
+                    }) {
+                        Text(currentAppIcon.isEmpty ? "Default" : currentAppIcon)
+                            .font(.body)
+                            .foregroundColor(.accentColor)
+                    }
+                }
+                HStack {
+                    Text("Loading Animation")
+                    Spacer()
+                    Menu {
+                        ForEach(ShimmerType.allCases) { shimmerType in
+                            Button {
+                                settings.shimmerType = shimmerType
+                            } label: {
+                                Label(shimmerType.rawValue.capitalized, systemImage: settings.shimmerType == shimmerType ? "checkmark" : "")
+                            }
+                        }
+                    } label: {
+                        Text(settings.shimmerType.rawValue.capitalized)
+                    }
+                }
+                Toggle("Hide Empty Sections", isOn: $hideEmptySections)
+                    .tint(.accentColor)
             }
             
             Section(header: Text("Media View"), footer: Text("The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1-25, 26-50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata it is refering to the episode thumbnail and title, since sometimes it can contain spoilers.")) {
@@ -103,5 +140,13 @@ struct SettingsViewGeneral: View {
             }
         }
         .navigationTitle("General")
+        .sheet(isPresented: $showAppIconPicker) {
+            if #available(iOS 16.0, *) {
+                    SettingsViewAlternateAppIconPicker(isPresented: $showAppIconPicker)
+                        .presentationDetents([.height(200)])
+                } else {
+                    SettingsViewAlternateAppIconPicker(isPresented: $showAppIconPicker)
+                }
+        }
     }
 }

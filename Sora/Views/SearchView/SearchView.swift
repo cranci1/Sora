@@ -17,12 +17,14 @@ struct SearchItem: Identifiable {
 
 
 struct SearchView: View {
+    @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     
     @StateObject private var jsController = JSController()
-    @EnvironmentObject var moduleManager: ModuleManager
+    @EnvironmentObject private var moduleManager: ModuleManager
+    @EnvironmentObject private var profileStore: ProfileStore
     @Environment(\.verticalSizeClass) var verticalSizeClass
     
     @State private var searchItems: [SearchItem] = []
@@ -32,7 +34,8 @@ struct SearchView: View {
     @State private var hasNoResults = false
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var isModuleSelectorPresented = false
-    
+    @State private var showProfileSettings = false
+
     private var selectedModule: ScrapingModule? {
         guard let id = selectedModuleId else { return nil }
         return moduleManager.modules.first { $0.id.uuidString == id }
@@ -88,7 +91,7 @@ struct SearchView: View {
                         }
                     }
                     
-                    if selectedModule == nil {
+                    if !(hideEmptySections ?? false) && selectedModule == nil {
                         VStack(spacing: 8) {
                             Image(systemName: "questionmark.app")
                                 .font(.largeTitle)
@@ -102,7 +105,6 @@ struct SearchView: View {
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(Color(.systemBackground))
-                        .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
                     }
                     
                     if !searchText.isEmpty {
@@ -160,10 +162,50 @@ struct SearchView: View {
                         }
                     }
                 }
+                
+                NavigationLink(
+                    destination: SettingsViewProfile(),
+                    isActive: $showProfileSettings,
+                    label: { EmptyView() }
+                )
+                .hidden()
             }
             .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Menu {
+                        ForEach(profileStore.profiles) { profile in
+                            Button {
+                                profileStore.setCurrentProfile(profile)
+                            } label: {
+                                if profile == profileStore.currentProfile {
+                                    Label("\(profile.emoji) \(profile.name)", systemImage: "checkmark")
+                                } else {
+                                    Text("\(profile.emoji) \(profile.name)")
+                                }
+                            }
+                        }
+
+                        Divider()
+
+                        Button {
+                            showProfileSettings = true
+                        } label: {
+                            Label("Edit Profiles", systemImage: "slider.horizontal.3")
+                        }
+
+                    } label: {
+                        Circle()
+                            .fill(Color.secondary.opacity(0.3))
+                            .frame(width: 32, height: 32)
+                            .overlay(
+                                Text(profileStore.currentProfile.emoji)
+                                    .font(.system(size: 20))
+                                    .foregroundStyle(.primary)
+                            )
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         ForEach(getModuleLanguageGroups(), id: \.self) { language in

@@ -10,16 +10,19 @@ import Kingfisher
 
 struct LibraryView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
+    @EnvironmentObject private var continueWatchingManager: ContinueWatchingManager
     @EnvironmentObject private var moduleManager: ModuleManager
-    
+    @EnvironmentObject private var profileStore: ProfileStore
+
+    @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     
     @Environment(\.verticalSizeClass) var verticalSizeClass
-    
-    @State private var continueWatchingItems: [ContinueWatchingItem] = []
+
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
-    
+    @State private var showProfileSettings = false
+
     private let columns = [
         GridItem(.adaptive(minimum: 150), spacing: 12)
     ]
@@ -50,12 +53,15 @@ struct LibraryView: View {
                 let columnsCount = determineColumns()
                 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Continue Watching")
-                        .font(.title2)
-                        .bold()
-                        .padding(.horizontal, 20)
-                    
-                    if continueWatchingItems.isEmpty {
+
+                    if hideEmptySections != true || !continueWatchingManager.items.isEmpty {
+                        Text("Continue Watching")
+                            .font(.title2)
+                            .bold()
+                            .padding(.horizontal, 20)
+                    }
+
+                    if !(hideEmptySections ?? false) && continueWatchingManager.items.isEmpty {
                         VStack(spacing: 8) {
                             Image(systemName: "play.circle")
                                 .font(.largeTitle)
@@ -69,19 +75,21 @@ struct LibraryView: View {
                         .padding()
                         .frame(maxWidth: .infinity)
                     } else {
-                        ContinueWatchingSection(items: $continueWatchingItems, markAsWatched: { item in
+                        ContinueWatchingSection(items: $continueWatchingManager.items, markAsWatched: { item in
                             markContinueWatchingItemAsWatched(item: item)
                         }, removeItem: { item in
                             removeContinueWatchingItem(item: item)
                         })
                     }
-                    
-                    Text("Bookmarks")
-                        .font(.title2)
-                        .bold()
-                        .padding(.horizontal, 20)
-                    
-                    if libraryManager.bookmarks.isEmpty {
+
+                    if hideEmptySections != true || !libraryManager.bookmarks.isEmpty {
+                        Text("Bookmarks")
+                            .font(.title2)
+                            .bold()
+                            .padding(.horizontal, 20)
+                    }
+
+                    if !(hideEmptySections ?? false) && libraryManager.bookmarks.isEmpty {
                         VStack(spacing: 8) {
                             Image(systemName: "magazine")
                                 .font(.largeTitle)
@@ -141,26 +149,62 @@ struct LibraryView: View {
                             }
                         }
                         .padding(.horizontal, 20)
-                        .onAppear {
-                            updateOrientation()
-                        }
-                        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-                            updateOrientation()
-                        }
                     }
                 }
                 .padding(.vertical, 20)
+
+                NavigationLink(
+                    destination: SettingsViewProfile(),
+                    isActive: $showProfileSettings,
+                    label: { EmptyView() }
+                )
+                .hidden()
             }
             .navigationTitle("Library")
-            .onAppear {
-                fetchContinueWatching()
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Menu {
+                        ForEach(profileStore.profiles) { profile in
+                            Button {
+                                profileStore.setCurrentProfile(profile)
+                            } label: {
+                                if profile == profileStore.currentProfile {
+                                    Label("\(profile.emoji) \(profile.name)", systemImage: "checkmark")
+                                } else {
+                                    Text("\(profile.emoji) \(profile.name)")
+                                }
+                            }
+                        }
+
+                        Divider()
+
+                        Button {
+                            showProfileSettings = true
+                        } label: {
+                            Label("Edit Profiles", systemImage: "slider.horizontal.3")
+                        }
+
+                    } label: {
+                        Circle()
+                            .fill(Color.secondary.opacity(0.3))
+                            .frame(width: 32, height: 32)
+                            .overlay(
+                                Text(profileStore.currentProfile.emoji)
+                                    .font(.system(size: 20))
+                                    .foregroundStyle(.primary)
+                            )
+                    }
+                }
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
-    }
-    
-    private func fetchContinueWatching() {
-        continueWatchingItems = ContinueWatchingManager.shared.fetchItems()
+        .onAppear {
+            updateOrientation()
+            continueWatchingManager.loadItems()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            updateOrientation()
+        }
     }
     
     private func markContinueWatchingItemAsWatched(item: ContinueWatchingItem) {
@@ -168,13 +212,11 @@ struct LibraryView: View {
         let totalKey = "totalTime_\(item.fullUrl)"
         UserDefaults.standard.set(99999999.0, forKey: key)
         UserDefaults.standard.set(99999999.0, forKey: totalKey)
-        ContinueWatchingManager.shared.remove(item: item)
-        continueWatchingItems.removeAll { $0.id == item.id }
+        continueWatchingManager.remove(item: item)
     }
     
     private func removeContinueWatchingItem(item: ContinueWatchingItem) {
-        ContinueWatchingManager.shared.remove(item: item)
-        continueWatchingItems.removeAll { $0.id == item.id }
+        continueWatchingManager.remove(item: item)
     }
     
     private func updateOrientation() {
@@ -217,6 +259,8 @@ struct ContinueWatchingSection: View {
 }
 
 struct ContinueWatchingCell: View {
+    @EnvironmentObject private var continueWatchingManager: ContinueWatchingManager
+    
     let item: ContinueWatchingItem
     var markAsWatched: () -> Void
     var removeItem: () -> Void
@@ -226,7 +270,7 @@ struct ContinueWatchingCell: View {
     var body: some View {
         Button(action: {
             if UserDefaults.standard.string(forKey: "externalPlayer") == "Default" {
-                let videoPlayerViewController = VideoPlayerViewController(module: item.module)
+                let videoPlayerViewController = VideoPlayerViewController(module: item.module, continueWatchingManager: continueWatchingManager)
                 videoPlayerViewController.streamUrl = item.streamUrl
                 videoPlayerViewController.fullUrl = item.fullUrl
                 videoPlayerViewController.episodeImageUrl = item.imageUrl
@@ -243,6 +287,7 @@ struct ContinueWatchingCell: View {
             } else {
                 let customMediaPlayer = CustomMediaPlayerViewController(
                     module: item.module,
+                    continueWatchingManager: continueWatchingManager,
                     urlString: item.streamUrl,
                     fullUrl: item.fullUrl,
                     title: item.mediaTitle,

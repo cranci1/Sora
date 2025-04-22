@@ -11,11 +11,11 @@ import SwiftUI
 struct SoraApp: App {
     @StateObject private var settings = Settings()
     @StateObject private var moduleManager = ModuleManager()
-    @StateObject private var librarykManager = LibraryManager()
-    
+    @StateObject private var profileStore = ProfileStore()
+    @StateObject private var libraryManager = LibraryManager()
+    @StateObject private var continueWatchingManager = ContinueWatchingManager()
+
     init() {
-        _ = iCloudSyncManager.shared
-        
         TraktToken.checkAuthenticationStatus { isAuthenticated in
             if isAuthenticated {
                 Logger.shared.log("Trakt authentication is valid")
@@ -27,12 +27,21 @@ struct SoraApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .environmentObject(moduleManager)
                 .environmentObject(settings)
-                .environmentObject(librarykManager)
+                .environmentObject(libraryManager)
+                .environmentObject(continueWatchingManager)
+                .environmentObject(profileStore)
                 .accentColor(settings.accentColor)
                 .onAppear {
+                    // pass initial profile value to other manager
+                    let suite = self.profileStore.getUserDefaultsSuite()
+                    self.libraryManager.userDefaultsSuite = suite
+                    self.continueWatchingManager.userDefaultsSuite = suite
+
+                    _ = iCloudSyncManager.shared
+
                     settings.updateAppearance()
                     iCloudSyncManager.shared.syncModulesFromiCloud()
                     Task {
@@ -47,6 +56,12 @@ struct SoraApp: App {
                     } else {
                         handleURL(url)
                     }
+                }
+                .onChange(of: profileStore.currentProfile) { _ in
+                    // pass changed suite value to other manager
+                    let suite = self.profileStore.getUserDefaultsSuite()
+                    libraryManager.updateProfileSuite(suite)
+                    continueWatchingManager.updateProfileSuite(suite)
                 }
         }
     }

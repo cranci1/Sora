@@ -233,6 +233,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         updateSkipButtonsVisibility()
         
         
+        view.bringSubviewToFront(subtitleLabel)
+        view.bringSubviewToFront(topSubtitleLabel)
+        
         AniListMutation().fetchMalID(animeId: aniListID) { [weak self] result in
             switch result {
             case .success(let mal):
@@ -240,7 +243,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self?.fetchSkipTimes(type: "op")
                 self?.fetchSkipTimes(type: "ed")
             case .failure(let error):
-                Logger.shared.log("⚠️ Unable to fetch MAL ID: \(error)",type:"Error")
+                Logger.shared.log("Unable to fetch MAL ID: \(error)",type:"Error")
             }
         }
         

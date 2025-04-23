@@ -527,17 +527,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             height: 33,
             onEditingChanged: { editing in
                 if editing {
-                  // 1) start of scrub
                   self.isSliderEditing = true
-                  
-                  // remember if we were playing, and at what rate
+
                   self.wasPlayingBeforeSeek = (self.player.timeControlStatus == .playing)
                   self.originalRate = self.player.rate
-                  
-                  // pause the player immediately
+
                   self.player.pause()
                 } else {
-                  // 2) end of scrub — seek exactly to the new spot
                   let target = CMTime(seconds: self.sliderViewModel.sliderValue,
                                       preferredTimescale: 600)
                   self.player.seek(
@@ -546,24 +542,22 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     toleranceAfter: .zero
                   ) { [weak self] _ in
                     guard let self = self else { return }
-                    
-                    // update our UI‑model
+
                     let final = self.player.currentTime().seconds
                     self.sliderViewModel.sliderValue = final
                     self.currentTimeVal = final
                     self.isSliderEditing = false
-                    
-                    // 3) resume at exactly the same rate
+
                     if self.wasPlayingBeforeSeek {
                       self.player.playImmediately(atRate: self.originalRate)
                     }
                   }
                 }
               },
-            introSegments: sliderViewModel.introSegments,  // Added
-            outroSegments: sliderViewModel.outroSegments,  // Added
-            introColor: segmentsColor,  // Add your colors here
-            outroColor: segmentsColor   // Or use settings.accentColor
+            introSegments: sliderViewModel.introSegments,
+            outroSegments: sliderViewModel.outroSegments,
+            introColor: segmentsColor,
+            outroColor: segmentsColor
         )
         
         sliderHostingController = UIHostingController(rootView: sliderView)
@@ -817,33 +811,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         controlsContainerView.addSubview(marqueeLabel)
         marqueeLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        // 1. Portrait mode with button visible
-        portraitButtonVisibleConstraints = [
-            marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: 8),
-            marqueeLabel.trailingAnchor.constraint(equalTo: menuButton.leadingAnchor, constant: -16),
-            marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
-        ]
-        
-        // 2. Portrait mode with button hidden
-        portraitButtonHiddenConstraints = [
-            marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: 12),
-            marqueeLabel.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16),
-            marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
-        ]
-        
-        // 3. Landscape mode with button visible (using smaller margins)
-        landscapeButtonVisibleConstraints = [
-            marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: 8),
-            marqueeLabel.trailingAnchor.constraint(equalTo: menuButton.leadingAnchor, constant: -8),
-            marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
-        ]
-        
-        // 4. Landscape mode with button hidden
-        landscapeButtonHiddenConstraints = [
-            marqueeLabel.leadingAnchor.constraint(equalTo: dismissButton.trailingAnchor, constant: 8),
-            marqueeLabel.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -8),
-            marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
-        ]
+        //Fully manages contsraints
         updateMarqueeConstraints()
     }
     
@@ -874,7 +842,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private func updateSkipButtonsVisibility() {
         let t               = currentTimeVal
-        let controlsShowing = isControlsVisible        // true ⇒ main UI is on‑screen
+        let controlsShowing = isControlsVisible
         
         func handle(_ button: UIButton, range: CMTimeRange?) {
             guard let r = range else { button.isHidden = true; return }
@@ -938,17 +906,14 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 height: 33,
                 onEditingChanged: { editing in
                     if editing {
-                      // 1) start of scrub
                       self.isSliderEditing = true
-                      
-                      // remember if we were playing, and at what rate
+
                       self.wasPlayingBeforeSeek = (self.player.timeControlStatus == .playing)
                       self.originalRate = self.player.rate
-                      
-                      // pause the player immediately
+
                       self.player.pause()
                     } else {
-                      // 2) end of scrub — seek exactly to the new spot
+
                       let target = CMTime(seconds: self.sliderViewModel.sliderValue,
                                           preferredTimescale: 600)
                       self.player.seek(
@@ -958,13 +923,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                       ) { [weak self] _ in
                         guard let self = self else { return }
                         
-                        // update our UI‑model
                         let final = self.player.currentTime().seconds
                         self.sliderViewModel.sliderValue = final
                         self.currentTimeVal = final
                         self.isSliderEditing = false
                         
-                        // 3) resume at exactly the same rate
                         if self.wasPlayingBeforeSeek {
                           self.player.playImmediately(atRate: self.originalRate)
                         }
@@ -973,7 +936,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                   },
                 introSegments: self.sliderViewModel.introSegments,
                 outroSegments: self.sliderViewModel.outroSegments,
-                introColor: segmentsColor,  // Match your color choices
+                introColor: segmentsColor,
                 outroColor: segmentsColor
             )
         }
@@ -1091,20 +1054,14 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         dimButton.layer.masksToBounds = false
         
         NSLayoutConstraint.activate([
-            dimButton.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
+            dimButton.topAnchor.constraint(equalTo: volumeSliderHostingView!.bottomAnchor, constant: 15),
+            dimButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor),
             dimButton.widthAnchor.constraint(equalToConstant: 24),
-            dimButton.heightAnchor.constraint(equalToConstant: 24),
+            dimButton.heightAnchor.constraint(equalToConstant: 24)
         ])
         
-        dimButtonToSlider = dimButton.trailingAnchor.constraint(
-            equalTo: volumeSliderHostingView!.leadingAnchor,
-            constant: -8
-        )
-        dimButtonToRight = dimButton.trailingAnchor.constraint(
-            equalTo: controlsContainerView.trailingAnchor,
-            constant: -16
-        )
-        
+        dimButtonToSlider = dimButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor)
+        dimButtonToRight = dimButton.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16)
         dimButtonToSlider.isActive = true
     }
     
@@ -1114,7 +1071,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             
             let leftSpacing: CGFloat = 2
             let rightSpacing: CGFloat = 6
-            let trailingAnchor: NSLayoutXAxisAnchor = dimButton.leadingAnchor
+            let trailingAnchor: NSLayoutXAxisAnchor = (volumeSliderHostingView?.isHidden == false)
+                            ? volumeSliderHostingView!.leadingAnchor
+                            : view.safeAreaLayoutGuide.trailingAnchor
             
             currentMarqueeConstraints = [
                 marqueeLabel.leadingAnchor.constraint(

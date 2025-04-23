@@ -379,6 +379,16 @@
         }
       }
     },
+    "Close" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schließen"
+          }
+        }
+      }
+    },
     "Confirm Erase App Data" : {
       "localizations" : {
         "de" : {
@@ -639,6 +649,16 @@
         }
       }
     },
+    "Explore View" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erkunden View"
+          }
+        }
+      }
+    },
     "Failed to parse response" : {
       "localizations" : {
         "de" : {
@@ -819,12 +839,32 @@
         }
       }
     },
+    "Library View" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mediathek View"
+          }
+        }
+      }
+    },
     "License (GPLv3.0)" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lizenz (GPLv3.0)"
+          }
+        }
+      }
+    },
+    "Links cannot be openend on tvOS. But you can either Scan the QR-Code or type in the following URL into the Browser of your choosing: \n\n%@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Links können auf tvOS nicht geöffnet werden. Sie können jedoch entweder den QR-Code scannen oder die folgende URL in den Browser Ihrer Wahl eingeben:\n\n%@"
           }
         }
       }
@@ -1329,6 +1369,16 @@
         }
       }
     },
+    "Running Sora %@\nby cranci1" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sora %@\nvon cranci1"
+          }
+        }
+      }
+    },
     "Running Sora 0.2.2 - cranci1" : {
       "localizations" : {
         "de" : {
@@ -1339,12 +1389,32 @@
         }
       }
     },
+    "Scan to Visit" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scannen zum öffnen"
+          }
+        }
+      }
+    },
     "Search" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suchen"
+          }
+        }
+      }
+    },
+    "Search View" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen View"
           }
         }
       }

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		126C428D2DB99627006BC27D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 126C428C2DB99627006BC27D /* Localizable.xcstrings */; };
+		126C428E2DB99627006BC27D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 126C428C2DB99627006BC27D /* Localizable.xcstrings */; };
+		126C42902DB99BF6006BC27D /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 126C428F2DB99BF5006BC27D /* Color.swift */; };
 		12D1E2692DB45CBE00EFCDAB /* SettingsViewAlternateAppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E2682DB45CB500EFCDAB /* SettingsViewAlternateAppIconPicker.swift */; };
 		12D1E26B2DB4BA9E00EFCDAB /* SettingsViewProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E26A2DB4BA9D00EFCDAB /* SettingsViewProfile.swift */; };
 		12D1E26E2DB66F9800EFCDAB /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1E26D2DB66F9600EFCDAB /* ProfileStore.swift */; };
@@ -78,8 +81,9 @@
 
 /* Begin PBXFileReference section */
 		120764652DB6F6E0003621E9 /* SulfurTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SulfurTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		126C42882DB99209006BC27D /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS18.4.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		126C428A2DB9921C006BC27D /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		126C428C2DB99627006BC27D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		126C428F2DB99BF5006BC27D /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		12D1E2682DB45CB500EFCDAB /* SettingsViewAlternateAppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewAlternateAppIconPicker.swift; sourceTree = "<group>"; };
 		12D1E26A2DB4BA9D00EFCDAB /* SettingsViewProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewProfile.swift; sourceTree = "<group>"; };
 		12D1E26D2DB66F9600EFCDAB /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
@@ -202,7 +206,6 @@
 			isa = PBXGroup;
 			children = (
 				126C428A2DB9921C006BC27D /* AVFoundation.framework */,
-				126C42882DB99209006BC27D /* AVFoundation.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -263,6 +266,7 @@
 		133D7C612D2BE2500075467E = {
 			isa = PBXGroup;
 			children = (
+				126C428C2DB99627006BC27D /* Localizable.xcstrings */,
 				133D7C6C2D2BE2500075467E /* Sora */,
 				120764662DB6F6E0003621E9 /* SulfurTV */,
 				126C42872DB99209006BC27D /* Frameworks */,
@@ -354,6 +358,7 @@
 		133D7C862D2BE2640075467E /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				126C428F2DB99BF5006BC27D /* Color.swift */,
 				12D1E2732DB67EA900EFCDAB /* UIKit.swift */,
 				73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */,
 				136BBE7F2DB1038000906B5E /* Notification+Name.swift */,
@@ -610,6 +615,8 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				de,
+				Base,
 			);
 			mainGroup = 133D7C612D2BE2500075467E;
 			packageReferences = (
@@ -633,6 +640,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				126C428E2DB99627006BC27D /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -640,6 +648,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				126C428D2DB99627006BC27D /* Localizable.xcstrings in Resources */,
 				133D7C722D2BE2520075467E /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -702,6 +711,7 @@
 				133D7C922D2BE2640075467E /* URLSession.swift in Sources */,
 				133D7C912D2BE2640075467E /* SettingsViewModule.swift in Sources */,
 				13E62FC22DABC5830007E259 /* Trakt-Login.swift in Sources */,
+				126C42902DB99BF6006BC27D /* Color.swift in Sources */,
 				130217CC2D81C55E0011EFF5 /* DownloadView.swift in Sources */,
 				133F55BB2D33B55100E08EEA /* LibraryManager.swift in Sources */,
 				12D1E2722DB6771100EFCDAB /* ProfileButtonStyle.swift in Sources */,

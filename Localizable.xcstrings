@@ -1,0 +1,1236 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "%@ - Episode %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - Episode %2$lld"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ - Episode %2$lld"
+          }
+        }
+      }
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        }
+      }
+    },
+    "%lld-%lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld-%2$lld"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld-%2$lld"
+          }
+        }
+      }
+    },
+    "%llds" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llds"
+          }
+        }
+      }
+    },
+    "25" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "25"
+          }
+        }
+      }
+    },
+    "50" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "50"
+          }
+        }
+      }
+    },
+    "75" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "75"
+          }
+        }
+      }
+    },
+    "100" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "100"
+          }
+        }
+      }
+    },
+    "Accent Color" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akzent Farbe"
+          }
+        }
+      }
+    },
+    "Add Module" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modul hinzufügen"
+          }
+        }
+      }
+    },
+    "Adjust the number of media items per row in portrait and landscape modes." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stellen Sie die Anzahl der Medienelemente pro Reihe im Hoch- und Querformat ein."
+          }
+        }
+      }
+    },
+    "Advanced" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erweitert"
+          }
+        }
+      }
+    },
+    "AniList" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AniList"
+          }
+        }
+      }
+    },
+    "AniList.co" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AniList.co"
+          }
+        }
+      }
+    },
+    "Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anonyme Daten werden gesammelt, um die App zu verbessern. Es werden keine persönlichen Informationen gesammelt. Dies kann jederzeit deaktiviert werden."
+          }
+        }
+      }
+    },
+    "App Data" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Daten"
+          }
+        }
+      }
+    },
+    "App Icon" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Symbol"
+          }
+        }
+      }
+    },
+    "App storage" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Speicher"
+          }
+        }
+      }
+    },
+    "Appearance" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Darstellung"
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete this profile? This action cannot be undone." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sind Sie sicher, dass Sie dieses Profil löschen möchten? Dieser Vorgang kann nicht rückgängig gemacht werden."
+          }
+        }
+      }
+    },
+    "Are you sure you want to erase all app data? This action cannot be undone. (The app will then close)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sind Sie sicher, dass Sie alle App-Daten löschen möchten? Dieser Vorgang kann nicht rückgängig gemacht werden. (Die App wird anschließend geschlossen)"
+          }
+        }
+      }
+    },
+    "Are you sure you want to remove all files in the documents folder? This will also remove all modules and you will lose the favorite items. This action cannot be undone. (The app will then close)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sind Sie sicher, dass Sie alle Dateien im Dokumentenordner entfernen möchten? Dies wird auch alle Module entfernen und Sie werden die Favoriten verlieren. Dieser Vorgang kann nicht rückgängig gemacht werden. (Die App wird anschließend geschlossen)"
+          }
+        }
+      }
+    },
+    "Author" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Author"
+          }
+        }
+      }
+    },
+    "Author: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Author:"
+          }
+        }
+      }
+    },
+    "Avatar" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avatar:"
+          }
+        }
+      }
+    },
+    "Background Enabled" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hintergrund anzeigen"
+          }
+        }
+      }
+    },
+    "Bookmark items for an easier access later." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Markieren Sie Elemente für einen einfacheren Zugriff später."
+          }
+        }
+      }
+    },
+    "Bookmarks" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gespeicherte"
+          }
+        }
+      }
+    },
+    "Bottom Padding:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unterer Abstand:"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abbrechen"
+          }
+        }
+      }
+    },
+    "Clear Cache" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cache löschen"
+          }
+        }
+      }
+    },
+    "Clear Logs" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logs löschen"
+          }
+        }
+      }
+    },
+    "Click the plus button to add a module!" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klicken Sie auf die Plus-Taste, um ein Modul hinzuzufügen!"
+          }
+        }
+      }
+    },
+    "Confirm Erase App Data" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestätigen Sie das Löschen der App-Daten"
+          }
+        }
+      }
+    },
+    "Confirm Remove All Files" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestätigen Sie das Löschen aller Daten"
+          }
+        }
+      }
+    },
+    "Continue Watching" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weiterschauen"
+          }
+        }
+      }
+    },
+    "Contributors" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitwirkende"
+          }
+        }
+      }
+    },
+    "Copy to Clipboard" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In die Zwischenablage kopieren"
+          }
+        }
+      }
+    },
+    "Copy URL" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Url kopieren"
+          }
+        }
+      }
+    },
+    "Data" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten"
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen"
+          }
+        }
+      }
+    },
+    "Delete Profile" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profil löschen"
+          }
+        }
+      }
+    },
+    "Delete Selected Profile" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktives Profil löschen"
+          }
+        }
+      }
+    },
+    "Diagnostics & Storage" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnose & Speicher"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fertig"
+          }
+        }
+      }
+    },
+    "Double Tap to Seek" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doppeltippen zum Suchen"
+          }
+        }
+      }
+    },
+    "Double tapping the screen on it's sides will skip with the short tap setting." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doppeltippen auf die Seiten des Bildschirms überspringt mit der Einstellung für kurzen Tipp."
+          }
+        }
+      }
+    },
+    "Downloads" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Downloads"
+          }
+        }
+      }
+    },
+    "Edit Profiles" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile bearbeiten"
+          }
+        }
+      }
+    },
+    "Edit Selected Profile" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktives Profil bearbeiten"
+          }
+        }
+      }
+    },
+    "Enable Analytics" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analysen aktivieren"
+          }
+        }
+      }
+    },
+    "Episode %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episode %lld"
+          }
+        }
+      }
+    },
+    "Episodes" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episoden"
+          }
+        }
+      }
+    },
+    "Episodes Range" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episodenanzahl"
+          }
+        }
+      }
+    },
+    "Erase" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen"
+          }
+        }
+      }
+    },
+    "Erase all App Data" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Daten löschen"
+          }
+        }
+      }
+    },
+    "Error" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehler"
+          }
+        }
+      }
+    },
+    "Explore" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erkunden"
+          }
+        }
+      }
+    },
+    "Fetch Episode metadata" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episoden Daten laden"
+          }
+        }
+      }
+    },
+    "Font Size:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schriftgröße:"
+          }
+        }
+      }
+    },
+    "Force Landscape" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Querformat erzwingen"
+          }
+        }
+      }
+    },
+    "General" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allgemein"
+          }
+        }
+      }
+    },
+    "General Preferences" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allgemein"
+          }
+        }
+      }
+    },
+    "Github repo" : {
+
+    },
+    "Hide Empty Sections" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leere Abschnitte verstecken"
+          }
+        }
+      }
+    },
+    "Hold Speed:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Halteegeschwindigkeit:"
+          }
+        }
+      }
+    },
+    "Info" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Info"
+          }
+        }
+      }
+    },
+    "Interface" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzeroberfläche"
+          }
+        }
+      }
+    },
+    "Join the Discord" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discord beitreten"
+          }
+        }
+      }
+    },
+    "Landscape Columns" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Querformat Spalten"
+          }
+        }
+      }
+    },
+    "Language: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprache: %@"
+          }
+        }
+      }
+    },
+    "Less" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weniger"
+          }
+        }
+      }
+    },
+    "Library" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mediathek"
+          }
+        }
+      }
+    },
+    "License (GPLv3.0)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lizenz (GPLv3.0)"
+          }
+        }
+      }
+    },
+    "Loading Animation" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ladeanimation"
+          }
+        }
+      }
+    },
+    "Loading module information..." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modul Infos werden geladen"
+          }
+        }
+      }
+    },
+    "Log Debug Info" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debug-Protokolle"
+          }
+        }
+      }
+    },
+    "Log Filters" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokol Filter"
+          }
+        }
+      }
+    },
+    "Log In with AniList" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bei AniList anmelden"
+          }
+        }
+      }
+    },
+    "Log In with Trakt" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bei Trakt anmelden"
+          }
+        }
+      }
+    },
+    "Log Out from AniList" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bei AniList abmelden"
+          }
+        }
+      }
+    },
+    "Log Out from Trakt" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bei Trakt abmelden"
+          }
+        }
+      }
+    },
+    "Logged in as " : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Angemeldet als"
+          }
+        }
+      }
+    },
+    "Logs" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logs"
+          }
+        }
+      }
+    },
+    "Long press Skip:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langes Drücken überspringen:"
+          }
+        }
+      }
+    },
+    "Main" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haupteinstellungen"
+          }
+        }
+      }
+    },
+    "Mark All Previous Watched" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle vorherigen als angesehen markieren"
+          }
+        }
+      }
+    },
+    "Mark as Watched" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als angesehen markieren"
+          }
+        }
+      }
+    },
+    "Media Grid Layout" : {
+
+    },
+    "Media Player" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medienplayer"
+          }
+        }
+      }
+    },
+    "Media View" : {
+
+    },
+    "Metadata Provider" : {
+
+    },
+    "Modules" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Module"
+          }
+        }
+      }
+    },
+    "More" : {
+
+    },
+    "Name" : {
+
+    },
+    "No episodes available" : {
+
+    },
+    "No episodes Found:" : {
+
+    },
+    "No items to continue watching." : {
+
+    },
+    "No Module Selected" : {
+
+    },
+    "No Modules" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Module"
+          }
+        }
+      }
+    },
+    "No Results Found" : {
+
+    },
+    "Note that the modules will be replaced only if there is a different version string inside the JSON file." : {
+
+    },
+    "OK" : {
+
+    },
+    "Open in AniList" : {
+
+    },
+    "Player" : {
+
+    },
+    "Please select a module from settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte wählen Sie ein Modul aus den Einstellungen aus"
+          }
+        }
+      }
+    },
+    "Portrait Columns" : {
+
+    },
+    "Profiles" : {
+
+    },
+    "Progress bar Marker Color" : {
+
+    },
+    "Recently watched content will appear here." : {
+
+    },
+    "Refresh Modules on Launch" : {
+
+    },
+    "Remember Playback speed" : {
+
+    },
+    "Remove" : {
+
+    },
+    "Remove All Files in Documents" : {
+
+    },
+    "Remove from Bookmarks" : {
+
+    },
+    "Remove Item" : {
+
+    },
+    "Report an issue" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehler melden"
+          }
+        }
+      }
+    },
+    "Reset AniList ID" : {
+
+    },
+    "Reset Progress" : {
+
+    },
+    "Retry" : {
+
+    },
+    "Running Sora 0.2.2 - cranci1" : {
+
+    },
+    "Search" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen"
+          }
+        }
+      }
+    },
+    "Search..." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen…"
+          }
+        }
+      }
+    },
+    "Season %lld" : {
+
+    },
+    "Segments Color" : {
+
+    },
+    "Select an App Icon" : {
+
+    },
+    "Select Module" : {
+
+    },
+    "Select Profile" : {
+
+    },
+    "Set Custom AniList ID" : {
+
+    },
+    "Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen"
+          }
+        }
+      }
+    },
+    "Shadow" : {
+
+    },
+    "Show Skip 85s Button" : {
+
+    },
+    "Show Skip Intro / Outro Buttons" : {
+
+    },
+    "Skip Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen überspringen"
+          }
+        }
+      }
+    },
+    "Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments." : {
+
+    },
+    "Sora and cranci1 are not affiliated with AniList nor Trakt in any way.\n\nAlso note that progresses update may not be 100% accurate." : {
+
+    },
+    "Sora github repo" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sora GitHub-Repository"
+          }
+        }
+      }
+    },
+    "Speed Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geschwindigkeit einstellungen"
+          }
+        }
+      }
+    },
+    "Subtitle Color" : {
+
+    },
+    "Subtitle Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untertitel einstellungen"
+          }
+        }
+      }
+    },
+    "Sync anime progress" : {
+
+    },
+    "Synopsis" : {
+
+    },
+    "Tap Skip:" : {
+
+    },
+    "The caches used by Sora are stored images that help load content faster\n\nThe App Data should never be erased if you dont know what that will cause.\n\nClearing the documents folder will remove all the modules and downloads" : {
+
+    },
+    "The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1-25, 26-50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata it is refering to the episode thumbnail and title, since sometimes it can contain spoilers." : {
+
+    },
+    "Trackers" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracker"
+          }
+        }
+      }
+    },
+    "Trakt" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trakt"
+          }
+        }
+      }
+    },
+    "Trakt.tv" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trakt.tv"
+          }
+        }
+      }
+    },
+    "Try different keywords" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nutze andere Wörter"
+          }
+        }
+      }
+    },
+    "Two Finger Hold for Pause" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zwei Finger halten für Pause"
+          }
+        }
+      }
+    },
+    "v%@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "v%@"
+          }
+        }
+      }
+    },
+    "You have no items saved." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du hast noch nichts gespeichert."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

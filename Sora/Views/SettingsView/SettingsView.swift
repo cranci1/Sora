@@ -43,20 +43,10 @@ struct SettingsView: View {
                     }
                 }
                 
-                Section(header: Text("Info")) {
-                    Button(action: {
-                        if let url = URL(string: "https://github.com/cranci1/Sora") {
-                            UIApplication.shared.open(url)
-                        }
-                    }) {
-                        HStack {
-                            Text("Sora github repo")
-                                .foregroundColor(.primary)
-                            Spacer()
-                            Image(systemName: "safari")
-                                .foregroundColor(.secondary)
-                        }
-                    }
+                Section(
+                    header: Text("Info"),
+                    footer: Text("Running Sora 0.2.2 - cranci1")
+                ) {
                     Button(action: {
                         if let url = URL(string: "https://discord.gg/x7hppDWFDZ") {
                             UIApplication.shared.open(url)
@@ -64,10 +54,10 @@ struct SettingsView: View {
                     }) {
                         HStack {
                             Text("Join the Discord")
-                                .foregroundColor(.primary)
+                                .foregroundColor(Color(hex: "7289DA"))
                             Spacer()
                             Image(systemName: "safari")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(Color(hex: "7289DA"))
                         }
                     }
                     Button(action: {
@@ -77,7 +67,20 @@ struct SettingsView: View {
                     }) {
                         HStack {
                             Text("Report an issue")
-                                .foregroundColor(.primary)
+                                .foregroundColor(.red)
+                            Spacer()
+                            Image(systemName: "safari")
+                                .foregroundColor(.red)
+                        }
+                    }
+                    Button(action: {
+                        if let url = URL(string: "https://github.com/cranci1/Sora") {
+                            UIApplication.shared.open(url)
+                        }
+                    }) {
+                        HStack {
+                            Text("Github repo")
+                                .foregroundColor(.secondary)
                             Spacer()
                             Image(systemName: "safari")
                                 .foregroundColor(.secondary)
@@ -90,7 +93,7 @@ struct SettingsView: View {
                     }) {
                         HStack {
                             Text("License (GPLv3.0)")
-                                .foregroundColor(.primary)
+                                .foregroundColor(.secondary)
                             Spacer()
                             Image(systemName: "safari")
                                 .foregroundColor(.secondary)
@@ -103,14 +106,13 @@ struct SettingsView: View {
                     }) {
                         HStack {
                             Text("Contributors")
-                                .foregroundColor(.primary)
+                                .foregroundColor(.secondary)
                             Spacer()
                             Image(systemName: "safari")
                                 .foregroundColor(.secondary)
                         }
                     }
                 }
-                Section(footer: Text("Running Sora 0.2.2 - cranci1")) {}
             }
             .navigationTitle("Settings")
         }

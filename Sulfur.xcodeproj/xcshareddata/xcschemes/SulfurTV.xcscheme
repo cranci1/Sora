@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "133D7C692D2BE2500075467E"
-               BuildableName = "Sulfur.app"
-               BlueprintName = "Sulfur"
+               BlueprintIdentifier = "120764642DB6F6E0003621E9"
+               BuildableName = "SulfurTV.app"
+               BlueprintName = "SulfurTV"
                ReferencedContainer = "container:Sulfur.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -34,11 +34,10 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      disablePerformanceAntipatternChecker = "YES"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
-      debugDocumentVersioning = "NO"
+      debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       enableGPUFrameCaptureMode = "3"
       enableGPUValidationMode = "1"
@@ -48,9 +47,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "133D7C692D2BE2500075467E"
-            BuildableName = "Sulfur.app"
-            BlueprintName = "Sulfur"
+            BlueprintIdentifier = "120764642DB6F6E0003621E9"
+            BuildableName = "SulfurTV.app"
+            BlueprintName = "SulfurTV"
             ReferencedContainer = "container:Sulfur.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -65,9 +64,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "133D7C692D2BE2500075467E"
-            BuildableName = "Sulfur.app"
-            BlueprintName = "Sulfur"
+            BlueprintIdentifier = "120764642DB6F6E0003621E9"
+            BuildableName = "SulfurTV.app"
+            BlueprintName = "SulfurTV"
             ReferencedContainer = "container:Sulfur.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

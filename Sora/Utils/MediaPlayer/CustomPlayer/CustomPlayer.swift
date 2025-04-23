@@ -1298,6 +1298,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self.sliderViewModel.sliderValue = max(0, min(self.currentTimeVal, self.duration))
             }
             
+            updateSkipButtonsVisibility()
+            
             UserDefaults.standard.set(self.currentTimeVal, forKey: "lastPlayedTime_\(self.fullUrl)")
             UserDefaults.standard.set(self.duration, forKey: "totalTime_\(self.fullUrl)")
             

@@ -2,7 +2,14 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ""
+          }
+        }
+      }
     },
     "%@ - Episode %lld" : {
       "localizations" : {
@@ -663,7 +670,14 @@
       }
     },
     "Github repo" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Github-Repo"
+          }
+        }
+      }
     },
     "Hide Empty Sections" : {
       "localizations" : {
@@ -906,7 +920,14 @@
       }
     },
     "Media Grid Layout" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medienraster-Layout"
+          }
+        }
+      }
     },
     "Media Player" : {
       "localizations" : {
@@ -919,10 +940,24 @@
       }
     },
     "Media View" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medien Ansicht"
+          }
+        }
+      }
     },
     "Metadata Provider" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadatenanbieter"
+          }
+        }
+      }
     },
     "Modules" : {
       "localizations" : {
@@ -935,22 +970,64 @@
       }
     },
     "More" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mehr"
+          }
+        }
+      }
     },
     "Name" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        }
+      }
     },
     "No episodes available" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Episoden verfügbar"
+          }
+        }
+      }
     },
     "No episodes Found:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Episoden gefunden:"
+          }
+        }
+      }
     },
     "No items to continue watching." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Medien zum weiterschauen verfügbar."
+          }
+        }
+      }
     },
     "No Module Selected" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Module ausgewählt"
+          }
+        }
+      }
     },
     "No Modules" : {
       "localizations" : {
@@ -963,19 +1040,54 @@
       }
     },
     "No Results Found" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Ergebnisse gefunden"
+          }
+        }
+      }
     },
     "Note that the modules will be replaced only if there is a different version string inside the JSON file." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beachten Sie, dass die Module nur ersetzt werden, wenn sich ein anderer Versionsstring in der JSON-Datei befindet."
+          }
+        }
+      }
     },
     "OK" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Okay"
+          }
+        }
+      }
     },
     "Open in AniList" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In AniList öffnen"
+          }
+        }
+      }
     },
     "Player" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Player"
+          }
+        }
+      }
     },
     "Please select a module from settings" : {
       "localizations" : {
@@ -988,34 +1100,104 @@
       }
     },
     "Portrait Columns" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hochformat-Spalten"
+          }
+        }
+      }
     },
     "Profiles" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile"
+          }
+        }
+      }
     },
     "Progress bar Marker Color" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farbe des Fortschrittsbalken-Markierungs"
+          }
+        }
+      }
     },
     "Recently watched content will appear here." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kürzlich angesehene Inhalte werden hier angezeigt."
+          }
+        }
+      }
     },
     "Refresh Modules on Launch" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Module immer beim Starten der App aktualisieren"
+          }
+        }
+      }
     },
     "Remember Playback speed" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiedergabegeschwindigkeit merken"
+          }
+        }
+      }
     },
     "Remove" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen "
+          }
+        }
+      }
     },
     "Remove All Files in Documents" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Dateien im Dokumentenordner entfernen"
+          }
+        }
+      }
     },
     "Remove from Bookmarks" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aus den Lesezeichen entfernen"
+          }
+        }
+      }
     },
     "Remove Item" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Item löschen"
+          }
+        }
+      }
     },
     "Report an issue" : {
       "localizations" : {
@@ -1028,16 +1210,44 @@
       }
     },
     "Reset AniList ID" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AniList ID zurücksetzen"
+          }
+        }
+      }
     },
     "Reset Progress" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verlauf zurücksetzen"
+          }
+        }
+      }
     },
     "Retry" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut versuchen"
+          }
+        }
+      }
     },
     "Running Sora 0.2.2 - cranci1" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sora 0.2.2 - von cranci1"
+          }
+        }
+      }
     },
     "Search" : {
       "localizations" : {
@@ -1060,22 +1270,64 @@
       }
     },
     "Season %lld" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Season %lld"
+          }
+        }
+      }
     },
     "Segments Color" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farbe der Segmente"
+          }
+        }
+      }
     },
     "Select an App Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Symbol wählen"
+          }
+        }
+      }
     },
     "Select Module" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modul wählen"
+          }
+        }
+      }
     },
     "Select Profile" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profil auswählen"
+          }
+        }
+      }
     },
     "Set Custom AniList ID" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzerdefinierte AniList ID festlegen"
+          }
+        }
+      }
     },
     "Settings" : {
       "localizations" : {
@@ -1088,13 +1340,34 @@
       }
     },
     "Shadow" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schatten"
+          }
+        }
+      }
     },
     "Show Skip 85s Button" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schaltfläche „85 Sekunden überspringen“ anzeigen"
+          }
+        }
+      }
     },
     "Show Skip Intro / Outro Buttons" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schaltflächen „Intro/Outro überspringen“ anzeigen"
+          }
+        }
+      }
     },
     "Skip Settings" : {
       "localizations" : {
@@ -1107,18 +1380,21 @@
       }
     },
     "Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments." : {
-
-    },
-    "Sora and cranci1 are not affiliated with AniList nor Trakt in any way.\n\nAlso note that progresses update may not be 100% accurate." : {
-
-    },
-    "Sora github repo" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sora GitHub-Repository"
+            "value" : "Einige Funktionen sind auf den Sora- und den Standard-Player beschränkt, wie z. B. ForceLandscape, holdSpeed und benutzerdefinierte Zeitsprung-Intervalle."
+          }
+        }
+      }
+    },
+    "Sora and cranci1 are not affiliated with AniList nor Trakt in any way.\n\nAlso note that progresses update may not be 100% accurate." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sora und cranci1 stehen in keiner Weise in Verbindung mit AniList oder Trakt.\n\nBeachten Sie außerdem, dass der Fortschrittsabgleich möglicherweise nicht zu 100 % genau ist."
           }
         }
       }
@@ -1134,7 +1410,14 @@
       }
     },
     "Subtitle Color" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untertitel Farbe"
+          }
+        }
+      }
     },
     "Subtitle Settings" : {
       "localizations" : {
@@ -1147,19 +1430,54 @@
       }
     },
     "Sync anime progress" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anime-Fortschritt synchronisieren"
+          }
+        }
+      }
     },
     "Synopsis" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inhaltsangabe"
+          }
+        }
+      }
     },
     "Tap Skip:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tippen zum Überspringen:"
+          }
+        }
+      }
     },
     "The caches used by Sora are stored images that help load content faster\n\nThe App Data should never be erased if you dont know what that will cause.\n\nClearing the documents folder will remove all the modules and downloads" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die von Sora verwendeten Caches sind gespeicherte Bilder, die dabei helfen, Inhalte schneller zu laden.\n\nDie App-Daten sollten niemals gelöscht werden, wenn Sie nicht wissen, welche Auswirkungen das hat.\n\nDas Leeren des Dokumentenordners entfernt alle Module und Downloads."
+          }
+        }
+      }
     },
     "The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1-25, 26-50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata it is refering to the episode thumbnail and title, since sometimes it can contain spoilers." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Episodenbereich steuert, wie viele Episoden auf jeder Seite angezeigt werden. Die Episoden werden in Gruppen (wie 1–25, 26–50 usw.) zusammengefasst, um die Navigation zu erleichtern.\n\nMit Episoden-Metadaten sind das Episoden-Vorschaubild und der Titel gemeint, da diese manchmal Spoiler enthalten können."
+          }
+        }
+      }
     },
     "Trackers" : {
       "localizations" : {

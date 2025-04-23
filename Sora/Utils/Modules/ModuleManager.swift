@@ -35,20 +35,15 @@ class ModuleManager: ObservableObject {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            do {
-                let url = self.getModulesFilePath()
-                if FileManager.default.fileExists(atPath: url.path) {
-                    self.loadModules()
-                    Task {
-                        await self.checkJSModuleFiles()
-                    }
-                    Logger.shared.log("Reloaded modules after iCloud sync")
-                } else {
-                    Logger.shared.log("No modules file found after sync", type: "Error")
-                    self.modules = []
+            let url = self.getModulesFilePath()
+            if FileManager.default.fileExists(atPath: url.path) {
+                self.loadModules()
+                Task {
+                    await self.checkJSModuleFiles()
                 }
-            } catch {
-                Logger.shared.log("Error handling modules sync: \(error.localizedDescription)", type: "Error")
+                Logger.shared.log("Reloaded modules after iCloud sync")
+            } else {
+                Logger.shared.log("No modules file found after sync", type: "Error")
                 self.modules = []
             }
         }
@@ -139,7 +134,8 @@ class ModuleManager: ObservableObject {
         guard let data = try? JSONEncoder().encode(modules) else { return }
         try? data.write(to: url)
     }
-    
+
+
     func addModule(metadataUrl: String) async throws -> ScrapingModule {
         guard let url = URL(string: metadataUrl) else {
             throw NSError(domain: "Invalid metadata URL", code: -1)
@@ -171,7 +167,7 @@ class ModuleManager: ObservableObject {
             metadataUrl: metadataUrl
         )
         
-        DispatchQueue.main.async {
+        await MainActor.run {
             self.modules.append(module)
             self.saveModules()
             Logger.shared.log("Added module: \(module.metadata.sourceName)")

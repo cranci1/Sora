@@ -66,7 +66,7 @@ struct SettingsViewPlayer: View {
                 ColorPicker("Segments Color", selection: Binding(
                     get: {
                         if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
-                           let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
+                           let uiColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) {
                             return Color(uiColor)
                         }
                         return .yellow

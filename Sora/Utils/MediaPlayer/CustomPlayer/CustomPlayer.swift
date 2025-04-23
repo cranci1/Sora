@@ -294,6 +294,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         if #unavailable(iOS 15) {
             hiddenVolumeView.showsRouteButton = false
         }
+
         hiddenVolumeView.isHidden = true
         view.addSubview(hiddenVolumeView)
         
@@ -370,9 +371,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
             return
         }
-        
-        if keyPath == "loadedTimeRanges" {
-        }
     }
     
     
@@ -397,7 +395,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private func getSegmentsColor() -> Color {
         if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
-           let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
+           let uiColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) {
             return Color(uiColor)
         }
         return .yellow
@@ -1335,8 +1333,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self.topSubtitleLabel.text = ""
                 self.topSubtitleLabel.isHidden = true
             }
-            
-            let current = self.currentTimeVal
             
             let segmentsColor = self.getSegmentsColor()
             

@@ -78,6 +78,8 @@
 
 /* Begin PBXFileReference section */
 		120764652DB6F6E0003621E9 /* SulfurTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SulfurTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		126C42882DB99209006BC27D /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS18.4.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
+		126C428A2DB9921C006BC27D /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		12D1E2682DB45CB500EFCDAB /* SettingsViewAlternateAppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewAlternateAppIconPicker.swift; sourceTree = "<group>"; };
 		12D1E26A2DB4BA9D00EFCDAB /* SettingsViewProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewProfile.swift; sourceTree = "<group>"; };
 		12D1E26D2DB66F9600EFCDAB /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
@@ -196,6 +198,15 @@
 			path = RootView;
 			sourceTree = "<group>";
 		};
+		126C42872DB99209006BC27D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				126C428A2DB9921C006BC27D /* AVFoundation.framework */,
+				126C42882DB99209006BC27D /* AVFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		12D1E26C2DB66F8B00EFCDAB /* ProfileStore */ = {
 			isa = PBXGroup;
 			children = (
@@ -254,6 +265,7 @@
 			children = (
 				133D7C6C2D2BE2500075467E /* Sora */,
 				120764662DB6F6E0003621E9 /* SulfurTV */,
+				126C42872DB99209006BC27D /* Frameworks */,
 				133D7C6B2D2BE2500075467E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -737,6 +749,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 0.2.2;
+				OTHER_LDFLAGS = "-w";
 				PRODUCT_BUNDLE_IDENTIFIER = de.devsforge.tvos.SulfurTV;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -771,6 +784,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 0.2.2;
+				OTHER_LDFLAGS = "-w";
 				PRODUCT_BUNDLE_IDENTIFIER = de.devsforge.tvos.SulfurTV;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -839,6 +853,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-w";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -898,6 +913,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "-w";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -921,6 +937,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_TESTABILITY = NO;
+				GCC_NO_COMMON_BLOCKS = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Sora/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Sora;
@@ -939,6 +957,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.2.2;
+				OTHER_LDFLAGS = "-w";
 				PRODUCT_BUNDLE_IDENTIFIER = de.devsforge.sulfur.fork;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -965,6 +984,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
+				GCC_NO_COMMON_BLOCKS = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Sora/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Sora;
@@ -983,6 +1003,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.2.2;
+				OTHER_LDFLAGS = "-w";
 				PRODUCT_BUNDLE_IDENTIFIER = de.devsforge.sulfur.fork;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

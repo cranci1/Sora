@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct SulfurTVApp: App {
+struct SoraTVApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()

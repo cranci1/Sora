@@ -1379,12 +1379,12 @@
         }
       }
     },
-    "Running Sora 0.2.2 - cranci1" : {
+    "Running Sora %@ - cranci1" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sora 0.2.2 - von cranci1"
+            "value" : "Sora %@ - von cranci1"
           }
         }
       }

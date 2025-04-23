@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var profileStore: ProfileStore
+    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "BETA"
 
     var body: some View {
         NavigationView {
@@ -45,7 +46,7 @@ struct SettingsView: View {
                 
                 Section(
                     header: Text("Info"),
-                    footer: Text("Running Sora 0.2.2 - cranci1")
+                    footer: Text("Running Sora \(version) - cranci1")
                 ) {
                     Button(action: {
                         if let url = URL(string: "https://discord.gg/x7hppDWFDZ") {

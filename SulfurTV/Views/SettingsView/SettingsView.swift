@@ -12,13 +12,13 @@ struct SettingsView: View {
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "BETA"
 
     private let settings: [Setting] = [
-        Setting(id: 1, title: "General Preferences", destination: .general),
-        Setting(id: 2, title: "Media Player", destination: .media),
-        Setting(id: 3, title: "Modules", destination: .modules),
-        Setting(id: 4, title: "Trackers", destination: .trackers),
-        Setting(id: 5, title: "Data", destination: .data),
-        Setting(id: 6, title: "Logs", destination: .logs),
-        Setting(id: 7, title: "Info", destination: .info)
+        Setting(id: 1, title: LocalizedStringKey("General Preferences"), destination: .general),
+        Setting(id: 2, title: LocalizedStringKey("Media Player"), destination: .media),
+        Setting(id: 3, title: LocalizedStringKey("Modules"), destination: .modules),
+        Setting(id: 4, title: LocalizedStringKey("Trackers"), destination: .trackers),
+        Setting(id: 5, title: LocalizedStringKey("Data"), destination: .data),
+        Setting(id: 6, title: LocalizedStringKey("Logs"), destination: .logs),
+        Setting(id: 7, title: LocalizedStringKey("Info"), destination: .info)
     ]
 
     var body: some View {

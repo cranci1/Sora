@@ -395,6 +395,14 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         }
     }
     
+    private func getSegmentsColor() -> Color {
+        if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
+           let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
+            return Color(uiColor)
+        }
+        return .yellow
+    }
+    
     func setupPlayerViewController() {
         playerViewController = AVPlayerViewController()
         playerViewController.player = player
@@ -505,6 +513,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         controlsContainerView.addSubview(forwardButton)
         forwardButton.translatesAutoresizingMaskIntoConstraints = false
         
+        let segmentsColor = self.getSegmentsColor()
+        
         let sliderView = MusicProgressSlider(
             value: Binding(
                 get: { self.sliderViewModel.sliderValue },
@@ -539,8 +549,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             },
             introSegments: sliderViewModel.introSegments,  // Added
             outroSegments: sliderViewModel.outroSegments,  // Added
-            introColor: .yellow,  // Add your colors here
-            outroColor: .yellow   // Or use settings.accentColor
+            introColor: segmentsColor,  // Add your colors here
+            outroColor: segmentsColor   // Or use settings.accentColor
         )
         
         sliderHostingController = UIHostingController(rootView: sliderView)
@@ -898,7 +908,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             let end = min(1, ed.end.seconds / duration)
             sliderViewModel.outroSegments.append(start...end)
         }
-        // Force SwiftUI to update
+
+        let segmentsColor = self.getSegmentsColor()
+
         DispatchQueue.main.async {
             self.sliderHostingController?.rootView = MusicProgressSlider(
                 value: Binding(
@@ -922,8 +934,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 },
                 introSegments: self.sliderViewModel.introSegments,
                 outroSegments: self.sliderViewModel.outroSegments,
-                introColor: .yellow,  // Match your color choices
-                outroColor: .yellow
+                introColor: segmentsColor,  // Match your color choices
+                outroColor: segmentsColor
             )
         }
     }
@@ -1324,6 +1336,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self.topSubtitleLabel.isHidden = true
             }
             
+            let current = self.currentTimeVal
+            
+            let segmentsColor = self.getSegmentsColor()
+            
             DispatchQueue.main.async {
                 if let currentItem = self.player.currentItem, currentItem.duration.seconds > 0 {
                     let progress = min(max(self.currentTimeVal / self.duration, 0), 1.0)
@@ -1378,8 +1394,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     },
                     introSegments: self.sliderViewModel.introSegments,
                     outroSegments: self.sliderViewModel.outroSegments,
-                    introColor: .yellow,  // Match your color choices
-                    outroColor: .yellow
+                    introColor: segmentsColor,  // Match your color choices
+                    outroColor: segmentsColor
                 )
             }
         }

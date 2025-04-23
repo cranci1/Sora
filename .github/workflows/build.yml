@@ -1,29 +1,39 @@
 name: Build and Release IPA
+
 on:
   push:
     branches:
       - dev
+
 jobs:
   build:
     name: Build IPA
     runs-on: macOS-latest
+
     steps:
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          
+
       - name: Checkout code
         uses: actions/checkout@v4
-        
+        with:
+          persist-credentials: true
+
       - name: Run ipabuild.sh
         run: |
           chmod +x ipabuild.sh
           ./ipabuild.sh
-          
-      - name: Upload IPA artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Sulfur-IPA
-          path: build/Sulfur.ipa
-          compression-level: 0
+
+      - name: Commit and push latest IPA
+        run: |
+          git config user.name "cranci1"
+          git config user.email "cranci1@github.com"
+
+          mkdir -p public-build
+          cp -f build/Sulfur.ipa public-build/Sulfur.ipa
+
+          git add -f public-build/Sulfur.ipa
+          git diff --quiet && git diff --staged --quiet || git commit -m "Auto: Update IPA [skip ci]"
+          git push

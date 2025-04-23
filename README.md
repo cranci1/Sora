@@ -1,6 +1,6 @@
 # Sora
 > Also known as Sulfur, for copyright issues.
- 
+
 <div align="center"> 
 
 <img src="https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/Sulfur.png" width="750px">

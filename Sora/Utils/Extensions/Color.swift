@@ -8,11 +8,14 @@
 import SwiftUI
 
 extension Color {
-    init(hex: String) {
-        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
-        var rgb: UInt64 = 0
-        Scanner(string: hexSanitized).scanHexInt64(&rgb)
 
+    /// Intitialize SwiftUI Color via HEX String
+    ///
+    /// - Parameters:
+    ///   - hex: The hex color string. Dont include: "#" prefix or leading / trailing whitespaces ( " " )
+    init(hex: String) {
+        var rgb: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&rgb)
         self.init(
             .sRGB,
             red: Double((rgb & 0xFF0000) >> 16) / 255.0,

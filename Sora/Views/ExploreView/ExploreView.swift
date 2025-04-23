@@ -57,6 +57,13 @@ struct ExploreView: View {
                     //TODO: add explore content views
                 }
                 .padding(.vertical, 20)
+                
+                NavigationLink(
+                    destination: SettingsViewProfile(),
+                    isActive: $showProfileSettings,
+                    label: { EmptyView() }
+                )
+                .hidden()
             }
             .navigationTitle("Explore")
             .toolbar {
@@ -135,13 +142,6 @@ struct ExploreView: View {
                     .fixedSize()
                 }
             }
-            
-            NavigationLink(
-                destination: SettingsViewProfile(),
-                isActive: $showProfileSettings,
-                label: { EmptyView() }
-            )
-            .hidden()
         }
                 .navigationViewStyle(StackNavigationViewStyle())
                 .onAppear {

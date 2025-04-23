@@ -1554,6 +1554,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                         self.controlsContainerView.alpha = 1.0
                         self.skip85Button.alpha = 0.8
                     })
+                    self.updateSkipButtonsVisibility()
                 }
             }
         } else {

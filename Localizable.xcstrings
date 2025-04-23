@@ -259,6 +259,16 @@
         }
       }
     },
+    "Authentication successful!" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erfolgreich angemeldet!"
+          }
+        }
+      }
+    },
     "Author" : {
       "localizations" : {
         "de" : {
@@ -609,12 +619,52 @@
         }
       }
     },
+    "Error: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error: %@"
+          }
+        }
+      }
+    },
     "Explore" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erkunden"
+          }
+        }
+      }
+    },
+    "Failed to parse response" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehler beim "
+          }
+        }
+      }
+    },
+    "Failed to parse response: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antwort konnte nicht verarbeitet werden: %@"
+          }
+        }
+      }
+    },
+    "Failed to serialize request" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anforderung konnte nicht serialisiert werden"
           }
         }
       }
@@ -869,6 +919,36 @@
         }
       }
     },
+    "Logged in as %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Angemeldet als %@"
+          }
+        }
+      }
+    },
+    "Login failed with unknown error" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anmeldung fehlgeschlagen mit unbekanntem Fehler"
+          }
+        }
+      }
+    },
+    "Login failed: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anmeldung fehlgeschlagen: %@"
+          }
+        }
+      }
+    },
     "Logs" : {
       "localizations" : {
         "de" : {
@@ -985,6 +1065,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Name"
+          }
+        }
+      }
+    },
+    "No data received" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Daten empfangen"
           }
         }
       }
@@ -1409,6 +1499,16 @@
         }
       }
     },
+    "Starting authentication..." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anmeldevorgang wird gestartet…"
+          }
+        }
+      }
+    },
     "Subtitle Color" : {
       "localizations" : {
         "de" : {
@@ -1529,12 +1629,32 @@
         }
       }
     },
+    "Unexpected response format!" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unerwartetes Antwortformat!"
+          }
+        }
+      }
+    },
     "v%@" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "v%@"
+          }
+        }
+      }
+    },
+    "You are not logged in" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie sind nicht angemeldet"
           }
         }
       }

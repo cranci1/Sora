@@ -11,14 +11,14 @@ import Kingfisher
 
 struct SettingsViewTrackers: View {
     @AppStorage("sendPushUpdates") private var isSendPushUpdates = true
-    @State private var anilistStatus: String = "You are not logged in"
+    @State private var anilistStatus: LocalizedStringKey = "You are not logged in"
     @State private var isAnilistLoggedIn: Bool = false
     @State private var anilistUsername: String = ""
     @State private var isAnilistLoading: Bool = false
     @State private var profileColor: Color = .accentColor
     
     @AppStorage("sendTraktUpdates") private var isSendTraktUpdates = true
-    @State private var traktStatus: String = "You are not logged in"
+    @State private var traktStatus: LocalizedStringKey = "You are not logged in"
     @State private var isTraktLoggedIn: Bool = false
     @State private var traktUsername: String = ""
     @State private var isTraktLoading: Bool = false

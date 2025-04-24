@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import WebKit
+@preconcurrency import WebKit
 
 private struct ModuleLink: Identifiable {
     let id = UUID()

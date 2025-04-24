@@ -60,15 +60,23 @@ struct SoraApp: App {
                 
                 UserDefaults.standard.set(libraryURL, forKey: "lastCommunityURL")
                 UserDefaults.standard.set(true, forKey: "didReceiveDefaultPageLink")
-                
+
                 let communityView = CommunityLibraryView()
-                    .environmentObject(moduleManager)
+                                    .environmentObject(moduleManager)
                 let hostingController = UIHostingController(rootView: communityView)
-                
-                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let window = scene.windows.first,
-                   let root = window.rootViewController {
-                    root.present(hostingController, animated: true)
+                DispatchQueue.main.async {
+                    if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                       let window = scene.windows.first,
+                       let root = window.rootViewController {
+                        root.present(hostingController, animated: true) {
+                            DropManager.shared.showDrop(
+                                title: "Module Library Added",
+                                subtitle: "You can browse the community lib. in settings.",
+                                duration: 3.5,
+                                icon: UIImage(systemName: "books.vertical.circle.fill")
+                            )
+                        }
+                    }
                 }
             }
             
@@ -99,7 +107,6 @@ struct SoraApp: App {
             break
         }
     }
-
 
     static func handleRedirect(url: URL) {
         guard let params = url.queryParameters,

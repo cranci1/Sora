@@ -11,6 +11,7 @@ import Kingfisher
 struct SettingsViewModule: View {
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @EnvironmentObject var moduleManager: ModuleManager
+    @AppStorage("didReceiveDefaultPageLink") private var didReceiveDefaultPageLink: Bool = false
     
     @State private var errorMessage: String?
     @State private var isLoading = false
@@ -28,15 +29,27 @@ struct SettingsViewModule: View {
                             .foregroundColor(.secondary)
                         Text("No Modules")
                             .font(.headline)
-                        Text("Click the plus button to add a module!")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .frame(maxWidth: .infinity)
+
+                        // Static or clickable prompt
+                        if didReceiveDefaultPageLink {
+                            NavigationLink(destination: CommunityLibraryView()
+                                            .environmentObject(moduleManager)) {
+                                Text("Check out some community modules here!")
+                                    .font(.caption)
+                                    .foregroundColor(.blue)
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        } else {
+                            Text("Click the plus button to add a module!")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .frame(maxWidth: .infinity)
+                        }
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                }
-                else {
+                } else {
                     ForEach(moduleManager.modules) { module in
                         HStack {
                             KFImage(URL(string: module.metadata.iconUrl))

@@ -12,10 +12,10 @@ struct SoraApp: App {
     @StateObject private var settings = Settings()
     @StateObject private var moduleManager = ModuleManager()
     @StateObject private var librarykManager = LibraryManager()
-    
+
     init() {
         _ = iCloudSyncManager.shared
-        
+
         TraktToken.checkAuthenticationStatus { isAuthenticated in
             if isAuthenticated {
                 Logger.shared.log("Trakt authentication is valid")
@@ -24,7 +24,7 @@ struct SoraApp: App {
             }
         }
     }
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -42,6 +42,7 @@ struct SoraApp: App {
                     }
                 }
                 .onOpenURL { url in
+                    // Route codex and module deep links
                     if let params = url.queryParameters, params["code"] != nil {
                         Self.handleRedirect(url: url)
                     } else {
@@ -50,33 +51,55 @@ struct SoraApp: App {
                 }
         }
     }
-    
+
+    /// Handle custom sora:// links for community or module
     private func handleURL(_ url: URL) {
-        guard url.scheme == "sora",
-              url.host == "module",
-              let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
-              let moduleURL = components.queryItems?.first(where: { $0.name == "url" })?.value else {
-                  return
-              }
-        
-        let addModuleView = ModuleAdditionSettingsView(moduleUrl: moduleURL).environmentObject(moduleManager)
-        let hostingController = UIHostingController(rootView: addModuleView)
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
-            window.rootViewController?.present(hostingController, animated: true)
-        } else {
-            Logger.shared.log("Failed to present module addition view: No window scene found", type: "Error")
+        guard url.scheme == "sora", let host = url.host else { return }
+        switch host {
+        case "default_page":
+            if let comps = URLComponents(url: url, resolvingAgainstBaseURL: true),
+               let libraryURL = comps.queryItems?.first(where: { $0.name == "url" })?.value {
+                // Persist last community URL and flag
+                UserDefaults.standard.set(libraryURL, forKey: "lastCommunityURL")
+                UserDefaults.standard.set(true, forKey: "didReceiveDefaultPageLink")
+                // Present community browser
+                let add = CommunityLibraryView()
+                    .environmentObject(moduleManager)
+                let host = UIHostingController(rootView: add)
+                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let window = scene.windows.first,
+                   let root = window.rootViewController {
+                    root.present(host, animated: true)
+                }
+            }
+
+        case "module":
+            if let comps = URLComponents(url: url, resolvingAgainstBaseURL: true),
+               let moduleURL = comps.queryItems?.first(where: { $0.name == "url" })?.value {
+                // Present module addition UI
+                let add = ModuleAdditionSettingsView(moduleUrl: moduleURL)
+                    .environmentObject(moduleManager)
+                let host = UIHostingController(rootView: add)
+                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let window = scene.windows.first,
+                   let root = window.rootViewController {
+                    root.present(host, animated: true)
+                }
+            }
+
+        default:
+            break
         }
     }
-    
+
+    /// OAuth redirect handler for code flows
     static func handleRedirect(url: URL) {
         guard let params = url.queryParameters,
               let code = params["code"] else {
-                  Logger.shared.log("Failed to extract authorization code")
-                  return
-              }
-        
+            Logger.shared.log("Failed to extract authorization code")
+            return
+        }
+
         switch url.host {
         case "anilist":
             AniListToken.exchangeAuthorizationCodeForToken(code: code) { success in
@@ -86,6 +109,7 @@ struct SoraApp: App {
                     Logger.shared.log("AniList token exchange failed", type: "Error")
                 }
             }
+
         case "trakt":
             TraktToken.exchangeAuthorizationCodeForToken(code: code) { success in
                 if success {
@@ -94,6 +118,7 @@ struct SoraApp: App {
                     Logger.shared.log("Trakt token exchange failed", type: "Error")
                 }
             }
+
         default:
             Logger.shared.log("Unknown authentication service", type: "Error")
         }

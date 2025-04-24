@@ -4,7 +4,6 @@
 //
 //  Created by Francesco on 06/01/25.
 //
-
 import SwiftUI
 
 @main
@@ -13,13 +12,23 @@ struct SoraApp: App {
     @StateObject private var moduleManager = ModuleManager()
     @StateObject private var librarykManager = LibraryManager()
     
+    // Hardcoded accent color bound to the theme
+    private var dynamicAccentColor: Color {
+        // If appearance is light, return black, if dark, return white.
+        if settings.selectedAppearance == .dark {
+            return .white
+        } else {
+            return .black
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(moduleManager)
                 .environmentObject(settings)
                 .environmentObject(librarykManager)
-                .accentColor(settings.accentColor)
+                .accentColor(dynamicAccentColor)
                 .onAppear {
                     settings.updateAppearance()
                     if UserDefaults.standard.bool(forKey: "refreshModulesOnLaunch") {

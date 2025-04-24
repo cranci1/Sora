@@ -18,9 +18,10 @@ struct SettingsViewLogger: View {
                     .font(.footnote)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
+                    .padding(.bottom, 75)
                     .textSelection(.enabled)
             }
+            .padding(.bottom, 75)
             .navigationTitle("Logs")
             .onAppear {
                 logs = Logger.shared.getLogs()

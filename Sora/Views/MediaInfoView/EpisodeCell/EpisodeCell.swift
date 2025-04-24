@@ -28,6 +28,7 @@ struct EpisodeCell: View {
     @State private var episodeImageUrl: String = ""
     @State private var isLoading: Bool = true
     @State private var currentProgress: Double = 0.0
+    @State private var bannerImageUrl: String = ""
     
     var body: some View {
         HStack {
@@ -152,12 +153,12 @@ struct EpisodeCell: View {
                       let episodeDetails = episodes["\(episodeID + 1)"] as? [String: Any],
                       let title = episodeDetails["title"] as? [String: String],
                       let image = episodeDetails["image"] as? String else {
-                          Logger.shared.log("Invalid response format", type: "Error")
-                          DispatchQueue.main.async {
-                              self.isLoading = false
-                          }
-                          return
-                      }
+                    Logger.shared.log("Invalid response format", type: "Error")
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                    }
+                    return
+                }
                 
                 DispatchQueue.main.async {
                     self.episodeTitle = title["en"] ?? ""
@@ -171,4 +172,5 @@ struct EpisodeCell: View {
             }
         }.resume()
     }
+
 }

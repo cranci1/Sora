@@ -8,21 +8,45 @@
 import SwiftUI
 
 struct SettingsViewData: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     @State private var showEraseAppDataAlert = false
     @State private var showRemoveDocumentsAlert = false
     @State private var showSizeAlert = false
     
     var body: some View {
         Form {
-            Section(header: Text("App storage"), footer: Text("The caches used by Sora are stored images that help load content faster\n\nThe App Data should never be erased if you dont know what that will cause.\n\nClearing the documents folder will remove all the modules and downloads")) {
+            Section(header: Text("App Storage")
+                        .font(.headline)
+                        .foregroundColor(.accentColor),
+                     footer: Text("The caches used by Sora are stored images that help load content faster.\n\nThe App Data should never be erased if you don't know what that will cause.\n\nClearing the documents folder will remove all the modules and downloads")
+                        .font(.footnote)
+                        .foregroundColor(.gray)) {
+                
                 Button(action: clearCache) {
-                    Text("Clear Cache")
+                    HStack {
+                        Text("Clear Cache")
+                        Spacer()
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
                 }
                 
                 Button(action: {
                     showEraseAppDataAlert = true
                 }) {
-                    Text("Erase all App Data")
+                    HStack {
+                        Text("Erase all App Data")
+                        Spacer()
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.red)
+                    }
+                    .padding()
+                    .background(Color.red.opacity(0.1))
+                    .cornerRadius(10)
                 }
                 .alert(isPresented: $showEraseAppDataAlert) {
                     Alert(
@@ -38,7 +62,15 @@ struct SettingsViewData: View {
                 Button(action: {
                     showRemoveDocumentsAlert = true
                 }) {
-                    Text("Remove All Files in Documents")
+                    HStack {
+                        Text("Remove All Files in Documents")
+                        Spacer()
+                        Image(systemName: "doc.badge.xmark")
+                            .foregroundColor(.red)
+                    }
+                    .padding()
+                    .background(Color.red.opacity(0.1))
+                    .cornerRadius(10)
                 }
                 .alert(isPresented: $showRemoveDocumentsAlert) {
                     Alert(
@@ -53,7 +85,26 @@ struct SettingsViewData: View {
             }
         }
         .navigationTitle("App Data")
-        .navigationViewStyle(StackNavigationViewStyle())
+        .background(
+            ZStack {
+                Color(.systemBackground)
+                    .opacity(0.95)
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.secondary.opacity(0.2), lineWidth: 0.5)
+        )
+        .shadow(
+            color: colorScheme == .dark ? Color(.label).opacity(0.1) : Color.black.opacity(0.15),
+            radius: 5, x: 0, y: 2
+        )
+        .padding(.horizontal, 16)
+        .padding(.bottom, 75)
+        .padding(.top, 10)
+        .frame(minHeight: 600)
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     func eraseAppData() {

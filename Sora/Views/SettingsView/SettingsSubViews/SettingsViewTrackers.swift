@@ -1,8 +1,7 @@
+// SettingsViewTrackers.swift
+// Sora
 //
-//  SettingsViewTrackers.swift
-//  Sora
-//
-//  Created by Francesco on 23/03/25.
+// Created by Francesco on 23/03/25.
 //
 
 import SwiftUI
@@ -11,7 +10,8 @@ import Kingfisher
 
 struct SettingsViewTrackers: View {
     @AppStorage("sendPushUpdates") private var isSendPushUpdates = true
-    
+    @Environment(\.colorScheme) private var colorScheme
+
     @State private var status: String = "You are not logged in"
     @State private var isLoggedIn: Bool = false
     @State private var username: String = ""
@@ -19,60 +19,95 @@ struct SettingsViewTrackers: View {
     @State private var profileColor: Color = .accentColor
     
     var body: some View {
-        Form {
-            Section(header: Text("AniList"), footer: Text("Sora and cranci1 are not affiliated with AniList in any way.\n\nNote that progresses update may not be 100% acurate.")) {
-                HStack() {
-                    KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png"))
-                        .placeholder {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 80, height: 80)
-                                .shimmering()
-                        }
-                        .resizable()
-                        .frame(width: 80, height: 80)
-                        .clipShape(Rectangle())
-                        .cornerRadius(10)
-                    Text("AniList.co")
-                        .font(.title2)
-                }
-                if isLoading {
-                    ProgressView()
-                } else {
-                    if isLoggedIn {
-                        HStack(spacing: 0) {
-                            Text("Logged in as ")
-                            Text(username)
-                                .foregroundColor(profileColor)
-                                .font(.body)
-                                .fontWeight(.semibold)
-                        }
-                    } else {
-                        Text(status)
-                            .multilineTextAlignment(.center)
+        VStack {
+            Form {
+                Section(header: Text("AniList"), footer: Text("Sora and cranci1 are not affiliated with AniList in any way.\n\nNote that progress updates may not be 100% accurate.")) {
+                    HStack() {
+                        KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png"))
+                            .placeholder {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color.gray.opacity(0.3))
+                                    .frame(width: 80, height: 80)
+                                    .shimmering()
+                            }
+                            .resizable()
+                            .frame(width: 80, height: 80)
+                            .clipShape(Rectangle())
+                            .cornerRadius(10)
+                        Text("AniList.co")
+                            .font(.title2)
                     }
-                }
-                if isLoggedIn {
-                    Toggle("Sync progreses", isOn: $isSendPushUpdates)
-                        .tint(.accentColor)
-                }
-                Button(isLoggedIn ? "Log Out from AniList.co" : "Log In with AniList.co") {
-                    if isLoggedIn {
-                        logout()
+                    if isLoading {
+                        ProgressView()
                     } else {
-                        login()
+                        if isLoggedIn {
+                            HStack(spacing: 0) {
+                                Text("Logged in as ")
+                                Text(username)
+                                    .foregroundColor(profileColor)
+                                    .font(.body)
+                                    .fontWeight(.semibold)
+                            }
+                        } else {
+                            Text(status)
+                                .multilineTextAlignment(.center)
+                        }
                     }
+                    if isLoggedIn {
+                        Toggle("Sync progress", isOn: $isSendPushUpdates)
+                            .tint(.accentColor)
+                    }
+                    Button(isLoggedIn ? "Log Out from AniList.co" : "Log In with AniList.co") {
+                        if isLoggedIn {
+                            logout()
+                        } else {
+                            login()
+                        }
+                    }
+                    .font(.body)
                 }
-                .font(.body)
             }
+            .navigationTitle("Trackers")
+            .refreshable {
+                isLoading = true
+                updateStatus()
+            }
+            .background(
+                ZStack {
+                    Color(.systemBackground)
+                        .opacity(0.95)
+                }
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.secondary.opacity(0.2), lineWidth: 0.5)
+            )
+            .shadow(
+                color: colorScheme == .dark ? Color(.label).opacity(0.1) : Color.black.opacity(0.15),
+                radius: 5, x: 0, y: 2
+            )
+            .padding(.horizontal, 16)
+            .padding(.bottom, 75)
+            .frame(minHeight: 600)
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("Trackers")
         .onAppear {
             updateStatus()
             setupNotificationObservers()
         }
         .onDisappear {
             removeNotificationObservers()
+        }
+        .alert("Error", isPresented: Binding(
+            get: { status != "You are not logged in" },
+            set: { if !$0 { status = "You are not logged in" } }
+        )) {
+            Button("OK") {
+                status = "You are not logged in"
+            }
+        } message: {
+            Text(status)
         }
     }
     

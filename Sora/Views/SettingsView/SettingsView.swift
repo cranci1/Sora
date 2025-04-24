@@ -8,94 +8,116 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(\.colorScheme) private var colorScheme
+    
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Main")) {
-                    NavigationLink(destination: SettingsViewGeneral()) {
-                        Text("General Preferences")
+            ScrollView {
+                Form {
+                    // Main Section
+                    Section(header: Text("Main")) {
+                        CustomNavigationLink(destination: SettingsViewGeneral(), title: "General Preferences", iconName: "gear")
+                        CustomNavigationLink(destination: SettingsViewPlayer(), title: "Media Player", iconName: "play.circle")
+                        CustomNavigationLink(destination: SettingsViewModule(), title: "Modules", iconName: "puzzlepiece")
+                        CustomNavigationLink(destination: SettingsViewTrackers(), title: "Trackers", iconName: "eye")
                     }
-                    NavigationLink(destination: SettingsViewPlayer()) {
-                        Text("Media Player")
+                    
+                    // Info Section
+                    Section(header: Text("Info")) {
+                        CustomNavigationLink(destination: SettingsViewData(), title: "Data", iconName: "folder")
+                        CustomNavigationLink(destination: SettingsViewLogger(), title: "Logs", iconName: "doc.text")
                     }
-                    NavigationLink(destination: SettingsViewModule()) {
-                        Text("Modules")
+                    
+                    // Links Section
+                    Section(header: Text("Links")) {
+                        CustomButton(urlString: "https://github.com/cranci1/Sora", title: "Sora github repo", iconName: "link")
+                        CustomButton(urlString: "https://discord.gg/x7hppDWFDZ", title: "Join the Discord", iconName: "bubble.left.and.bubble.right.fill") // Discord community icon
+                        CustomButton(urlString: "https://github.com/cranci1/Sora/issues", title: "Report an issue", iconName: "exclamationmark.circle")
+                        CustomButton(urlString: "https://github.com/cranci1/Sora/blob/dev/LICENSE", title: "License (GPLv3.0)", iconName: "book")
                     }
-                    NavigationLink(destination: SettingsViewTrackers()) {
-                        Text("Trackers")
-                    }
+                    
+                    Section(footer: Text("Running Sora 0.2.2 - cranci1")) {}
                 }
-                
-                Section(header: Text("Info")) {
-                    NavigationLink(destination: SettingsViewData()) {
-                        Text("Data")
+                .background(
+                    ZStack {
+                        Color(.systemBackground)
+                            .opacity(0.95)
                     }
-                    NavigationLink(destination: SettingsViewLogger()) {
-                        Text("Logs")
-                    }
-                }
-                
-                Section(header: Text("Info")) {
-                    Button(action: {
-                        if let url = URL(string: "https://github.com/cranci1/Sora") {
-                            UIApplication.shared.open(url)
-                        }
-                    }) {
-                        HStack {
-                            Text("Sora github repo")
-                                .foregroundColor(.primary)
-                            Spacer()
-                            Image(systemName: "safari")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    Button(action: {
-                        if let url = URL(string: "https://discord.gg/x7hppDWFDZ") {
-                            UIApplication.shared.open(url)
-                        }
-                    }) {
-                        HStack {
-                            Text("Join the Discord")
-                                .foregroundColor(.primary)
-                            Spacer()
-                            Image(systemName: "safari")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    Button(action: {
-                        if let url = URL(string: "https://github.com/cranci1/Sora/issues") {
-                            UIApplication.shared.open(url)
-                        }
-                    }) {
-                        HStack {
-                            Text("Report an issue")
-                                .foregroundColor(.primary)
-                            Spacer()
-                            Image(systemName: "safari")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    Button(action: {
-                        if let url = URL(string: "https://github.com/cranci1/Sora/blob/dev/LICENSE") {
-                            UIApplication.shared.open(url)
-                        }
-                    }) {
-                        HStack {
-                            Text("License (GPLv3.0)")
-                                .foregroundColor(.primary)
-                            Spacer()
-                            Image(systemName: "safari")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                Section(footer: Text("Running Sora 0.2.2 - cranci1")) {}
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.secondary.opacity(0.2), lineWidth: 0.5)
+                )
+                .shadow(color: colorScheme == .dark ? Color(.label).opacity(0.1) : Color.black.opacity(0.15), radius: 5, x: 0, y: 2)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 10)
+                .frame(minHeight: 600)
             }
             .navigationTitle("Settings")
+            .edgesIgnoringSafeArea(.bottom)
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }
 }
+
+struct CustomNavigationLink<Destination: View>: View {
+    let destination: Destination
+    let title: String
+    let iconName: String
+
+    var body: some View {
+        NavigationLink(destination: destination) {
+            HStack {
+                Image(systemName: iconName)
+                    .foregroundColor(.primary)
+                    .frame(width: 20, height: 20)
+                Text(title)
+                    .padding(.vertical, 6)
+                    .foregroundColor(.primary)
+                    .font(.subheadline)
+            }
+            .padding(.vertical, 6)
+            .background(Color.clear)
+        }
+    }
+}
+
+struct CustomButton: View {
+    let urlString: String
+    let title: String
+    let iconName: String
+
+    var body: some View {
+        Button(action: {
+            if let url = URL(string: urlString) {
+                UIApplication.shared.open(url)
+            }
+        }) {
+            HStack {
+                Image(systemName: iconName)
+                    .foregroundColor(.primary)
+                    .frame(width: 20, height: 20)
+                Text(title)
+                    .foregroundColor(.primary)
+                    .font(.subheadline)
+                Spacer()
+                Image(systemName: "safari")
+                    .foregroundColor(.secondary)
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 6)
+            .background(Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .foregroundColor(.primary)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.vertical, 2)
+        .background(Color.clear)
+    }
+}
+
+
 
 enum Appearance: String, CaseIterable, Identifiable {
     case system, light, dark

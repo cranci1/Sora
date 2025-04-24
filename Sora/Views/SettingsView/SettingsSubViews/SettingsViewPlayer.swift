@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingsViewPlayer: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     @AppStorage("externalPlayer") private var externalPlayer: String = "Sora"
     @AppStorage("alwaysLandscape") private var isAlwaysLandscape = false
     @AppStorage("hideNextButton") private var isHideNextButton = false
@@ -18,70 +20,93 @@ struct SettingsViewPlayer: View {
     @AppStorage("holdForPauseEnabled") private var holdForPauseEnabled = false
     @AppStorage("skip85Visible") private var skip85Visible: Bool = true
 
-    
     private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "Sora"]
-    
+
     var body: some View {
-        Form {
-            Section(header: Text("Media Player"), footer: Text("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.")) {
-                HStack {
-                    Text("Media Player")
-                    Spacer()
-                    Menu(externalPlayer) {
-                        ForEach(mediaPlayers, id: \.self) { player in
-                            Button(action: {
-                                externalPlayer = player
-                            }) {
-                                Text(player)
+        VStack {
+            Form {
+                Section(header: Text("Media Player"), footer: Text("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.")) {
+                    HStack {
+                        Text("Media Player")
+                        Spacer()
+                        Menu(externalPlayer) {
+                            ForEach(mediaPlayers, id: \.self) { player in
+                                Button {
+                                    externalPlayer = player
+                                } label: {
+                                    Text(player)
+                                }
                             }
                         }
                     }
+
+                    Toggle("Hide 'Watch Next' after 5s", isOn: $isHideNextButton)
+                        .tint(.accentColor)
+
+                    Toggle("Force Landscape", isOn: $isAlwaysLandscape)
+                        .tint(.accentColor)
+
+                    Toggle("Two Finger Hold for Pause", isOn: $holdForPauseEnabled)
+                        .tint(.accentColor)
                 }
-                
-                Toggle("Hide 'Watch Next' after 5s", isOn: $isHideNextButton)
-                    .tint(.accentColor)
-                
-                Toggle("Force Landscape", isOn: $isAlwaysLandscape)
-                    .tint(.accentColor)
-                
-                Toggle("Two Finger Hold for Pause",isOn: $holdForPauseEnabled)
-                    .tint(.accentColor)
-            }
-            
-            Section(header: Text("Speed Settings")) {
-                Toggle("Remember Playback speed", isOn: $isRememberPlaySpeed)
-                    .tint(.accentColor)
-                
-                HStack {
-                    Text("Hold Speed:")
-                    Spacer()
-                    Stepper(
-                        value: $holdSpeedPlayer,
-                        in: 0.25...2.0,
-                        step: 0.25
-                    ) {
-                        Text(String(format: "%.2f", holdSpeedPlayer))
+
+                Section(header: Text("Speed Settings")) {
+                    Toggle("Remember Playback speed", isOn: $isRememberPlaySpeed)
+                        .tint(.accentColor)
+
+                    HStack {
+                        Text("Hold Speed:")
+                        Spacer()
+                        Stepper(
+                            value: $holdSpeedPlayer,
+                            in: 0.25...2.0,
+                            step: 0.25
+                        ) {
+                            Text(String(format: "%.2f", holdSpeedPlayer))
+                        }
                     }
                 }
-            }
-            Section(header: Text("Skip Settings"), footer : Text("Double tapping the screen on it's sides will skip with the short tap setting.")) {
-                HStack {
-                    Text("Tap Skip:")
-                    Spacer()
-                    Stepper("\(Int(skipIncrement))s", value: $skipIncrement, in: 5...300, step: 5)
+
+                Section(header: Text("Skip Settings"), footer: Text("Double tapping the screen on its sides will skip with the short tap setting.")) {
+                    HStack {
+                        Text("Tap Skip:")
+                        Spacer()
+                        Stepper("\(Int(skipIncrement))s", value: $skipIncrement, in: 5...300, step: 5)
+                    }
+
+                    HStack {
+                        Text("Long press Skip:")
+                        Spacer()
+                        Stepper("\(Int(skipIncrementHold))s", value: $skipIncrementHold, in: 5...300, step: 5)
+                    }
+
+                    Toggle("Show Skip 85s Button", isOn: $skip85Visible)
+                         
                 }
-                
-                HStack {
-                    Text("Long press Skip:")
-                    Spacer()
-                    Stepper("\(Int(skipIncrementHold))s", value: $skipIncrementHold, in: 5...300, step: 5)
-                }
-                Toggle("Show Skip 85s Button", isOn: $skip85Visible)
-                    .tint(.accentColor)
+
+                SubtitleSettingsSection()
             }
-            SubtitleSettingsSection()
+            .background(
+                ZStack {
+                    Color(.systemBackground)
+                        .opacity(0.95)
+                }
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.secondary.opacity(0.2), lineWidth: 0.5)
+            )
+            .shadow(
+                color: colorScheme == .dark ? Color(.label).opacity(0.1) : Color.black.opacity(0.15),
+                radius: 5, x: 0, y: 2
+            )
+            .padding(.horizontal, 16)
+            .padding(.bottom, 75)
+            .frame(minHeight: 600)
         }
         .navigationTitle("Player")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -132,7 +157,7 @@ struct SubtitleSettingsSection: View {
             }
             
             Toggle("Background Enabled", isOn: $backgroundEnabled)
-                .tint(.accentColor)
+                 
                 .onChange(of: backgroundEnabled) { newValue in
                     SubtitleSettingsManager.shared.update { settings in
                         settings.backgroundEnabled = newValue

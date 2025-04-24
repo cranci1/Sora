@@ -11,6 +11,7 @@ import Kingfisher
 struct SettingsViewModule: View {
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @EnvironmentObject var moduleManager: ModuleManager
+    @Environment(\.colorScheme) var colorScheme
     
     @State private var errorMessage: String?
     @State private var isLoading = false
@@ -20,6 +21,39 @@ struct SettingsViewModule: View {
     
     var body: some View {
         VStack {
+            HStack {
+                Button(action: {
+                    DropManager.shared.showDrop(title: "Refrshing modules", subtitle: "Fetching Data (this won't take long!)", duration: 1.0, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
+                    
+                    Task {
+                        await moduleManager.refreshModules()
+                    }
+                }) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.title2)
+                        .padding(8)
+                }
+                .background(Color(.systemBackground).opacity(0.9))
+                .clipShape(Circle())
+                .shadow(radius: 2)
+
+                Spacer()
+
+
+                Button(action: {
+                    showAddModuleAlert()
+                }) {
+                    Image(systemName: "plus")
+                        .font(.title2)
+                        .padding(8)
+                }
+                .background(Color(.systemBackground).opacity(0.9))
+                .clipShape(Circle())
+                .shadow(radius: 2)
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 10)
+
             Form {
                 if moduleManager.modules.isEmpty {
                     VStack(spacing: 8) {
@@ -35,8 +69,7 @@ struct SettingsViewModule: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                }
-                else {
+                } else {
                     ForEach(moduleManager.modules) { module in
                         HStack {
                             KFImage(URL(string: module.metadata.iconUrl))
@@ -44,7 +77,7 @@ struct SettingsViewModule: View {
                                 .frame(width: 50, height: 50)
                                 .clipShape(Circle())
                                 .padding(.trailing, 10)
-                            
+
                             VStack(alignment: .leading) {
                                 HStack(alignment: .bottom, spacing: 4) {
                                     Text(module.metadata.sourceName)
@@ -61,9 +94,9 @@ struct SettingsViewModule: View {
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                             }
-                            
+
                             Spacer()
-                            
+
                             if module.id.uuidString == selectedModuleId {
                                 Image(systemName: "checkmark.circle.fill")
                                     .foregroundColor(.accentColor)
@@ -81,6 +114,7 @@ struct SettingsViewModule: View {
                             }) {
                                 Label("Copy URL", systemImage: "doc.on.doc")
                             }
+
                             Button(role: .destructive) {
                                 if selectedModuleId != module.id.uuidString {
                                     moduleManager.deleteModule(module)
@@ -104,22 +138,25 @@ struct SettingsViewModule: View {
                     }
                 }
             }
-            .navigationTitle("Modules")
-            .navigationBarItems(trailing: Button(action: {
-                showAddModuleAlert()
-            }) {
-                Image(systemName: "plus")
-                    .resizable()
-                    .padding(5)
-            })
-            .refreshable {
-                isRefreshing = true
-                refreshTask?.cancel()
-                refreshTask = Task {
-                    await moduleManager.refreshModules()
-                    isRefreshing = false
+            .background(
+                ZStack {
+                    Color(.systemBackground)
+                        .opacity(0.95)
                 }
-            }
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.secondary.opacity(0.2), lineWidth: 0.5)
+            )
+            .shadow(
+                color: colorScheme == .dark ? Color(.label).opacity(0.1) : Color.black.opacity(0.15),
+                radius: 5, x: 0, y: 2
+            )
+            .padding(.horizontal, 16)
+            .padding(.bottom, 75)
+            .padding(.top, 10)
+            .frame(minHeight: 600)
         }
         .onAppear {
             refreshTask = Task {

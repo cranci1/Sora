@@ -1,4 +1,3 @@
-//
 //  SettingsViewGeneral.swift
 //  Sora
 //
@@ -23,11 +22,11 @@ struct SettingsViewGeneral: View {
     private let customDNSProviderList = ["Cloudflare", "Google", "OpenDNS", "Quad9", "AdGuard", "CleanBrowsing", "ControlD", "Custom"]
     private let metadataProvidersList = ["AniList"]
     @EnvironmentObject var settings: Settings
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         Form {
             Section(header: Text("Interface")) {
-                ColorPicker("Accent Color", selection: $settings.accentColor)
                 HStack {
                     Text("Appearance")
                     Picker("Appearance", selection: $settings.selectedAppearance) {
@@ -37,9 +36,10 @@ struct SettingsViewGeneral: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
                 }
+                .padding(.vertical, 6)
             }
             
-            Section(header: Text("Media View"), footer: Text("The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1-25, 26-50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata it is refering to the episode thumbnail and title, since sometimes it can contain spoilers.")) {
+            Section(header: Text("Media View"), footer: Text("The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1-25, 26-50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata it is referring to the episode thumbnail and title, since sometimes it can contain spoilers.")) {
                 HStack {
                     Text("Episodes Range")
                     Spacer()
@@ -52,8 +52,11 @@ struct SettingsViewGeneral: View {
                         Text("\(episodeChunkSize)")
                     }
                 }
+                .padding(.vertical, 6)
+                
                 Toggle("Fetch Episode metadata", isOn: $fetchEpisodeMetadata)
-                    .tint(.accentColor)
+                    .padding(.vertical, 6)
+                
                 HStack {
                     Text("Metadata Provider")
                     Spacer()
@@ -65,6 +68,7 @@ struct SettingsViewGeneral: View {
                         }
                     }
                 }
+                .padding(.vertical, 6)
             }
             
             Section(header: Text("Media Grid Layout"), footer: Text("Adjust the number of media items per row in portrait and landscape modes.")) {
@@ -81,6 +85,8 @@ struct SettingsViewGeneral: View {
                         .pickerStyle(MenuPickerStyle())
                     }
                 }
+                .padding(.vertical, 6)
+                
                 HStack {
                     if UIDevice.current.userInterfaceIdiom == .pad {
                         Picker("Landscape Columns", selection: $mediaColumnsLandscape) {
@@ -94,18 +100,36 @@ struct SettingsViewGeneral: View {
                         .pickerStyle(MenuPickerStyle())
                     }
                 }
+                .padding(.vertical, 6)
             }
             
             Section(header: Text("Modules"), footer: Text("Note that the modules will be replaced only if there is a different version string inside the JSON file.")) {
                 Toggle("Refresh Modules on Launch", isOn: $refreshModulesOnLaunch)
                     .tint(.accentColor)
+                    .padding(.vertical, 6)
             }
             
             Section(header: Text("Advanced"), footer: Text("Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time.")) {
                 Toggle("Enable Analytics", isOn: $analyticsEnabled)
-                    .tint(.accentColor)
+                    .padding(.vertical, 6)
             }
         }
+        .background(
+            ZStack {
+                Color(.systemBackground)
+                    .opacity(0.95)
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.secondary.opacity(0.2), lineWidth: 0.5)
+        )
+        .shadow(color: colorScheme == .dark ? Color(.label).opacity(0.1) : Color.black.opacity(0.15), radius: 5, x: 0, y: 2)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 75)
+        .frame(minHeight: 600)
         .navigationTitle("General")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

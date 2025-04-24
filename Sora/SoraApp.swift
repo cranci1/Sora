@@ -20,7 +20,7 @@ struct SoraApp: App {
             if isAuthenticated {
                 Logger.shared.log("Trakt authentication is valid")
             } else {
-                Logger.shared.log("Trakt authentication required", type: "Warning")
+                Logger.shared.log("Trakt authentication required", type: "Error")
             }
         }
     }

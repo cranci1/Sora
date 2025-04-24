@@ -17,7 +17,7 @@ struct SettingsViewPlayer: View {
     @AppStorage("holdForPauseEnabled") private var holdForPauseEnabled = false
     @AppStorage("skip85Visible") private var skip85Visible: Bool = true
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
-
+    @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
     
     private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "Sora"]
     
@@ -61,6 +61,28 @@ struct SettingsViewPlayer: View {
                     }
                 }
             }
+            
+            Section(header: Text("Progress bar Marker Color")) {
+                ColorPicker("Segments Color", selection: Binding(
+                    get: {
+                        if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
+                           let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
+                            return Color(uiColor)
+                        }
+                        return .yellow
+                    },
+                    set: { newColor in
+                        let uiColor = UIColor(newColor)
+                        if let data = try? NSKeyedArchiver.archivedData(
+                            withRootObject: uiColor,
+                            requiringSecureCoding: false
+                        ) {
+                            UserDefaults.standard.set(data, forKey: "segmentsColorData")
+                        }
+                    }
+                ))
+            }
+            
             Section(header: Text("Skip Settings"), footer : Text("Double tapping the screen on it's sides will skip with the short tap setting.")) {
                 HStack {
                     Text("Tap Skip:")
@@ -78,6 +100,9 @@ struct SettingsViewPlayer: View {
                     .tint(.accentColor)
                 
                 Toggle("Show Skip 85s Button", isOn: $skip85Visible)
+                    .tint(.accentColor)
+                
+                Toggle("Show Skip Intro / Outro Buttons", isOn: $skipIntroOutroVisible)
                     .tint(.accentColor)
             }
             SubtitleSettingsSection()

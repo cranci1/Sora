@@ -42,7 +42,6 @@ struct SoraApp: App {
                     }
                 }
                 .onOpenURL { url in
-                    // Route codex and module deep links
                     if let params = url.queryParameters, params["code"] != nil {
                         Self.handleRedirect(url: url)
                     } else {
@@ -52,39 +51,48 @@ struct SoraApp: App {
         }
     }
 
-    /// Handle custom sora:// links for community or module
     private func handleURL(_ url: URL) {
         guard url.scheme == "sora", let host = url.host else { return }
         switch host {
         case "default_page":
             if let comps = URLComponents(url: url, resolvingAgainstBaseURL: true),
                let libraryURL = comps.queryItems?.first(where: { $0.name == "url" })?.value {
-                // Persist last community URL and flag
+                
                 UserDefaults.standard.set(libraryURL, forKey: "lastCommunityURL")
                 UserDefaults.standard.set(true, forKey: "didReceiveDefaultPageLink")
-                // Present community browser
-                let add = CommunityLibraryView()
+                
+                let communityView = CommunityLibraryView()
                     .environmentObject(moduleManager)
-                let host = UIHostingController(rootView: add)
+                let hostingController = UIHostingController(rootView: communityView)
+                
                 if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let window = scene.windows.first,
                    let root = window.rootViewController {
-                    root.present(host, animated: true)
+                    root.present(hostingController, animated: true)
                 }
             }
-
+            
         case "module":
-            if let comps = URLComponents(url: url, resolvingAgainstBaseURL: true),
-               let moduleURL = comps.queryItems?.first(where: { $0.name == "url" })?.value {
-                // Present module addition UI
-                let add = ModuleAdditionSettingsView(moduleUrl: moduleURL)
-                    .environmentObject(moduleManager)
-                let host = UIHostingController(rootView: add)
-                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let window = scene.windows.first,
-                   let root = window.rootViewController {
-                    root.present(host, animated: true)
-                }
+            guard url.scheme == "sora",
+                  url.host == "module",
+                  let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
+                  let moduleURL = components.queryItems?.first(where: { $0.name == "url" })?.value
+            else {
+                return
+            }
+
+            let addModuleView = ModuleAdditionSettingsView(moduleUrl: moduleURL)
+                .environmentObject(moduleManager)
+            let hostingController = UIHostingController(rootView: addModuleView)
+
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first {
+                window.rootViewController?.present(hostingController, animated: true)
+            } else {
+                Logger.shared.log(
+                    "Failed to present module addition view: No window scene found",
+                    type: "Error"
+                )
             }
 
         default:
@@ -92,7 +100,7 @@ struct SoraApp: App {
         }
     }
 
-    /// OAuth redirect handler for code flows
+
     static func handleRedirect(url: URL) {
         guard let params = url.queryParameters,
               let code = params["code"] else {

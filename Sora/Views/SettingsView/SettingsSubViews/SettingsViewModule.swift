@@ -30,7 +30,6 @@ struct SettingsViewModule: View {
                         Text("No Modules")
                             .font(.headline)
 
-                        // Static or clickable prompt
                         if didReceiveDefaultPageLink {
                             NavigationLink(destination: CommunityLibraryView()
                                             .environmentObject(moduleManager)) {

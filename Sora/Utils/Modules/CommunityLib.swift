@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-@preconcurrency import WebKit
+import WebKit
 
 private struct ModuleLink: Identifiable {
     let id = UUID()
@@ -36,7 +36,6 @@ struct CommunityLibraryView: View {
                     moduleLinkToAdd = ModuleLink(url: m)
                 }
             }
-            .edgesIgnoringSafeArea(.all)
             .ignoresSafeArea(edges: .top)
         }
         .onAppear(perform: loadURL)

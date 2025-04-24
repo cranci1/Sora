@@ -18,6 +18,7 @@ struct SettingsViewModule: View {
     @State private var isRefreshing = false
     @State private var moduleUrl: String = ""
     @State private var refreshTask: Task<Void, Never>?
+    @State private var showLibrary = false
     
     var body: some View {
         VStack {
@@ -117,13 +118,38 @@ struct SettingsViewModule: View {
                 }
             }
             .navigationTitle("Modules")
-            .navigationBarItems(trailing: Button(action: {
-                showAddModuleAlert()
-            }) {
-                Image(systemName: "plus")
-                    .resizable()
-                    .padding(5)
-            })
+            .navigationBarItems(trailing:
+                HStack(spacing: 16) {
+                    if didReceiveDefaultPageLink && !moduleManager.modules.isEmpty {
+                        Button(action: {
+                            showLibrary = true
+                        }) {
+                            Image(systemName: "books.vertical.fill")
+                                .resizable()
+                                .frame(width: 20, height: 20)
+                                .padding(5)
+                        }
+                        .accessibilityLabel("Open Community Library")
+                    }
+
+                    Button(action: {
+                        showAddModuleAlert()
+                    }) {
+                        Image(systemName: "plus")
+                            .resizable()
+                            .frame(width: 20, height: 20)
+                            .padding(5)
+                    }
+                    .accessibilityLabel("Add Module")
+                }
+            )
+            .background(
+                NavigationLink(
+                    destination: CommunityLibraryView()
+                        .environmentObject(moduleManager),
+                    isActive: $showLibrary
+                ) { EmptyView() }
+            )
             .refreshable {
                 isRefreshing = true
                 refreshTask?.cancel()

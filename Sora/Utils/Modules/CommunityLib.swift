@@ -8,7 +8,6 @@
 import SwiftUI
 @preconcurrency import WebKit
 
-// Wrap a URL string in an Identifiable
 private struct ModuleLink: Identifiable {
     let id = UUID()
     let url: String
@@ -38,9 +37,9 @@ struct CommunityLibraryView: View {
                 }
             }
             .edgesIgnoringSafeArea(.all)
+            .ignoresSafeArea(edges: .top)
         }
         .onAppear(perform: loadURL)
-
         .sheet(item: $moduleLinkToAdd) { link in
             ModuleAdditionSettingsView(moduleUrl: link.url)
                 .environmentObject(moduleManager)

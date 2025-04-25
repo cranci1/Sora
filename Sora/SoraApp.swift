@@ -71,8 +71,8 @@ struct SoraApp: App {
                         root.present(hostingController, animated: true) {
                             DropManager.shared.showDrop(
                                 title: "Module Library Added",
-                                subtitle: "You can browse the community lib. in settings.",
-                                duration: 3.5,
+                                subtitle: "You can browse the community library in settings.",
+                                duration: 2,
                                 icon: UIImage(systemName: "books.vertical.circle.fill")
                             )
                         }

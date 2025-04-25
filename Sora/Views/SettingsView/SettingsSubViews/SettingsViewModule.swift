@@ -36,7 +36,7 @@ struct SettingsViewModule: View {
                                             .environmentObject(moduleManager)) {
                                 Text("Check out some community modules here!")
                                     .font(.caption)
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.accentColor)
                                     .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(PlainButtonStyle())

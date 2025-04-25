@@ -18,7 +18,6 @@
 		132AF1232D9995C300A0140B /* JSController-Details.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132AF1222D9995C300A0140B /* JSController-Details.swift */; };
 		132AF1252D9995F900A0140B /* JSController-Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132AF1242D9995F900A0140B /* JSController-Search.swift */; };
 		132E351D2D959DDB0007800E /* Drops in Frameworks */ = {isa = PBXBuildFile; productRef = 132E351C2D959DDB0007800E /* Drops */; };
-		132E35202D959E1D0007800E /* FFmpeg-iOS-Lame in Frameworks */ = {isa = PBXBuildFile; productRef = 132E351F2D959E1D0007800E /* FFmpeg-iOS-Lame */; };
 		132E35232D959E410007800E /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 132E35222D959E410007800E /* Kingfisher */; };
 		133D7C6E2D2BE2500075467E /* SoraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6D2D2BE2500075467E /* SoraApp.swift */; };
 		133D7C702D2BE2500075467E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6F2D2BE2500075467E /* ContentView.swift */; };
@@ -35,7 +34,6 @@
 		133F55BB2D33B55100E08EEA /* LibraryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133F55BA2D33B55100E08EEA /* LibraryManager.swift */; };
 		1359ED142D76F49900C13034 /* finTopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1359ED132D76F49900C13034 /* finTopView.swift */; };
 		135CCBE22D4D1138008B9C0E /* SettingsViewPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135CCBE12D4D1138008B9C0E /* SettingsViewPlayer.swift */; };
-		136BBE7E2DB102D600906B5E /* iCloudSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136BBE7D2DB102D600906B5E /* iCloudSyncManager.swift */; };
 		136BBE802DB1038000906B5E /* Notification+Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136BBE7F2DB1038000906B5E /* Notification+Name.swift */; };
 		138AA1B82D2D66FD0021F9DF /* EpisodeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138AA1B62D2D66FD0021F9DF /* EpisodeCell.swift */; };
 		138AA1B92D2D66FD0021F9DF /* CircularProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138AA1B72D2D66FD0021F9DF /* CircularProgressBar.swift */; };
@@ -56,7 +54,6 @@
 		13DB46902D900A38008CBC03 /* URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB468F2D900A38008CBC03 /* URL.swift */; };
 		13DB46922D900BCE008CBC03 /* SettingsViewTrackers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB46912D900BCE008CBC03 /* SettingsViewTrackers.swift */; };
 		13DB7CC32D7D99C0004371D3 /* SubtitleSettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB7CC22D7D99C0004371D3 /* SubtitleSettingsManager.swift */; };
-		13DB7CEC2D7DED5D004371D3 /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB7CEB2D7DED5D004371D3 /* DownloadManager.swift */; };
 		13DC0C462D302C7500D0F966 /* VideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DC0C452D302C7500D0F966 /* VideoPlayer.swift */; };
 		13E62FC22DABC5830007E259 /* Trakt-Login.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E62FC12DABC5830007E259 /* Trakt-Login.swift */; };
 		13E62FC42DABC58C0007E259 /* Trakt-Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E62FC32DABC58C0007E259 /* Trakt-Token.swift */; };
@@ -99,7 +96,6 @@
 		133F55BA2D33B55100E08EEA /* LibraryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryManager.swift; sourceTree = "<group>"; };
 		1359ED132D76F49900C13034 /* finTopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = finTopView.swift; sourceTree = "<group>"; };
 		135CCBE12D4D1138008B9C0E /* SettingsViewPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewPlayer.swift; sourceTree = "<group>"; };
-		136BBE7D2DB102D600906B5E /* iCloudSyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudSyncManager.swift; sourceTree = "<group>"; };
 		136BBE7F2DB1038000906B5E /* Notification+Name.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification+Name.swift"; sourceTree = "<group>"; };
 		138AA1B62D2D66FD0021F9DF /* EpisodeCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EpisodeCell.swift; sourceTree = "<group>"; };
 		138AA1B72D2D66FD0021F9DF /* CircularProgressBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularProgressBar.swift; sourceTree = "<group>"; };
@@ -119,7 +115,6 @@
 		13DB468F2D900A38008CBC03 /* URL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URL.swift; sourceTree = "<group>"; };
 		13DB46912D900BCE008CBC03 /* SettingsViewTrackers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewTrackers.swift; sourceTree = "<group>"; };
 		13DB7CC22D7D99C0004371D3 /* SubtitleSettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubtitleSettingsManager.swift; sourceTree = "<group>"; };
-		13DB7CEB2D7DED5D004371D3 /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
 		13DC0C412D2EC9BA00D0F966 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		13DC0C452D302C7500D0F966 /* VideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayer.swift; sourceTree = "<group>"; };
 		13E62FC12DABC5830007E259 /* Trakt-Login.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Trakt-Login.swift"; sourceTree = "<group>"; };
@@ -142,7 +137,6 @@
 			files = (
 				13B77E192DA44F8300126FDF /* MarqueeLabel in Frameworks */,
 				132E35232D959E410007800E /* Kingfisher in Frameworks */,
-				132E35202D959E1D0007800E /* FFmpeg-iOS-Lame in Frameworks */,
 				132E351D2D959DDB0007800E /* Drops in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -263,8 +257,6 @@
 		133D7C852D2BE2640075467E /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				136BBE7C2DB102BE00906B5E /* iCloudSyncManager */,
-				13DB7CEA2D7DED50004371D3 /* DownloadManager */,
 				13C0E5E82D5F85DD00E7F619 /* ContinueWatching */,
 				13103E8C2D58E037000F0673 /* SkeletonCells */,
 				13DC0C442D302C6A00D0F966 /* MediaPlayer */,
@@ -322,14 +314,6 @@
 				133D7C7E2D2BE2630075467E /* LibraryView.swift */,
 			);
 			path = LibraryView;
-			sourceTree = "<group>";
-		};
-		136BBE7C2DB102BE00906B5E /* iCloudSyncManager */ = {
-			isa = PBXGroup;
-			children = (
-				136BBE7D2DB102D600906B5E /* iCloudSyncManager.swift */,
-			);
-			path = iCloudSyncManager;
 			sourceTree = "<group>";
 		};
 		1384DCDF2D89BE870094797A /* Helpers */ = {
@@ -399,14 +383,6 @@
 				13DB468C2D90093A008CBC03 /* Anilist-Token.swift */,
 			);
 			path = Auth;
-			sourceTree = "<group>";
-		};
-		13DB7CEA2D7DED50004371D3 /* DownloadManager */ = {
-			isa = PBXGroup;
-			children = (
-				13DB7CEB2D7DED5D004371D3 /* DownloadManager.swift */,
-			);
-			path = DownloadManager;
 			sourceTree = "<group>";
 		};
 		13DC0C442D302C6A00D0F966 /* MediaPlayer */ = {
@@ -483,7 +459,6 @@
 			name = Sulfur;
 			packageProductDependencies = (
 				132E351C2D959DDB0007800E /* Drops */,
-				132E351F2D959E1D0007800E /* FFmpeg-iOS-Lame */,
 				132E35222D959E410007800E /* Kingfisher */,
 				13B77E182DA44F8300126FDF /* MarqueeLabel */,
 			);
@@ -516,7 +491,6 @@
 			mainGroup = 133D7C612D2BE2500075467E;
 			packageReferences = (
 				132E351B2D959DDB0007800E /* XCRemoteSwiftPackageReference "Drops" */,
-				132E351E2D959E1D0007800E /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */,
 				132E35212D959E410007800E /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				13B77E172DA44F8300126FDF /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
 			);
@@ -557,7 +531,6 @@
 				132AF1252D9995F900A0140B /* JSController-Search.swift in Sources */,
 				1EF5C3A92DB988E40032BF07 /* CommunityLib.swift in Sources */,
 				13CBEFDA2D5F7D1200D011EE /* String.swift in Sources */,
-				136BBE7E2DB102D600906B5E /* iCloudSyncManager.swift in Sources */,
 				1E26E9E72DA9577900B9DC02 /* VolumeSlider.swift in Sources */,
 				136BBE802DB1038000906B5E /* Notification+Name.swift in Sources */,
 				13DB46902D900A38008CBC03 /* URL.swift in Sources */,
@@ -567,7 +540,6 @@
 				133D7C932D2BE2640075467E /* Modules.swift in Sources */,
 				13DB7CC32D7D99C0004371D3 /* SubtitleSettingsManager.swift in Sources */,
 				133D7C702D2BE2500075467E /* ContentView.swift in Sources */,
-				13DB7CEC2D7DED5D004371D3 /* DownloadManager.swift in Sources */,
 				13D99CF72D4E73C300250A86 /* ModuleAdditionSettingsView.swift in Sources */,
 				13C0E5EC2D5F85F800E7F619 /* ContinueWatchingItem.swift in Sources */,
 				13CBA0882D60F19C00EFE70A /* VTTSubtitlesLoader.swift in Sources */,
@@ -844,14 +816,6 @@
 				kind = branch;
 			};
 		};
-		132E351E2D959E1D0007800E /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kewlbear/FFmpeg-iOS-Lame";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		132E35212D959E410007800E /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
@@ -875,11 +839,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 132E351B2D959DDB0007800E /* XCRemoteSwiftPackageReference "Drops" */;
 			productName = Drops;
-		};
-		132E351F2D959E1D0007800E /* FFmpeg-iOS-Lame */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 132E351E2D959E1D0007800E /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */;
-			productName = "FFmpeg-iOS-Lame";
 		};
 		132E35222D959E410007800E /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;

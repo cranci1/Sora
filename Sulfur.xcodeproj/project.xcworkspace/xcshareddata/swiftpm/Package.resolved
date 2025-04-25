@@ -11,24 +11,6 @@
         }
       },
       {
-        "package": "FFmpeg-iOS-Lame",
-        "repositoryURL": "https://github.com/kewlbear/FFmpeg-iOS-Lame",
-        "state": {
-          "branch": "main",
-          "revision": "1808fa5a1263c5e216646cd8421fc7dcb70520cc",
-          "version": null
-        }
-      },
-      {
-        "package": "FFmpeg-iOS-Support",
-        "repositoryURL": "https://github.com/kewlbear/FFmpeg-iOS-Support",
-        "state": {
-          "branch": null,
-          "revision": "be3bd9149ac53760e8725652eee99c405b2be47a",
-          "version": "0.0.2"
-        }
-      },
-      {
         "package": "Kingfisher",
         "repositoryURL": "https://github.com/onevcat/Kingfisher.git",
         "state": {

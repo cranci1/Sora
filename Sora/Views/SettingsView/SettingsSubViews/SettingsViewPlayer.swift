@@ -54,7 +54,7 @@ struct SettingsViewPlayer: View {
                     Spacer()
                     Stepper(
                         value: $holdSpeedPlayer,
-                        in: 0.25...2.0,
+                        in: 0.25...2.5,
                         step: 0.25
                     ) {
                         Text(String(format: "%.2f", holdSpeedPlayer))

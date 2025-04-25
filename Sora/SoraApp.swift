@@ -14,8 +14,6 @@ struct SoraApp: App {
     @StateObject private var librarykManager = LibraryManager()
 
     init() {
-        _ = iCloudSyncManager.shared
-
         TraktToken.checkAuthenticationStatus { isAuthenticated in
             if isAuthenticated {
                 Logger.shared.log("Trakt authentication is valid")
@@ -34,7 +32,6 @@ struct SoraApp: App {
                 .accentColor(settings.accentColor)
                 .onAppear {
                     settings.updateAppearance()
-                    iCloudSyncManager.shared.syncModulesFromiCloud()
                     Task {
                         if UserDefaults.standard.bool(forKey: "refreshModulesOnLaunch") {
                             await moduleManager.refreshModules()

@@ -45,17 +45,19 @@ class AniListMutation {
         }
         
         let query = """
-        mutation ($mediaId: Int, $progress: Int) {
-          SaveMediaListEntry (mediaId: $mediaId, progress: $progress) {
+        mutation ($mediaId: Int, $progress: Int, $status: MediaListStatus) {
+          SaveMediaListEntry (mediaId: $mediaId, progress: $progress, status: $status) {
             id
             progress
+            status
           }
         }
         """
         
         let variables: [String: Any] = [
             "mediaId": animeId,
-            "progress": episodeNumber
+            "progress": episodeNumber,
+            "status": "WATCHING"
         ]
         
         let requestBody: [String: Any] = [
@@ -124,7 +126,6 @@ class AniListMutation {
         var request = URLRequest(url: apiURL)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        // no auth required for read
         request.httpBody = jsonData
 
         URLSession.shared.dataTask(with: request) { data, resp, error in

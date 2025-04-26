@@ -147,22 +147,22 @@ class VideoPlayerViewController: UIViewController {
             }
         }
     }
-    
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        if UserDefaults.standard.bool(forKey: "alwaysLandscape") {
-            return .landscape
-        } else {
-            return .all
-        }
-    }
-    
-    override var prefersHomeIndicatorAutoHidden: Bool {
-        return true
-    }
-    
-    override var prefersStatusBarHidden: Bool {
-        return true
-    }
+//    
+//    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+//        if UserDefaults.standard.bool(forKey: "alwaysLandscape") {
+//            return .landscape
+//        } else {
+//            return .all
+//        }
+//    }
+//    
+//    override var prefersHomeIndicatorAutoHidden: Bool {
+//        return true
+//    }
+//    
+//    override var prefersStatusBarHidden: Bool {
+//        return true
+//    }
     
     deinit {
         player?.pause()

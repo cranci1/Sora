@@ -83,7 +83,7 @@ struct SettingsViewData: View {
     
     func removeAllFilesInDocuments() {
         let fileManager = FileManager.default
-        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+        if let documentsURL = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first {
             do {
                 let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
                 for fileURL in fileURLs {

@@ -14,7 +14,7 @@ class NormalPlayer: AVPlayerViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupHoldGesture()
-        setupAudioSession()
+        //setupAudioSession()
     }
     
     private func setupHoldGesture() {
@@ -52,8 +52,7 @@ class NormalPlayer: AVPlayerViewController {
             let audioSession = AVAudioSession.sharedInstance()
             try audioSession.setCategory(.playback, mode: .moviePlayback, options: .mixWithOthers)
             try audioSession.setActive(true)
-            
-            try audioSession.overrideOutputAudioPort(.speaker)
+            try audioSession.overrideOutputAudioPort(.none)
         } catch {
             Logger.shared.log("Didn't set up AVAudioSession: \(error)", type: "Debug")
         }

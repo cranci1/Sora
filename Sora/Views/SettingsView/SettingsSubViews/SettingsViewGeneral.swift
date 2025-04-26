@@ -25,7 +25,7 @@ struct SettingsViewGeneral: View {
     var body: some View {
         Form {
             Section(header: Text("Interface")) {
-                ColorPicker("Accent Color", selection: $settings.accentColor)
+//                ColorPicker("Accent Color", selection: $settings.accentColor)
                 HStack {
                     Text("Appearance")
                     Picker("Appearance", selection: $settings.selectedAppearance) {

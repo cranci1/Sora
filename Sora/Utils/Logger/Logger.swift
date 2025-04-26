@@ -21,7 +21,7 @@ class Logger {
     private let logFilterViewModel = LogFilterViewModel.shared
     
     private init() {
-        let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let documentDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         logFileURL = documentDirectory.appendingPathComponent("logs.txt")
     }
     

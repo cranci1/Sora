@@ -67,15 +67,15 @@ struct ModuleAdditionSettingsView: View {
                                 InfoRow(title: "Quality", value: metadata.quality)
                                 InfoRow(title: "Stream Typed", value: metadata.streamType)
                                 InfoRow(title: "Base URL", value: metadata.baseUrl)
-                                    .onLongPressGesture {
-                                        UIPasteboard.general.string = metadata.baseUrl
-                                        DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
-                                    }
+//                                    .onLongPressGesture {
+//                                        UIPasteboard.general.string = metadata.baseUrl
+//                                        DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+//                                    }
                                 InfoRow(title: "Script URL", value: metadata.scriptUrl)
-                                    .onLongPressGesture {
-                                        UIPasteboard.general.string = metadata.scriptUrl
-                                        DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
-                                    }
+//                                    .onLongPressGesture {
+//                                        UIPasteboard.general.string = metadata.scriptUrl
+//                                        DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+//                                    }
                             }
                             .padding(.horizontal)
                         }

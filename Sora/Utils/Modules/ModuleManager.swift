@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ModuleManager: ObservableObject {
+class ModuleManager: ObservableObject, @unchecked Sendable {
     @Published var modules: [ScrapingModule] = []
     
     private let fileManager = FileManager.default
@@ -59,7 +59,7 @@ class ModuleManager: ObservableObject {
     }
     
     private func getDocumentsDirectory() -> URL {
-        fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
     }
     
     private func getModulesFilePath() -> URL {

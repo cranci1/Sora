@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Kingfisher
-import SafariServices
+//import SafariServices
 
 struct MediaItem: Identifiable {
     let id = UUID()
@@ -91,8 +91,8 @@ struct MediaInfoView: View {
                                         .font(.system(size: 17))
                                         .fontWeight(.bold)
                                         .onLongPressGesture {
-                                            UIPasteboard.general.string = title
-                                            DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+                                          //  UIPasteboard.general.string = title
+                                           // DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
                                         }
                                     
                                     if !aliases.isEmpty && aliases != title && aliases != "N/A" && aliases != "No Data" {
@@ -121,7 +121,7 @@ struct MediaInfoView: View {
                                     
                                     HStack(alignment: .center, spacing: 12) {
                                         Button(action: {
-                                            openSafariViewController(with: href)
+//                                            openSafariViewController(with: href)
                                         }) {
                                             HStack(spacing: 4) {
                                                 Text(module.metadata.sourceName)
@@ -144,7 +144,7 @@ struct MediaInfoView: View {
                                                 Label("Set Custom AniList ID", systemImage: "number")
                                             }
                                             
-                                            if let customID = customAniListID {
+                                            if customAniListID != nil {
                                                 Button(action: {
                                                     customAniListID = nil
                                                     itemID = nil
@@ -161,11 +161,11 @@ struct MediaInfoView: View {
                                                 }
                                             }
                                             
-                                            if let id = itemID ?? customAniListID {
+                                            if (itemID ?? customAniListID) != nil {
                                                 Button(action: {
-                                                    if let url = URL(string: "https://anilist.co/anime/\(id)") {
-                                                        openSafariViewController(with: url.absoluteString)
-                                                    }
+//                                                    if let url = URL(string: "https://anilist.co/anime/\(id)") {
+//                                                        openSafariViewController(with: url.absoluteString)
+//                                                    }
                                                 }) {
                                                     Label("Open in AniList", systemImage: "link")
                                                 }
@@ -417,7 +417,7 @@ struct MediaInfoView: View {
                             }
                         }
                         .padding()
-                        .navigationBarTitleDisplayMode(.inline)
+//                        .navigationBarTitleDisplayMode(.inline)
                         .navigationBarTitle("")
                         .navigationViewStyle(StackNavigationViewStyle())
                     }
@@ -780,7 +780,7 @@ struct MediaInfoView: View {
         }
         DropManager.shared.showDrop(title: "Stream not Found", subtitle: "", duration: 0.5, icon: UIImage(systemName: "xmark"))
         
-        UINotificationFeedbackGenerator().notificationOccurred(.error)
+//        UINotificationFeedbackGenerator().notificationOccurred(.error)
         self.isLoading = false
     }
     
@@ -852,7 +852,7 @@ struct MediaInfoView: View {
         self.isFetchingEpisode = false
         self.showStreamLoadingView = false
         DispatchQueue.main.async {
-            let externalPlayer = UserDefaults.standard.string(forKey: "externalPlayer") ?? "Sora"
+            let externalPlayer = UserDefaults.standard.string(forKey: "externalPlayer") ?? "Default"
             var scheme: String?
             
             switch externalPlayer {
@@ -934,17 +934,17 @@ struct MediaInfoView: View {
         DropManager.shared.showDrop(title: "Fetching Next Episode", subtitle: "", duration: 0.5, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
     }
     
-    private func openSafariViewController(with urlString: String) {
-        guard let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) else {
-            Logger.shared.log("Unable to open the webpage", type: "Error")
-            return
-        }
-        let safariViewController = SFSafariViewController(url: url)
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first?.rootViewController {
-            rootVC.present(safariViewController, animated: true, completion: nil)
-        }
-    }
+//    private func openSafariViewController(with urlString: String) {
+//        guard let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) else {
+//            Logger.shared.log("Unable to open the webpage", type: "Error")
+//            return
+//        }
+//        let safariViewController = SFSafariViewController(url: url)
+//        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+//           let rootVC = windowScene.windows.first?.rootViewController {
+//            rootVC.present(safariViewController, animated: true, completion: nil)
+//        }
+//    }
     
     private func cleanTitle(_ title: String?) -> String {
         guard let title = title else { return "Unknown" }

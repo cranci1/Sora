@@ -21,7 +21,7 @@ struct LibraryView: View {
     @State private var isDetailActive: Bool = false
     
     @State private var continueWatchingItems: [ContinueWatchingItem] = []
-    @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
+//    @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     
     private let columns = [
         GridItem(.adaptive(minimum: 150), spacing: 12)
@@ -166,9 +166,9 @@ struct LibraryView: View {
                         .onAppear {
                             updateOrientation()
                         }
-                        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-                            updateOrientation()
-                        }
+//                        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+//                            updateOrientation()
+//                        }
                     }
                 }
                 .padding(.vertical, 20)
@@ -201,13 +201,13 @@ struct LibraryView: View {
     
     private func updateOrientation() {
         DispatchQueue.main.async {
-            isLandscape = UIDevice.current.orientation.isLandscape
+//            isLandscape = UIDevice.current.orientation.isLandscape
         }
     }
     
     private func determineColumns() -> Int {
         if UIDevice.current.userInterfaceIdiom == .pad {
-            return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
+            return mediaColumnsLandscape 
         } else {
             return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }

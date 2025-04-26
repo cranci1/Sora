@@ -14,15 +14,15 @@ class DropManager {
     private init() {}
     
     func showDrop(title: String, subtitle: String, duration: TimeInterval, icon: UIImage?) {
-        let position: Drop.Position = .top
-        
-        let drop = Drop(
-            title: title,
-            subtitle: subtitle,
-            icon: icon,
-            position: position,
-            duration: .seconds(duration)
-        )
-        Drops.show(drop)
+//        let position: Drop.Position = .top
+//        
+//        let drop = Drop(
+//            title: title,
+//            subtitle: subtitle,
+//            icon: icon,
+//            position: position,
+//            duration: .seconds(duration)
+//        )
+//        Drops.show(drop)
     }
 }

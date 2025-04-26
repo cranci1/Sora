@@ -55,20 +55,20 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
                 .animation(animation, value: isActive)
             }
             .frame(width: bounds.size.width, height: bounds.size.height)
-            .gesture(
-                DragGesture(minimumDistance: 0, coordinateSpace: .local)
-                    .updating($isActive) { _, state, _ in state = true }
-                    .onChanged { gesture in
-                        let delta = gesture.translation.width / bounds.size.width
-                        localTempProgress = T(delta)
-                        value = sliderValueInRange()
-                    }
-                    .onEnded { _ in
-                        localRealProgress = max(min(localRealProgress + localTempProgress, 1), 0)
-                        localTempProgress = 0
-                    }
-            )
-            .onChange(of: isActive) { newValue in
+//            .gesture(
+//                DragGesture(minimumDistance: 0, coordinateSpace: .local)
+//                    .updating($isActive) { _, state, _ in state = true }
+//                    .onChanged { gesture in
+//                        let delta = gesture.translation.width / bounds.size.width
+//                        localTempProgress = T(delta)
+//                        value = sliderValueInRange()
+//                    }
+//                    .onEnded { _ in
+//                        localRealProgress = max(min(localRealProgress + localTempProgress, 1), 0)
+//                        localTempProgress = 0
+//                    }
+//            )
+            .onChange(of: isActive) { oldValue, newValue in
                 if !newValue {
                     value = sliderValueInRange()
                 }
@@ -80,7 +80,7 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
                     lastVolumeValue = value
                 }
             }
-            .onChange(of: value) { newVal in
+            .onChange(of: value) { oldVal, newVal in
                 if !isActive {
                     withAnimation(.easeInOut(duration: 0.3)) {
                         localRealProgress = progress(for: newVal)

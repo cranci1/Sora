@@ -52,48 +52,48 @@ struct SettingsViewPlayer: View {
                 HStack {
                     Text("Hold Speed:")
                     Spacer()
-                    Stepper(
-                        value: $holdSpeedPlayer,
-                        in: 0.25...2.5,
-                        step: 0.25
-                    ) {
-                        Text(String(format: "%.2f", holdSpeedPlayer))
-                    }
+//                    Stepper(
+//                        value: $holdSpeedPlayer,
+//                        in: 0.25...2.5,
+//                        step: 0.25
+//                    ) {
+//                        Text(String(format: "%.2f", holdSpeedPlayer))
+//                    }
                 }
             }
             
-            Section(header: Text("Progress bar Marker Color")) {
-                ColorPicker("Segments Color", selection: Binding(
-                    get: {
-                        if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
-                           let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
-                            return Color(uiColor)
-                        }
-                        return .yellow
-                    },
-                    set: { newColor in
-                        let uiColor = UIColor(newColor)
-                        if let data = try? NSKeyedArchiver.archivedData(
-                            withRootObject: uiColor,
-                            requiringSecureCoding: false
-                        ) {
-                            UserDefaults.standard.set(data, forKey: "segmentsColorData")
-                        }
-                    }
-                ))
-            }
+//            Section(header: Text("Progress bar Marker Color")) {
+//                ColorPicker("Segments Color", selection: Binding(
+//                    get: {
+//                        if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
+//                           let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
+//                            return Color(uiColor)
+//                        }
+//                        return .yellow
+//                    },
+//                    set: { newColor in
+//                        let uiColor = UIColor(newColor)
+//                        if let data = try? NSKeyedArchiver.archivedData(
+//                            withRootObject: uiColor,
+//                            requiringSecureCoding: false
+//                        ) {
+//                            UserDefaults.standard.set(data, forKey: "segmentsColorData")
+//                        }
+//                    }
+//                ))
+//            }
             
             Section(header: Text("Skip Settings"), footer : Text("Double tapping the screen on it's sides will skip with the short tap setting.")) {
                 HStack {
                     Text("Tap Skip:")
                     Spacer()
-                    Stepper("\(Int(skipIncrement))s", value: $skipIncrement, in: 5...300, step: 5)
+//                    Stepper("\(Int(skipIncrement))s", value: $skipIncrement, in: 5...300, step: 5)
                 }
                 
                 HStack {
                     Text("Long press Skip:")
                     Spacer()
-                    Stepper("\(Int(skipIncrementHold))s", value: $skipIncrementHold, in: 5...300, step: 5)
+//                    Stepper("\(Int(skipIncrementHold))s", value: $skipIncrementHold, in: 5...300, step: 5)
                 }
                 
                 Toggle("Double Tap to Seek", isOn: $doubleTapSeekEnabled)
@@ -159,32 +159,32 @@ struct SubtitleSettingsSection: View {
             
             Toggle("Background Enabled", isOn: $backgroundEnabled)
                 .tint(.accentColor)
-                .onChange(of: backgroundEnabled) { newValue in
-                    SubtitleSettingsManager.shared.update { settings in
-                        settings.backgroundEnabled = newValue
-                    }
-                }
+//                .onChange(of: backgroundEnabled) { newValue in
+//                    SubtitleSettingsManager.shared.update { settings in
+//                        settings.backgroundEnabled = newValue
+//                    }
+//                }
             
             HStack {
                 Text("Font Size:")
                 Spacer()
-                Stepper("\(Int(fontSize))", value: $fontSize, in: 12...36, step: 1)
-                    .onChange(of: fontSize) { newValue in
-                        SubtitleSettingsManager.shared.update { settings in
-                            settings.fontSize = newValue
-                        }
-                    }
+//                Stepper("\(Int(fontSize))", value: $fontSize, in: 12...36, step: 1)
+//                    .onChange(of: fontSize) { newValue in
+//                        SubtitleSettingsManager.shared.update { settings in
+//                            settings.fontSize = newValue
+//                        }
+//                    }
             }
             
             HStack {
                 Text("Bottom Padding:")
                 Spacer()
-                Stepper("\(Int(bottomPadding))", value: $bottomPadding, in: 0...50, step: 1)
-                    .onChange(of: bottomPadding) { newValue in
-                        SubtitleSettingsManager.shared.update { settings in
-                            settings.bottomPadding = newValue
-                        }
-                    }
+//                Stepper("\(Int(bottomPadding))", value: $bottomPadding, in: 0...50, step: 1)
+//                    .onChange(of: bottomPadding) { newValue in
+//                        SubtitleSettingsManager.shared.update { settings in
+//                            settings.bottomPadding = newValue
+//                        }
+//                    }
             }
         }
     }

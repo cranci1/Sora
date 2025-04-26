@@ -51,66 +51,69 @@ struct EpisodeCell: View {
     }
     
     var body: some View {
-        HStack {
-            ZStack {
-                KFImage(URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl))
-                    .resizable()
-                    .aspectRatio(16/9, contentMode: .fill)
-                    .frame(width: 100, height: 56)
-                    .cornerRadius(8)
-                
-                if isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                }
-            }
-            
-            VStack(alignment: .leading) {
-                Text("Episode \(episodeID + 1)")
-                    .font(.system(size: 15))
-                if !episodeTitle.isEmpty {
-                    Text(episodeTitle)
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
-                }
-            }
-            
-            Spacer()
-            
-            CircularProgressBar(progress: currentProgress)
-                .frame(width: 40, height: 40)
-        }
-        .contentShape(Rectangle())
-        .contextMenu {
-            if progress <= 0.9 {
-                Button(action: markAsWatched) {
-                    Label("Mark as Watched", systemImage: "checkmark.circle")
-                }
-            }
-            
-            if progress != 0 {
-                Button(action: resetProgress) {
-                    Label("Reset Progress", systemImage: "arrow.counterclockwise")
-                }
-            }
-            
-            if episodeIndex > 0 {
-                Button(action: onMarkAllPrevious) {
-                    Label("Mark All Previous Watched", systemImage: "checkmark.circle.fill")
-                }
-            }
-        }
-        .onAppear {
-            updateProgress()
-            fetchEpisodeDetails()
-        }
-        .onChange(of: progress) { _ in
-            updateProgress()
-        }
-        .onTapGesture {
+        
+        Button{
             let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
             onTap(imageUrl)
+        } label: {
+            HStack {
+                ZStack {
+                    KFImage(URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl))
+                        .resizable()
+                        .aspectRatio(16/9, contentMode: .fill)
+                        .frame(width: 100, height: 56)
+                        .cornerRadius(8)
+                    
+                    if isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                    }
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("Episode \(episodeID + 1)")
+                        .font(.system(size: 15))
+                    if !episodeTitle.isEmpty {
+                        Text(episodeTitle)
+                            .font(.system(size: 13))
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Spacer()
+                
+                CircularProgressBar(progress: currentProgress)
+                    .frame(width: 40, height: 40)
+            }
+            .contentShape(Rectangle())
+            .contextMenu {
+                if progress <= 0.9 {
+                    Button(action: markAsWatched) {
+                        Label("Mark as Watched", systemImage: "checkmark.circle")
+                    }
+                }
+                
+                if progress != 0 {
+                    Button(action: resetProgress) {
+                        Label("Reset Progress", systemImage: "arrow.counterclockwise")
+                    }
+                }
+                
+                if episodeIndex > 0 {
+                    Button(action: onMarkAllPrevious) {
+                        Label("Mark All Previous Watched", systemImage: "checkmark.circle.fill")
+                    }
+                }
+            }
+            .onAppear {
+                updateProgress()
+                fetchEpisodeDetails()
+            }
+            .onChange(of: progress) { oldValue, _ in
+                updateProgress()
+            }
         }
+       
     }
     
     private func markAsWatched() {

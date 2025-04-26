@@ -30,7 +30,7 @@ struct SearchView: View {
     @State private var isSearching = false
     @State private var searchText = ""
     @State private var hasNoResults = false
-    @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
+//    @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var isModuleSelectorPresented = false
     
     private var selectedModule: ScrapingModule? {
@@ -47,12 +47,13 @@ struct SearchView: View {
     ]
     
     private var columnsCount: Int {
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
-            return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
-        } else {
-            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
-        }
+        return 4
+//        if UIDevice.current.userInterfaceIdiom == .pad {
+//            let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
+//            return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
+//        } else {
+//            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
+//        }
     }
     
     private var cellWidth: CGFloat {
@@ -61,7 +62,7 @@ struct SearchView: View {
             .first
         let safeAreaInsets = keyWindow?.safeAreaInsets ?? .zero
         let safeWidth = UIScreen.main.bounds.width - safeAreaInsets.left - safeAreaInsets.right
-        let totalSpacing: CGFloat = 16 * CGFloat(columnsCount + 1)
+        let totalSpacing: CGFloat = 32 * CGFloat(columnsCount + 1)
         let availableWidth = safeWidth - totalSpacing
         return availableWidth / CGFloat(columnsCount)
     }
@@ -101,7 +102,7 @@ struct SearchView: View {
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color(.systemBackground))
+//                        .background(Color(.systemBackground))
                         .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
                     }
                     
@@ -137,7 +138,7 @@ struct SearchView: View {
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fill)
                                                 .frame(height: cellWidth * 3 / 2)
-                                                .frame(maxWidth: cellWidth)
+                                                .frame(maxWidth: cellWidth - 60)
                                                 .cornerRadius(10)
                                                 .clipped()
                                             Text(item.title)
@@ -148,12 +149,6 @@ struct SearchView: View {
                                         }
                                     }
                                 }
-                                .onAppear {
-                                    updateOrientation()
-                                }
-                                .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-                                    updateOrientation()
-                                }
                             }
                             .padding(.top)
                             .padding()
@@ -162,12 +157,11 @@ struct SearchView: View {
                 }
             }
             .navigationTitle("Search")
-            .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .principal) {
                     Menu {
                         ForEach(getModuleLanguageGroups(), id: \.self) { language in
-                            Menu(language) {
+                            Menu {
                                 ForEach(getModulesForLanguage(language), id: \.id) { module in
                                     Button {
                                         selectedModuleId = module.id.uuidString
@@ -187,6 +181,9 @@ struct SearchView: View {
                                     }
                                 }
                             }
+                            label: {
+                                Text(language)
+                            }
                         }
                     } label: {
                         HStack(spacing: 4) {
@@ -203,17 +200,16 @@ struct SearchView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .fixedSize()
                 }
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        .onChange(of: selectedModuleId) { _ in
+        .onChange(of: selectedModuleId) { oldValue, _ in
             if !searchText.isEmpty {
                 performSearch()
             }
         }
-        .onChange(of: searchText) { newValue in
+        .onChange(of: searchText) { oldValue, newValue in
             if newValue.isEmpty {
                 searchItems = []
                 hasNoResults = false
@@ -261,18 +257,19 @@ struct SearchView: View {
         }
     }
     
-    private func updateOrientation() {
-        DispatchQueue.main.async {
-            isLandscape = UIDevice.current.orientation.isLandscape
-        }
-    }
+//    private func updateOrientation() {
+//        DispatchQueue.main.async {
+//            isLandscape = UIDevice.current.orientation.isLandscape
+//        }
+//    }
     
     private func determineColumns() -> Int {
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
-        } else {
-            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
-        }
+        return 4
+//        if UIDevice.current.userInterfaceIdiom == .pad {
+//            return  mediaColumnsLandscape 
+//        } else {
+//            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
+//        }
     }
     
     private func cleanLanguageName(_ language: String?) -> String {
@@ -321,9 +318,9 @@ struct SearchBar: View {
             TextField("Search...", text: $text, onCommit: onSearchButtonClicked)
                 .padding(7)
                 .padding(.horizontal, 25)
-                .background(Color(.systemGray6))
+//                .background(Color(.systemGray6))
                 .cornerRadius(8)
-                .onChange(of: text){newValue in
+                .onChange(of: text){oldValue, newValue in
                                     debounceTimer?.invalidate()
                                     // Start a new timer to wait before performing the action
                     debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in

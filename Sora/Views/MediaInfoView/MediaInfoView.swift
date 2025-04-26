@@ -462,10 +462,11 @@ struct MediaInfoView: View {
                 }
                 selectedRange = 0..<episodeChunkSize
             }
+#if !os(tvOS)
             .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
                 orientationChanged.toggle()
             }
-            
+#endif
             if showStreamLoadingView {
                 VStack(spacing: 16) {
                     Text("Loading \(currentStreamTitle)…")

@@ -1519,20 +1519,30 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             return
         }
 
-      if isDimmed {
-        dimButton.isHidden = false
-        dimButton.alpha = 1.0
-        dimButtonTimer?.invalidate()
-        dimButtonTimer = Timer.scheduledTimer(
-          withTimeInterval: 3.0, repeats: false
-        ) { [weak self] _ in
-          UIView.animate(withDuration: 0.3) {
-            self?.dimButton.alpha = 0
-          }
-        }
-        updateSkipButtonsVisibility()
-        return
-      }
+        if isDimmed {
+                // show the dim button
+                dimButton.isHidden = false
+                dimButton.alpha = 1.0
+                dimButtonTimer?.invalidate()
+                dimButtonTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
+                    UIView.animate(withDuration: 0.3) {
+                        self?.dimButton.alpha = 0
+                    }
+                }
+
+                // also show the lock button
+                lockButton.isHidden = false
+                lockButton.alpha = 1.0
+                lockButtonTimer?.invalidate()
+                lockButtonTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
+                    UIView.animate(withDuration: 0.3) {
+                        self?.lockButton.alpha = 0
+                    }
+                }
+
+                updateSkipButtonsVisibility()
+                return
+            }
 
         isControlsVisible.toggle()
            UIView.animate(withDuration: 0.2) {

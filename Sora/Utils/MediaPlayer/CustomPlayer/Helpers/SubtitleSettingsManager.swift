@@ -13,6 +13,7 @@ struct SubtitleSettings: Codable {
     var shadowRadius: Double = 1.0
     var backgroundEnabled: Bool = true
     var bottomPadding: CGFloat = 20.0
+    var subtitleDelay: Double = 0.0
 }
 
 class SubtitleSettingsManager {

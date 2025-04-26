@@ -57,7 +57,7 @@ class AniListMutation {
         let variables: [String: Any] = [
             "mediaId": animeId,
             "progress": episodeNumber,
-            "status": "WATCHING"
+            "status": "CURRENT"
         ]
         
         let requestBody: [String: Any] = [

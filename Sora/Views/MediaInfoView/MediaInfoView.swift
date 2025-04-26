@@ -46,7 +46,6 @@ struct MediaInfoView: View {
     
     @AppStorage("externalPlayer") private var externalPlayer: String = "Default"
     @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 100
-    @AppStorage("episodeSortOrder") private var episodeSortOrder: String = "Ascending"
     
     @StateObject private var jsController = JSController()
     @EnvironmentObject var moduleManager: ModuleManager
@@ -60,6 +59,8 @@ struct MediaInfoView: View {
     
     @State private var activeFetchID: UUID? = nil
     @Environment(\.dismiss) private var dismiss
+    
+    @State private var orientationChanged: Bool = false
     
     private var isGroupedBySeasons: Bool {
         return groupedEpisodes().count > 1
@@ -461,6 +462,9 @@ struct MediaInfoView: View {
                 }
                 selectedRange = 0..<episodeChunkSize
             }
+            .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+                orientationChanged.toggle()
+            }
             
             if showStreamLoadingView {
                 VStack(spacing: 16) {
@@ -479,7 +483,6 @@ struct MediaInfoView: View {
                     .padding(.vertical, 8)
                     .padding(.horizontal, 24)
                     .background(
-                        // Hex #FF705E
                         Color(red: 1.0, green: 112/255.0, blue: 94/255.0)
                     )
                     .foregroundColor(.white)
@@ -606,14 +609,6 @@ struct MediaInfoView: View {
         return groups
     }
     
-    private func sortEpisodes(_ episodes: [EpisodeLink]) -> [EpisodeLink] {
-        if episodeSortOrder == "Descending" {
-            return episodes.sorted(by: { $0.number > $1.number })
-        } else {
-            return episodes.sorted(by: { $0.number < $1.number })
-        }
-    }
-    
     func fetchDetails() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             Task {
@@ -627,7 +622,7 @@ struct MediaInfoView: View {
                                 self.aliases = item.aliases
                                 self.airdate = item.airdate
                             }
-                            self.episodeLinks = self.sortEpisodes(episodes)
+                            self.episodeLinks = episodes
                             self.isLoading = false
                             self.isRefetching = false
                         }
@@ -638,7 +633,7 @@ struct MediaInfoView: View {
                                 self.aliases = item.aliases
                                 self.airdate = item.airdate
                             }
-                            self.episodeLinks = self.sortEpisodes(episodes)
+                            self.episodeLinks = episodes
                             self.isLoading = false
                             self.isRefetching = false
                         }

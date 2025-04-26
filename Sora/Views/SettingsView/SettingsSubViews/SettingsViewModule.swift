@@ -11,12 +11,14 @@ import Kingfisher
 struct SettingsViewModule: View {
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @EnvironmentObject var moduleManager: ModuleManager
+    @AppStorage("didReceiveDefaultPageLink") private var didReceiveDefaultPageLink: Bool = false
     
     @State private var errorMessage: String?
     @State private var isLoading = false
     @State private var isRefreshing = false
     @State private var moduleUrl: String = ""
     @State private var refreshTask: Task<Void, Never>?
+    @State private var showLibrary = false
     
     var body: some View {
         VStack {
@@ -28,15 +30,26 @@ struct SettingsViewModule: View {
                             .foregroundColor(.secondary)
                         Text("No Modules")
                             .font(.headline)
-                        Text("Click the plus button to add a module!")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .frame(maxWidth: .infinity)
+
+                        if didReceiveDefaultPageLink {
+                            NavigationLink(destination: CommunityLibraryView()
+                                            .environmentObject(moduleManager)) {
+                                Text("Check out some community modules here!")
+                                    .font(.caption)
+                                    .foregroundColor(.accentColor)
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        } else {
+                            Text("Click the plus button to add a module!")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .frame(maxWidth: .infinity)
+                        }
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                }
-                else {
+                } else {
                     ForEach(moduleManager.modules) { module in
                         HStack {
                             KFImage(URL(string: module.metadata.iconUrl))
@@ -109,13 +122,38 @@ struct SettingsViewModule: View {
                 }
             }
             .navigationTitle("Modules")
-            .navigationBarItems(trailing: Button(action: {
-                showAddModuleAlert()
-            }) {
-                Image(systemName: "plus")
-                    .resizable()
-                    .padding(5)
-            })
+            .navigationBarItems(trailing:
+                HStack(spacing: 16) {
+                    if didReceiveDefaultPageLink && !moduleManager.modules.isEmpty {
+                        Button(action: {
+                            showLibrary = true
+                        }) {
+                            Image(systemName: "books.vertical.fill")
+                                .resizable()
+                                .frame(width: 20, height: 20)
+                                .padding(5)
+                        }
+                        .accessibilityLabel("Open Community Library")
+                    }
+
+                    Button(action: {
+                        showAddModuleAlert()
+                    }) {
+                        Image(systemName: "plus")
+                            .resizable()
+                            .frame(width: 20, height: 20)
+                            .padding(5)
+                    }
+                    .accessibilityLabel("Add Module")
+                }
+            )
+            .background(
+                NavigationLink(
+                    destination: CommunityLibraryView()
+                        .environmentObject(moduleManager),
+                    isActive: $showLibrary
+                ) { EmptyView() }
+            )
             .refreshable {
                 isRefreshing = true
                 refreshTask?.cancel()

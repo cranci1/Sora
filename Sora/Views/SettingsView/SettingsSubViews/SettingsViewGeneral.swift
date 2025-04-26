@@ -54,19 +54,6 @@ struct SettingsViewGeneral: View {
                     }
                 }
                 
-                HStack {
-                    Text("Episode Sort Order")
-                    Spacer()
-                    Menu(episodeSortOrder) {
-                        Button(action: { episodeSortOrder = "Ascending" }) {
-                            Text("Ascending (1-100)")
-                        }
-                        Button(action: { episodeSortOrder = "Descending" }) {
-                            Text("Descending (100-1)")
-                        }
-                    }
-                }
-                
                 Toggle("Fetch Episode metadata", isOn: $fetchEpisodeMetadata)
                     .tint(.accentColor)
                 

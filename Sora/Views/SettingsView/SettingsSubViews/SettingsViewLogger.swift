@@ -19,7 +19,9 @@ struct SettingsViewLogger: View {
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-//                    .textSelection(.enabled)
+#if !os(tvOS)
+                    .textSelection(.enabled)
+#endif
             }
             .navigationTitle("Logs")
             .onAppear {
@@ -30,12 +32,14 @@ struct SettingsViewLogger: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack {
                     Menu {
-//                        Button(action: {
-//                            UIPasteboard.general.string = logs
-//                            DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
-//                        }) {
-//                            Label("Copy to Clipboard", systemImage: "doc.on.doc")
-//                        }
+#if !os(tvOS)
+                        Button(action: {
+                            UIPasteboard.general.string = logs
+                            DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+                        }) {
+                            Label("Copy to Clipboard", systemImage: "doc.on.doc")
+                        }
+#endif
                         Button(role: .destructive, action: {
                             Logger.shared.clearLogs()
                             logs = Logger.shared.getLogs()

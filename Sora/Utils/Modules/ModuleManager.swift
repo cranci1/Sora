@@ -59,7 +59,12 @@ class ModuleManager: ObservableObject, @unchecked Sendable {
     }
     
     private func getDocumentsDirectory() -> URL {
-        fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+#if !os(tvOS)
+        let directory = FileManager.SearchPathDirectory.documentDirectory
+#elseif os(tvOS)
+        let directory = FileManager.SearchPathDirectory.cachesDirectory
+#endif
+        return fileManager.urls(for: directory, in: .userDomainMask)[0]
     }
     
     private func getModulesFilePath() -> URL {

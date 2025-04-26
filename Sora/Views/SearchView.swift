@@ -30,7 +30,9 @@ struct SearchView: View {
     @State private var isSearching = false
     @State private var searchText = ""
     @State private var hasNoResults = false
-//    @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
+#if !os(tvOS)
+    @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
+#endif
     @State private var isModuleSelectorPresented = false
     
     private var selectedModule: ScrapingModule? {
@@ -47,13 +49,16 @@ struct SearchView: View {
     ]
     
     private var columnsCount: Int {
-        return 4
-//        if UIDevice.current.userInterfaceIdiom == .pad {
-//            let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
-//            return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
-//        } else {
-//            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
-//        }
+#if !os(tvOS)
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
+            return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
+        } else {
+            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
+        }
+#elseif os(tvOS)
+        return mediaColumnsLandscape
+#endif
     }
     
     private var cellWidth: CGFloat {
@@ -62,11 +67,16 @@ struct SearchView: View {
             .first
         let safeAreaInsets = keyWindow?.safeAreaInsets ?? .zero
         let safeWidth = UIScreen.main.bounds.width - safeAreaInsets.left - safeAreaInsets.right
+#if !os(tvOS)
+        let totalSpacing: CGFloat = 16 * CGFloat(columnsCount + 1)
+#elseif os(tvOS)
         let totalSpacing: CGFloat = 32 * CGFloat(columnsCount + 1)
+#endif
         let availableWidth = safeWidth - totalSpacing
         return availableWidth / CGFloat(columnsCount)
     }
-    
+
+#if !os(tvOS)
     var body: some View {
         NavigationView {
             ScrollView {
@@ -102,7 +112,163 @@ struct SearchView: View {
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
-//                        .background(Color(.systemBackground))
+                        .background(Color(.systemBackground))
+                        .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
+                    }
+                    
+                    if !searchText.isEmpty {
+                        if isSearching {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
+                                ForEach(0..<columnsCount*4, id: \.self) { _ in
+                                    SearchSkeletonCell(cellWidth: cellWidth)
+                                }
+                            }
+                            .padding(.top)
+                            .padding()
+                        } else if hasNoResults {
+                            VStack(spacing: 8) {
+                                Image(systemName: "magnifyingglass")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.secondary)
+                                Text("No Results Found")
+                                    .font(.headline)
+                                Text("Try different keywords")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .padding(.top)
+                        } else {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
+                                ForEach(searchItems) { item in
+                                    NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule!)) {
+                                        VStack {
+                                            KFImage(URL(string: item.imageUrl))
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                                .frame(height: cellWidth * 3 / 2)
+                                                .frame(maxWidth: cellWidth)
+                                                .cornerRadius(10)
+                                                .clipped()
+                                            Text(item.title)
+                                                .font(.subheadline)
+                                                .foregroundColor(Color.primary)
+                                                .padding([.leading, .bottom], 8)
+                                                .lineLimit(1)
+                                        }
+                                    }
+                                }
+                                .onAppear {
+                                    updateOrientation()
+                                }
+                                .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+                                    updateOrientation()
+                                }
+                            }
+                            .padding(.top)
+                            .padding()
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Search")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        ForEach(getModuleLanguageGroups(), id: \.self) { language in
+                            Menu(language) {
+                                ForEach(getModulesForLanguage(language), id: \.id) { module in
+                                    Button {
+                                        selectedModuleId = module.id.uuidString
+                                    } label: {
+                                        HStack {
+                                            KFImage(URL(string: module.metadata.iconUrl))
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 20, height: 20)
+                                                .cornerRadius(4)
+                                            Text(module.metadata.sourceName)
+                                            if module.id.uuidString == selectedModuleId {
+                                                Image(systemName: "checkmark")
+                                                    .foregroundColor(.accentColor)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            if let selectedModule = selectedModule {
+                                Text(selectedModule.metadata.sourceName)
+                                    .font(.headline)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                Text("Select Module")
+                                    .font(.headline)
+                                    .foregroundColor(.accentColor)
+                            }
+                            Image(systemName: "chevron.down")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .fixedSize()
+                }
+            }
+        }
+        .navigationViewStyle(StackNavigationViewStyle())
+        .onChange(of: selectedModuleId) { _ in
+            if !searchText.isEmpty {
+                performSearch()
+            }
+        }
+        .onChange(of: searchText) { newValue in
+            if newValue.isEmpty {
+                searchItems = []
+                hasNoResults = false
+                isSearching = false
+            }
+        }
+    }
+    
+    #elseif os(tvOS)
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                let columnsCount = determineColumns()
+                VStack(spacing: 0) {
+                    HStack {
+                        SearchBar(text: $searchText, onSearchButtonClicked: performSearch)
+                            .padding(.leading)
+                            .padding(.trailing, searchText.isEmpty ? 16 : 0)
+                            .disabled(selectedModule == nil)
+                            .padding(.top)
+                        
+                        if !searchText.isEmpty {
+                            Button("Cancel") {
+                                searchText = ""
+                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            }
+                            .padding(.trailing)
+                            .padding(.top)
+                        }
+                    }
+                    
+                    if selectedModule == nil {
+                        VStack(spacing: 8) {
+                            Image(systemName: "questionmark.app")
+                                .font(.largeTitle)
+                                .foregroundColor(.secondary)
+                            Text("No Module Selected")
+                                .font(.headline)
+                            Text("Please select a module from settings")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
                         .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
                     }
                     
@@ -159,6 +325,7 @@ struct SearchView: View {
             .navigationTitle("Search")
             .toolbar {
                 ToolbarItem(placement: .principal) {
+                    
                     Menu {
                         ForEach(getModuleLanguageGroups(), id: \.self) { language in
                             Menu {
@@ -217,6 +384,7 @@ struct SearchView: View {
             }
         }
     }
+#endif
     
     private func performSearch() {
         Logger.shared.log("Searching for: \(searchText)", type: "General")
@@ -256,20 +424,25 @@ struct SearchView: View {
             }
         }
     }
-    
-//    private func updateOrientation() {
-//        DispatchQueue.main.async {
-//            isLandscape = UIDevice.current.orientation.isLandscape
-//        }
-//    }
+
+#if !os(tvOS)
+    private func updateOrientation() {
+        DispatchQueue.main.async {
+            isLandscape = UIDevice.current.orientation.isLandscape
+        }
+    }
+#endif
     
     private func determineColumns() -> Int {
-        return 4
-//        if UIDevice.current.userInterfaceIdiom == .pad {
-//            return  mediaColumnsLandscape 
-//        } else {
-//            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
-//        }
+#if !os(tvOS)
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
+        } else {
+            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
+        }
+#elseif os(tvOS)
+        return mediaColumnsLandscape
+#endif
     }
     
     private func cleanLanguageName(_ language: String?) -> String {
@@ -318,9 +491,11 @@ struct SearchBar: View {
             TextField("Search...", text: $text, onCommit: onSearchButtonClicked)
                 .padding(7)
                 .padding(.horizontal, 25)
-//                .background(Color(.systemGray6))
+#if !os(tvOS)
+                .background(Color(.systemGray6))
+#endif
                 .cornerRadius(8)
-                .onChange(of: text){oldValue, newValue in
+                .onChange(of: text){ newValue in
                                     debounceTimer?.invalidate()
                                     // Start a new timer to wait before performing the action
                     debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in

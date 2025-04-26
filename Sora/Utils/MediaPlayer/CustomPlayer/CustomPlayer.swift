@@ -162,7 +162,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var volumeObserver: NSKeyValueObservation?
     private var audioSession = AVAudioSession.sharedInstance()
     private var hiddenVolumeView = MPVolumeView(frame: .zero)
-    //private var systemVolumeSlider: UISlider?
+#if !os(tvOS)
+    private var systemVolumeSlider: UISlider?
+#endif
     private var volumeValue: Double = 0.0
     private var volumeViewModel = VolumeViewModel()
     var volumeSliderHostingView: UIView?
@@ -281,9 +283,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
         }
         
-//        if #available(iOS 16.0, *) {
-//            playerViewController.allowsVideoFrameAnalysis = false
-//        }
+#if !os(tvOS)
+        if #available(iOS 16.0, *) {
+            playerViewController.allowsVideoFrameAnalysis = false
+        }
+#endif
         
         if let url = subtitlesURL, !url.isEmpty {
             subtitlesLoader.load(from: url)
@@ -297,7 +301,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             self.view.layoutIfNeeded()
         }
         
-//        hiddenVolumeView.showsRouteButton = false
+#if !os(tvOS)
+        hiddenVolumeView.showsRouteButton = false
+#endif
         hiddenVolumeView.isHidden = true
         view.addSubview(hiddenVolumeView)
         
@@ -307,9 +313,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         hiddenVolumeView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         hiddenVolumeView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         
-//        if let slider = hiddenVolumeView.subviews.first(where: { $0 is VolumeSlider }) as? VolumeSlider {
-//            systemVolumeSlider = slider
-//        }
+#if !os(tvOS)
+        if let slider = hiddenVolumeView.subviews.first(where: { $0 is UISlider }) as? UISlider {
+            systemVolumeSlider = slider
+        }
+#endif
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -397,10 +405,17 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     private func getSegmentsColor() -> Color {
+#if !os(tvOS)
+        if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
+            let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
+            return Color(uiColor)
+        }
+#elseif os(tvOS)
         if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
            let uiColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) {
             return Color(uiColor)
         }
+#endif
         return .yellow
     }
     
@@ -596,7 +611,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     func holdForPause() {
         let holdForPauseGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleHoldForPause(_:)))
         holdForPauseGesture.minimumPressDuration = 1
-//        holdForPauseGesture.numberOfTouchesRequired = 2
+#if !os(tvOS)
+        holdForPauseGesture.numberOfTouchesRequired = 2
+#endif
         view.addGestureRecognizer(holdForPauseGesture)
     }
     
@@ -832,9 +849,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     func volumeSlider() {
         let container = VolumeSliderContainer(volumeVM: self.volumeViewModel) { newVal in
-//            if let sysSlider = self.systemVolumeSlider {
-//                sysSlider.value = Float(newVal)
-//            }
+#if !os(tvOS)
+            if let sysSlider = self.systemVolumeSlider {
+                sysSlider.value = Float(newVal)
+            }
+#endif
         }
         
         let hostingController = UIHostingController(rootView: container)
@@ -1038,7 +1057,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skipIntroButton.setImage(introImage, for: .normal)
         
         skipIntroButton.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
-//        skipIntroButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+#if !os(tvOS)
+        skipIntroButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+#endif
         skipIntroButton.tintColor = .white
         skipIntroButton.setTitleColor(.white, for: .normal)
         skipIntroButton.layer.cornerRadius = 21
@@ -1070,7 +1091,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skipOutroButton.setImage(outroImage, for: .normal)
         
         skipOutroButton.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
-//        skipOutroButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+#if !os(tvOS)
+        skipOutroButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+#endif
         skipOutroButton.tintColor = .white
         skipOutroButton.setTitleColor(.white, for: .normal)
         skipOutroButton.layer.cornerRadius = 21
@@ -1244,7 +1267,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skip85Button.setImage(image, for: .normal)
         
         skip85Button.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
-//        skip85Button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+#if !os(tvOS)
+        skip85Button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+#endif
         skip85Button.tintColor = .white
         skip85Button.setTitleColor(.white, for: .normal)
         skip85Button.layer.cornerRadius = 21
@@ -2093,22 +2118,23 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         self.subtitleBottomPadding = settings.bottomPadding
     }
 
+#if !os(tvOS)
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        if UserDefaults.standard.bool(forKey: "alwaysLandscape") {
+            return .landscape
+        } else {
+            return .all
+        }
+    }
     
-//    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-//        if UserDefaults.standard.bool(forKey: "alwaysLandscape") {
-//            return .landscape
-//        } else {
-//            return .all
-//        }
-//    }
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        return true
+    }
     
-//    override var prefersHomeIndicatorAutoHidden: Bool {
-//        return true
-//    }
-//    
-//    override var prefersStatusBarHidden: Bool {
-//        return true
-//    }
+    override var prefersStatusBarHidden: Bool {
+        return true
+    }
+#endif
     
     func setupAudioSession() {
         do {

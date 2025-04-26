@@ -7,7 +7,9 @@
 
 import SwiftUI
 import Kingfisher
-//import SafariServices
+#if !os(tvOS)
+import SafariServices
+#endif
 
 struct MediaItem: Identifiable {
     let id = UUID()
@@ -91,8 +93,10 @@ struct MediaInfoView: View {
                                         .font(.system(size: 17))
                                         .fontWeight(.bold)
                                         .onLongPressGesture {
-                                          //  UIPasteboard.general.string = title
-                                           // DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+#if !os(tvOS)
+                                            UIPasteboard.general.string = title
+                                            DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+#endif
                                         }
                                     
                                     if !aliases.isEmpty && aliases != title && aliases != "N/A" && aliases != "No Data" {
@@ -121,7 +125,9 @@ struct MediaInfoView: View {
                                     
                                     HStack(alignment: .center, spacing: 12) {
                                         Button(action: {
-//                                            openSafariViewController(with: href)
+#if !os(tvOS)
+                                            openSafariViewController(with: href)
+#endif
                                         }) {
                                             HStack(spacing: 4) {
                                                 Text(module.metadata.sourceName)
@@ -144,7 +150,7 @@ struct MediaInfoView: View {
                                                 Label("Set Custom AniList ID", systemImage: "number")
                                             }
                                             
-                                            if customAniListID != nil {
+                                            if let customID = customAniListID {
                                                 Button(action: {
                                                     customAniListID = nil
                                                     itemID = nil
@@ -161,11 +167,13 @@ struct MediaInfoView: View {
                                                 }
                                             }
                                             
-                                            if (itemID ?? customAniListID) != nil {
+                                            if let id = itemID ?? customAniListID {
                                                 Button(action: {
-//                                                    if let url = URL(string: "https://anilist.co/anime/\(id)") {
-//                                                        openSafariViewController(with: url.absoluteString)
-//                                                    }
+#if !os(tvOS)
+                                                    if let url = URL(string: "https://anilist.co/anime/\(id)") {
+                                                        openSafariViewController(with: url.absoluteString)
+                                                    }
+#endif
                                                 }) {
                                                     Label("Open in AniList", systemImage: "link")
                                                 }
@@ -417,7 +425,9 @@ struct MediaInfoView: View {
                             }
                         }
                         .padding()
-//                        .navigationBarTitleDisplayMode(.inline)
+#if !os(tvOS)
+                        .navigationBarTitleDisplayMode(.inline)
+#endif
                         .navigationBarTitle("")
                         .navigationViewStyle(StackNavigationViewStyle())
                     }
@@ -779,8 +789,9 @@ struct MediaInfoView: View {
             AnalyticsManager.shared.sendEvent(event: "error", additionalData: ["error": error, "message": "Failed to fetch stream"])
         }
         DropManager.shared.showDrop(title: "Stream not Found", subtitle: "", duration: 0.5, icon: UIImage(systemName: "xmark"))
-        
-//        UINotificationFeedbackGenerator().notificationOccurred(.error)
+#if !os(tvOS)
+        UINotificationFeedbackGenerator().notificationOccurred(.error)
+#endif
         self.isLoading = false
     }
     
@@ -934,17 +945,19 @@ struct MediaInfoView: View {
         DropManager.shared.showDrop(title: "Fetching Next Episode", subtitle: "", duration: 0.5, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
     }
     
-//    private func openSafariViewController(with urlString: String) {
-//        guard let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) else {
-//            Logger.shared.log("Unable to open the webpage", type: "Error")
-//            return
-//        }
-//        let safariViewController = SFSafariViewController(url: url)
-//        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-//           let rootVC = windowScene.windows.first?.rootViewController {
-//            rootVC.present(safariViewController, animated: true, completion: nil)
-//        }
-//    }
+#if !os(tvOS)
+    private func openSafariViewController(with urlString: String) {
+        guard let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) else {
+            Logger.shared.log("Unable to open the webpage", type: "Error")
+            return
+        }
+        let safariViewController = SFSafariViewController(url: url)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+            rootVC.present(safariViewController, animated: true, completion: nil)
+        }
+    }
+#endif
     
     private func cleanTitle(_ title: String?) -> String {
         guard let title = title else { return "Unknown" }

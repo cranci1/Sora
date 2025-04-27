@@ -147,7 +147,7 @@ class VideoPlayerViewController: UIViewController {
             }
         }
     }
-    
+#if !os(tvOS)
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         if UserDefaults.standard.bool(forKey: "alwaysLandscape") {
             return .landscape
@@ -163,7 +163,7 @@ class VideoPlayerViewController: UIViewController {
     override var prefersStatusBarHidden: Bool {
         return true
     }
-    
+#endif
     deinit {
         player?.pause()
         if let timeObserverToken = timeObserverToken {

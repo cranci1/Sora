@@ -88,12 +88,14 @@ struct SettingsViewModule: View {
                             selectedModuleId = module.id.uuidString
                         }
                         .contextMenu {
+#if !os(tvOS)
                             Button(action: {
                                 UIPasteboard.general.string = module.metadataUrl
                                 DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
                             }) {
                                 Label("Copy URL", systemImage: "doc.on.doc")
                             }
+#endif
                             Button(role: .destructive) {
                                 if selectedModuleId != module.id.uuidString {
                                     moduleManager.deleteModule(module)
@@ -104,6 +106,7 @@ struct SettingsViewModule: View {
                             }
                             .disabled(selectedModuleId == module.id.uuidString)
                         }
+#if !os(tvOS)
                         .swipeActions {
                             if selectedModuleId != module.id.uuidString {
                                 Button(role: .destructive) {
@@ -114,6 +117,7 @@ struct SettingsViewModule: View {
                                 }
                             }
                         }
+#endif
                     }
                 }
             }
@@ -180,7 +184,11 @@ struct SettingsViewModule: View {
     }
     
     func showAddModuleAlert() {
+#if !os(tvOS)
         let pasteboardString = UIPasteboard.general.string ?? ""
+#elseif os(tvOS)
+        let pasteboardString = ""
+#endif
 
         if !pasteboardString.isEmpty {
             let clipboardAlert = UIAlertController(

@@ -52,6 +52,7 @@ struct SettingsViewPlayer: View {
                 HStack {
                     Text("Hold Speed:")
                     Spacer()
+#if !os(tvOS)
                     Stepper(
                         value: $holdSpeedPlayer,
                         in: 0.25...2.5,
@@ -59,9 +60,10 @@ struct SettingsViewPlayer: View {
                     ) {
                         Text(String(format: "%.2f", holdSpeedPlayer))
                     }
+#endif
                 }
             }
-            
+#if !os(tvOS)
             Section(header: Text("Progress bar Marker Color")) {
                 ColorPicker("Segments Color", selection: Binding(
                     get: {
@@ -82,18 +84,23 @@ struct SettingsViewPlayer: View {
                     }
                 ))
             }
+            #endif
             
             Section(header: Text("Skip Settings"), footer : Text("Double tapping the screen on it's sides will skip with the short tap setting.")) {
                 HStack {
                     Text("Tap Skip:")
                     Spacer()
+#if !os(tvOS)
                     Stepper("\(Int(skipIncrement))s", value: $skipIncrement, in: 5...300, step: 5)
+#endif
                 }
                 
                 HStack {
                     Text("Long press Skip:")
                     Spacer()
+#if !os(tvOS)
                     Stepper("\(Int(skipIncrementHold))s", value: $skipIncrementHold, in: 5...300, step: 5)
+#endif
                 }
                 
                 Toggle("Double Tap to Seek", isOn: $doubleTapSeekEnabled)
@@ -159,32 +166,38 @@ struct SubtitleSettingsSection: View {
             
             Toggle("Background Enabled", isOn: $backgroundEnabled)
                 .tint(.accentColor)
+#if !os(tvOS)
                 .onChange(of: backgroundEnabled) { newValue in
                     SubtitleSettingsManager.shared.update { settings in
                         settings.backgroundEnabled = newValue
                     }
                 }
+#endif
             
             HStack {
                 Text("Font Size:")
                 Spacer()
+#if !os(tvOS)
                 Stepper("\(Int(fontSize))", value: $fontSize, in: 12...36, step: 1)
                     .onChange(of: fontSize) { newValue in
                         SubtitleSettingsManager.shared.update { settings in
                             settings.fontSize = newValue
                         }
                     }
+#endif
             }
             
             HStack {
                 Text("Bottom Padding:")
                 Spacer()
+#if !os(tvOS)
                 Stepper("\(Int(bottomPadding))", value: $bottomPadding, in: 0...50, step: 1)
                     .onChange(of: bottomPadding) { newValue in
                         SubtitleSettingsManager.shared.update { settings in
                             settings.bottomPadding = newValue
                         }
                     }
+#endif
             }
         }
     }

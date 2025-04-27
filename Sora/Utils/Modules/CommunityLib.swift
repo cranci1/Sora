@@ -6,7 +6,9 @@
 //
 
 import SwiftUI
+#if !os(tvOS)
 import WebKit
+#endif
 
 private struct ModuleLink: Identifiable {
     let id = UUID()
@@ -28,7 +30,7 @@ struct CommunityLibraryView: View {
                     .foregroundColor(.red)
                     .padding(.horizontal)
             }
-
+#if !os(tvOS)
             WebView(url: webURL) { linkURL in
 
                 if let comps = URLComponents(url: linkURL, resolvingAgainstBaseURL: false),
@@ -37,6 +39,7 @@ struct CommunityLibraryView: View {
                 }
             }
             .ignoresSafeArea(edges: .top)
+#endif
         }
         .onAppear(perform: loadURL)
         .sheet(item: $moduleLinkToAdd) { link in
@@ -61,6 +64,7 @@ struct CommunityLibraryView: View {
     }
 }
 
+#if !os(tvOS)
 struct WebView: UIViewRepresentable {
     let url: URL?
     let onCustomScheme: (URL) -> Void
@@ -102,3 +106,4 @@ struct WebView: UIViewRepresentable {
         }
     }
 }
+#endif

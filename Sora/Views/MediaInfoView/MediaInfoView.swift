@@ -7,7 +7,9 @@
 
 import SwiftUI
 import Kingfisher
+#if !os(tvOS)
 import SafariServices
+#endif
 
 struct MediaItem: Identifiable {
     let id = UUID()
@@ -92,8 +94,10 @@ struct MediaInfoView: View {
                                         .font(.system(size: 17))
                                         .fontWeight(.bold)
                                         .onLongPressGesture {
+#if !os(tvOS)
                                             UIPasteboard.general.string = title
                                             DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+#endif
                                         }
                                     
                                     if !aliases.isEmpty && aliases != title && aliases != "N/A" && aliases != "No Data" {
@@ -122,7 +126,9 @@ struct MediaInfoView: View {
                                     
                                     HStack(alignment: .center, spacing: 12) {
                                         Button(action: {
+#if !os(tvOS)
                                             openSafariViewController(with: href)
+#endif
                                         }) {
                                             HStack(spacing: 4) {
                                                 Text(module.metadata.sourceName)
@@ -164,9 +170,11 @@ struct MediaInfoView: View {
                                             
                                             if let id = itemID ?? customAniListID {
                                                 Button(action: {
+#if !os(tvOS)
                                                     if let url = URL(string: "https://anilist.co/anime/\(id)") {
                                                         openSafariViewController(with: url.absoluteString)
                                                     }
+#endif
                                                 }) {
                                                     Label("Open in AniList", systemImage: "link")
                                                 }
@@ -418,7 +426,9 @@ struct MediaInfoView: View {
                             }
                         }
                         .padding()
+#if !os(tvOS)
                         .navigationBarTitleDisplayMode(.inline)
+#endif
                         .navigationBarTitle("")
                         .navigationViewStyle(StackNavigationViewStyle())
                     }
@@ -452,10 +462,11 @@ struct MediaInfoView: View {
                 }
                 selectedRange = 0..<episodeChunkSize
             }
+#if !os(tvOS)
             .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
                 orientationChanged.toggle()
             }
-            
+#endif
             if showStreamLoadingView {
                 VStack(spacing: 16) {
                     Text("Loading \(currentStreamTitle)…")
@@ -774,8 +785,9 @@ struct MediaInfoView: View {
             AnalyticsManager.shared.sendEvent(event: "error", additionalData: ["error": error, "message": "Failed to fetch stream"])
         }
         DropManager.shared.showDrop(title: "Stream not Found", subtitle: "", duration: 0.5, icon: UIImage(systemName: "xmark"))
-        
+#if !os(tvOS)
         UINotificationFeedbackGenerator().notificationOccurred(.error)
+#endif
         self.isLoading = false
     }
     
@@ -847,7 +859,7 @@ struct MediaInfoView: View {
         self.isFetchingEpisode = false
         self.showStreamLoadingView = false
         DispatchQueue.main.async {
-            let externalPlayer = UserDefaults.standard.string(forKey: "externalPlayer") ?? "Sora"
+            let externalPlayer = UserDefaults.standard.string(forKey: "externalPlayer") ?? "Default"
             var scheme: String?
             
             switch externalPlayer {
@@ -929,6 +941,7 @@ struct MediaInfoView: View {
         DropManager.shared.showDrop(title: "Fetching Next Episode", subtitle: "", duration: 0.5, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
     }
     
+#if !os(tvOS)
     private func openSafariViewController(with urlString: String) {
         guard let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) else {
             Logger.shared.log("Unable to open the webpage", type: "Error")
@@ -940,6 +953,7 @@ struct MediaInfoView: View {
             rootVC.present(safariViewController, animated: true, completion: nil)
         }
     }
+#endif
     
     private func cleanTitle(_ title: String?) -> String {
         guard let title = title else { return "Unknown" }

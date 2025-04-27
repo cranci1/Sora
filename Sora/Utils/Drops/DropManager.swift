@@ -14,6 +14,7 @@ class DropManager {
     private init() {}
     
     func showDrop(title: String, subtitle: String, duration: TimeInterval, icon: UIImage?) {
+        #if !os(tvOS)
         let position: Drop.Position = .top
         
         let drop = Drop(
@@ -24,5 +25,6 @@ class DropManager {
             duration: .seconds(duration)
         )
         Drops.show(drop)
+        #endif
     }
 }

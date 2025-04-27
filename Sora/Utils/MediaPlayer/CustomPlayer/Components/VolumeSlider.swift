@@ -55,6 +55,7 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
                 .animation(animation, value: isActive)
             }
             .frame(width: bounds.size.width, height: bounds.size.height)
+            #if !os(tvOS)
             .gesture(
                 DragGesture(minimumDistance: 0, coordinateSpace: .local)
                     .updating($isActive) { _, state, _ in state = true }
@@ -68,6 +69,7 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
                         localTempProgress = 0
                     }
             )
+            #endif
             .onChange(of: isActive) { newValue in
                 if !newValue {
                     value = sliderValueInRange()

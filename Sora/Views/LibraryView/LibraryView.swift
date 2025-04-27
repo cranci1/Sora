@@ -19,7 +19,11 @@ struct LibraryView: View {
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     
     @Environment(\.verticalSizeClass) var verticalSizeClass
-
+    
+    @State private var selectedBookmark: LibraryItem? = nil
+    @State private var isDetailActive: Bool = false
+    
+    @State private var continueWatchingItems: [ContinueWatchingItem] = []
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var showProfileSettings = false
 
@@ -106,7 +110,10 @@ struct LibraryView: View {
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columnsCount), spacing: 12) {
                             ForEach(libraryManager.bookmarks) { item in
                                 if let module = moduleManager.modules.first(where: { $0.id.uuidString == item.moduleId }) {
-                                    NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: module)) {
+                                    Button(action: {
+                                                    selectedBookmark = item
+                                                    isDetailActive = true
+                                                    }) {
                                         VStack(alignment: .leading) {
                                             ZStack {
                                                 KFImage(URL(string: item.imageUrl))
@@ -149,6 +156,28 @@ struct LibraryView: View {
                             }
                         }
                         .padding(.horizontal, 20)
+                        NavigationLink(
+                            destination: Group {
+                                if let bookmark = selectedBookmark,
+                                    let module = moduleManager.modules.first(where: { $0.id.uuidString == bookmark.moduleId }) {
+                                    MediaInfoView(title: bookmark.title,
+                                                    imageUrl: bookmark.imageUrl,
+                                                    href: bookmark.href,
+                                                    module: module)
+                                } else {
+                                    Text("No Data Available")
+                                }
+                            },
+                            isActive: $isDetailActive
+                        ) {
+                            EmptyView()
+                        }
+                        .onAppear {
+                            updateOrientation()
+                        }
+                        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+                            updateOrientation()
+                        }
                     }
                 }
                 .padding(.vertical, 20)

@@ -63,9 +63,10 @@ DerivedData/
 *.hmap
 
 ## App packaging
+*.ipa
 *.dSYM.zip
 *.dSYM
-public-build
+
 ## Playgrounds
 timeline.xctimeline
 playground.xcworkspace

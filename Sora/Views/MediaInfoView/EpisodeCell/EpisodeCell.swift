@@ -29,6 +29,16 @@ struct EpisodeCell: View {
     @State private var isLoading: Bool = true
     @State private var currentProgress: Double = 0.0
     
+    @Environment(\.colorScheme) private var colorScheme
+    @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
+    
+    var defaultBannerImage: String {
+        let isLightMode = selectedAppearance == .light || (selectedAppearance == .system && colorScheme == .light)
+        return isLightMode
+            ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner1.png"
+            : "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner2.png"
+    }
+    
     init(episodeIndex: Int, episode: String, episodeID: Int, progress: Double,
          itemID: Int, onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void) {
         self.episodeIndex = episodeIndex
@@ -43,7 +53,7 @@ struct EpisodeCell: View {
     var body: some View {
         HStack {
             ZStack {
-                KFImage(URL(string: episodeImageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : episodeImageUrl))
+                KFImage(URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl))
                     .resizable()
                     .aspectRatio(16/9, contentMode: .fill)
                     .frame(width: 100, height: 56)
@@ -98,7 +108,7 @@ struct EpisodeCell: View {
             updateProgress()
         }
         .onTapGesture {
-            let imageUrl = episodeImageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : episodeImageUrl
+            let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
             onTap(imageUrl)
         }
     }

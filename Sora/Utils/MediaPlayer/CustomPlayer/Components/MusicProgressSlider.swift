@@ -18,8 +18,8 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
     let emptyColor: Color
     let height: CGFloat
     let onEditingChanged: (Bool) -> Void
-    let introSegments: [ClosedRange<T>]  // Changed
-    let outroSegments: [ClosedRange<T>]  // Changed
+    let introSegments: [ClosedRange<T>]
+    let outroSegments: [ClosedRange<T>]
     let introColor: Color
     let outroColor: Color
     
@@ -57,10 +57,10 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
                                 }
                             }
                             
-                            // Rest of the existing code...
                             Capsule()
                                 .fill(emptyColor)
                         }
+                        .clipShape(Capsule())
 
                         Capsule()
                             .fill(isActive ? activeFillColor : fillColor)

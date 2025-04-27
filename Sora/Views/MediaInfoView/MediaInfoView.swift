@@ -54,6 +54,8 @@ struct MediaInfoView: View {
     @State private var showSettingsMenu = false
     @State private var customAniListID: Int?
     
+    @State private var orientationChanged: Bool = false
+    
     private var isGroupedBySeasons: Bool {
         return groupedEpisodes().count > 1
     }
@@ -416,9 +418,9 @@ struct MediaInfoView: View {
                     .navigationViewStyle(StackNavigationViewStyle())
                 }
             }
-        }
-        .onAppear {
-            buttonRefreshTrigger.toggle()
+            .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+                orientationChanged.toggle()
+            }
             
             if !hasFetched {
                 DropManager.shared.showDrop(title: "Fetching Data", subtitle: "Please wait while fetching.", duration: 0.5, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
@@ -438,6 +440,14 @@ struct MediaInfoView: View {
                             AnalyticsManager.shared.sendEvent(event: "error", additionalData: ["error": error, "message": "Failed to fetch AniList ID"])
                         }
                     }
+                    .font(.subheadline)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 24)
+                    .background(
+                        Color(red: 1.0, green: 112/255.0, blue: 94/255.0)
+                    )
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
                 }
                 
                 hasFetched = true
@@ -533,7 +543,6 @@ struct MediaInfoView: View {
         groups.append(currentGroup)
         return groups
     }
-    
     
     func fetchDetails() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

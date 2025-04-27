@@ -23,7 +23,6 @@ An iOS and macOS modular web scraping app, under the GPLv3.0 License.
 
 - [x] iOS/iPadOS 15.0+ support
 - [x] macOS support 12.0+
-- [x] Sync via iCloud data
 - [x] JavaScript module support
 - [x] Tracking Services (AniList, Trakt)
 - [x] Apple KeyChain support for auth Tokens

@@ -76,7 +76,7 @@ class LibraryManager: ObservableObject {
             let encoded = try JSONEncoder().encode(bookmarks)
             userDefaultsSuite.set(encoded, forKey: bookmarksKey)
         } catch {
-            Logger.shared.log("Failed to encode bookmarks: \(error.localizedDescription)", type: "Error")
+            Logger.shared.log("Failed to save bookmarks: \(error)", type: "Error")
         }
     }
     

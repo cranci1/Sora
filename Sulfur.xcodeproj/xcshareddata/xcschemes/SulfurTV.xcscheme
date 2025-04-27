@@ -41,7 +41,7 @@
       debugServiceExtension = "internal"
       enableGPUFrameCaptureMode = "3"
       enableGPUValidationMode = "1"
-      allowLocationSimulation = "NO"
+      allowLocationSimulation = "YES"
       showNonLocalizedStrings = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
@@ -53,6 +53,13 @@
             ReferencedContainer = "container:Sulfur.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "OS_ACTIVITY_MODE"
+            value = "disable"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

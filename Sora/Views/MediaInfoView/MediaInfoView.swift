@@ -56,7 +56,7 @@ struct MediaInfoView: View {
     @State private var showStreamLoadingView: Bool = false
     @State private var currentStreamTitle: String = ""
 
-    @State private var activeFetchID: UUID? = nil
+    @State private var activeFetchID: UUID?
     @Environment(\.dismiss) private var dismiss
 
     @State private var orientationChanged: Bool = false
@@ -548,8 +548,8 @@ struct MediaInfoView: View {
     }
 
     private func finishedAndUnfinishedIndices() -> (finished: Int?, unfinished: Int?) {
-        var finishedIndex: Int? = nil
-        var firstUnfinishedIndex: Int? = nil
+        var finishedIndex: Int?
+        var firstUnfinishedIndex: Int?
 
         for (index, ep) in episodeLinks.enumerated() {
             let keyLast = "lastPlayedTime_\(ep.href)"

@@ -1084,7 +1084,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
 
         skipOutroButton.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
 
-
         if #available(iOS 15.0, *) {
             var config = UIButton.Configuration.filled()
             config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)

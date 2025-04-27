@@ -17,12 +17,12 @@ struct LibraryView: View {
     @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
-    
+
     @Environment(\.verticalSizeClass) var verticalSizeClass
-    
-    @State private var selectedBookmark: LibraryItem? = nil
+
+    @State private var selectedBookmark: LibraryItem?
     @State private var isDetailActive: Bool = false
-    
+
     @State private var continueWatchingItems: [ContinueWatchingItem] = []
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var showProfileSettings = false
@@ -30,7 +30,7 @@ struct LibraryView: View {
     private let columns = [
         GridItem(.adaptive(minimum: 150), spacing: 12)
     ]
-    
+
     private var columnsCount: Int {
         if UIDevice.current.userInterfaceIdiom == .pad {
             let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
@@ -39,7 +39,7 @@ struct LibraryView: View {
             return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }
     }
-    
+
     private var cellWidth: CGFloat {
         let keyWindow = UIApplication.shared.connectedScenes
             .compactMap { ($0 as? UIWindowScene)?.windows.first(where: { $0.isKeyWindow }) }
@@ -50,12 +50,12 @@ struct LibraryView: View {
         let availableWidth = safeWidth - totalSpacing
         return availableWidth / CGFloat(columnsCount)
     }
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
                 let columnsCount = determineColumns()
-                
+
                 VStack(alignment: .leading, spacing: 12) {
 
                     if hideEmptySections != true || !continueWatchingManager.items.isEmpty {
@@ -235,7 +235,7 @@ struct LibraryView: View {
             updateOrientation()
         }
     }
-    
+
     private func markContinueWatchingItemAsWatched(item: ContinueWatchingItem) {
         let key = "lastPlayedTime_\(item.fullUrl)"
         let totalKey = "totalTime_\(item.fullUrl)"
@@ -243,17 +243,17 @@ struct LibraryView: View {
         UserDefaults.standard.set(99999999.0, forKey: totalKey)
         continueWatchingManager.remove(item: item)
     }
-    
+
     private func removeContinueWatchingItem(item: ContinueWatchingItem) {
         continueWatchingManager.remove(item: item)
     }
-    
+
     private func updateOrientation() {
         DispatchQueue.main.async {
             isLandscape = UIDevice.current.orientation.isLandscape
         }
     }
-    
+
     private func determineColumns() -> Int {
         if UIDevice.current.userInterfaceIdiom == .pad {
             return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
@@ -267,7 +267,7 @@ struct ContinueWatchingSection: View {
     @Binding var items: [ContinueWatchingItem]
     var markAsWatched: (ContinueWatchingItem) -> Void
     var removeItem: (ContinueWatchingItem) -> Void
-    
+
     var body: some View {
         VStack(alignment: .leading) {
             ScrollView(.horizontal, showsIndicators: false) {
@@ -289,13 +289,13 @@ struct ContinueWatchingSection: View {
 
 struct ContinueWatchingCell: View {
     @EnvironmentObject private var continueWatchingManager: ContinueWatchingManager
-    
+
     let item: ContinueWatchingItem
     var markAsWatched: () -> Void
     var removeItem: () -> Void
-    
+
     @State private var currentProgress: Double = 0.0
-    
+
     var body: some View {
         Button(action: {
             if UserDefaults.standard.string(forKey: "externalPlayer") == "Default" {
@@ -308,7 +308,7 @@ struct ContinueWatchingCell: View {
                 videoPlayerViewController.subtitles = item.subtitles ?? ""
                 videoPlayerViewController.aniListID = item.aniListID ?? 0
                 videoPlayerViewController.modalPresentationStyle = .fullScreen
-                
+
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootVC = windowScene.windows.first?.rootViewController {
                     findTopViewController.findViewController(rootVC).present(videoPlayerViewController, animated: true, completion: nil)
@@ -327,7 +327,7 @@ struct ContinueWatchingCell: View {
                     episodeImageUrl: item.imageUrl
                 )
                 customMediaPlayer.modalPresentationStyle = .fullScreen
-                
+
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootVC = windowScene.windows.first?.rootViewController {
                     findTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
@@ -364,7 +364,7 @@ struct ContinueWatchingCell: View {
                             .fill(Color.black.opacity(0.3))
                             .blur(radius: 3)
                             .frame(height: 30)
-                        
+
                         ProgressView(value: currentProgress)
                             .progressViewStyle(LinearProgressViewStyle(tint: .white))
                             .padding(.horizontal, 8)
@@ -372,13 +372,13 @@ struct ContinueWatchingCell: View {
                     },
                     alignment: .bottom
                 )
-                
+
                 VStack(alignment: .leading) {
                     Text("Episode \(item.episodeNumber)")
                         .font(.caption)
                         .lineLimit(1)
                         .foregroundColor(.secondary)
-                    
+
                     Text(item.mediaTitle)
                         .font(.caption)
                         .lineLimit(2)
@@ -403,11 +403,11 @@ struct ContinueWatchingCell: View {
             updateProgress()
         }
     }
-    
+
     private func updateProgress() {
         let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(item.fullUrl)")
         let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(item.fullUrl)")
-        
+
         if totalTime > 0 {
             let ratio = lastPlayedTime / totalTime
             // Clamp ratio between 0 and 1:

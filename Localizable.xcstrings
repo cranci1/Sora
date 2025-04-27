@@ -11,6 +11,16 @@
         }
       }
     },
+    "-10s" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "-10s"
+          }
+        }
+      }
+    },
     "%@ - Episode %lld" : {
       "localizations" : {
         "de" : {
@@ -75,6 +85,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%llds"
+          }
+        }
+      }
+    },
+    "+10s" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+10s"
           }
         }
       }
@@ -345,6 +365,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abbrechen"
+          }
+        }
+      }
+    },
+    "Check out some community modules here!" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schau dir einige Community-Module hier an!"
           }
         }
       }
@@ -869,6 +899,16 @@
         }
       }
     },
+    "Loading %@…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird geladen %@…"
+          }
+        }
+      }
+    },
     "Loading Animation" : {
       "localizations" : {
         "de" : {
@@ -1119,6 +1159,16 @@
         }
       }
     },
+    "No Data Available" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Informationen verfügbar"
+          }
+        }
+      }
+    },
     "No data received" : {
       "localizations" : {
         "de" : {
@@ -1164,7 +1214,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keine Module ausgewählt"
+            "value" : "Kein Modul ausgewählt"
           }
         }
       }
@@ -1205,6 +1255,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Okay"
+          }
+        }
+      }
+    },
+    "Open Community Library" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Community-Bibliothek öffnen"
           }
         }
       }
@@ -1595,6 +1655,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Untertitel Farbe"
+          }
+        }
+      }
+    },
+    "Subtitle Delay: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untertitel-Verzögerung: %@"
           }
         }
       }

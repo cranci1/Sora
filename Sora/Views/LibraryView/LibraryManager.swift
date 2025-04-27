@@ -15,7 +15,7 @@ struct LibraryItem: Codable, Identifiable {
     let moduleId: String
     let moduleName: String
     let dateAdded: Date
-    
+
     init(title: String, imageUrl: String, href: String, moduleId: String, moduleName: String) {
         self.id = UUID()
         self.title = title
@@ -31,7 +31,7 @@ class LibraryManager: ObservableObject {
     var userDefaultsSuite = UserDefaults.standard
     @Published var bookmarks: [LibraryItem] = []
     private let bookmarksKey = "bookmarkedItems"
-    
+
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
     }
@@ -46,16 +46,16 @@ class LibraryManager: ObservableObject {
             self.loadBookmarks()
         }
     }
-    
+
     func removeBookmark(item: LibraryItem) {
         if let index = bookmarks.firstIndex(where: { $0.id == item.id }) {
             bookmarks.remove(at: index)
 
-            Logger.shared.log("Removed series \(item.id) from bookmarks.",type: "Debug")
+            Logger.shared.log("Removed series \(item.id) from bookmarks.", type: "Debug")
             saveBookmarks()
         }
     }
-    
+
     private func loadBookmarks() {
         guard let data = userDefaultsSuite.data(forKey: bookmarksKey) else {
             Logger.shared.log("No bookmarks data found in UserDefaults.", type: "Debug")
@@ -70,7 +70,7 @@ class LibraryManager: ObservableObject {
             bookmarks = []
         }
     }
-    
+
     private func saveBookmarks() {
         do {
             let encoded = try JSONEncoder().encode(bookmarks)
@@ -79,11 +79,11 @@ class LibraryManager: ObservableObject {
             Logger.shared.log("Failed to save bookmarks: \(error)", type: "Error")
         }
     }
-    
+
     func isBookmarked(href: String, moduleName: String) -> Bool {
         bookmarks.contains { $0.href == href }
     }
-    
+
     func toggleBookmark(title: String, imageUrl: String, href: String, moduleId: String, moduleName: String) {
         if let index = bookmarks.firstIndex(where: { $0.href == href }) {
             bookmarks.remove(at: index)

@@ -71,7 +71,7 @@ struct SoraApp: App {
         case "default_page":
             if let comps = URLComponents(url: url, resolvingAgainstBaseURL: true),
                let libraryURL = comps.queryItems?.first(where: { $0.name == "url" })?.value {
-                
+
                 UserDefaults.standard.set(libraryURL, forKey: "lastCommunityURL")
                 UserDefaults.standard.set(true, forKey: "didReceiveDefaultPageLink")
 
@@ -93,7 +93,7 @@ struct SoraApp: App {
                     }
                 }
             }
-            
+
         case "module":
             guard url.scheme == "sora",
                   url.host == "module",

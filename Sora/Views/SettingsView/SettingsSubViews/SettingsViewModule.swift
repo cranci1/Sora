@@ -15,14 +15,14 @@ struct SettingsViewModule: View {
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
     @AppStorage("didReceiveDefaultPageLink") private var didReceiveDefaultPageLink: Bool = false
-    
+
     @State private var errorMessage: String?
     @State private var isLoading = false
     @State private var isRefreshing = false
     @State private var moduleUrl: String = ""
     @State private var refreshTask: Task<Void, Never>?
     @State private var showLibrary = false
-    
+
     var body: some View {
         VStack {
             Form {
@@ -60,7 +60,7 @@ struct SettingsViewModule: View {
                                 .frame(width: 50, height: 50)
                                 .clipShape(Circle())
                                 .padding(.trailing, 10)
-                            
+
                             VStack(alignment: .leading) {
                                 HStack(alignment: .bottom, spacing: 4) {
                                     Text(module.metadata.sourceName)
@@ -77,9 +77,9 @@ struct SettingsViewModule: View {
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                             }
-                            
+
                             Spacer()
-                            
+
                             if module.id.uuidString == selectedModuleId {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.accentColor)
@@ -181,7 +181,7 @@ struct SettingsViewModule: View {
             Text(errorMessage ?? "Unknown error")
         }
     }
-    
+
     func showAddModuleAlert() {
         let pasteboardString = UIPasteboard.general.string ?? ""
 
@@ -195,17 +195,17 @@ struct SettingsViewModule: View {
             clipboardAlert.addAction(UIAlertAction(title: "Use Clipboard", style: .default, handler: { _ in
                 self.displayModuleView(url: pasteboardString)
             }))
-            
+
             clipboardAlert.addAction(UIAlertAction(title: "Enter Manually", style: .cancel, handler: { _ in
                 self.showManualUrlAlert()
             }))
-            
+
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let rootViewController = windowScene.windows.first?.rootViewController {
                 windowScene.windows.first?.tintColor = UIColor(settings.accentColor)
                 rootViewController.present(clipboardAlert, animated: true, completion: nil)
             }
-            
+
         } else {
             showManualUrlAlert()
         }
@@ -217,18 +217,18 @@ struct SettingsViewModule: View {
             message: "Enter the URL of the module file",
             preferredStyle: .alert
         )
-        
+
         alert.addTextField { textField in
             textField.placeholder = "https://real.url/module.json"
         }
-        
+
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         alert.addAction(UIAlertAction(title: "Add", style: .default, handler: { _ in
             if let url = alert.textFields?.first?.text, !url.isEmpty {
                 self.displayModuleView(url: url)
             }
         }))
-        
+
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootViewController = windowScene.windows.first?.rootViewController {
             windowScene.windows.first?.tintColor = UIColor(settings.accentColor)
@@ -241,7 +241,7 @@ struct SettingsViewModule: View {
             let addModuleView = ModuleAdditionSettingsView(moduleUrl: url)
                 .environmentObject(self.moduleManager)
             let hostingController = UIHostingController(rootView: addModuleView)
-            
+
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first {
                 window.tintColor = UIColor(settings.accentColor)

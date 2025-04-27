@@ -9,16 +9,16 @@ import JavaScriptCore
 
 class JSController: ObservableObject {
     var context: JSContext
-    
+
     init() {
         self.context = JSContext()
         setupContext()
     }
-    
+
     func setupContext() {
         context.setupJavaScriptEnvironment()
     }
-    
+
     func loadScript(_ script: String) {
         context = JSContext()
         setupContext()

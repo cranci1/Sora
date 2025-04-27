@@ -22,11 +22,11 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
     let outroSegments: [ClosedRange<T>]
     let introColor: Color
     let outroColor: Color
-    
+
     @State private var localRealProgress: T = 0
     @State private var localTempProgress: T = 0
     @GestureState private var isActive: Bool = false
-    
+
     var body: some View {
         GeometryReader { bounds in
             ZStack {
@@ -44,7 +44,7 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
                                     Spacer()
                                 }
                             }
-                            
+
                             // Outro Segments
                             ForEach(outroSegments, id: \.self) { segment in
                                 HStack(spacing: 0) {
@@ -56,7 +56,7 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
                                     Spacer()
                                 }
                             }
-                            
+
                             Capsule()
                                 .fill(emptyColor)
                         }
@@ -78,7 +78,7 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
                                 }
                             })
                     }
-                    
+
                     HStack {
                         let shouldShowHours = inRange.upperBound >= 3600
                         Text(value.asTimeString(style: .positional, showHours: shouldShowHours))
@@ -138,7 +138,7 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
         let percentage = correctedStartValue / range
         return percentage
     }
-    
+
     private func getPrgValue() -> T {
         return ((localRealProgress + localTempProgress) * (inRange.upperBound - inRange.lowerBound)) + inRange.lowerBound
     }

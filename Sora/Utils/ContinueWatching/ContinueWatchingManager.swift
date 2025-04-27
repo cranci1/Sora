@@ -24,7 +24,7 @@ class ContinueWatchingManager: ObservableObject {
     @objc private func handleiCloudSync() {
         NotificationCenter.default.post(name: .ContinueWatchingDidUpdate, object: nil)
     }
-    
+
     func save(item: ContinueWatchingItem) {
         if item.progress >= 0.9 {
             remove(item: item)
@@ -43,7 +43,7 @@ class ContinueWatchingManager: ObservableObject {
             userDefaultsSuite.set(data, forKey: storageKey)
         }
     }
-    
+
     func loadItems() {
         if let data = userDefaultsSuite.data(forKey: storageKey),
         let parsedItems = try? JSONDecoder().decode([ContinueWatchingItem].self, from: data) {
@@ -52,7 +52,7 @@ class ContinueWatchingManager: ObservableObject {
             items = []
         }
     }
-    
+
     func remove(item: ContinueWatchingItem) {
         items.removeAll { $0.id == item.id }
         if let data = try? JSONEncoder().encode(items) {

@@ -26,7 +26,7 @@ extension BinaryFloatingPoint {
         let hours = totalSeconds / 3600
         let minutes = (totalSeconds % 3600) / 60
         let seconds = totalSeconds % 60
-        
+
         if showHours || hours > 0 {
             return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
         } else {
@@ -62,12 +62,12 @@ struct AniSkipResponse: Decodable {
   struct Result: Decodable {
     struct Interval: Decodable {
       let startTime: Double
-      let endTime:   Double
+      let endTime: Double
     }
     let interval: Interval
     let skipType: String
   }
-  let found:      Bool
-  let results:    [Result]
+  let found: Bool
+  let results: [Result]
   let statusCode: Int
 }

@@ -19,41 +19,41 @@ class VideoPlayerViewController: UIViewController {
     var fullUrl: String = ""
     var subtitles: String = ""
     var aniListID: Int = 0
-    
+
     var episodeNumber: Int = 0
     var episodeImageUrl: String = ""
     var mediaTitle: String = ""
-    
+
     init(module: ScrapingModule, continueWatchingManager: ContinueWatchingManager) {
         self.module = module
         self.continueWatchingManager = continueWatchingManager
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         guard let streamUrl = streamUrl, let url = URL(string: streamUrl) else {
             return
         }
-        
+
         var request = URLRequest(url: url)
         request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Referer")
         request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Origin")
         request.addValue(URLSession.randomUserAgent, forHTTPHeaderField: "User-Agent")
-        
+
         let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": request.allHTTPHeaderFields ?? [:]])
         let playerItem = AVPlayerItem(asset: asset)
-        
+
         player = AVPlayer(playerItem: playerItem)
-        
+
         playerViewController = NormalPlayer()
         playerViewController?.player = player
-        
+
         if let playerViewController = playerViewController {
             addChild(playerViewController)
             playerViewController.view.frame = view.bounds
@@ -61,7 +61,7 @@ class VideoPlayerViewController: UIViewController {
             view.addSubview(playerViewController.view)
             playerViewController.didMove(toParent: self)
         }
-        
+
         addPeriodicTimeObserver(fullURL: fullUrl)
         let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(fullUrl)")
         if lastPlayedTime > 0 {
@@ -73,13 +73,13 @@ class VideoPlayerViewController: UIViewController {
             self.player?.play()
         }
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         player?.play()
         setInitialPlayerRate()
     }
-    
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         if let playbackSpeed = player?.rate {
@@ -91,17 +91,17 @@ class VideoPlayerViewController: UIViewController {
             self.timeObserverToken = nil
         }
     }
-    
+
     private func setInitialPlayerRate() {
         if UserDefaults.standard.bool(forKey: "rememberPlaySpeed") {
             let lastPlayedSpeed = UserDefaults.standard.float(forKey: "lastPlaybackSpeed")
             player?.rate = lastPlayedSpeed > 0 ? lastPlayedSpeed : 1.0
         }
     }
-    
+
     func addPeriodicTimeObserver(fullURL: String) {
         guard let player = self.player else { return }
-        
+
         let interval = CMTime(seconds: 1.0, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         timeObserverToken = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
             guard let self = self,
@@ -109,16 +109,16 @@ class VideoPlayerViewController: UIViewController {
                   currentItem.duration.seconds.isFinite else {
                       return
                   }
-            
+
             let currentTime = time.seconds
             let duration = currentItem.duration.seconds
-            
+
             UserDefaults.standard.set(currentTime, forKey: "lastPlayedTime_\(fullURL)")
             UserDefaults.standard.set(duration, forKey: "totalTime_\(fullURL)")
-            
+
             if let streamUrl = self.streamUrl {
                 let progress = min(max(currentTime / duration, 0), 1.0)
-                
+
                 let item = ContinueWatchingItem(
                     id: UUID(),
                     imageUrl: self.episodeImageUrl,
@@ -133,9 +133,9 @@ class VideoPlayerViewController: UIViewController {
                 )
                 continueWatchingManager.save(item: item)
             }
-            
+
             let remainingPercentage = (duration - currentTime) / duration
-            
+
             if remainingPercentage < 0.1 && self.aniListID != 0 {
                 let aniListMutation = AniListMutation()
                 aniListMutation.updateAnimeProgress(animeId: self.aniListID, episodeNumber: self.episodeNumber) { result in
@@ -149,7 +149,7 @@ class VideoPlayerViewController: UIViewController {
             }
         }
     }
-    
+
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         if UserDefaults.standard.bool(forKey: "alwaysLandscape") {
             return .landscape
@@ -157,15 +157,15 @@ class VideoPlayerViewController: UIViewController {
             return .all
         }
     }
-    
+
     override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
-    
+
     override var prefersStatusBarHidden: Bool {
         return true
     }
-    
+
     deinit {
         player?.pause()
         if let timeObserverToken = timeObserverToken {

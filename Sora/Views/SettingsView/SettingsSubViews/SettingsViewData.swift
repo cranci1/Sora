@@ -11,14 +11,14 @@ struct SettingsViewData: View {
     @State private var showEraseAppDataAlert = false
     @State private var showRemoveDocumentsAlert = false
     @State private var showSizeAlert = false
-    
+
     var body: some View {
         Form {
             Section(header: Text("App storage"), footer: Text("The caches used by Sora are stored images that help load content faster\n\nThe App Data should never be erased if you dont know what that will cause.\n\nClearing the documents folder will remove all the modules and downloads")) {
                 Button(action: clearCache) {
                     Text("Clear Cache")
                 }
-                
+
                 Button(action: {
                     showEraseAppDataAlert = true
                 }) {
@@ -34,7 +34,7 @@ struct SettingsViewData: View {
                         secondaryButton: .cancel()
                     )
                 }
-                
+
                 Button(action: {
                     showRemoveDocumentsAlert = true
                 }) {
@@ -55,7 +55,7 @@ struct SettingsViewData: View {
         .navigationTitle("App Data")
         .navigationViewStyle(StackNavigationViewStyle())
     }
-    
+
     func eraseAppData() {
         if let domain = Bundle.main.bundleIdentifier {
             UserDefaults.standard.removePersistentDomain(forName: domain)
@@ -64,10 +64,10 @@ struct SettingsViewData: View {
             exit(0)
         }
     }
-    
+
     func clearCache() {
         let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
-        
+
         do {
             if let cacheURL = cacheURL {
                 let filePaths = try FileManager.default.contentsOfDirectory(at: cacheURL, includingPropertiesForKeys: nil, options: [])
@@ -80,7 +80,7 @@ struct SettingsViewData: View {
             Logger.shared.log("Failed to clear cache.", type: "Error")
         }
     }
-    
+
     func removeAllFilesInDocuments() {
         let fileManager = FileManager.default
         if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {

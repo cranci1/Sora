@@ -15,18 +15,17 @@ struct SearchItem: Identifiable {
     let href: String
 }
 
-
 struct SearchView: View {
     @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
-    
+
     @StateObject private var jsController = JSController()
     @EnvironmentObject private var moduleManager: ModuleManager
     @EnvironmentObject private var profileStore: ProfileStore
     @Environment(\.verticalSizeClass) var verticalSizeClass
-    
+
     @State private var searchItems: [SearchItem] = []
     @State private var selectedSearchItem: SearchItem?
     @State private var isSearching = false
@@ -40,7 +39,7 @@ struct SearchView: View {
         guard let id = selectedModuleId else { return nil }
         return moduleManager.modules.first { $0.id.uuidString == id }
     }
-    
+
     private var loadingMessages: [String] = [
         "Searching the depths...",
         "Looking for results...",
@@ -48,7 +47,7 @@ struct SearchView: View {
         "Please wait...",
         "Almost there..."
     ]
-    
+
     private var columnsCount: Int {
         if UIDevice.current.userInterfaceIdiom == .pad {
             let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
@@ -57,7 +56,7 @@ struct SearchView: View {
             return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }
     }
-    
+
     private var cellWidth: CGFloat {
         let keyWindow = UIApplication.shared.connectedScenes
             .compactMap { ($0 as? UIWindowScene)?.windows.first(where: { $0.isKeyWindow }) }
@@ -68,7 +67,7 @@ struct SearchView: View {
         let availableWidth = safeWidth - totalSpacing
         return availableWidth / CGFloat(columnsCount)
     }
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -80,7 +79,7 @@ struct SearchView: View {
                             .padding(.trailing, searchText.isEmpty ? 16 : 0)
                             .disabled(selectedModule == nil)
                             .padding(.top)
-                        
+
                         if !searchText.isEmpty {
                             Button("Cancel") {
                                 searchText = ""
@@ -90,7 +89,7 @@ struct SearchView: View {
                             .padding(.top)
                         }
                     }
-                    
+
                     if !(hideEmptySections ?? false) && selectedModule == nil {
                         VStack(spacing: 8) {
                             Image(systemName: "questionmark.app")
@@ -106,7 +105,7 @@ struct SearchView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color(.systemBackground))
                     }
-                    
+
                     if !searchText.isEmpty {
                         if isSearching {
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
@@ -162,7 +161,7 @@ struct SearchView: View {
                         }
                     }
                 }
-                
+
                 NavigationLink(
                     destination: SettingsViewProfile(),
                     isActive: $showProfileSettings,
@@ -263,7 +262,7 @@ struct SearchView: View {
             }
         }
     }
-    
+
     private func performSearch() {
         Logger.shared.log("Searching for: \(searchText)", type: "General")
         guard !searchText.isEmpty, let module = selectedModule else {
@@ -271,11 +270,11 @@ struct SearchView: View {
             hasNoResults = false
             return
         }
-        
+
         isSearching = true
         hasNoResults = false
         searchItems = []
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             Task {
                 do {
@@ -302,13 +301,13 @@ struct SearchView: View {
             }
         }
     }
-    
+
     private func updateOrientation() {
         DispatchQueue.main.async {
             isLandscape = UIDevice.current.orientation.isLandscape
         }
     }
-    
+
     private func determineColumns() -> Int {
         if UIDevice.current.userInterfaceIdiom == .pad {
             return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
@@ -316,22 +315,22 @@ struct SearchView: View {
             return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }
     }
-    
+
     private func cleanLanguageName(_ language: String?) -> String {
         guard let language = language else { return "Unknown" }
-        
+
         let cleaned = language.replacingOccurrences(
             of: "\\s*\\([^\\)]*\\)",
             with: "",
             options: .regularExpression
         ).trimmingCharacters(in: .whitespaces)
-        
+
         return cleaned.isEmpty ? "Unknown" : cleaned
     }
-    
+
     private func getModulesByLanguage() -> [String: [ScrapingModule]] {
         var result = [String: [ScrapingModule]]()
-        
+
         for module in moduleManager.modules {
             let language = cleanLanguageName(module.metadata.language)
             if result[language] == nil {
@@ -340,14 +339,14 @@ struct SearchView: View {
                 result[language]?.append(module)
             }
         }
-        
+
         return result
     }
-    
+
     private func getModuleLanguageGroups() -> [String] {
         return getModulesByLanguage().keys.sorted()
     }
-    
+
     private func getModulesForLanguage(_ language: String) -> [ScrapingModule] {
         return getModulesByLanguage()[language] ?? []
     }
@@ -357,7 +356,7 @@ struct SearchBar: View {
     @State private var debounceTimer: Timer?
     @Binding var text: String
     var onSearchButtonClicked: () -> Void
-    
+
     var body: some View {
         HStack {
             TextField("Search...", text: $text, onCommit: onSearchButtonClicked)
@@ -365,7 +364,7 @@ struct SearchBar: View {
                 .padding(.horizontal, 25)
                 .background(Color(.systemGray6))
                 .cornerRadius(8)
-                .onChange(of: text){newValue in
+                .onChange(of: text) {_ in
                                     debounceTimer?.invalidate()
                                     // Start a new timer to wait before performing the action
                     debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
@@ -379,7 +378,7 @@ struct SearchBar: View {
                             .foregroundColor(.secondary)
                             .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                             .padding(.leading, 8)
-                        
+
                         if !text.isEmpty {
                             Button(action: {
                                 self.text = ""

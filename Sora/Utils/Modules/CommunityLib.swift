@@ -71,7 +71,14 @@ struct WebView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> WKWebView {
         let cfg = WKWebViewConfiguration()
-        cfg.preferences.javaScriptEnabled = true
+
+        if #available(iOS 14.0, *) {
+            let webpagePreferences = WKWebpagePreferences()
+            webpagePreferences.allowsContentJavaScript = true
+            cfg.defaultWebpagePreferences = webpagePreferences
+        } else {
+            cfg.preferences.javaScriptEnabled = true
+        }
         let wv = WKWebView(frame: .zero, configuration: cfg)
         wv.navigationDelegate = context.coordinator
         return wv
@@ -89,11 +96,9 @@ struct WebView: UIViewRepresentable {
 
         func webView(_ webView: WKWebView,
                      decidePolicyFor action: WKNavigationAction,
-                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void)
-        {
+                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             if let url = action.request.url,
-               url.scheme == "sora", url.host == "module"
-            {
+               url.scheme == "sora", url.host == "module" {
                 onCustom(url)
                 decisionHandler(.cancel)
             } else {

@@ -18,11 +18,11 @@ struct DownloadItem: Identifiable {
 
 class DownloadViewModel: ObservableObject {
     @Published var downloads: [DownloadItem] = []
-    
+
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(updateStatus(_:)), name: .DownloadManagerStatusUpdate, object: nil)
     }
-    
+
     @objc func updateStatus(_ notification: Notification) {
         guard let info = notification.userInfo,
               let title = info["title"] as? String,
@@ -30,7 +30,7 @@ class DownloadViewModel: ObservableObject {
               let type = info["type"] as? String,
               let status = info["status"] as? String,
               let progress = info["progress"] as? Double else { return }
-        
+
         if let index = downloads.firstIndex(where: { $0.title == title && $0.episode == episode }) {
             downloads[index] = DownloadItem(title: title, episode: episode, type: type, progress: progress, status: status)
         } else {
@@ -42,7 +42,7 @@ class DownloadViewModel: ObservableObject {
 
 struct DownloadView: View {
     @StateObject var viewModel = DownloadViewModel()
-    
+
     var body: some View {
         NavigationView {
             List(viewModel.downloads) { download in
@@ -51,15 +51,15 @@ struct DownloadView: View {
                         .resizable()
                         .frame(width: 30, height: 30)
                         .foregroundColor(.accentColor)
-                    
+
                     VStack(alignment: .leading, spacing: 4) {
                         Text("\(download.title) - Episode \(download.episode)")
                             .font(.headline)
-                        
+
                         ProgressView(value: download.progress)
                             .progressViewStyle(LinearProgressViewStyle(tint: .accentColor))
                             .frame(height: 8)
-                        
+
                         Text(download.status)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
@@ -72,7 +72,7 @@ struct DownloadView: View {
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }
-    
+
     func iconName(for download: DownloadItem) -> String {
         if download.type == "hls" {
             return download.status.lowercased().contains("converting") ? "arrow.triangle.2.circlepath.circle.fill" : "checkmark.circle.fill"

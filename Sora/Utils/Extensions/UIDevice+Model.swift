@@ -8,7 +8,7 @@
 import UIKit
 
 public extension UIDevice {
-    
+
     static let modelName: String = {
         var systemInfo = utsname()
         uname(&systemInfo)
@@ -17,7 +17,7 @@ public extension UIDevice {
             guard let value = element.value as? Int8, value != 0 else { return identifier }
             return identifier + String(UnicodeScalar(UInt8(value)))
         }
-        
+
         func mapToDevice(identifier: String) -> String { // swiftlint:disable:this cyclomatic_complexity
 #if os(iOS)
             switch identifier {
@@ -220,7 +220,7 @@ public extension UIDevice {
             }
 #endif
         }
-        
+
         return mapToDevice(identifier: identifier)
     }()
 }

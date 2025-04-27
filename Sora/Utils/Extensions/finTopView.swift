@@ -12,16 +12,16 @@ class findTopViewController {
         if let presented = viewController.presentedViewController {
             return findViewController(presented)
         }
-        
+
         if let navigationController = viewController as? UINavigationController {
             return findViewController(navigationController.visibleViewController ?? navigationController)
         }
-        
+
         if let tabBarController = viewController as? UITabBarController,
            let selected = tabBarController.selectedViewController {
             return findViewController(selected)
         }
-        
+
         return viewController
     }
 }

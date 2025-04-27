@@ -16,17 +16,17 @@ struct SettingsViewTrackers: View {
     @State private var anilistUsername: String = ""
     @State private var isAnilistLoading: Bool = false
     @State private var profileColor: Color = .accentColor
-    
+
     @AppStorage("sendTraktUpdates") private var isSendTraktUpdates = true
     @State private var traktStatus: LocalizedStringKey = "You are not logged in"
     @State private var isTraktLoggedIn: Bool = false
     @State private var traktUsername: String = ""
     @State private var isTraktLoading: Bool = false
-    
+
     var body: some View {
         Form {
             Section(header: Text("AniList")) {
-                HStack() {
+                HStack {
                     KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png"))
                         .placeholder {
                             RoundedRectangle(cornerRadius: 10)
@@ -41,7 +41,7 @@ struct SettingsViewTrackers: View {
                     Text("AniList.co")
                         .font(.title2)
                 }
-                
+
                 if isAnilistLoading {
                     ProgressView()
                 } else {
@@ -58,12 +58,12 @@ struct SettingsViewTrackers: View {
                             .multilineTextAlignment(.center)
                     }
                 }
-                
+
                 if isAnilistLoggedIn {
                     Toggle("Sync anime progress", isOn: $isSendPushUpdates)
                         .tint(.accentColor)
                 }
-                
+
                 Button(isAnilistLoggedIn ? "Log Out from AniList" : "Log In with AniList") {
                     if isAnilistLoggedIn {
                         logoutAniList()
@@ -73,9 +73,9 @@ struct SettingsViewTrackers: View {
                 }
                 .font(.body)
             }
-            
+
             Section(header: Text("Trakt")) {
-                HStack() {
+                HStack {
                     KFImage(URL(string: "https://static-00.iconduck.com/assets.00/trakt-icon-2048x2048-2633ksxg.png"))
                         .placeholder {
                             RoundedRectangle(cornerRadius: 10)
@@ -90,7 +90,7 @@ struct SettingsViewTrackers: View {
                     Text("Trakt.tv")
                         .font(.title2)
                 }
-                
+
                 if isTraktLoading {
                     ProgressView()
                 } else {
@@ -106,7 +106,7 @@ struct SettingsViewTrackers: View {
                             .multilineTextAlignment(.center)
                     }
                 }
-                
+
                 Button(isTraktLoggedIn ? "Log Out from Trakt" : "Log In with Trakt") {
                     if isTraktLoggedIn {
                         logoutTrakt()
@@ -116,7 +116,7 @@ struct SettingsViewTrackers: View {
                 }
                 .font(.body)
             }
-            
+
             Section(footer: Text("Sora and cranci1 are not affiliated with AniList nor Trakt in any way.\n\nAlso note that progresses update may not be 100% accurate.")) {}
         }
         .navigationTitle("Trackers")
@@ -129,21 +129,21 @@ struct SettingsViewTrackers: View {
             removeNotificationObservers()
         }
     }
-    
+
     func removeNotificationObservers() {
         NotificationCenter.default.removeObserver(self, name: AniListToken.authSuccessNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: AniListToken.authFailureNotification, object: nil)
-        
+
         NotificationCenter.default.removeObserver(self, name: TraktToken.authSuccessNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: TraktToken.authFailureNotification, object: nil)
     }
-    
+
     func setupNotificationObservers() {
         NotificationCenter.default.addObserver(forName: AniListToken.authSuccessNotification, object: nil, queue: .main) { _ in
             self.anilistStatus = "Authentication successful!"
             self.updateAniListStatus()
         }
-        
+
         NotificationCenter.default.addObserver(forName: AniListToken.authFailureNotification, object: nil, queue: .main) { notification in
             if let error = notification.userInfo?["error"] as? String {
                 self.anilistStatus = "Login failed: \(error)"
@@ -153,12 +153,12 @@ struct SettingsViewTrackers: View {
             self.isAnilistLoggedIn = false
             self.isAnilistLoading = false
         }
-        
+
         NotificationCenter.default.addObserver(forName: TraktToken.authSuccessNotification, object: nil, queue: .main) { _ in
             self.traktStatus = "Authentication successful!"
             self.updateTraktStatus()
         }
-        
+
         NotificationCenter.default.addObserver(forName: TraktToken.authFailureNotification, object: nil, queue: .main) { notification in
             if let error = notification.userInfo?["error"] as? String {
                 self.traktStatus = "Login failed: \(error)"
@@ -169,20 +169,20 @@ struct SettingsViewTrackers: View {
             self.isTraktLoading = false
         }
     }
-    
+
     func loginTrakt() {
         traktStatus = "Starting authentication..."
         isTraktLoading = true
         TraktLogin.authenticate()
     }
-    
+
     func logoutTrakt() {
         removeTraktTokenFromKeychain()
         traktStatus = "You are not logged in"
         isTraktLoggedIn = false
         traktUsername = ""
     }
-    
+
     func updateTraktStatus() {
         if let token = getTraktTokenFromKeychain() {
             isTraktLoggedIn = true
@@ -192,7 +192,7 @@ struct SettingsViewTrackers: View {
             traktStatus = "You are not logged in"
         }
     }
-    
+
     func fetchTraktUserInfo(token: String) {
         isTraktLoading = true
         let userInfoURL = URL(string: "https://api.trakt.tv/users/settings")!
@@ -202,20 +202,20 @@ struct SettingsViewTrackers: View {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("2", forHTTPHeaderField: "trakt-api-version")
         request.setValue(TraktToken.clientID, forHTTPHeaderField: "trakt-api-key")
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
             DispatchQueue.main.async {
                 self.isTraktLoading = false
                 if let error = error {
                     self.traktStatus = "Error: \(error.localizedDescription)"
                     return
                 }
-                
+
                 guard let data = data else {
                     self.traktStatus = "No data received"
                     return
                 }
-                
+
                 do {
                     if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                        let user = json["user"] as? [String: Any],
@@ -229,7 +229,7 @@ struct SettingsViewTrackers: View {
             }
         }.resume()
     }
-    
+
     func getTraktTokenFromKeychain() -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -238,7 +238,7 @@ struct SettingsViewTrackers: View {
             kSecReturnData as String: kCFBooleanTrue!,
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
-        
+
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         guard status == errSecSuccess,
@@ -248,7 +248,7 @@ struct SettingsViewTrackers: View {
         }
         return token
     }
-    
+
     func removeTraktTokenFromKeychain() {
         let deleteQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -256,7 +256,7 @@ struct SettingsViewTrackers: View {
             kSecAttrAccount as String: TraktToken.accessTokenKey
         ]
         SecItemDelete(deleteQuery as CFDictionary)
-        
+
         let refreshDeleteQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: TraktToken.serviceName,
@@ -264,13 +264,13 @@ struct SettingsViewTrackers: View {
         ]
         SecItemDelete(refreshDeleteQuery as CFDictionary)
     }
-    
+
     func loginAniList() {
         anilistStatus = "Starting authentication..."
         isAnilistLoading = true
         AniListLogin.authenticate()
     }
-    
+
     func logoutAniList() {
         removeTokenFromKeychain()
         anilistStatus = "You are not logged in"
@@ -278,7 +278,7 @@ struct SettingsViewTrackers: View {
         anilistUsername = ""
         profileColor = .primary
     }
-    
+
     func updateAniListStatus() {
         if let token = getTokenFromKeychain() {
             isAnilistLoggedIn = true
@@ -288,7 +288,7 @@ struct SettingsViewTrackers: View {
             anilistStatus = "You are not logged in"
         }
     }
-    
+
     func fetchUserInfo(token: String) {
         isAnilistLoading = true
         let userInfoURL = URL(string: "https://graphql.anilist.co")!
@@ -296,7 +296,7 @@ struct SettingsViewTrackers: View {
         request.httpMethod = "POST"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let query = """
         {
             Viewer {
@@ -309,7 +309,7 @@ struct SettingsViewTrackers: View {
         }
         """
         let body: [String: Any] = ["query": query]
-        
+
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
         } catch {
@@ -318,8 +318,8 @@ struct SettingsViewTrackers: View {
             isAnilistLoading = false
             return
         }
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
             DispatchQueue.main.async {
                 isAnilistLoading = false
                 if let error = error {
@@ -339,7 +339,7 @@ struct SettingsViewTrackers: View {
                        let name = viewer["name"] as? String,
                        let options = viewer["options"] as? [String: Any],
                        let colorName = options["profileColor"] as? String {
-                        
+
                         anilistUsername = name
                         profileColor = colorFromName(colorName)
                         anilistStatus = "Logged in as \(name)"
@@ -354,7 +354,7 @@ struct SettingsViewTrackers: View {
             }
         }.resume()
     }
-    
+
     func colorFromName(_ name: String) -> Color {
         switch name.lowercased() {
         case "blue":
@@ -375,7 +375,7 @@ struct SettingsViewTrackers: View {
             return .accentColor
         }
     }
-    
+
     func getTokenFromKeychain() -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -391,7 +391,7 @@ struct SettingsViewTrackers: View {
         }
         return String(data: tokenData, encoding: .utf8)
     }
-    
+
     func removeTokenFromKeychain() {
         let deleteQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,

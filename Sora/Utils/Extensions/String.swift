@@ -17,7 +17,7 @@ extension String {
         let attributedString = try? NSAttributedString(data: data, options: options, documentAttributes: nil)
         return attributedString?.string ?? self
     }
-    
+
     var trimmed: String {
         return self.trimmingCharacters(in: .whitespacesAndNewlines)
     }

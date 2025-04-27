@@ -11,12 +11,12 @@ import Kingfisher
 struct ModuleAdditionSettingsView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var moduleManager: ModuleManager
-    
+
     @State private var moduleMetadata: ModuleMetadata?
     @State private var isLoading = false
     @State private var errorMessage: String?
     var moduleUrl: String
-    
+
     var body: some View {
         VStack {
             ScrollView {
@@ -31,15 +31,15 @@ struct ModuleAdditionSettingsView: View {
                                     .clipShape(Circle())
                                     .shadow(radius: 5)
                                     .transition(.scale)
-                                
+
                                 Text(metadata.sourceName)
                                     .font(.system(size: 28, weight: .bold))
                                     .multilineTextAlignment(.center)
                             }
                             .padding(.top)
-                            
+
                             Divider()
-                            
+
                             HStack(spacing: 15) {
                                 KFImage(URL(string: metadata.author.icon))
                                     .resizable()
@@ -47,7 +47,7 @@ struct ModuleAdditionSettingsView: View {
                                     .frame(width: 60, height: 60)
                                     .clipShape(Circle())
                                     .shadow(radius: 3)
-                                
+
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(metadata.author.name)
                                         .font(.headline)
@@ -58,9 +58,9 @@ struct ModuleAdditionSettingsView: View {
                                 Spacer()
                             }
                             .padding(.horizontal)
-                            
+
                             Divider()
-                            
+
                             VStack(alignment: .leading, spacing: 12) {
                                 InfoRow(title: "Version", value: metadata.version)
                                 InfoRow(title: "Language", value: metadata.language)
@@ -79,9 +79,9 @@ struct ModuleAdditionSettingsView: View {
                             }
                             .padding(.horizontal)
                         }
-                        
+
                         Divider()
-                        
+
                     } else if isLoading {
                         VStack(spacing: 20) {
                             ProgressView()
@@ -105,9 +105,9 @@ struct ModuleAdditionSettingsView: View {
                     }
                 }
             }
-            
+
             Spacer()
-            
+
             VStack {
                 Button(action: addModule) {
                     HStack {
@@ -126,7 +126,7 @@ struct ModuleAdditionSettingsView: View {
                 }
                 .disabled(isLoading)
                 .opacity(isLoading ? 0.6 : 1)
-                
+
                 Button(action: {
                     self.presentationMode.wrappedValue.dismiss()
                 }) {
@@ -140,11 +140,11 @@ struct ModuleAdditionSettingsView: View {
         .navigationTitle("Add Module")
         .onAppear(perform: fetchModuleMetadata)
     }
-    
+
     private func fetchModuleMetadata() {
         isLoading = true
         errorMessage = nil
-        
+
         Task {
             guard let url = URL(string: moduleUrl) else {
                 await MainActor.run {
@@ -169,15 +169,15 @@ struct ModuleAdditionSettingsView: View {
             }
         }
     }
-    
+
     private func addModule() {
         isLoading = true
         Task {
             do {
-                let _ = try await moduleManager.addModule(metadataUrl: moduleUrl)
+                _ = try await moduleManager.addModule(metadataUrl: moduleUrl)
                 await MainActor.run {
                     isLoading = false
-                    DropManager.shared.showDrop(title: "Module Added", subtitle: "Click it to select it.", duration: 2.0, icon: UIImage(systemName:"gear.badge.checkmark"))
+                    DropManager.shared.showDrop(title: "Module Added", subtitle: "Click it to select it.", duration: 2.0, icon: UIImage(systemName: "gear.badge.checkmark"))
                     self.presentationMode.wrappedValue.dismiss()
                 }
             } catch {
@@ -198,7 +198,7 @@ struct ModuleAdditionSettingsView: View {
 struct InfoRow: View {
     let title: String
     let value: String
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)

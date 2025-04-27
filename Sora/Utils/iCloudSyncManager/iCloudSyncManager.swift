@@ -24,7 +24,7 @@ import UIKit
 // TODO: tests
 class iCloudSyncManager {
     static let shared = iCloudSyncManager()
-    
+
     private let defaultsToSync: [String] = [
         "externalPlayer",
         "alwaysLandscape",
@@ -51,19 +51,19 @@ class iCloudSyncManager {
         "profilesData",
         "currentProfileID"
     ]
-    
+
     private let modulesFileName = "modules.json"
-    
+
     private var ubiquityContainerURL: URL? {
         FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents")
     }
-    
+
     private init() {
         setupSync()
-        
+
         NotificationCenter.default.addObserver(self, selector: #selector(willEnterBackground), name: UIApplication.willResignActiveNotification, object: nil)
     }
-    
+
     private func setupSync() {
         NSUbiquitousKeyValueStore.default.synchronize()
         syncFromiCloud()
@@ -71,12 +71,12 @@ class iCloudSyncManager {
         NotificationCenter.default.addObserver(self, selector: #selector(iCloudDidChangeExternally), name: NSUbiquitousKeyValueStore.didChangeExternallyNotification, object: NSUbiquitousKeyValueStore.default)
         NotificationCenter.default.addObserver(self, selector: #selector(userDefaultsDidChange), name: UserDefaults.didChangeNotification, object: nil)
     }
-    
+
     @objc private func willEnterBackground() {
         syncToiCloud()
         syncModulesToiCloud()
     }
-    
+
     private func allProgressKeys() -> [String] {
         let allKeys = UserDefaults.standard.dictionaryRepresentation().keys
         let progressPrefixes = ["lastPlayedTime_", "totalTime_"]
@@ -84,7 +84,7 @@ class iCloudSyncManager {
             progressPrefixes.contains { prefix in key.hasPrefix(prefix) }
         }
     }
-    
+
     private func allKeysToSync() -> [String] {
         var keys = Set(defaultsToSync + allProgressKeys())
         let userDefaults = UserDefaults.standard
@@ -97,34 +97,34 @@ class iCloudSyncManager {
         }
         return Array(keys)
     }
-    
+
     private func syncFromiCloud() {
         let iCloud = NSUbiquitousKeyValueStore.default
         let defaults = UserDefaults.standard
-        
+
         for key in allKeysToSync() {
             if let value = iCloud.object(forKey: key) {
                 defaults.set(value, forKey: key)
             }
         }
-        
+
         defaults.synchronize()
         NotificationCenter.default.post(name: .iCloudSyncDidComplete, object: nil)
     }
-    
+
     private func syncToiCloud() {
         let iCloud = NSUbiquitousKeyValueStore.default
         let defaults = UserDefaults.standard
-        
+
         for key in allKeysToSync() {
             if let value = defaults.object(forKey: key) {
                 iCloud.set(value, forKey: key)
             }
         }
-        
+
         iCloud.synchronize()
     }
-    
+
     @objc private func iCloudDidChangeExternally(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let reason = userInfo[NSUbiquitousKeyValueStoreChangeReasonKey] as? Int else {
@@ -136,11 +136,11 @@ class iCloudSyncManager {
             syncModulesFromiCloud()
         }
     }
-    
+
     @objc private func userDefaultsDidChange(_ notification: Notification) {
         syncToiCloud()
     }
-    
+
     func syncModulesToiCloud() {
         DispatchQueue.global(qos: .background).async {
             guard let iCloudURL = self.ubiquityContainerURL else { return }
@@ -148,7 +148,7 @@ class iCloudSyncManager {
             let iCloudModulesURL = iCloudURL.appendingPathComponent(self.modulesFileName)
             do {
                 guard FileManager.default.fileExists(atPath: localModulesURL.path) else { return }
-                
+
                 let shouldCopy: Bool
                 if FileManager.default.fileExists(atPath: iCloudModulesURL.path) {
                     let localData = try Data(contentsOf: localModulesURL)
@@ -157,7 +157,7 @@ class iCloudSyncManager {
                 } else {
                     shouldCopy = true
                 }
-                
+
                 if shouldCopy {
                     if FileManager.default.fileExists(atPath: iCloudModulesURL.path) {
                         try FileManager.default.removeItem(at: iCloudModulesURL)
@@ -169,20 +169,20 @@ class iCloudSyncManager {
             }
         }
     }
-    
+
     func syncModulesFromiCloud() {
         guard let iCloudURL = self.ubiquityContainerURL else {
             Logger.shared.log("iCloud container not available", type: "Error")
             return
         }
-        
+
         let localModulesURL = self.getLocalModulesFileURL()
         let iCloudModulesURL = iCloudURL.appendingPathComponent(self.modulesFileName)
-        
+
         do {
             if !FileManager.default.fileExists(atPath: iCloudModulesURL.path) {
                 Logger.shared.log("No modules file found in iCloud", type: "Info")
-                
+
                 if FileManager.default.fileExists(atPath: localModulesURL.path) {
                     Logger.shared.log("Copying local modules file to iCloud", type: "Info")
                     try FileManager.default.copyItem(at: localModulesURL, to: iCloudModulesURL)
@@ -191,16 +191,16 @@ class iCloudSyncManager {
                     let emptyModules: [ScrapingModule] = []
                     let emptyData = try JSONEncoder().encode(emptyModules)
                     try emptyData.write(to: iCloudModulesURL)
-                    
+
                     try emptyData.write(to: localModulesURL)
-                    
+
                     DispatchQueue.main.async {
                         NotificationCenter.default.post(name: .modulesSyncDidComplete, object: nil)
                     }
                 }
                 return
             }
-            
+
             let shouldCopy: Bool
             if FileManager.default.fileExists(atPath: localModulesURL.path) {
                 let localData = try Data(contentsOf: localModulesURL)
@@ -209,14 +209,14 @@ class iCloudSyncManager {
             } else {
                 shouldCopy = true
             }
-            
+
             if shouldCopy {
                 Logger.shared.log("Syncing modules from iCloud", type: "Info")
                 if FileManager.default.fileExists(atPath: localModulesURL.path) {
                     try FileManager.default.removeItem(at: localModulesURL)
                 }
                 try FileManager.default.copyItem(at: iCloudModulesURL, to: localModulesURL)
-                
+
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .modulesSyncDidComplete, object: nil)
                 }
@@ -225,7 +225,7 @@ class iCloudSyncManager {
             Logger.shared.log("iCloud modules sync error: \(error)", type: "Error")
         }
     }
-    
+
     private func getLocalModulesFileURL() -> URL {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         return docs.appendingPathComponent(modulesFileName)

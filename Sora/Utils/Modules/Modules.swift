@@ -37,7 +37,7 @@ struct ScrapingModule: Codable, Identifiable, Hashable {
     let localPath: String
     let metadataUrl: String
     var isActive: Bool
-    
+
     init(id: UUID = UUID(), metadata: ModuleMetadata, localPath: String, metadataUrl: String, isActive: Bool = false) {
         self.id = id
         self.metadata = metadata
@@ -45,11 +45,11 @@ struct ScrapingModule: Codable, Identifiable, Hashable {
         self.metadataUrl = metadataUrl
         self.isActive = isActive
     }
-    
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
-    
+
     static func == (lhs: ScrapingModule, rhs: ScrapingModule) -> Bool {
         lhs.id == rhs.id
     }

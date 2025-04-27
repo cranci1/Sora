@@ -42,7 +42,7 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
                                 }
                         }
                     }
-                    
+
                     Image(systemName: getIconName)
                         .font(.system(size: 20, weight: .bold, design: .rounded))
                         .frame(width: 30)
@@ -100,7 +100,7 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
         let lowThreshold: T = 0.2
         let midThreshold: T = 0.35
         let highThreshold: T = 0.7
-        
+
         switch p {
         case muteThreshold:
             return "speaker.slash.fill"
@@ -117,7 +117,7 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
 
     private func handleIconTap() {
         let currentProgress = localRealProgress + localTempProgress
-        
+
         withAnimation {
             if currentProgress <= 0 {
                 value = lastVolumeValue

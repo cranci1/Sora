@@ -34,7 +34,7 @@ struct SettingsView: View {
                         Text("Trackers")
                     }
                 }
-                
+
                 Section(header: Text("Diagnostics & Storage")) {
                     NavigationLink(destination: SettingsViewData()) {
                         Text("Data")
@@ -43,7 +43,7 @@ struct SettingsView: View {
                         Text("Logs")
                     }
                 }
-                
+
                 Section(
                     header: Text("Info"),
                     footer: Text("Running Sora \(version) - cranci1")
@@ -123,7 +123,7 @@ struct SettingsView: View {
 
 enum Appearance: String, CaseIterable, Identifiable {
     case system, light, dark
-    
+
     var id: String { self.rawValue }
 }
 
@@ -145,7 +145,7 @@ class Settings: ObservableObject {
             updateAppearance()
         }
     }
-    
+
     init() {
         if let shimmerRawValue = UserDefaults.standard.string(forKey: "shimmerType"),
            let shimmer = ShimmerType(rawValue: shimmerRawValue) {
@@ -160,7 +160,6 @@ class Settings: ObservableObject {
         } else {
             self.accentColor = .accentColor
         }
-
 
         if let appearanceRawValue = UserDefaults.standard.string(forKey: "selectedAppearance"),
            let appearance = Appearance(rawValue: appearanceRawValue) {
@@ -188,7 +187,7 @@ class Settings: ObservableObject {
             Logger.shared.log("Failed to save accent color: \(error.localizedDescription)")
         }
     }
-    
+
     func updateAppearance() {
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
         switch selectedAppearance {

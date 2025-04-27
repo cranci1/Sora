@@ -8,31 +8,31 @@
 import JavaScriptCore
 
 extension JSController {
-    
+
     func fetchSearchResults(keyword: String, module: ScrapingModule, completion: @escaping ([SearchItem]) -> Void) {
         let searchUrl = module.metadata.searchBaseUrl.replacingOccurrences(of: "%s", with: keyword.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")
-        
+
         guard let url = URL(string: searchUrl) else {
             completion([])
             return
         }
-        
+
         URLSession.custom.dataTask(with: url) { [weak self] data, _, error in
             guard let self = self else { return }
-            
+
             if let error = error {
-                Logger.shared.log("Network error: \(error)",type: "Error")
+                Logger.shared.log("Network error: \(error)", type: "Error")
                 DispatchQueue.main.async { completion([]) }
                 return
             }
-            
+
             guard let data = data, let html = String(data: data, encoding: .utf8) else {
-                Logger.shared.log("Failed to decode HTML",type: "Error")
+                Logger.shared.log("Failed to decode HTML", type: "Error")
                 DispatchQueue.main.async { completion([]) }
                 return
             }
-            
-            Logger.shared.log(html,type: "HTMLStrings")
+
+            Logger.shared.log(html, type: "HTMLStrings")
             if let parseFunction = self.context.objectForKeyedSubscript("searchResults"),
                let results = parseFunction.call(withArguments: [html]).toArray() as? [[String: String]] {
                 let resultItems = results.map { item in
@@ -46,35 +46,35 @@ extension JSController {
                     completion(resultItems)
                 }
             } else {
-                Logger.shared.log("Failed to parse results",type: "Error")
+                Logger.shared.log("Failed to parse results", type: "Error")
                 DispatchQueue.main.async { completion([]) }
             }
         }.resume()
     }
-    
+
     func fetchJsSearchResults(keyword: String, module: ScrapingModule, completion: @escaping ([SearchItem]) -> Void) {
         if let exception = context.exception {
-            Logger.shared.log("JavaScript exception: \(exception)",type: "Error")
+            Logger.shared.log("JavaScript exception: \(exception)", type: "Error")
             completion([])
             return
         }
-        
+
         guard let searchResultsFunction = context.objectForKeyedSubscript("searchResults") else {
-            Logger.shared.log("No JavaScript function searchResults found",type: "Error")
+            Logger.shared.log("No JavaScript function searchResults found", type: "Error")
             completion([])
             return
         }
-        
+
         let promiseValue = searchResultsFunction.call(withArguments: [keyword])
         guard let promise = promiseValue else {
-            Logger.shared.log("searchResults did not return a Promise",type: "Error")
+            Logger.shared.log("searchResults did not return a Promise", type: "Error")
             completion([])
             return
         }
-        
+
         let thenBlock: @convention(block) (JSValue) -> Void = { result in
-            
-            Logger.shared.log(result.toString(),type: "HTMLStrings")
+
+            Logger.shared.log(result.toString(), type: "HTMLStrings")
             if let jsonString = result.toString(),
                let data = jsonString.data(using: .utf8) {
                 do {
@@ -88,41 +88,41 @@ extension JSController {
                                   }
                             return SearchItem(title: title, imageUrl: imageUrl, href: href)
                         }
-                        
+
                         DispatchQueue.main.async {
                             completion(resultItems)
                         }
-                        
+
                     } else {
-                        Logger.shared.log("Failed to parse JSON",type: "Error")
+                        Logger.shared.log("Failed to parse JSON", type: "Error")
                         DispatchQueue.main.async {
                             completion([])
                         }
                     }
                 } catch {
-                    Logger.shared.log("JSON parsing error: \(error)",type: "Error")
+                    Logger.shared.log("JSON parsing error: \(error)", type: "Error")
                     DispatchQueue.main.async {
                         completion([])
                     }
                 }
             } else {
-                Logger.shared.log("Result is not a string",type: "Error")
+                Logger.shared.log("Result is not a string", type: "Error")
                 DispatchQueue.main.async {
                     completion([])
                 }
             }
         }
-        
+
         let catchBlock: @convention(block) (JSValue) -> Void = { error in
-            Logger.shared.log("Promise rejected: \(String(describing: error.toString()))",type: "Error")
+            Logger.shared.log("Promise rejected: \(String(describing: error.toString()))", type: "Error")
             DispatchQueue.main.async {
                 completion([])
             }
         }
-        
+
         let thenFunction = JSValue(object: thenBlock, in: context)
         let catchFunction = JSValue(object: catchBlock, in: context)
-        
+
         promise.invokeMethod("then", withArguments: [thenFunction as Any])
         promise.invokeMethod("catch", withArguments: [catchFunction as Any])
     }

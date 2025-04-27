@@ -19,7 +19,7 @@ struct SettingsViewGeneral: View {
     @AppStorage("hideEmptySections") private var hideEmptySections: Bool = false
     @AppStorage("currentAppIcon") private var currentAppIcon: String = "Default"
     @AppStorage("episodeSortOrder") private var episodeSortOrder: String = "Ascending"
-    
+
     private let metadataProvidersList = ["AniList"]
     private let sortOrderOptions = ["Ascending", "Descending"]
     @EnvironmentObject var settings: Settings
@@ -73,9 +73,9 @@ struct SettingsViewGeneral: View {
                 Toggle("Hide Empty Sections", isOn: $hideEmptySections)
                     .tint(.accentColor)
             }
-            
+
             Section(header: Text("Media View"), footer: Text("The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1-25, 26-50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata it is refering to the episode thumbnail and title, since sometimes it can contain spoilers.")) {
-                
+
                 HStack {
                     Text("Episodes Range")
                     Spacer()
@@ -88,10 +88,10 @@ struct SettingsViewGeneral: View {
                         Text("\(episodeChunkSize)")
                     }
                 }
-                
+
                 Toggle("Fetch Episode metadata", isOn: $fetchEpisodeMetadata)
                     .tint(.accentColor)
-                
+
                 HStack {
                     Text("Metadata Provider")
                     Spacer()
@@ -104,7 +104,7 @@ struct SettingsViewGeneral: View {
                     }
                 }
             }
-            
+
             Section(header: Text("Media Grid Layout"), footer: Text("Adjust the number of media items per row in portrait and landscape modes.")) {
                 HStack {
                     if UIDevice.current.userInterfaceIdiom == .pad {
@@ -133,12 +133,12 @@ struct SettingsViewGeneral: View {
                     }
                 }
             }
-            
+
             Section(header: Text("Modules"), footer: Text("Note that the modules will be replaced only if there is a different version string inside the JSON file.")) {
                 Toggle("Refresh Modules on Launch", isOn: $refreshModulesOnLaunch)
                     .tint(.accentColor)
             }
-            
+
             Section(header: Text("Advanced"), footer: Text("Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time.")) {
                 Toggle("Enable Analytics", isOn: $analyticsEnabled)
                     .tint(.accentColor)

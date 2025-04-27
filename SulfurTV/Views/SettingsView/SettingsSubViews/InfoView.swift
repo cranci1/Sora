@@ -26,19 +26,19 @@ struct InfoView: View {
                         .background(.primary)
                         .cornerRadius(30)
                 }
-                
+
                 // Text + Close Button
                 VStack(alignment: .leading, spacing: 40) {
                     Text("Scan to Visit")
                         .font(.largeTitle)
                         .bold()
                         .foregroundColor(.primary)
-                    
+
                     Text("Links cannot be openend on tvOS. But you can either Scan the QR-Code or type in the following URL into the Browser of your choosing: \n\n\(urlString)")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .frame(maxWidth: 500)
-                    
+
                     Button("Close") {
                         dismiss()
                     }

@@ -18,9 +18,9 @@ struct SubtitleSettings: Codable {
 
 class SubtitleSettingsManager {
     static let shared = SubtitleSettingsManager()
-    
+
     private let userDefaultsKey = "SubtitleSettings"
-    
+
     var settings: SubtitleSettings {
         get {
             if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
@@ -35,7 +35,7 @@ class SubtitleSettingsManager {
             }
         }
     }
-    
+
     func update(_ updateBlock: (inout SubtitleSettings) -> Void) {
         var currentSettings = settings
         updateBlock(&currentSettings)

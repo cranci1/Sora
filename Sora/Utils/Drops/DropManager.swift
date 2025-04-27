@@ -10,12 +10,12 @@ import UIKit
 
 class DropManager {
     static let shared = DropManager()
-    
+
     private init() {}
-    
+
     func showDrop(title: String, subtitle: String, duration: TimeInterval, icon: UIImage?) {
         let position: Drop.Position = .top
-        
+
         let drop = Drop(
             title: title,
             subtitle: subtitle,

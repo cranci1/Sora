@@ -18,9 +18,9 @@ struct SettingsViewPlayer: View {
     @AppStorage("skip85Visible") private var skip85Visible: Bool = true
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
-    
+
     private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "Sora"]
-    
+
     var body: some View {
         Form {
             Section(header: Text("Media Player"), footer: Text("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.")) {
@@ -37,14 +37,14 @@ struct SettingsViewPlayer: View {
                         }
                     }
                 }
-                
+
                 Toggle("Force Landscape", isOn: $isAlwaysLandscape)
                     .tint(.accentColor)
 
-                Toggle("Two Finger Hold for Pause",isOn: $holdForPauseEnabled)
+                Toggle("Two Finger Hold for Pause", isOn: $holdForPauseEnabled)
                     .tint(.accentColor)
             }
-            
+
             Section(header: Text("Speed Settings")) {
                 Toggle("Remember Playback speed", isOn: $isRememberPlaySpeed)
                     .tint(.accentColor)
@@ -82,20 +82,20 @@ struct SettingsViewPlayer: View {
                     }
                 ))
             }
-            
-            Section(header: Text("Skip Settings"), footer : Text("Double tapping the screen on it's sides will skip with the short tap setting.")) {
+
+            Section(header: Text("Skip Settings"), footer: Text("Double tapping the screen on it's sides will skip with the short tap setting.")) {
                 HStack {
                     Text("Tap Skip:")
                     Spacer()
                     Stepper("\(Int(skipIncrement))s", value: $skipIncrement, in: 5...300, step: 5)
                 }
-                
+
                 HStack {
                     Text("Long press Skip:")
                     Spacer()
                     Stepper("\(Int(skipIncrementHold))s", value: $skipIncrementHold, in: 5...300, step: 5)
                 }
-                
+
                 Toggle("Double Tap to Seek", isOn: $doubleTapSeekEnabled)
                     .tint(.accentColor)
 
@@ -140,7 +140,7 @@ struct SubtitleSettingsSection: View {
                     }
                 }
             }
-            
+
             HStack {
                 Text("Shadow")
                 Spacer()
@@ -157,7 +157,7 @@ struct SubtitleSettingsSection: View {
                     }
                 }
             }
-            
+
             Toggle("Background Enabled", isOn: $backgroundEnabled)
                 .tint(.accentColor)
                 .onChange(of: backgroundEnabled) { newValue in
@@ -165,7 +165,7 @@ struct SubtitleSettingsSection: View {
                         settings.backgroundEnabled = newValue
                     }
                 }
-            
+
             HStack {
                 Text("Font Size:")
                 Spacer()
@@ -176,7 +176,7 @@ struct SubtitleSettingsSection: View {
                         }
                     }
             }
-            
+
             HStack {
                 Text("Bottom Padding:")
                 Spacer()
@@ -187,23 +187,23 @@ struct SubtitleSettingsSection: View {
                         }
                     }
             }
-            
+
             VStack(alignment: .leading) {
                 Text("Subtitle Delay: \(String(format: "%.1fs", subtitleDelay))")
                     .padding(.bottom, 1)
-                
+
                 HStack {
                     Text("-10s")
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
-                    
+
                     Slider(value: $subtitleDelay, in: -10...10, step: 0.1)
                         .onChange(of: subtitleDelay) { newValue in
                             SubtitleSettingsManager.shared.update { settings in
                                 settings.subtitleDelay = newValue
                             }
                         }
-                    
+
                     Text("+10s")
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)

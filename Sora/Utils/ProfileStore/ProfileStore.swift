@@ -76,14 +76,14 @@ class ProfileStore: ObservableObject {
     }
 
     public func deleteCurrentProfile() {
-        if (profiles.count == 1) { return }
+        if profiles.count == 1 { return }
 
         if let suite = UserDefaults(suiteName: currentProfile.id.uuidString) {
             for key in suite.dictionaryRepresentation().keys {
                 suite.removeObject(forKey: key)
             }
         }
-        
+
         profiles.removeAll { $0.id == currentProfile.id }
 
         if let firstProfile = profiles.first {

@@ -7,25 +7,21 @@
 
 import Foundation
 // URL DELEGATE CLASS FOR FETCH API
-class FetchDelegate: NSObject, URLSessionTaskDelegate
-{
+class FetchDelegate: NSObject, URLSessionTaskDelegate {
     private let allowRedirects: Bool
     init(allowRedirects: Bool) {
         self.allowRedirects = allowRedirects
     }
     // This handles the redirection and prevents it.
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
-        if(allowRedirects)
-        {
+        if allowRedirects {
             completionHandler(request) // Allow Redirect
-        }
-        else
-        {
+        } else {
             completionHandler(nil) // Block Redirect
         }
-         
+
     }
-    
+
 }
 extension URLSession {
     static let userAgents = [
@@ -53,24 +49,22 @@ extension URLSession {
         "Mozilla/5.0 (Android 15; Mobile; rv:128.0) Gecko/128.0 Firefox/128.0",
         "Mozilla/5.0 (Android 15; Mobile; rv:127.0) Gecko/127.0 Firefox/127.0"
     ]
-    
+
     static var randomUserAgent: String = {
         userAgents.randomElement() ?? userAgents[0]
     }()
-    
+
     static let custom: URLSession = {
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = ["User-Agent": randomUserAgent]
         return URLSession(configuration: configuration)
     }()
-    
+
     // return url session that redirects based on input
-    static func fetchData(allowRedirects:Bool) -> URLSession
-    {
-        let delegate = FetchDelegate(allowRedirects:allowRedirects)
+    static func fetchData(allowRedirects: Bool) -> URLSession {
+        let delegate = FetchDelegate(allowRedirects: allowRedirects)
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = ["User-Agent": randomUserAgent]
         return URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
     }
 }
-

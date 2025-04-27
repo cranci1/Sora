@@ -189,7 +189,7 @@ struct SubtitleSettingsSection: View {
             }
             
             VStack(alignment: .leading) {
-                Text("Subtitle Timing Adjustment: \(String(format: "%.1fs", subtitleDelay))")
+                Text("Subtitle Delay: \(String(format: "%.1fs", subtitleDelay))")
                     .padding(.bottom, 1)
                 
                 HStack {

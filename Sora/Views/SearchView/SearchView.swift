@@ -111,7 +111,7 @@ struct SearchView: View {
                         if isSearching {
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
                                 ForEach(0..<columnsCount*4, id: \.self) { _ in
-                                    SearchSkeletonCell(cellWidth: cellWidth)
+                                    SkeletonCell(type: .search, cellWidth: cellWidth)
                                 }
                             }
                             .padding(.top)

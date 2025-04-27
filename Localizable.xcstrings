@@ -1109,6 +1109,16 @@
         }
       }
     },
+    "No Content Available" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Inhalt verfügbar"
+          }
+        }
+      }
+    },
     "No data received" : {
       "localizations" : {
         "de" : {
@@ -1685,6 +1695,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nutze andere Wörter"
+          }
+        }
+      }
+    },
+    "Try updating the Module" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versuche das Modul zu updaten"
           }
         }
       }

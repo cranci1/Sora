@@ -1,0 +1,120 @@
+# Directory and file filters
+included:
+  - Plugins
+  - Source
+  - Tests
+  - Package.swift
+excluded:
+  - Tests/BuiltInRulesTests/Resources
+  - Tests/FrameworkTests/Resources
+
+# Enabled/disabled rules
+analyzer_rules:
+  - unused_declaration
+  - unused_import
+opt_in_rules:
+  - all
+disabled_rules:
+  - anonymous_argument_in_multiline_closure
+  - async_without_await
+  - conditional_returns_on_newline
+  - contrasted_opening_brace
+  - convenience_type
+  - discouraged_optional_collection
+  - explicit_acl
+  - explicit_enum_raw_value
+  - explicit_top_level_acl
+  - explicit_type_interface
+  - file_types_order
+  - force_unwrapping
+  - function_default_parameter_at_end
+  - indentation_width
+  - missing_docs
+  - multiline_arguments
+  - multiline_arguments_brackets
+  - multiline_function_chains
+  - multiline_parameters_brackets
+  - no_extension_access_modifier
+  - no_grouping_extension
+  - no_magic_numbers
+  - one_declaration_per_file
+  - prefer_key_path # Re-enable once we are on Swift 6.
+  - prefer_nimble
+  - prefixed_toplevel_constant
+  - required_deinit
+  - sorted_enum_cases
+  - strict_fileprivate
+  - switch_case_on_newline
+  - todo
+  - trailing_closure
+  - type_contents_order
+  - vertical_whitespace_between_cases
+
+# Configurations
+attributes:
+  always_on_line_above:
+    - "@ConfigurationElement"
+    - "@OptionGroup"
+    - "@RuleConfigurationDescriptionBuilder"
+balanced_xctest_lifecycle: &unit_test_configuration
+  test_parent_classes:
+    - SwiftLintTestCase
+    - XCTestCase
+closure_body_length:
+    warning: 50
+    error: 100
+empty_xctest_method: *unit_test_configuration
+file_name:
+  excluded:
+    - Exports.swift
+    - GeneratedTests.swift
+    - Macros.swift
+    - Reporters+Register.swift
+    - Rules+Register.swift
+    - Rules+Template.swift
+    - RuleConfigurationMacros.swift
+    - SwiftSyntax+SwiftLint.swift
+    - TestHelpers.swift
+final_test_case: *unit_test_configuration
+function_body_length: 60
+identifier_name:
+  excluded:
+    - id
+large_tuple: 3
+number_separator:
+  minimum_length: 5
+redundant_type_annotation:
+  consider_default_literal_types_redundant: true
+single_test_class: *unit_test_configuration
+trailing_comma:
+  mandatory_comma: true
+type_body_length: 400
+unneeded_override:
+  affect_initializers: true
+unused_import:
+  always_keep_imports:
+    - SwiftSyntaxBuilder # we can't detect uses of string interpolation of swift syntax nodes
+    - SwiftLintFramework # now that this is a wrapper around other modules, don't treat as unused
+
+# Custom rules
+custom_rules:
+  rule_id:
+    included: Source/SwiftLintBuiltInRules/Rules/.+/\w+\.swift
+    name: Rule ID
+    message: Rule IDs must be all lowercase, snake case and not end with `rule`
+    regex: ^\s+identifier:\s*("\w+_rule"|"\S*[^a-z_]\S*")
+    severity: error
+  fatal_error:
+    name: Fatal Error
+    excluded: "Tests/*"
+    message: Prefer using `queuedFatalError` over `fatalError` to avoid leaking compiler host machine paths.
+    regex: \bfatalError\b
+    match_kinds:
+      - identifier
+    severity: error
+  rule_test_function:
+    included: Tests/SwiftLintFrameworkTests/RulesTests.swift
+    name: Rule Test Function
+    message: Rule Test Function mustn't end with `rule`
+    regex: func\s*test\w+(r|R)ule\(\)
+    severity: error

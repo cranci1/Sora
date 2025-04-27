@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		120D3C722DBA40AB0093D596 /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 120D3C712DBA40A40093D596 /* .swiftlint.yml */; };
+		120D3C732DBA40AB0093D596 /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 120D3C712DBA40A40093D596 /* .swiftlint.yml */; };
 		126C428D2DB99627006BC27D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 126C428C2DB99627006BC27D /* Localizable.xcstrings */; };
 		126C428E2DB99627006BC27D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 126C428C2DB99627006BC27D /* Localizable.xcstrings */; };
 		132E351D2D959DDB0007800E /* Drops in Frameworks */ = {isa = PBXBuildFile; productRef = 132E351C2D959DDB0007800E /* Drops */; };
@@ -17,6 +19,7 @@
 
 /* Begin PBXFileReference section */
 		120764652DB6F6E0003621E9 /* SulfurTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SulfurTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		120D3C712DBA40A40093D596 /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		126C428A2DB9921C006BC27D /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		126C428C2DB99627006BC27D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		133D7C6A2D2BE2500075467E /* Sulfur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sulfur.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -77,6 +80,7 @@
 		133D7C612D2BE2500075467E = {
 			isa = PBXGroup;
 			children = (
+				120D3C712DBA40A40093D596 /* .swiftlint.yml */,
 				126C428C2DB99627006BC27D /* Localizable.xcstrings */,
 				126C42F62DB9AA97006BC27D /* Sora */,
 				120764662DB6F6E0003621E9 /* SulfurTV */,
@@ -108,6 +112,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				120D3C702DBA3DF90093D596 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				120764662DB6F6E0003621E9 /* SulfurTV */,
@@ -130,6 +135,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				120D3C6E2DBA3DF30093D596 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				126C42F62DB9AA97006BC27D /* Sora */,
@@ -178,6 +184,7 @@
 				132E351E2D959E1D0007800E /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */,
 				132E35212D959E410007800E /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				13B77E172DA44F8300126FDF /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
+				120D3C6C2DBA3D790093D596 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
 			);
 			productRefGroup = 133D7C6B2D2BE2500075467E /* Products */;
 			projectDirPath = "";
@@ -194,6 +201,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				120D3C722DBA40AB0093D596 /* .swiftlint.yml in Resources */,
 				126C428E2DB99627006BC27D /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -202,6 +210,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				120D3C732DBA40AB0093D596 /* .swiftlint.yml in Resources */,
 				126C428D2DB99627006BC27D /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -224,6 +233,17 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		120D3C6E2DBA3DF30093D596 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 120D3C6D2DBA3DF30093D596 /* SwiftLintBuildToolPlugin */;
+		};
+		120D3C702DBA3DF90093D596 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 120D3C6F2DBA3DF90093D596 /* SwiftLintBuildToolPlugin */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1207646D2DB6F6E1003621E9 /* Debug */ = {
@@ -555,6 +575,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		120D3C6C2DBA3D790093D596 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SimplyDanny/SwiftLintPlugins";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		132E351B2D959DDB0007800E /* XCRemoteSwiftPackageReference "Drops" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/omaralbeik/Drops.git";
@@ -590,6 +618,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		120D3C6D2DBA3DF30093D596 /* SwiftLintBuildToolPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 120D3C6C2DBA3D790093D596 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */;
+			productName = "plugin:SwiftLintBuildToolPlugin";
+		};
+		120D3C6F2DBA3DF90093D596 /* SwiftLintBuildToolPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 120D3C6C2DBA3D790093D596 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */;
+			productName = "plugin:SwiftLintBuildToolPlugin";
+		};
 		132E351C2D959DDB0007800E /* Drops */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 132E351B2D959DDB0007800E /* XCRemoteSwiftPackageReference "Drops" */;

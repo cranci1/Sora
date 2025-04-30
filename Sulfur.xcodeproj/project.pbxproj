@@ -7,10 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		130217CC2D81C55E0011EFF5 /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130217CB2D81C55E0011EFF5 /* DownloadView.swift */; };
 		130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */; };
 		13103E8B2D58E028000F0673 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8A2D58E028000F0673 /* View.swift */; };
 		13103E8E2D58E04A000F0673 /* SkeletonCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8D2D58E04A000F0673 /* SkeletonCell.swift */; };
+		131270172DC13A010093AA9C /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131270162DC13A010093AA9C /* DownloadManager.swift */; };
+		131270192DC13A3C0093AA9C /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131270182DC13A3C0093AA9C /* DownloadView.swift */; };
 		131845F92D47C62D00CA7A54 /* SettingsViewGeneral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131845F82D47C62D00CA7A54 /* SettingsViewGeneral.swift */; };
 		1327FBA72D758CEA00FC6689 /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1327FBA62D758CEA00FC6689 /* Analytics.swift */; };
 		1327FBA92D758DEA00FC6689 /* UIDevice+Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1327FBA82D758DEA00FC6689 /* UIDevice+Model.swift */; };
@@ -69,11 +70,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		130217CB2D81C55E0011EFF5 /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		130C6BF82D53A4C200DC1432 /* Sora.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sora.entitlements; sourceTree = "<group>"; };
 		130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
 		13103E8A2D58E028000F0673 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
 		13103E8D2D58E04A000F0673 /* SkeletonCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonCell.swift; sourceTree = "<group>"; };
+		131270162DC13A010093AA9C /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
+		131270182DC13A3C0093AA9C /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		131845F82D47C62D00CA7A54 /* SettingsViewGeneral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewGeneral.swift; sourceTree = "<group>"; };
 		1327FBA62D758CEA00FC6689 /* Analytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Analytics.swift; sourceTree = "<group>"; };
 		1327FBA82D758DEA00FC6689 /* UIDevice+Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIDevice+Model.swift"; sourceTree = "<group>"; };
@@ -171,6 +173,13 @@
 			path = SkeletonCells;
 			sourceTree = "<group>";
 		};
+		131270152DC139CD0093AA9C /* DownloadManager */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = DownloadManager;
+			sourceTree = "<group>";
+		};
 		1327FBA52D758CEA00FC6689 /* Analytics */ = {
 			isa = PBXGroup;
 			children = (
@@ -226,7 +235,7 @@
 				1399FAD22D3AB34F00E97C31 /* SettingsView */,
 				133F55B92D33B53E00E08EEA /* LibraryView */,
 				133D7C7C2D2BE2630075467E /* SearchView.swift */,
-				130217CB2D81C55E0011EFF5 /* DownloadView.swift */,
+				131270182DC13A3C0093AA9C /* DownloadView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -257,6 +266,7 @@
 		133D7C852D2BE2640075467E /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				131270152DC139CD0093AA9C /* DownloadManager */,
 				13C0E5E82D5F85DD00E7F619 /* ContinueWatching */,
 				13103E8C2D58E037000F0673 /* SkeletonCells */,
 				13DC0C442D302C6A00D0F966 /* MediaPlayer */,
@@ -364,6 +374,7 @@
 			children = (
 				13C0E5E92D5F85EA00E7F619 /* ContinueWatchingManager.swift */,
 				13C0E5EB2D5F85F800E7F619 /* ContinueWatchingItem.swift */,
+				131270162DC13A010093AA9C /* DownloadManager.swift */,
 			);
 			path = ContinueWatching;
 			sourceTree = "<group>";
@@ -521,6 +532,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				135CCBE22D4D1138008B9C0E /* SettingsViewPlayer.swift in Sources */,
+				131270172DC13A010093AA9C /* DownloadManager.swift in Sources */,
 				1327FBA72D758CEA00FC6689 /* Analytics.swift in Sources */,
 				13DC0C462D302C7500D0F966 /* VideoPlayer.swift in Sources */,
 				1359ED142D76F49900C13034 /* finTopView.swift in Sources */,
@@ -558,8 +570,8 @@
 				133D7C942D2BE2640075467E /* JSController.swift in Sources */,
 				133D7C922D2BE2640075467E /* URLSession.swift in Sources */,
 				133D7C912D2BE2640075467E /* SettingsViewModule.swift in Sources */,
+				131270192DC13A3C0093AA9C /* DownloadView.swift in Sources */,
 				13E62FC22DABC5830007E259 /* Trakt-Login.swift in Sources */,
-				130217CC2D81C55E0011EFF5 /* DownloadView.swift in Sources */,
 				133F55BB2D33B55100E08EEA /* LibraryManager.swift in Sources */,
 				13E62FC42DABC58C0007E259 /* Trakt-Token.swift in Sources */,
 				133D7C8E2D2BE2640075467E /* LibraryView.swift in Sources */,

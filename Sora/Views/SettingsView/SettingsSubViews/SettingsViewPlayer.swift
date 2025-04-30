@@ -19,7 +19,7 @@ struct SettingsViewPlayer: View {
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
     
-    private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "Sora"]
+    private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "SenPlayer", "Sora"]
     
     var body: some View {
         Form {

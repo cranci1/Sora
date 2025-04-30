@@ -859,6 +859,8 @@ struct MediaInfoView: View {
                 scheme = "outplayer://\(url)"
             case "nPlayer":
                 scheme = "nplayer-\(url)"
+            case "SenPlayer":
+                scheme = "SenPlayer://x-callback-url/play?url=\(url)"
             case "Default":
                 let videoPlayerViewController = VideoPlayerViewController(module: module)
                 videoPlayerViewController.streamUrl = url

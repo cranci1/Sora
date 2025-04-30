@@ -2146,15 +2146,14 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 }
             ]
             
-            let resetDelayAction = UIAction(title: "Reset Timing") { [weak self] _ in
+            let resetDelayAction = UIAction(title: "Reset Delay") { [weak self] _ in
                 guard let self = self else { return }
                 SubtitleSettingsManager.shared.update { settings in settings.subtitleDelay = 0.0 }
                 self.subtitleDelay = 0.0
                 self.loadSubtitleSettings()
-                DropManager.shared.showDrop(title: "Subtitle Timing Reset", subtitle: "", duration: 0.5, icon: UIImage(systemName: "clock.arrow.circlepath"))
             }
             
-            let delayMenu = UIMenu(title: "Subtitle Timing", children: delayActions + [resetDelayAction])
+            let delayMenu = UIMenu(title: "Subtitle Delay", children: delayActions + [resetDelayAction])
             
             let subtitleOptionsMenu = UIMenu(title: "Subtitle Options", children: [
                 subtitlesToggleAction, colorMenu, fontSizeMenu, shadowMenu, backgroundMenu, paddingMenu, delayMenu

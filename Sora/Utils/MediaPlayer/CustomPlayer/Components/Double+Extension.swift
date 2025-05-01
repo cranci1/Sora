@@ -7,8 +7,8 @@
 //  Thanks to pratikg29 for this code inside his open source project "https://github.com/pratikg29/Custom-Slider-Control?ref=iosexample.com"
 //
 
-import Foundation
 import Combine
+import Foundation
 
 extension Double {
     func asTimeString(style: DateComponentsFormatter.UnitsStyle) -> String {
@@ -41,11 +41,11 @@ enum TimeStringStyle {
 }
 
 class VolumeViewModel: ObservableObject {
-    @Published var value: Double = 0.0
+    @Published var value = 0.0
 }
 
 class SliderViewModel: ObservableObject {
-    @Published var sliderValue: Double = 0.0
+    @Published var sliderValue = 0.0
     @Published var introSegments: [ClosedRange<Double>] = []
     @Published var outroSegments: [ClosedRange<Double>] = []
 }
@@ -53,8 +53,10 @@ class SliderViewModel: ObservableObject {
 struct AniListMediaResponse: Decodable {
   struct DataField: Decodable {
     struct Media: Decodable { let idMal: Int? }
+
     let Media: Media?
   }
+
   let data: DataField
 }
 
@@ -64,9 +66,11 @@ struct AniSkipResponse: Decodable {
       let startTime: Double
       let endTime: Double
     }
+
     let interval: Interval
     let skipType: String
   }
+
   let found: Bool
   let results: [Result]
   let statusCode: Int

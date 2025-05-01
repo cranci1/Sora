@@ -19,6 +19,6 @@ extension String {
     }
 
     var trimmed: String {
-        return self.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

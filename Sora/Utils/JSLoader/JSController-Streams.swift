@@ -8,7 +8,6 @@
 import JavaScriptCore
 
 extension JSController {
-
     func fetchStreamUrl(episodeUrl: String, softsub: Bool = false, module: ScrapingModule, completion: @escaping ((streams: [String]?, subtitles: [String]?)) -> Void) {
         guard let url = URL(string: episodeUrl) else {
             completion((nil, nil))
@@ -16,15 +15,15 @@ extension JSController {
         }
 
         URLSession.custom.dataTask(with: url) { [weak self] data, _, error in
-            guard let self = self else { return }
+            guard let self else { return }
 
-            if let error = error {
+            if let error {
                 Logger.shared.log("Network error: \(error)", type: "Error")
                 DispatchQueue.main.async { completion((nil, nil)) }
                 return
             }
 
-            guard let data = data, let html = String(data: data, encoding: .utf8) else {
+            guard let data, let html = String(data: data, encoding: .utf8) else {
                 Logger.shared.log("Failed to decode HTML", type: "Error")
                 DispatchQueue.main.async { completion((nil, nil)) }
                 return
@@ -164,15 +163,15 @@ extension JSController {
     func fetchStreamUrlJSSecond(episodeUrl: String, softsub: Bool = false, module: ScrapingModule, completion: @escaping ((streams: [String]?, subtitles: [String]?)) -> Void) {
         let url = URL(string: episodeUrl)!
         let task = URLSession.custom.dataTask(with: url) { [weak self] data, _, error in
-            guard let self = self else { return }
+            guard let self else { return }
 
-            if let error = error {
+            if let error {
                 Logger.shared.log("URLSession error: \(error.localizedDescription)", type: "Error")
                 DispatchQueue.main.async { completion((nil, nil)) }
                 return
             }
 
-            guard let data = data, let htmlString = String(data: data, encoding: .utf8) else {
+            guard let data, let htmlString = String(data: data, encoding: .utf8) else {
                 Logger.shared.log("Failed to fetch HTML data", type: "Error")
                 DispatchQueue.main.async { completion((nil, nil)) }
                 return

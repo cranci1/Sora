@@ -25,7 +25,7 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
 
     @State private var localRealProgress: T = 0
     @State private var localTempProgress: T = 0
-    @GestureState private var isActive: Bool = false
+    @GestureState private var isActive = false
 
     var body: some View {
         GeometryReader { bounds in
@@ -135,11 +135,10 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
     private func getPrgPercentage(_ value: T) -> T {
         let range = inRange.upperBound - inRange.lowerBound
         let correctedStartValue = value - inRange.lowerBound
-        let percentage = correctedStartValue / range
-        return percentage
+        return correctedStartValue / range
     }
 
     private func getPrgValue() -> T {
-        return ((localRealProgress + localTempProgress) * (inRange.upperBound - inRange.lowerBound)) + inRange.lowerBound
+        ((localRealProgress + localTempProgress) * (inRange.upperBound - inRange.lowerBound)) + inRange.lowerBound
     }
 }

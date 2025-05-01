@@ -8,19 +8,19 @@
 import SwiftUI
 
 struct SettingsViewPlayer: View {
-    @AppStorage("externalPlayer") private var externalPlayer: String = "Sora"
+    @AppStorage("externalPlayer") private var externalPlayer = "Sora"
     @AppStorage("alwaysLandscape") private var isAlwaysLandscape = false
     @AppStorage("rememberPlaySpeed") private var isRememberPlaySpeed = false
-    @AppStorage("holdSpeedPlayer") private var holdSpeedPlayer: Double = 2.0
-    @AppStorage("skipIncrement") private var skipIncrement: Double = 10.0
-    @AppStorage("skipIncrementHold") private var skipIncrementHold: Double = 30.0
+    @AppStorage("holdSpeedPlayer") private var holdSpeedPlayer = 2.0
+    @AppStorage("skipIncrement") private var skipIncrement = 10.0
+    @AppStorage("skipIncrementHold") private var skipIncrementHold = 30.0
     @AppStorage("holdForPauseEnabled") private var holdForPauseEnabled = false
-    @AppStorage("skip85Visible") private var skip85Visible: Bool = true
-    @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
-    @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
-    
+    @AppStorage("skip85Visible") private var skip85Visible = true
+    @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled = false
+    @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible = true
+
     private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "SenPlayer", "Sora"]
-    
+
     var body: some View {
         Form {
             Section(header: Text("Media Player"), footer: Text("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.")) {
@@ -36,9 +36,11 @@ struct SettingsViewPlayer: View {
                                     if player == externalPlayer {
                                         Image(systemName: "checkmark")
                                             .foregroundColor(.accentColor)
+                                            .accessibilityLabel("Checkmark Icon")
                                     } else if player != "Default" && player != "Sora" {
                                         Image(systemName: "arrow.up.forward.app")
                                             .foregroundColor(.secondary)
+                                            .accessibilityLabel("External App Icon")
                                     } else {
                                         Color.clear.frame(width: 20)
                                     }
@@ -137,7 +139,7 @@ struct SubtitleSettingsSection: View {
         Section(header: Text("Subtitle Settings")) {
             ColorPicker("Subtitle Color", selection: Binding(
                 get: {
-                    return Color(foregroundColor)
+                    Color(foregroundColor)
                 },
                 set: { newColor in
                     let uiColor = UIColor(newColor)
@@ -162,6 +164,7 @@ struct SubtitleSettingsSection: View {
                             if shadowRadius == Double(option) {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.accentColor)
+                                    .accessibilityLabel("Checkmark Icon")
                             }
                             Text("\(option)")
                         }

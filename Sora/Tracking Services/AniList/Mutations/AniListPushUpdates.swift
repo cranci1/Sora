@@ -5,8 +5,8 @@
 //  Created by Francesco on 07/04/25.
 //
 
-import UIKit
 import Security
+import UIKit
 
 class AniListMutation {
     let apiURL = URL(string: "https://graphql.anilist.co")!
@@ -77,7 +77,7 @@ class AniListMutation {
         request.httpBody = jsonData
 
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
+            if let error {
                 completion(.failure(error))
                 return
             }
@@ -88,7 +88,7 @@ class AniListMutation {
                 return
             }
 
-            if let data = data {
+            if let data {
                 do {
                     _ = try JSONSerialization.jsonObject(with: data, options: [])
                     Logger.shared.log("Successfully updated anime progress", type: "Debug")
@@ -118,8 +118,13 @@ class AniListMutation {
             "variables": variables
         ]
         guard let jsonData = try? JSONSerialization.data(withJSONObject: requestBody, options: []) else {
-            completion(.failure(NSError(domain: "", code: -1,
-                userInfo: [NSLocalizedDescriptionKey: "Failed to serialize GraphQL request"])))
+            completion(
+                .failure(
+                    NSError(domain: "", code: -1, userInfo: [
+                        NSLocalizedDescriptionKey: "Failed to serialize GraphQL request"
+                    ])
+                )
+            )
             return
         }
 
@@ -129,14 +134,19 @@ class AniListMutation {
         request.httpBody = jsonData
 
         URLSession.shared.dataTask(with: request) { data, _, error in
-            if let e = error {
-                return completion(.failure(e))
+            if let error {
+                return completion(.failure(error))
             }
-            guard let data = data,
+            guard let data,
                   let json = try? JSONDecoder().decode(AniListMediaResponse.self, from: data),
                   let mal = json.data.Media?.idMal else {
-                return completion(.failure(NSError(domain: "", code: -1,
-                    userInfo: [NSLocalizedDescriptionKey: "Failed to decode AniList response or idMal missing"])))
+                return completion(
+                    .failure(
+                        NSError(domain: "", code: -1, userInfo: [
+                            NSLocalizedDescriptionKey: "Failed to decode AniList response or idMal missing"
+                        ])
+                    )
+                )
             }
             completion(.success(mal))
         }.resume()
@@ -145,8 +155,10 @@ class AniListMutation {
     private struct AniListMediaResponse: Decodable {
         struct DataField: Decodable {
             struct Media: Decodable { let idMal: Int? }
+
             let Media: Media?
         }
+
         let data: DataField
     }
 }

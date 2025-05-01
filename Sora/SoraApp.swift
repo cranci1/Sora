@@ -36,11 +36,11 @@ struct SoraApp: App {
                 .accentColor(settings.accentColor)
                 .onAppear {
                     // pass initial profile value to other manager
-                    let suite = self.profileStore.getUserDefaultsSuite()
-                    self.libraryManager.userDefaultsSuite = suite
-                    self.continueWatchingManager.userDefaultsSuite = suite
+                    let suite = profileStore.getUserDefaultsSuite()
+                    libraryManager.userDefaultsSuite = suite
+                    continueWatchingManager.userDefaultsSuite = suite
 
-                    _ = iCloudSyncManager.shared
+                    _ = ICloudSyncManager.shared
 
                     settings.updateAppearance()
                     Task {
@@ -58,7 +58,7 @@ struct SoraApp: App {
                 }
                 .onChange(of: profileStore.currentProfile) { _ in
                     // pass changed suite value to other manager
-                    let suite = self.profileStore.getUserDefaultsSuite()
+                    let suite = profileStore.getUserDefaultsSuite()
                     libraryManager.updateProfileSuite(suite)
                     continueWatchingManager.updateProfileSuite(suite)
                 }
@@ -71,7 +71,6 @@ struct SoraApp: App {
         case "default_page":
             if let comps = URLComponents(url: url, resolvingAgainstBaseURL: true),
                let libraryURL = comps.queryItems?.first(where: { $0.name == "url" })?.value {
-
                 UserDefaults.standard.set(libraryURL, forKey: "lastCommunityURL")
                 UserDefaults.standard.set(true, forKey: "didReceiveDefaultPageLink")
 

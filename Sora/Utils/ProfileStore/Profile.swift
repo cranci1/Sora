@@ -8,7 +8,7 @@
 import Foundation
 
 struct Profile: Identifiable, Equatable, Codable {
-    var id: UUID = UUID()
+    var id = UUID()
     var name: String
     var emoji: String
 }

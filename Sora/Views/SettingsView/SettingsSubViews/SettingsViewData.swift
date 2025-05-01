@@ -70,7 +70,7 @@ struct SettingsViewData: View {
         let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
 
         do {
-            if let cacheURL = cacheURL {
+            if let cacheURL {
                 let filePaths = try FileManager.default.contentsOfDirectory(at: cacheURL, includingPropertiesForKeys: nil, options: [])
                 for filePath in filePaths {
                     try FileManager.default.removeItem(at: filePath)

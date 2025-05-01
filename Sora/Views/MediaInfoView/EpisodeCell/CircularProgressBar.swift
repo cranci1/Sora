@@ -27,6 +27,7 @@ struct CircularProgressBar: View {
             if progress >= 0.9 {
                 Image(systemName: "checkmark")
                     .font(.system(size: 12))
+                    .accessibilityLabel("Checkmark Icon")
             } else {
                 Text(String(format: "%.0f%%", min(progress, 1.0) * 100.0))
                     .font(.system(size: 12))

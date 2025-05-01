@@ -99,6 +99,9 @@
         }
       }
     },
+    "+ Icon" : {
+
+    },
     "+10s" : {
       "localizations" : {
         "de" : {
@@ -195,6 +198,9 @@
         }
       }
     },
+    "Alternative App Icon" : {
+
+    },
     "AniList" : {
       "localizations" : {
         "de" : {
@@ -210,6 +216,9 @@
           }
         }
       }
+    },
+    "AniList Icon" : {
+
     },
     "AniList.co" : {
       "localizations" : {
@@ -515,6 +524,9 @@
         }
       }
     },
+    "Checkmark Icon" : {
+
+    },
     "Clear Cache" : {
       "localizations" : {
         "de" : {
@@ -530,6 +542,9 @@
           }
         }
       }
+    },
+    "Clear Icon" : {
+
     },
     "Clear Logs" : {
       "localizations" : {
@@ -578,6 +593,9 @@
           }
         }
       }
+    },
+    "Configure Icon" : {
+
     },
     "Confirm Erase App Data" : {
       "localizations" : {
@@ -915,6 +933,9 @@
         }
       }
     },
+    "Episode Icon" : {
+
+    },
     "Episodes" : {
       "localizations" : {
         "de" : {
@@ -995,6 +1016,9 @@
         }
       }
     },
+    "Error Icon" : {
+
+    },
     "Error: %@" : {
       "localizations" : {
         "de" : {
@@ -1028,6 +1052,9 @@
         }
       }
     },
+    "Expand Icon" : {
+
+    },
     "Explore" : {
       "localizations" : {
         "de" : {
@@ -1059,6 +1086,9 @@
           }
         }
       }
+    },
+    "External App Icon" : {
+
     },
     "Failed to parse response" : {
       "localizations" : {
@@ -1664,6 +1694,12 @@
         }
       }
     },
+    "Magazine Icon" : {
+
+    },
+    "Magnifying Glass Icon" : {
+
+    },
     "Main" : {
       "localizations" : {
         "de" : {
@@ -1807,6 +1843,9 @@
           }
         }
       }
+    },
+    "More Icon" : {
+
     },
     "Name" : {
       "localizations" : {
@@ -2080,6 +2119,9 @@
         }
       }
     },
+    "Play Icon" : {
+
+    },
     "Play Offline Content" : {
       "localizations" : {
         "de" : {
@@ -2175,6 +2217,9 @@
           }
         }
       }
+    },
+    "Questionmark Icon" : {
+
     },
     "Recently watched content will appear here." : {
       "localizations" : {
@@ -2384,6 +2429,9 @@
         }
       }
     },
+    "Safari Icon" : {
+
+    },
     "Scan to Visit" : {
       "localizations" : {
         "de" : {
@@ -2415,6 +2463,9 @@
           }
         }
       }
+    },
+    "Search Icon" : {
+
     },
     "Search View" : {
       "localizations" : {
@@ -2656,6 +2707,9 @@
         }
       }
     },
+    "Speaker Icon" : {
+
+    },
     "Speed Settings" : {
       "localizations" : {
         "de" : {
@@ -2671,6 +2725,9 @@
           }
         }
       }
+    },
+    "Star Icon" : {
+
     },
     "Starting authentication..." : {
       "localizations" : {
@@ -2847,6 +2904,9 @@
           }
         }
       }
+    },
+    "Trakt Icon" : {
+
     },
     "Trakt.tv" : {
       "localizations" : {

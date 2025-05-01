@@ -9,6 +9,7 @@ import SwiftUI
 
 enum ShimmerType: String, CaseIterable, Identifiable {
     case shimmer, pulse, none
+
     var id: String { self.rawValue }
 }
 
@@ -47,7 +48,7 @@ struct ShimmerDefault: ViewModifier {
             .mask(content)
             .onAppear {
                 withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
-                    self.phase = 1
+                    phase = 1
                 }
             }
     }
@@ -55,7 +56,7 @@ struct ShimmerDefault: ViewModifier {
 
 struct ShimmerPulse: ViewModifier {
     @Environment(\.colorScheme) var colorScheme
-    @State private var opacity: Double = 0.3
+    @State private var opacity = 0.3
 
     func body(content: Content) -> some View {
         content
@@ -69,7 +70,7 @@ struct ShimmerPulse: ViewModifier {
             .mask(content)
             .onAppear {
                 withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
-                    self.opacity = 0.8
+                    opacity = 0.8
                 }
             }
     }

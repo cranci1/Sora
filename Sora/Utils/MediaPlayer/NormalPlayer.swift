@@ -20,12 +20,13 @@ class NormalPlayer: AVPlayerViewController {
     private func setupHoldGesture() {
         holdGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleHoldGesture(_:)))
         holdGesture?.minimumPressDuration = 0.5
-        if let holdGesture = holdGesture {
+        if let holdGesture {
             view.addGestureRecognizer(holdGesture)
         }
     }
 
-    @objc private func handleHoldGesture(_ gesture: UILongPressGestureRecognizer) {
+    @objc
+    private func handleHoldGesture(_ gesture: UILongPressGestureRecognizer) {
         switch gesture.state {
         case .began:
             beginHoldSpeed()
@@ -37,7 +38,7 @@ class NormalPlayer: AVPlayerViewController {
     }
 
     private func beginHoldSpeed() {
-        guard let player = player else { return }
+        guard let player else { return }
         originalRate = player.rate
         let holdSpeed = UserDefaults.standard.float(forKey: "holdSpeedPlayer")
         player.rate = holdSpeed > 0 ? holdSpeed : 2.0

@@ -5,8 +5,8 @@
 //  Created by Francesco on 05/01/25.
 //
 
-import SwiftUI
 import Kingfisher
+import SwiftUI
 
 struct SearchItem: Identifiable {
     let id = UUID()
@@ -18,8 +18,8 @@ struct SearchItem: Identifiable {
 struct SearchView: View {
     @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
-    @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
-    @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
+    @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait = 2
+    @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape = 4
 
     @StateObject private var jsController = JSController()
     @EnvironmentObject private var moduleManager: ModuleManager
@@ -96,6 +96,7 @@ struct SearchView: View {
                             Image(systemName: "questionmark.app")
                                 .font(.largeTitle)
                                 .foregroundColor(.secondary)
+                                .accessibilityLabel("Questionmark Icon")
                             Text("No Module Selected")
                                 .font(.headline)
                             Text("Please select a module from settings")
@@ -110,7 +111,7 @@ struct SearchView: View {
                     if !searchText.isEmpty {
                         if isSearching {
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
-                                ForEach(0..<columnsCount*4, id: \.self) { _ in
+                                ForEach(0 ..< columnsCount * 4, id: \.self) { _ in
                                     SkeletonCell(type: .search, cellWidth: cellWidth)
                                 }
                             }
@@ -121,6 +122,7 @@ struct SearchView: View {
                                 Image(systemName: "magnifyingglass")
                                     .font(.largeTitle)
                                     .foregroundColor(.secondary)
+                                    .accessibilityLabel("Magnifying Glass Icon")
                                 Text("No Results Found")
                                     .font(.headline)
                                 Text("Try different keywords")
@@ -201,7 +203,6 @@ struct SearchView: View {
                         } label: {
                             Label("Edit Profiles", systemImage: "slider.horizontal.3")
                         }
-
                     } label: {
                         Circle()
                             .fill(Color.secondary.opacity(0.3))
@@ -216,7 +217,9 @@ struct SearchView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         if getModuleLanguageGroups().isEmpty {
-                            Button("No modules available") { }
+                            Button("No modules available") {
+                                print("[Error] No Modules Button clicked")
+                            }
                                 .disabled(true)
 
                             Divider()
@@ -243,6 +246,7 @@ struct SearchView: View {
                                                 if module.id.uuidString == selectedModuleId {
                                                     Image(systemName: "checkmark")
                                                         .foregroundColor(.accentColor)
+                                                        .accessibilityLabel("Checkmark Icon")
                                                 }
                                             }
                                         }
@@ -252,7 +256,7 @@ struct SearchView: View {
                         }
                     } label: {
                         HStack(spacing: 4) {
-                            if let selectedModule = selectedModule {
+                            if let selectedModule {
                                 Text(selectedModule.metadata.sourceName)
                                     .font(.headline)
                                     .foregroundColor(.secondary)
@@ -263,6 +267,7 @@ struct SearchView: View {
                             }
                             Image(systemName: "chevron.down")
                                 .foregroundColor(.secondary)
+                                .accessibilityLabel("Expand Icon")
                         }
                     }
                     .fixedSize()
@@ -338,7 +343,7 @@ struct SearchView: View {
     }
 
     private func cleanLanguageName(_ language: String?) -> String {
-        guard let language = language else { return "Unknown" }
+        guard let language else { return "Unknown" }
 
         let cleaned = language.replacingOccurrences(
             of: "\\s*\\([^\\)]*\\)",
@@ -365,11 +370,11 @@ struct SearchView: View {
     }
 
     private func getModuleLanguageGroups() -> [String] {
-        return getModulesByLanguage().keys.sorted()
+        getModulesByLanguage().keys.sorted()
     }
 
     private func getModulesForLanguage(_ language: String) -> [ScrapingModule] {
-        return getModulesByLanguage()[language] ?? []
+        getModulesByLanguage()[language] ?? []
     }
 }
 
@@ -386,27 +391,28 @@ struct SearchBar: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(8)
                 .onChange(of: text) {_ in
-                                    debounceTimer?.invalidate()
-                                    // Start a new timer to wait before performing the action
+                    debounceTimer?.invalidate()
+                    // Start a new timer to wait before performing the action
                     debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
-                                        // Perform the action after the delay (debouncing)
-                                        onSearchButtonClicked()
-                                    }
-                                }
+                        // Perform the action after the delay (debouncing)
+                        onSearchButtonClicked()
+                    }
+                }
                 .overlay(
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
                             .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                             .padding(.leading, 8)
-
+                            .accessibilityLabel("Search Icon")
                         if !text.isEmpty {
                             Button(action: {
-                                self.text = ""
+                                text = ""
                             }) {
                                 Image(systemName: "multiply.circle.fill")
                                     .foregroundColor(.secondary)
                                     .padding(.trailing, 8)
+                                    .accessibilityLabel("Clear Icon")
                             }
                         }
                     }

@@ -8,22 +8,22 @@
 import SwiftUI
 
 struct SettingsViewGeneral: View {
-    @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 100
-    @AppStorage("refreshModulesOnLaunch") private var refreshModulesOnLaunch: Bool = false
-    @AppStorage("fetchEpisodeMetadata") private var fetchEpisodeMetadata: Bool = true
-    @AppStorage("analyticsEnabled") private var analyticsEnabled: Bool = false
-    @AppStorage("multiThreads") private var multiThreadsEnabled: Bool = false
-    @AppStorage("metadataProviders") private var metadataProviders: String = "AniList"
-    @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
-    @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
-    @AppStorage("hideEmptySections") private var hideEmptySections: Bool = false
-    @AppStorage("currentAppIcon") private var currentAppIcon: String = "Default"
-    @AppStorage("episodeSortOrder") private var episodeSortOrder: String = "Ascending"
+    @AppStorage("episodeChunkSize") private var episodeChunkSize = 100
+    @AppStorage("refreshModulesOnLaunch") private var refreshModulesOnLaunch = false
+    @AppStorage("fetchEpisodeMetadata") private var fetchEpisodeMetadata = true
+    @AppStorage("analyticsEnabled") private var analyticsEnabled = false
+    @AppStorage("multiThreads") private var multiThreadsEnabled = false
+    @AppStorage("metadataProviders") private var metadataProviders = "AniList"
+    @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait = 2
+    @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape = 4
+    @AppStorage("hideEmptySections") private var hideEmptySections = false
+    @AppStorage("currentAppIcon") private var currentAppIcon = "Default"
+    @AppStorage("episodeSortOrder") private var episodeSortOrder = "Ascending"
 
     private let metadataProvidersList = ["AniList"]
     private let sortOrderOptions = ["Ascending", "Descending"]
     @EnvironmentObject var settings: Settings
-    @State var showAppIconPicker: Bool = false
+    @State private var showAppIconPicker = false
 
     var body: some View {
         Form {
@@ -75,7 +75,6 @@ struct SettingsViewGeneral: View {
             }
 
             Section(header: Text("Media View"), footer: Text("The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1-25, 26-50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata it is refering to the episode thumbnail and title, since sometimes it can contain spoilers.")) {
-
                 HStack {
                     Text("Episodes Range")
                     Spacer()
@@ -87,6 +86,7 @@ struct SettingsViewGeneral: View {
                                 if episodeChunkSize == chunkSize {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(.accentColor)
+                                        .accessibilityLabel("Checkmark Icon")
                                 }
                                 Text("\(chunkSize)")
                             }
@@ -108,6 +108,7 @@ struct SettingsViewGeneral: View {
                                 if provider == metadataProviders {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(.accentColor)
+                                        .accessibilityLabel("Checkmark Icon")
                                 }
                                 Text(provider)
                             }

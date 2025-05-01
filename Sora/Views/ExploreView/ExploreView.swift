@@ -5,8 +5,8 @@
 //  Created by Dominic on 24.04.25.
 //
 
-import SwiftUI
 import Kingfisher
+import SwiftUI
 
 struct ExploreItem: Identifiable {
     let id = UUID()
@@ -18,8 +18,8 @@ struct ExploreItem: Identifiable {
 struct ExploreView: View {
     @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
-    @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
-    @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
+    @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait = 2
+    @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape = 4
 
     @StateObject private var jsController = JSController()
     @EnvironmentObject private var moduleManager: ModuleManager
@@ -73,12 +73,12 @@ struct ExploreView: View {
             ScrollView {
                 let columnsCount = determineColumns()
                 VStack(spacing: 0) {
-
                     if !(hideEmptySections ?? false) && selectedModule == nil {
                         VStack(spacing: 8) {
                             Image(systemName: "questionmark.app")
                                 .font(.largeTitle)
                                 .foregroundColor(.secondary)
+                                .accessibilityLabel("Questionmark Icon")
                             Text("No Module Selected")
                                 .font(.headline)
                             Text("Please select a module from settings")
@@ -92,7 +92,7 @@ struct ExploreView: View {
 
                     if isLoading {
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
-                            ForEach(0..<columnsCount*4, id: \.self) { _ in
+                            ForEach(0 ..< columnsCount * 4, id: \.self) { _ in
                                 SkeletonCell(type: .explore, cellWidth: cellWidth)
                             }
                         }
@@ -103,6 +103,7 @@ struct ExploreView: View {
                             Image(systemName: "star")
                                 .font(.largeTitle)
                                 .foregroundColor(.secondary)
+                                .accessibilityLabel("Star Icon")
                             Text("No Content Available")
                                 .font(.headline)
                             Text("Try updating the Module")
@@ -182,7 +183,6 @@ struct ExploreView: View {
                         } label: {
                             Label("Edit Profiles", systemImage: "slider.horizontal.3")
                         }
-
                     } label: {
                         Circle()
                             .fill(Color.secondary.opacity(0.3))
@@ -198,7 +198,9 @@ struct ExploreView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         if getModuleLanguageGroups().isEmpty {
-                            Button("No modules available") { }
+                            Button("No modules available") {
+                                print("[Error] No Modules Button clicked")
+                            }
                                 .disabled(true)
 
                             Divider()
@@ -225,6 +227,7 @@ struct ExploreView: View {
                                                 if module.id.uuidString == selectedModuleId {
                                                     Image(systemName: "checkmark")
                                                         .foregroundColor(.accentColor)
+                                                        .accessibilityLabel("Checkmark Icon")
                                                 }
                                             }
                                         }
@@ -234,7 +237,7 @@ struct ExploreView: View {
                         }
                     } label: {
                         HStack(spacing: 4) {
-                            if let selectedModule = selectedModule {
+                            if let selectedModule {
                                 Text(selectedModule.metadata.sourceName)
                                     .font(.headline)
                                     .foregroundColor(.secondary)
@@ -245,6 +248,7 @@ struct ExploreView: View {
                             }
                             Image(systemName: "chevron.down")
                                 .foregroundColor(.secondary)
+                                .accessibilityLabel("Expand Icon")
                         }
                     }
                     .fixedSize()
@@ -311,7 +315,7 @@ struct ExploreView: View {
     }
 
     private func cleanLanguageName(_ language: String?) -> String {
-        guard let language = language else { return "Unknown" }
+        guard let language else { return "Unknown" }
 
         let cleaned = language.replacingOccurrences(
             of: "\\s*\\([^\\)]*\\)",
@@ -338,10 +342,10 @@ struct ExploreView: View {
     }
 
     private func getModuleLanguageGroups() -> [String] {
-        return getModulesByLanguage().keys.sorted()
+        getModulesByLanguage().keys.sorted()
     }
 
     private func getModulesForLanguage(_ language: String) -> [ScrapingModule] {
-        return getModulesByLanguage()[language] ?? []
+        getModulesByLanguage()[language] ?? []
     }
 }

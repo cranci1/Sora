@@ -15,12 +15,12 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
     let fillColor: Color
     let emptyColor: Color
     let height: CGFloat
-    let onEditingChanged: (Bool) -> Void
+    let onEditingChanged: ((Bool) -> Void)? = nil
 
     @State private var localRealProgress: T = 0
     @State private var localTempProgress: T = 0
     @State private var lastVolumeValue: T = 0
-    @GestureState private var isActive: Bool = false
+    @GestureState private var isActive = false
 
     var body: some View {
         GeometryReader { bounds in
@@ -50,6 +50,8 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
                         .onTapGesture {
                             handleIconTap()
                         }
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityLabel("Speaker Icon")
                 }
                 .frame(width: isActive ? bounds.size.width * 1.02 : bounds.size.width, alignment: .center)
                 .animation(animation, value: isActive)
@@ -72,7 +74,7 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
                 if !newValue {
                     value = sliderValueInRange()
                 }
-                onEditingChanged(newValue)
+                onEditingChanged?(newValue)
             }
             .onAppear {
                 localRealProgress = progress(for: value)

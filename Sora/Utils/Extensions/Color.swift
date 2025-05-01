@@ -8,7 +8,6 @@
 import SwiftUI
 
 extension Color {
-
     /// Intitialize SwiftUI Color via HEX String
     ///
     /// - Parameters:

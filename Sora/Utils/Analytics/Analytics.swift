@@ -18,16 +18,16 @@ struct AnalyticsResponse: Codable {
 
 // MARK: - Analytics Manager
 class AnalyticsManager {
-
     static let shared = AnalyticsManager()
     private let analyticsURL = URL(string: "http://151.106.3.14:47474/analytics")!
     private let moduleManager = ModuleManager()
 
-    private init() {}
+    private init() {
+        print("[Info] Analytics initializer called")
+    }
 
     // MARK: - Send Analytics Data
     func sendEvent(event: String, additionalData: [String: Any] = [:]) {
-
         let defaults = UserDefaults.standard
 
         // Ensure the key is set with a default value if missing
@@ -80,13 +80,13 @@ class AnalyticsManager {
             return
         }
 
-        URLSession.shared.dataTask(with: request) { (data, _, error) in
-            if let error = error {
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            if let error {
                 Logger.shared.log("Request failed: \(error.localizedDescription)", type: "Debug")
                 return
             }
 
-            guard let data = data else {
+            guard let data else {
                 Logger.shared.log("No data received from server", type: "Debug")
                 return
             }
@@ -106,12 +106,12 @@ class AnalyticsManager {
 
     // MARK: - Get App Version
     private func getAppVersion() -> String {
-        return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown_version"
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown_version"
     }
 
     // MARK: - Get Device Model
     private func getDeviceModel() -> String {
-        return UIDevice.modelName
+        UIDevice.modelName
     }
 
     // MARK: - Get Selected Module

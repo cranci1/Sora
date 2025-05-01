@@ -36,12 +36,13 @@ class LibraryManager: ObservableObject {
         NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
     }
 
-    public func updateProfileSuite(_ newSuite: UserDefaults) {
+    func updateProfileSuite(_ newSuite: UserDefaults) {
         userDefaultsSuite = newSuite
         loadBookmarks()
     }
 
-    @objc private func handleiCloudSync() {
+    @objc
+    private func handleiCloudSync() {
         DispatchQueue.main.async {
             self.loadBookmarks()
         }

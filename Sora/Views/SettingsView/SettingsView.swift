@@ -58,6 +58,7 @@ struct SettingsView: View {
                                 .foregroundColor(Color(hex: "7289DA"))
                             Spacer()
                             Image(systemName: "safari")
+                                .accessibilityLabel("Safari Icon")
                                 .foregroundColor(Color(hex: "7289DA"))
                         }
                     }
@@ -71,6 +72,7 @@ struct SettingsView: View {
                                 .foregroundColor(.red)
                             Spacer()
                             Image(systemName: "safari")
+                                .accessibilityLabel("Safari Icon")
                                 .foregroundColor(.red)
                         }
                     }
@@ -84,6 +86,7 @@ struct SettingsView: View {
                                 .foregroundColor(.secondary)
                             Spacer()
                             Image(systemName: "safari")
+                                .accessibilityLabel("Safari Icon")
                                 .foregroundColor(.secondary)
                         }
                     }
@@ -97,6 +100,7 @@ struct SettingsView: View {
                                 .foregroundColor(.secondary)
                             Spacer()
                             Image(systemName: "safari")
+                                .accessibilityLabel("Safari Icon")
                                 .foregroundColor(.secondary)
                         }
                     }
@@ -110,6 +114,7 @@ struct SettingsView: View {
                                 .foregroundColor(.secondary)
                             Spacer()
                             Image(systemName: "safari")
+                                .accessibilityLabel("Safari Icon")
                                 .foregroundColor(.secondary)
                         }
                     }
@@ -174,6 +179,7 @@ class Settings: ObservableObject {
 
     private func applyColorToUIKit(_ color: Color) {
         let tempStepper = UIStepper()
+        tempStepper.tintColor = UIColor(color)
         UIStepper.appearance().setDecrementImage(tempStepper.decrementImage(for: .normal), for: .normal)
         UIStepper.appearance().setIncrementImage(tempStepper.incrementImage(for: .normal), for: .normal)
     }

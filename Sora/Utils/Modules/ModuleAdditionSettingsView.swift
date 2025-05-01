@@ -5,8 +5,8 @@
 //  Created by Francesco on 01/02/25.
 //
 
-import SwiftUI
 import Kingfisher
+import SwiftUI
 
 struct ModuleAdditionSettingsView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -81,7 +81,6 @@ struct ModuleAdditionSettingsView: View {
                         }
 
                         Divider()
-
                     } else if isLoading {
                         VStack(spacing: 20) {
                             ProgressView()
@@ -91,11 +90,12 @@ struct ModuleAdditionSettingsView: View {
                         }
                         .frame(maxHeight: .infinity)
                         .padding(.top, 100)
-                    } else if let errorMessage = errorMessage {
+                    } else if let errorMessage {
                         VStack(spacing: 20) {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .font(.system(size: 50))
                                 .foregroundColor(.red)
+                                .accessibilityLabel("Error Icon")
                             Text(errorMessage)
                                 .foregroundColor(.red)
                                 .multilineTextAlignment(.center)
@@ -112,6 +112,7 @@ struct ModuleAdditionSettingsView: View {
                 Button(action: addModule) {
                     HStack {
                         Image(systemName: "plus.circle.fill")
+                            .accessibilityLabel("+ Icon")
                         Text("Add Module")
                     }
                     .font(.headline)
@@ -128,7 +129,7 @@ struct ModuleAdditionSettingsView: View {
                 .opacity(isLoading ? 0.6 : 1)
 
                 Button(action: {
-                    self.presentationMode.wrappedValue.dismiss()
+                    presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Cancel")
                         .foregroundColor(.accentColor)
@@ -148,8 +149,8 @@ struct ModuleAdditionSettingsView: View {
         Task {
             guard let url = URL(string: moduleUrl) else {
                 await MainActor.run {
-                    self.errorMessage = "Invalid URL"
-                    self.isLoading = false
+                    errorMessage = "Invalid URL"
+                    isLoading = false
                     Logger.shared.log("Failed to open add module ui with url: \(moduleUrl)", type: "Error")
                 }
                 return
@@ -158,13 +159,13 @@ struct ModuleAdditionSettingsView: View {
                 let (data, _) = try await URLSession.custom.data(from: url)
                 let metadata = try JSONDecoder().decode(ModuleMetadata.self, from: data)
                 await MainActor.run {
-                    self.moduleMetadata = metadata
-                    self.isLoading = false
+                    moduleMetadata = metadata
+                    isLoading = false
                 }
             } catch {
                 await MainActor.run {
-                    self.errorMessage = "Failed to fetch module: \(error.localizedDescription)"
-                    self.isLoading = false
+                    errorMessage = "Failed to fetch module: \(error.localizedDescription)"
+                    isLoading = false
                 }
             }
         }
@@ -178,7 +179,7 @@ struct ModuleAdditionSettingsView: View {
                 await MainActor.run {
                     isLoading = false
                     DropManager.shared.showDrop(title: "Module Added", subtitle: "Click it to select it.", duration: 2.0, icon: UIImage(systemName: "gear.badge.checkmark"))
-                    self.presentationMode.wrappedValue.dismiss()
+                    presentationMode.wrappedValue.dismiss()
                 }
             } catch {
                 await MainActor.run {

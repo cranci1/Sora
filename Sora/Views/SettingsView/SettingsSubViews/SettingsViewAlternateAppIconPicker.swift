@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SettingsViewAlternateAppIconPicker: View {
     @Binding var isPresented: Bool
-    @AppStorage("currentAppIcon") private var currentAppIcon: String = "Default"
+    @AppStorage("currentAppIcon") private var currentAppIcon = "Default"
 
     let icons: [(name: String, icon: String)] = [
         ("Default", "Default"),
@@ -39,11 +39,12 @@ struct SettingsViewAlternateAppIconPicker: View {
                                     currentAppIcon == icon.name ? Color.accentColor.opacity(0.3) : Color.clear
                                 )
                                 .cornerRadius(10)
-
+                                .accessibilityLabel("Alternative App Icon")
                             Text(icon.name)
                                 .font(.caption)
                                 .foregroundColor(currentAppIcon == icon.name ? .accentColor : .primary)
                         }
+                        .accessibilityAddTraits(.isButton)
                         .onTapGesture {
                             currentAppIcon = icon.name
                             setAppIcon(named: icon.icon)
@@ -61,7 +62,7 @@ struct SettingsViewAlternateAppIconPicker: View {
         if UIApplication.shared.supportsAlternateIcons {
             UIApplication.shared.setAlternateIconName(iconName == "Default" ? nil : "AppIcon_\(iconName)", completionHandler: { error in
                 isPresented = false
-                if let error = error {
+                if let error {
                     print("Failed to set alternate icon: \(error.localizedDescription)")
                 }
             })

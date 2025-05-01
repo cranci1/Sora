@@ -47,32 +47,35 @@ disabled_rules:
   # newly added:
   - multiple_closures_with_trailing_closure
   - closure_body_length
+  - type_body_length
   - file_name
+  - file_length
   - line_length
   - nesting
   - legacy_objc_type
   - function_body_length
-
-# Configurations
-attributes:
-  always_on_line_above:
-    - "@ConfigurationElement"
-    - "@OptionGroup"
-    - "@RuleConfigurationDescriptionBuilder"
-
-identifier_name:
-  excluded:
-    - id
+  - trailing_comma
+  - identifier_name
+  - discarded_notification_center_observer
+  - extension_access_modifier
+  - explicit_init
+  - superfluous_else
+  - discouraged_optional_boolean
+  - discouraged_none_name
+  - attributes
+  - prefer_key_path
+  # should be fixed sometimes:
+  - implicitly_unwrapped_optional
+  - cyclomatic_complexity
+  - unused_parameter
+  - fatal_error
+  - force_cast
 
 large_tuple: 3
 number_separator:
   minimum_length: 5
 redundant_type_annotation:
   consider_default_literal_types_redundant: true
-single_test_class: *unit_test_configuration
-trailing_comma:
-  mandatory_comma: true
-type_body_length: 400
 unneeded_override:
   affect_initializers: true
 unused_import:

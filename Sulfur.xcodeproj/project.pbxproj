@@ -137,13 +137,13 @@
 			buildConfigurationList = 1207646F2DB6F6E1003621E9 /* Build configuration list for PBXNativeTarget "SulfurTV" */;
 			buildPhases = (
 				120764612DB6F6E0003621E9 /* Sources */,
-				12DAC1832DBE3C1C00B31A65 /* ShellScript */,
 				120764622DB6F6E0003621E9 /* Frameworks */,
 				120764632DB6F6E0003621E9 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				123FEDD42DC41339001C4704 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				120764662DB6F6E0003621E9 /* SulfurTV */,
@@ -160,13 +160,13 @@
 			buildConfigurationList = 133D7C782D2BE2520075467E /* Build configuration list for PBXNativeTarget "Sulfur" */;
 			buildPhases = (
 				133D7C662D2BE2500075467E /* Sources */,
-				12DAC1822DBE3C0300B31A65 /* ShellScript */,
 				133D7C672D2BE2500075467E /* Frameworks */,
 				133D7C682D2BE2500075467E /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				123FEDD62DC41341001C4704 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				126C42F62DB9AA97006BC27D /* Sora */,
@@ -214,6 +214,7 @@
 				132E351E2D959E1D0007800E /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */,
 				132E35212D959E410007800E /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				13B77E172DA44F8300126FDF /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
+				123FEDD22DC412F0001C4704 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
 			);
 			productRefGroup = 133D7C6B2D2BE2500075467E /* Products */;
 			projectDirPath = "";
@@ -246,43 +247,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		12DAC1822DBE3C0300B31A65 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if command -v swiftlint >/dev/null 2>&1\nthen\n    swiftlint lint --fix && swiftlint\nelse\n    echo \"warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions.\"\nfi\n";
-		};
-		12DAC1832DBE3C1C00B31A65 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if command -v swiftlint >/dev/null 2>&1\nthen\n    swiftlint lint --fix && swiftlint\nelse\n    echo \"warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions.\"\nfi\n";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		120764612DB6F6E0003621E9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -299,6 +263,17 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		123FEDD42DC41339001C4704 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 123FEDD32DC41339001C4704 /* SwiftLintBuildToolPlugin */;
+		};
+		123FEDD62DC41341001C4704 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 123FEDD52DC41341001C4704 /* SwiftLintBuildToolPlugin */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1207646D2DB6F6E1003621E9 /* Debug */ = {
@@ -634,6 +609,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		123FEDD22DC412F0001C4704 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SimplyDanny/SwiftLintPlugins";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.59.1;
+			};
+		};
 		132E351B2D959DDB0007800E /* XCRemoteSwiftPackageReference "Drops" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/omaralbeik/Drops.git";
@@ -669,6 +652,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		123FEDD32DC41339001C4704 /* SwiftLintBuildToolPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 123FEDD22DC412F0001C4704 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */;
+			productName = "plugin:SwiftLintBuildToolPlugin";
+		};
+		123FEDD52DC41341001C4704 /* SwiftLintBuildToolPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 123FEDD22DC412F0001C4704 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */;
+			productName = "plugin:SwiftLintBuildToolPlugin";
+		};
 		132E351C2D959DDB0007800E /* Drops */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 132E351B2D959DDB0007800E /* XCRemoteSwiftPackageReference "Drops" */;

@@ -8,7 +8,6 @@
 import JavaScriptCore
 
 extension JSController {
-
     func fetchSearchResults(keyword: String, module: ScrapingModule, completion: @escaping ([SearchItem]) -> Void) {
         let searchUrl = module.metadata.searchBaseUrl.replacingOccurrences(of: "%s", with: keyword.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")
 
@@ -18,15 +17,15 @@ extension JSController {
         }
 
         URLSession.custom.dataTask(with: url) { [weak self] data, _, error in
-            guard let self = self else { return }
+            guard let self else { return }
 
-            if let error = error {
+            if let error {
                 Logger.shared.log("Network error: \(error)", type: "Error")
                 DispatchQueue.main.async { completion([]) }
                 return
             }
 
-            guard let data = data, let html = String(data: data, encoding: .utf8) else {
+            guard let data, let html = String(data: data, encoding: .utf8) else {
                 Logger.shared.log("Failed to decode HTML", type: "Error")
                 DispatchQueue.main.async { completion([]) }
                 return
@@ -73,7 +72,6 @@ extension JSController {
         }
 
         let thenBlock: @convention(block) (JSValue) -> Void = { result in
-
             Logger.shared.log(result.toString(), type: "HTMLStrings")
             if let jsonString = result.toString(),
                let data = jsonString.data(using: .utf8) {
@@ -92,7 +90,6 @@ extension JSController {
                         DispatchQueue.main.async {
                             completion(resultItems)
                         }
-
                     } else {
                         Logger.shared.log("Failed to parse JSON", type: "Error")
                         DispatchQueue.main.async {

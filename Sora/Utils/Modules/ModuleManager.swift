@@ -31,21 +31,22 @@ class ModuleManager: ObservableObject {
         NotificationCenter.default.removeObserver(self)
     }
 
-    @objc private func handleModulesSyncCompleted() {
+    @objc
+    private func handleModulesSyncCompleted() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
 
-            let url = self.getModulesFilePath()
+            let url = getModulesFilePath()
             guard FileManager.default.fileExists(atPath: url.path) else {
                 Logger.shared.log("No modules file found after sync", type: "Error")
-                self.modules = []
+                modules = []
                 return
             }
 
             do {
                 let data = try Data(contentsOf: url)
                 let decodedModules = try JSONDecoder().decode([ScrapingModule].self, from: data)
-                self.modules = decodedModules
+                modules = decodedModules
 
                 Task {
                     await self.checkJSModuleFiles()
@@ -53,7 +54,7 @@ class ModuleManager: ObservableObject {
                 Logger.shared.log("Reloaded modules after iCloud sync")
             } catch {
                 Logger.shared.log("Error handling modules sync: \(error.localizedDescription)", type: "Error")
-                self.modules = []
+                modules = []
             }
         }
     }

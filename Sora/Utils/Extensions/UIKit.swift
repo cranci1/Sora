@@ -19,7 +19,6 @@ extension UIApplication {
 }
 
 extension Decodable where Self: UIColor {
-
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let components = try container.decode([CGFloat].self)
@@ -33,9 +32,8 @@ extension Encodable where Self: UIColor {
         (r, g, b, a) = (0, 0, 0, 0)
         var container = encoder.singleValueContainer()
         self.getRed(&r, green: &g, blue: &b, alpha: &a)
-        try container.encode([r,g,b,a])
+        try container.encode([r, g, b, a])
     }
-
 }
 
 extension UIColor: Codable { }

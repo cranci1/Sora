@@ -5,8 +5,8 @@
 //  Created by Francesco on 13/04/25.
 //
 
-import UIKit
 import Security
+import UIKit
 
 class TraktMutation {
     let apiURL = URL(string: "https://api.trakt.tv")!
@@ -110,7 +110,7 @@ class TraktMutation {
         }
 
         let task = URLSession.shared.dataTask(with: request) { _, response, error in
-            if let error = error {
+            if let error {
                 completion(.failure(error))
                 return
             }

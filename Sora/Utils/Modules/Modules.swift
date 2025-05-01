@@ -50,7 +50,7 @@ struct ScrapingModule: Codable, Identifiable, Hashable {
         hasher.combine(id)
     }
 
-    static func == (lhs: ScrapingModule, rhs: ScrapingModule) -> Bool {
+    static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.id == rhs.id
     }
 }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingsViewLogger: View {
-    @State private var logs: String = ""
+    @State private var logs = ""
     @StateObject private var filterViewModel = LogFilterViewModel.shared
 
     var body: some View {
@@ -46,10 +46,12 @@ struct SettingsViewLogger: View {
                         Image(systemName: "ellipsis.circle")
                             .resizable()
                             .frame(width: 20, height: 20)
+                            .accessibilityLabel("More Icon")
                     }
 
                     NavigationLink(destination: SettingsViewLoggerFilter(viewModel: filterViewModel)) {
                         Image(systemName: "slider.horizontal.3")
+                            .accessibilityLabel("Configure Icon")
                     }
                 }
             }

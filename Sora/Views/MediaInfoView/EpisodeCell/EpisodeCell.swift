@@ -5,8 +5,8 @@
 //  Created by Francesco on 18/12/24.
 //
 
-import SwiftUI
 import Kingfisher
+import SwiftUI
 
 struct EpisodeLink: Identifiable {
     let id = UUID()
@@ -24,10 +24,10 @@ struct EpisodeCell: View {
     let onTap: (String) -> Void
     let onMarkAllPrevious: () -> Void
 
-    @State private var episodeTitle: String = ""
-    @State private var episodeImageUrl: String = ""
-    @State private var isLoading: Bool = true
-    @State private var currentProgress: Double = 0.0
+    @State private var episodeTitle = ""
+    @State private var episodeImageUrl = ""
+    @State private var isLoading = true
+    @State private var currentProgress = 0.0
 
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
@@ -39,8 +39,15 @@ struct EpisodeCell: View {
             : "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner2.png"
     }
 
-    init(episodeIndex: Int, episode: String, episodeID: Int, progress: Double,
-         itemID: Int, onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void) {
+    init(
+        episodeIndex: Int,
+        episode: String,
+        episodeID: Int,
+        progress: Double,
+        itemID: Int,
+        onTap: @escaping (String) -> Void,
+        onMarkAllPrevious: @escaping () -> Void
+    ) {
         self.episodeIndex = episodeIndex
         self.episode = episode
         self.episodeID = episodeID
@@ -55,10 +62,10 @@ struct EpisodeCell: View {
             ZStack {
                 KFImage(URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl))
                     .resizable()
-                    .aspectRatio(16/9, contentMode: .fill)
+                    .aspectRatio(16 / 9, contentMode: .fill)
                     .frame(width: 100, height: 56)
                     .cornerRadius(8)
-
+                    .accessibilityLabel("Episode Icon")
                 if isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
@@ -107,6 +114,7 @@ struct EpisodeCell: View {
         .onChange(of: progress) { _ in
             updateProgress()
         }
+        .accessibilityAddTraits(.isButton)
         .onTapGesture {
             let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
             onTap(imageUrl)
@@ -120,7 +128,7 @@ struct EpisodeCell: View {
         userDefaults.set(watchedTime, forKey: "lastPlayedTime_\(episode)")
         userDefaults.set(totalTime, forKey: "totalTime_\(episode)")
         DispatchQueue.main.async {
-            self.updateProgress()
+            updateProgress()
         }
     }
 
@@ -129,7 +137,7 @@ struct EpisodeCell: View {
         userDefaults.set(0.0, forKey: "lastPlayedTime_\(episode)")
         userDefaults.set(0.0, forKey: "totalTime_\(episode)")
         DispatchQueue.main.async {
-            self.updateProgress()
+            updateProgress()
         }
     }
 
@@ -151,14 +159,14 @@ struct EpisodeCell: View {
         }
 
         URLSession.custom.dataTask(with: url) { data, _, error in
-            if let error = error {
+            if let error {
                 Logger.shared.log("Failed to fetch anime episode details: \(error)", type: "Error")
-                DispatchQueue.main.async { self.isLoading = false }
+                DispatchQueue.main.async { isLoading = false }
                 return
             }
 
-            guard let data = data else {
-                DispatchQueue.main.async { self.isLoading = false }
+            guard let data else {
+                DispatchQueue.main.async { isLoading = false }
                 return
             }
 
@@ -170,20 +178,20 @@ struct EpisodeCell: View {
                       let title = episodeDetails["title"] as? [String: String],
                       let image = episodeDetails["image"] as? String else {
                           Logger.shared.log("Invalid anime response format", type: "Error")
-                          DispatchQueue.main.async { self.isLoading = false }
+                          DispatchQueue.main.async { isLoading = false }
                           return
                       }
 
                 DispatchQueue.main.async {
-                    self.isLoading = false
+                    isLoading = false
                     if UserDefaults.standard.object(forKey: "fetchEpisodeMetadata") == nil
                         || UserDefaults.standard.bool(forKey: "fetchEpisodeMetadata") {
-                        self.episodeTitle   = title["en"] ?? ""
-                        self.episodeImageUrl = image
+                        episodeTitle = title["en"] ?? ""
+                        episodeImageUrl = image
                     }
                 }
             } catch {
-                DispatchQueue.main.async { self.isLoading = false }
+                DispatchQueue.main.async { isLoading = false }
             }
         }.resume()
     }

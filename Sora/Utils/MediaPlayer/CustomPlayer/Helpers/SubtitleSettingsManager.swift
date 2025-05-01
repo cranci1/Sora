@@ -9,11 +9,11 @@ import UIKit
 
 struct SubtitleSettings: Codable {
     var foregroundColor: UIColor = .white
-    var fontSize: Double = 20.0
-    var shadowRadius: Double = 1.0
-    var backgroundEnabled: Bool = true
+    var fontSize = 20.0
+    var shadowRadius = 1.0
+    var backgroundEnabled = true
     var bottomPadding: CGFloat = 20.0
-    var subtitleDelay: Double = 0.0
+    var subtitleDelay = 0.0
 }
 
 class SubtitleSettingsManager {

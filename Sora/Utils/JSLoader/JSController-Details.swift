@@ -8,7 +8,6 @@
 import JavaScriptCore
 
 extension JSController {
-
     func fetchDetails(url: String, completion: @escaping ([MediaItem], [EpisodeLink]) -> Void) {
         guard let url = URL(string: url) else {
             completion([], [])
@@ -16,15 +15,15 @@ extension JSController {
         }
 
         URLSession.custom.dataTask(with: url) { [weak self] data, _, error in
-            guard let self = self else { return }
+            guard let self else { return }
 
-            if let error = error {
+            if let error {
                 Logger.shared.log("Network error: \(error)", type: "Error")
                 DispatchQueue.main.async { completion([], []) }
                 return
             }
 
-            guard let data = data, let html = String(data: data, encoding: .utf8) else {
+            guard let data, let html = String(data: data, encoding: .utf8) else {
                 Logger.shared.log("Failed to decode HTML", type: "Error")
                 DispatchQueue.main.async { completion([], []) }
                 return

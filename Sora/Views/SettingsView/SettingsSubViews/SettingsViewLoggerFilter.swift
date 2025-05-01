@@ -59,7 +59,7 @@ class LogFilterViewModel: ObservableObject {
     }
 
     func isFilterEnabled(for type: String) -> Bool {
-        return filters.first(where: { $0.type == type })?.isEnabled ?? true
+        filters.first(where: { $0.type == type })?.isEnabled ?? true
     }
 
     private func saveFiltersToUserDefaults() {

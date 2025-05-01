@@ -16,12 +16,13 @@ class ContinueWatchingManager: ObservableObject {
         NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
     }
 
-    public func updateProfileSuite(_ newSuite: UserDefaults) {
+    func updateProfileSuite(_ newSuite: UserDefaults) {
         userDefaultsSuite = newSuite
         loadItems()
     }
 
-    @objc private func handleiCloudSync() {
+    @objc
+    private func handleiCloudSync() {
         NotificationCenter.default.post(name: .ContinueWatchingDidUpdate, object: nil)
     }
 

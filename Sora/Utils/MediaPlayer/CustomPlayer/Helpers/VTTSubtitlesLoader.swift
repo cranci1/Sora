@@ -30,7 +30,7 @@ class VTTSubtitlesLoader: ObservableObject {
         let format = determineSubtitleFormat(from: url)
 
         URLSession.shared.dataTask(with: url) { data, _, error in
-            guard let data = data,
+            guard let data,
                   let content = String(data: data, encoding: .utf8),
                   error == nil else { return }
 

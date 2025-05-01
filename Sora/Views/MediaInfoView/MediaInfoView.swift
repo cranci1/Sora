@@ -5,9 +5,9 @@
 //  Created by Francesco on 05/01/25.
 //
 
-import SwiftUI
 import Kingfisher
 import SafariServices
+import SwiftUI
 
 struct MediaItem: Identifiable {
     let id = UUID()
@@ -609,30 +609,30 @@ struct MediaInfoView: View {
                     if module.metadata.asyncJS == true {
                         jsController.fetchDetailsJS(url: href) { items, episodes in
                             if let item = items.first {
-                                self.synopsis = item.description
-                                self.aliases = item.aliases
-                                self.airdate = item.airdate
+                                synopsis = item.description
+                                aliases = item.aliases
+                                airdate = item.airdate
                             }
-                            self.episodeLinks = episodes
-                            self.isLoading = false
-                            self.isRefetching = false
+                            episodeLinks = episodes
+                            isLoading = false
+                            isRefetching = false
                         }
                     } else {
                         jsController.fetchDetails(url: href) { items, episodes in
                             if let item = items.first {
-                                self.synopsis = item.description
-                                self.aliases = item.aliases
-                                self.airdate = item.airdate
+                                synopsis = item.description
+                                aliases = item.aliases
+                                airdate = item.airdate
                             }
-                            self.episodeLinks = episodes
-                            self.isLoading = false
-                            self.isRefetching = false
+                            episodeLinks = episodes
+                            isLoading = false
+                            isRefetching = false
                         }
                     }
                 } catch {
                     Logger.shared.log("Error loading module: \(error)", type: "Error")
-                    self.isLoading = false
-                    self.isRefetching = false
+                    isLoading = false
+                    isRefetching = false
                 }
             }
         }
@@ -770,7 +770,7 @@ struct MediaInfoView: View {
     func handleStreamFailure(error: Error? = nil) {
         self.isFetchingEpisode = false
         self.showStreamLoadingView = false
-        if let error = error {
+        if let error {
             Logger.shared.log("Error loading module: \(error)", type: "Error")
             AnalyticsManager.shared.sendEvent(event: "error", additionalData: ["error": error, "message": "Failed to fetch stream"])
         }
@@ -835,7 +835,7 @@ struct MediaInfoView: View {
                     }
                 }
 
-                findTopViewController.findViewController(rootVC).present(alert, animated: true)
+                FindTopViewController.findViewController(rootVC).present(alert, animated: true)
             }
 
             DispatchQueue.main.async {
@@ -878,7 +878,7 @@ struct MediaInfoView: View {
 
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootVC = windowScene.windows.first?.rootViewController {
-                    findTopViewController.findViewController(rootVC).present(videoPlayerViewController, animated: true, completion: nil)
+                    FindTopViewController.findViewController(rootVC).present(videoPlayerViewController, animated: true, completion: nil)
                 }
                 return
             default:
@@ -914,7 +914,7 @@ struct MediaInfoView: View {
 
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootVC = windowScene.windows.first?.rootViewController {
-                    findTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
+                    FindTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
                 } else {
                     Logger.shared.log("Failed to find root view controller", type: "Error")
                     DropManager.shared.showDrop(title: "Error", subtitle: "Failed to present player", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
@@ -982,12 +982,12 @@ struct MediaInfoView: View {
         request.httpBody = try? JSONSerialization.data(withJSONObject: parameters)
 
         URLSession.custom.dataTask(with: request) { data, _, error in
-            if let error = error {
+            if let error {
                 completion(.failure(error))
                 return
             }
 
-            guard let data = data else {
+            guard let data else {
                 completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
                 return
             }
@@ -1033,7 +1033,7 @@ struct MediaInfoView: View {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first,
            let rootVC = window.rootViewController {
-            findTopViewController.findViewController(rootVC).present(alert, animated: true)
+            FindTopViewController.findViewController(rootVC).present(alert, animated: true)
         }
     }
 }

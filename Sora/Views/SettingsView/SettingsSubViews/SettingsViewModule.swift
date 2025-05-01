@@ -5,8 +5,8 @@
 //  Created by Francesco on 05/01/25.
 //
 
-import SwiftUI
 import Kingfisher
+import SwiftUI
 
 struct SettingsViewModule: View {
     @EnvironmentObject var moduleManager: ModuleManager
@@ -14,12 +14,12 @@ struct SettingsViewModule: View {
 
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
-    @AppStorage("didReceiveDefaultPageLink") private var didReceiveDefaultPageLink: Bool = false
+    @AppStorage("didReceiveDefaultPageLink") private var didReceiveDefaultPageLink = false
 
     @State private var errorMessage: String?
     @State private var isLoading = false
     @State private var isRefreshing = false
-    @State private var moduleUrl: String = ""
+    @State private var moduleUrl = ""
     @State private var refreshTask: Task<Void, Never>?
     @State private var showLibrary = false
 
@@ -31,6 +31,7 @@ struct SettingsViewModule: View {
                         Image(systemName: "plus.app")
                             .font(.largeTitle)
                             .foregroundColor(.secondary)
+                            .accessibilityLabel("+ Icon")
                         Text("No Modules")
                             .font(.headline)
 
@@ -84,9 +85,11 @@ struct SettingsViewModule: View {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.accentColor)
                                     .frame(width: 25, height: 25)
+                                    .accessibilityLabel("Checkmark Icon")
                             }
                         }
                         .contentShape(Rectangle())
+                        .accessibilityAddTraits(.isButton)
                         .onTapGesture {
                             selectedModuleId = module.id.uuidString
                         }
@@ -194,11 +197,11 @@ struct SettingsViewModule: View {
             )
 
             clipboardAlert.addAction(UIAlertAction(title: "Use Clipboard", style: .default, handler: { _ in
-                self.displayModuleView(url: pasteboardString)
+                displayModuleView(url: pasteboardString)
             }))
 
             clipboardAlert.addAction(UIAlertAction(title: "Enter Manually", style: .cancel, handler: { _ in
-                self.showManualUrlAlert()
+                showManualUrlAlert()
             }))
 
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -206,7 +209,6 @@ struct SettingsViewModule: View {
                 windowScene.windows.first?.tintColor = UIColor(settings.accentColor)
                 rootViewController.present(clipboardAlert, animated: true, completion: nil)
             }
-
         } else {
             showManualUrlAlert()
         }
@@ -226,7 +228,7 @@ struct SettingsViewModule: View {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         alert.addAction(UIAlertAction(title: "Add", style: .default, handler: { _ in
             if let url = alert.textFields?.first?.text, !url.isEmpty {
-                self.displayModuleView(url: url)
+                displayModuleView(url: url)
             }
         }))
 
@@ -240,7 +242,7 @@ struct SettingsViewModule: View {
     func displayModuleView(url: String) {
         DispatchQueue.main.async {
             let addModuleView = ModuleAdditionSettingsView(moduleUrl: url)
-                .environmentObject(self.moduleManager)
+                .environmentObject(moduleManager)
             let hostingController = UIHostingController(rootView: addModuleView)
 
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,

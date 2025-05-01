@@ -15,8 +15,8 @@ private struct ModuleLink: Identifiable {
 
 struct CommunityLibraryView: View {
     @EnvironmentObject var moduleManager: ModuleManager
+    @AppStorage("lastCommunityURL") private var inputURL = ""
 
-    @AppStorage("lastCommunityURL") private var inputURL: String = ""
     @State private var webURL: URL?
     @State private var errorMessage: String?
     @State private var moduleLinkToAdd: ModuleLink?
@@ -30,7 +30,6 @@ struct CommunityLibraryView: View {
             }
 
             WebView(url: webURL) { linkURL in
-
                 if let comps = URLComponents(url: linkURL, resolvingAgainstBaseURL: false),
                    let m = comps.queryItems?.first(where: { $0.name == "url" })?.value {
                     moduleLinkToAdd = ModuleLink(url: m)
@@ -92,6 +91,7 @@ struct WebView: UIViewRepresentable {
 
     class Coordinator: NSObject, WKNavigationDelegate {
         let onCustom: (URL) -> Void
+
         init(onCustom: @escaping (URL) -> Void) { self.onCustom = onCustom }
 
         func webView(_ webView: WKWebView,

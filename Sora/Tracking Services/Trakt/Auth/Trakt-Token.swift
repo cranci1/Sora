@@ -5,8 +5,8 @@
 //  Created by Francesco on 13/04/25.
 //
 
-import UIKit
 import Security
+import UIKit
 
 class TraktToken {
     static let clientID = "6ec81bf19deb80fdfa25652eef101576ca6aaa0dc016d36079b2de413d71c369"
@@ -101,12 +101,12 @@ class TraktToken {
 
         let task = URLSession.shared.dataTask(with: request) { data, _, error in
             DispatchQueue.main.async {
-                if let error = error {
+                if let error {
                     handleFailure(error: error.localizedDescription, completion: completion)
                     return
                 }
 
-                guard let data = data else {
+                guard let data else {
                     handleFailure(error: "No data received", completion: completion)
                     return
                 }
@@ -115,7 +115,6 @@ class TraktToken {
                     if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
                         if let accessToken = json["access_token"] as? String,
                            let refreshToken = json["refresh_token"] as? String {
-
                             let accessSuccess = saveToKeychain(key: accessTokenKey, data: accessToken)
                             let refreshSuccess = saveToKeychain(key: refreshTokenKey, data: refreshToken)
 

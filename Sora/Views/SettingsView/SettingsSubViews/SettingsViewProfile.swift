@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileCell: View {
     let profile: Profile
-    var isSelected: Bool = false
+    var isSelected = false
 
     var body: some View {
         HStack(spacing: 10) {
@@ -31,6 +31,7 @@ struct ProfileCell: View {
             if isSelected {
                 Image(systemName: "checkmark")
                     .foregroundColor(.accentColor)
+                    .accessibilityLabel("Checkmark Icon")
             }
         }
         .padding(.vertical, 4)
@@ -50,20 +51,21 @@ struct SettingsViewProfile: View {
                     Button {
                         profileStore.setCurrentProfile(profile)
                     } label: {
-                        ProfileCell(profile: profile,
+                        ProfileCell(
+                            profile: profile,
                             isSelected: profile.id == profileStore.currentProfile.id
                         )
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                       if profileStore.profiles.count > 1 {
-                           Button(role: .destructive) {
+                        if profileStore.profiles.count > 1 {
+                            Button(role: .destructive) {
                                profileIDToRemove = profile.id
                                showDeleteAlert = true
-                           } label: {
+                            } label: {
                                Label("Delete", systemImage: "trash")
-                           }
-                       }
-                   }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -73,7 +75,6 @@ struct SettingsViewProfile: View {
                     TextField("Avatar", text: Binding(
                         get: { profileStore.currentProfile.emoji },
                         set: { newValue in
-
                             // handle multi unicode emojis like "👨‍👩‍👧‍👦" or "🧙‍♂️"
                             let emoji = String(newValue
                                 .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -142,6 +143,7 @@ struct SettingsViewProfile: View {
                 } label: {
                     Image(systemName: "plus")
                         .foregroundColor(.accentColor)
+                        .accessibilityLabel("+ Icon")
                 }
             }
         }

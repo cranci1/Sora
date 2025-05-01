@@ -5,8 +5,8 @@
 //  Created by Francesco on 08/08/24.
 //
 
-import UIKit
 import Security
+import UIKit
 
 class AniListToken {
     static let clientID = "19551"
@@ -62,14 +62,14 @@ class AniListToken {
 
         let task = URLSession.shared.dataTask(with: request) { data, _, error in
             DispatchQueue.main.async {
-                if let error = error {
+                if let error {
                     Logger.shared.log("Error: \(error.localizedDescription)", type: "Error")
                     NotificationCenter.default.post(name: authFailureNotification, object: nil, userInfo: ["error": error.localizedDescription])
                     completion(false)
                     return
                 }
 
-                guard let data = data else {
+                guard let data else {
                     Logger.shared.log("No data received", type: "Error")
                     NotificationCenter.default.post(name: authFailureNotification, object: nil, userInfo: ["error": "No data received"])
                     completion(false)

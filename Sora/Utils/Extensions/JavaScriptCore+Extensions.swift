@@ -37,18 +37,18 @@ extension JSContext {
                 return
             }
             var request = URLRequest(url: url)
-            if let headers = headers {
+            if let headers {
                 for (key, value) in headers {
                     request.setValue(value, forHTTPHeaderField: key)
                 }
             }
             let task = URLSession.custom.dataTask(with: request) { data, _, error in
-                if let error = error {
+                if let error {
                     Logger.shared.log("Network error in fetchNativeFunction: \(error.localizedDescription)", type: "Error")
                     reject.call(withArguments: [error.localizedDescription])
                     return
                 }
-                guard let data = data else {
+                guard let data else {
                     Logger.shared.log("No data in response", type: "Error")
                     reject.call(withArguments: ["No data"])
                     return
@@ -88,30 +88,30 @@ extension JSContext {
 
             Logger.shared.log("FetchV2 Request: URL=\(url), Method=\(httpMethod), Body=\(body ?? "nil")", type: "Debug")
 
-            if httpMethod == "GET", let body = body, !body.isEmpty, body != "null", body != "undefined" {
+            if httpMethod == "GET", let body, !body.isEmpty, body != "null", body != "undefined" {
                 Logger.shared.log("GET request must not have a body", type: "Error")
                 reject.call(withArguments: ["GET request must not have a body"])
                 return
             }
 
-            if httpMethod != "GET", let body = body, !body.isEmpty, body != "null", body != "undefined" {
+            if httpMethod != "GET", let body, !body.isEmpty, body != "null", body != "undefined" {
                 request.httpBody = body.data(using: .utf8)
             }
 
-            if let headers = headers {
+            if let headers {
                 for (key, value) in headers {
                     request.setValue(value, forHTTPHeaderField: key)
                 }
             }
             Logger.shared.log("Redirect value is \(redirect.boolValue)", type: "Error")
             let task = URLSession.fetchData(allowRedirects: redirect.boolValue).downloadTask(with: request) { tempFileURL, response, error in
-                if let error = error {
+                if let error {
                     Logger.shared.log("Network error in fetchV2NativeFunction: \(error.localizedDescription)", type: "Error")
                     reject.call(withArguments: [error.localizedDescription])
                     return
                 }
 
-                guard let tempFileURL = tempFileURL else {
+                guard let tempFileURL else {
                     Logger.shared.log("No data in response", type: "Error")
                     reject.call(withArguments: ["No data"])
                     return
@@ -133,7 +133,6 @@ extension JSContext {
                     }
 
                     if let text = String(data: data, encoding: .utf8) {
-
                         responseDict["body"] = text
                         resolve.call(withArguments: [responseDict])
                     } else {
@@ -141,7 +140,6 @@ extension JSContext {
                         Logger.shared.log("Unable to decode data to text", type: "Error")
                         resolve.call(withArguments: [responseDict])
                     }
-
                 } catch {
                     Logger.shared.log("Error reading downloaded file: \(error.localizedDescription)", type: "Error")
                     reject.call(withArguments: ["Error reading downloaded file"])

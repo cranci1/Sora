@@ -8,17 +8,16 @@
 import SwiftUI
 
 class ProfileStore: ObservableObject {
-    @AppStorage("profilesData") private var profilesData: Data = Data()
-    @AppStorage("currentProfileID") private var currentProfileID: String = ""
+    @AppStorage("profilesData") private var profilesData = Data()
+    @AppStorage("currentProfileID") private var currentProfileID = ""
 
-    @Published public var profiles: [Profile] = []
-    @Published public var currentProfile: Profile!
+    @Published var profiles: [Profile] = []
+    @Published var currentProfile: Profile!
 
-    public init() {
+    init() {
         profiles = (try? JSONDecoder().decode([Profile].self, from: profilesData)) ?? []
 
         if profiles.isEmpty {
-
             // load default value
             let defaultProfile = Profile(name: String(localized: "Default User"), emoji: "👤")
             profiles = [defaultProfile]
@@ -26,7 +25,6 @@ class ProfileStore: ObservableObject {
             saveProfiles()
             setCurrentProfile(defaultProfile)
         } else {
-
             // load current profile
             if let uuid = UUID(uuidString: currentProfileID),
                let match = profiles.first(where: { $0.id == uuid }) {
@@ -39,7 +37,7 @@ class ProfileStore: ObservableObject {
         }
     }
 
-    public func getUserDefaultsSuite() -> UserDefaults {
+    func getUserDefaultsSuite() -> UserDefaults {
         guard let suite = UserDefaults(suiteName: currentProfile.id.uuidString) else {
             fatalError("This can only fail if suiteName == app bundle id ...")
         }
@@ -53,12 +51,12 @@ class ProfileStore: ObservableObject {
         profilesData = (try? JSONEncoder().encode(profiles)) ?? Data()
     }
 
-    public func setCurrentProfile(_ profile: Profile) {
+    func setCurrentProfile(_ profile: Profile) {
         currentProfile = profile
         currentProfileID = profile.id.uuidString
     }
 
-    public func addProfile(name: String, emoji: String) {
+    func addProfile(name: String, emoji: String) {
         let newProfile = Profile(name: name, emoji: emoji)
         profiles.append(newProfile)
 
@@ -66,7 +64,7 @@ class ProfileStore: ObservableObject {
         setCurrentProfile(newProfile)
     }
 
-    public func editCurrentProfile(name: String, emoji: String) {
+    func editCurrentProfile(name: String, emoji: String) {
         guard let index = profiles.firstIndex(where: { $0.id == currentProfile.id }) else { return }
         profiles[index].name = name
         profiles[index].emoji = emoji
@@ -75,7 +73,7 @@ class ProfileStore: ObservableObject {
         setCurrentProfile(profiles[index])
     }
 
-    public func deleteProfile(removalID: UUID?) {
+    func deleteProfile(removalID: UUID?) {
         guard let removalID,
               profiles.count == 1
         else { return }

@@ -9,7 +9,6 @@ import JavaScriptCore
 
 // TODO: implement and test
 extension JSController {
-
     func fetchExploreResults(module: ScrapingModule, completion: @escaping ([ExploreItem]) -> Void) {
         /*let searchUrl = module.metadata.searchBaseUrl.replacingOccurrences(of: "%s", with: keyword.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")
 
@@ -21,13 +20,13 @@ extension JSController {
         URLSession.custom.dataTask(with: url) { [weak self] data, _, error in
             guard let self = self else { return }
             
-            if let error = error {
+            if let error {
                 Logger.shared.log("Network error: \(error)",type: "Error")
                 DispatchQueue.main.async { completion([]) }
                 return
             }
             
-            guard let data = data, let html = String(data: data, encoding: .utf8) else {
+            guard let data, let html = String(data: data, encoding: .utf8) else {
                 Logger.shared.log("Failed to decode HTML",type: "Error")
                 DispatchQueue.main.async { completion([]) }
                 return

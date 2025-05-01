@@ -22,8 +22,8 @@ import UIKit
 
 // TODO: update "clear data" feature
 // TODO: tests
-class iCloudSyncManager {
-    static let shared = iCloudSyncManager()
+class ICloudSyncManager {
+    static let shared = ICloudSyncManager()
 
     private let defaultsToSync: [String] = [
         "externalPlayer",
@@ -72,7 +72,8 @@ class iCloudSyncManager {
         NotificationCenter.default.addObserver(self, selector: #selector(userDefaultsDidChange), name: UserDefaults.didChangeNotification, object: nil)
     }
 
-    @objc private func willEnterBackground() {
+    @objc
+    private func willEnterBackground() {
         syncToiCloud()
         syncModulesToiCloud()
     }
@@ -125,7 +126,8 @@ class iCloudSyncManager {
         iCloud.synchronize()
     }
 
-    @objc private func iCloudDidChangeExternally(_ notification: Notification) {
+    @objc
+    private func iCloudDidChangeExternally(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let reason = userInfo[NSUbiquitousKeyValueStoreChangeReasonKey] as? Int else {
                   return
@@ -137,7 +139,8 @@ class iCloudSyncManager {
         }
     }
 
-    @objc private func userDefaultsDidChange(_ notification: Notification) {
+    @objc
+    private func userDefaultsDidChange(_ notification: Notification) {
         syncToiCloud()
     }
 

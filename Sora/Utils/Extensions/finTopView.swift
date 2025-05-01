@@ -7,7 +7,7 @@
 
 import UIKit
 
-class findTopViewController {
+class FindTopViewController {
     static func findViewController(_ viewController: UIViewController) -> UIViewController {
         if let presented = viewController.presentedViewController {
             return findViewController(presented)

@@ -5,8 +5,8 @@
 //  Created by Francesco on 05/01/25.
 //
 
-import SwiftUI
 import Kingfisher
+import SwiftUI
 
 struct LibraryView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
@@ -15,13 +15,13 @@ struct LibraryView: View {
     @EnvironmentObject private var profileStore: ProfileStore
 
     @AppStorage("hideEmptySections") private var hideEmptySections: Bool?
-    @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
-    @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
+    @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait = 2
+    @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape = 4
 
     @Environment(\.verticalSizeClass) var verticalSizeClass
 
     @State private var selectedBookmark: LibraryItem?
-    @State private var isDetailActive: Bool = false
+    @State private var isDetailActive = false
 
     @State private var continueWatchingItems: [ContinueWatchingItem] = []
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
@@ -57,7 +57,6 @@ struct LibraryView: View {
                 let columnsCount = determineColumns()
 
                 VStack(alignment: .leading, spacing: 12) {
-
                     if hideEmptySections != true || !continueWatchingManager.items.isEmpty {
                         Text("Continue Watching")
                             .font(.title2)
@@ -70,6 +69,7 @@ struct LibraryView: View {
                             Image(systemName: "play.circle")
                                 .font(.largeTitle)
                                 .foregroundColor(.secondary)
+                                .accessibilityLabel("Play Icon")
                             Text("No items to continue watching.")
                                 .font(.headline)
                             Text("Recently watched content will appear here.")
@@ -98,6 +98,7 @@ struct LibraryView: View {
                             Image(systemName: "magazine")
                                 .font(.largeTitle)
                                 .foregroundColor(.secondary)
+                                .accessibilityLabel("Magazine Icon")
                             Text("You have no items saved.")
                                 .font(.headline)
                             Text("Bookmark items for an easier access later.")
@@ -120,7 +121,7 @@ struct LibraryView: View {
                                                     .placeholder {
                                                         RoundedRectangle(cornerRadius: 10)
                                                             .fill(Color.gray.opacity(0.3))
-                                                            .aspectRatio(2/3, contentMode: .fit)
+                                                            .aspectRatio(2 / 3, contentMode: .fit)
                                                             .shimmering()
                                                     }
                                                     .resizable()
@@ -160,10 +161,12 @@ struct LibraryView: View {
                             destination: Group {
                                 if let bookmark = selectedBookmark,
                                     let module = moduleManager.modules.first(where: { $0.id.uuidString == bookmark.moduleId }) {
-                                    MediaInfoView(title: bookmark.title,
-                                                    imageUrl: bookmark.imageUrl,
-                                                    href: bookmark.href,
-                                                    module: module)
+                                    MediaInfoView(
+                                        title: bookmark.title,
+                                        imageUrl: bookmark.imageUrl,
+                                        href: bookmark.href,
+                                        module: module
+                                    )
                                 } else {
                                     Text("No Data Available")
                                 }
@@ -212,7 +215,6 @@ struct LibraryView: View {
                         } label: {
                             Label("Edit Profiles", systemImage: "slider.horizontal.3")
                         }
-
                     } label: {
                         Circle()
                             .fill(Color.secondary.opacity(0.3))
@@ -239,8 +241,8 @@ struct LibraryView: View {
     private func markContinueWatchingItemAsWatched(item: ContinueWatchingItem) {
         let key = "lastPlayedTime_\(item.fullUrl)"
         let totalKey = "totalTime_\(item.fullUrl)"
-        UserDefaults.standard.set(99999999.0, forKey: key)
-        UserDefaults.standard.set(99999999.0, forKey: totalKey)
+        UserDefaults.standard.set(99_999_999.0, forKey: key)
+        UserDefaults.standard.set(99_999_999.0, forKey: totalKey)
         continueWatchingManager.remove(item: item)
     }
 
@@ -294,7 +296,7 @@ struct ContinueWatchingCell: View {
     var markAsWatched: () -> Void
     var removeItem: () -> Void
 
-    @State private var currentProgress: Double = 0.0
+    @State private var currentProgress = 0.0
 
     var body: some View {
         Button(action: {
@@ -311,7 +313,7 @@ struct ContinueWatchingCell: View {
 
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootVC = windowScene.windows.first?.rootViewController {
-                    findTopViewController.findViewController(rootVC).present(videoPlayerViewController, animated: true, completion: nil)
+                    FindTopViewController.findViewController(rootVC).present(videoPlayerViewController, animated: true, completion: nil)
                 }
             } else {
                 let customMediaPlayer = CustomMediaPlayerViewController(
@@ -321,7 +323,7 @@ struct ContinueWatchingCell: View {
                     fullUrl: item.fullUrl,
                     title: item.mediaTitle,
                     episodeNumber: item.episodeNumber,
-                    onWatchNext: { },
+                    onWatchNext: nil,
                     subtitlesURL: item.subtitles,
                     aniListID: item.aniListID ?? 0,
                     episodeImageUrl: item.imageUrl
@@ -330,7 +332,7 @@ struct ContinueWatchingCell: View {
 
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootVC = windowScene.windows.first?.rootViewController {
-                    findTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
+                    FindTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
                 }
             }
         }) {
@@ -345,7 +347,7 @@ struct ContinueWatchingCell: View {
                         }
                         .setProcessor(RoundCornerImageProcessor(cornerRadius: 10))
                         .resizable()
-                        .aspectRatio(16/9, contentMode: .fill)
+                        .aspectRatio(16 / 9, contentMode: .fill)
                         .frame(width: 240, height: 135)
                         .cornerRadius(10)
                         .clipped()

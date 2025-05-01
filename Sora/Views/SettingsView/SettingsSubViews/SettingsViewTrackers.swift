@@ -5,23 +5,23 @@
 //  Created by Francesco on 23/03/25.
 //
 
-import SwiftUI
 import Security
+import SwiftUI
 
 struct SettingsViewTrackers: View {
     @AppStorage("sendPushUpdates") private var isSendPushUpdates = true
     @AppStorage("sendTraktUpdates") private var isSendTraktUpdates = true
 
     @State private var anilistStatus: LocalizedStringKey = "You are not logged in"
-    @State private var isAnilistLoggedIn: Bool = false
-    @State private var anilistUsername: String = ""
-    @State private var isAnilistLoading: Bool = false
+    @State private var isAnilistLoggedIn = false
+    @State private var anilistUsername = ""
+    @State private var isAnilistLoading = false
     @State private var profileColor: Color = .accentColor
 
     @State private var traktStatus: LocalizedStringKey = "You are not logged in"
-    @State private var isTraktLoggedIn: Bool = false
-    @State private var traktUsername: String = ""
-    @State private var isTraktLoading: Bool = false
+    @State private var isTraktLoggedIn = false
+    @State private var traktUsername = ""
+    @State private var isTraktLoading = false
 
     var body: some View {
         Form {
@@ -32,6 +32,7 @@ struct SettingsViewTrackers: View {
                         .frame(width: 80, height: 80)
                         .clipShape(Rectangle())
                         .cornerRadius(10)
+                        .accessibilityLabel("AniList Icon")
                     Text("AniList.co")
                         .font(.title2)
                 }
@@ -76,6 +77,7 @@ struct SettingsViewTrackers: View {
                         .frame(width: 80, height: 80)
                         .clipShape(Rectangle())
                         .cornerRadius(10)
+                        .accessibilityLabel("Trakt Icon")
                     Text("Trakt.tv")
                         .font(.title2)
                 }
@@ -107,7 +109,9 @@ struct SettingsViewTrackers: View {
             }
                 .modifier(SeparatorAlignmentModifier())
 
-            Section(footer: Text("Sora and cranci1 are not affiliated with AniList nor Trakt in any way.\n\nAlso note that progresses update may not be 100% accurate.")) {}
+            Section(footer: Text("Sora and cranci1 are not affiliated with AniList nor Trakt in any way.\n\nAlso note that progresses update may not be 100% accurate.")) {
+                EmptyView()
+            }
         }
         .navigationTitle("Trackers")
         .onAppear {
@@ -131,33 +135,33 @@ struct SettingsViewTrackers: View {
 
     func setupNotificationObservers() {
         NotificationCenter.default.addObserver(forName: AniListToken.authSuccessNotification, object: nil, queue: .main) { _ in
-            self.anilistStatus = "Authentication successful!"
-            self.updateAniListStatus()
+            anilistStatus = "Authentication successful!"
+            updateAniListStatus()
         }
 
         NotificationCenter.default.addObserver(forName: AniListToken.authFailureNotification, object: nil, queue: .main) { notification in
             if let error = notification.userInfo?["error"] as? String {
-                self.anilistStatus = "Login failed: \(error)"
+                anilistStatus = "Login failed: \(error)"
             } else {
-                self.anilistStatus = "Login failed with unknown error"
+                anilistStatus = "Login failed with unknown error"
             }
-            self.isAnilistLoggedIn = false
-            self.isAnilistLoading = false
+            isAnilistLoggedIn = false
+            isAnilistLoading = false
         }
 
         NotificationCenter.default.addObserver(forName: TraktToken.authSuccessNotification, object: nil, queue: .main) { _ in
-            self.traktStatus = "Authentication successful!"
-            self.updateTraktStatus()
+            traktStatus = "Authentication successful!"
+            updateTraktStatus()
         }
 
         NotificationCenter.default.addObserver(forName: TraktToken.authFailureNotification, object: nil, queue: .main) { notification in
             if let error = notification.userInfo?["error"] as? String {
-                self.traktStatus = "Login failed: \(error)"
+                traktStatus = "Login failed: \(error)"
             } else {
-                self.traktStatus = "Login failed with unknown error"
+                traktStatus = "Login failed with unknown error"
             }
-            self.isTraktLoggedIn = false
-            self.isTraktLoading = false
+            isTraktLoggedIn = false
+            isTraktLoading = false
         }
     }
 
@@ -196,14 +200,14 @@ struct SettingsViewTrackers: View {
 
         URLSession.shared.dataTask(with: request) { data, _, error in
             DispatchQueue.main.async {
-                self.isTraktLoading = false
-                if let error = error {
-                    self.traktStatus = "Error: \(error.localizedDescription)"
+                isTraktLoading = false
+                if let error {
+                    traktStatus = "Error: \(error.localizedDescription)"
                     return
                 }
 
-                guard let data = data else {
-                    self.traktStatus = "No data received"
+                guard let data else {
+                    traktStatus = "No data received"
                     return
                 }
 
@@ -211,11 +215,11 @@ struct SettingsViewTrackers: View {
                     if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                        let user = json["user"] as? [String: Any],
                        let username = user["username"] as? String {
-                        self.traktUsername = username
-                        self.traktStatus = "Logged in as \(username)"
+                        traktUsername = username
+                        traktStatus = "Logged in as \(username)"
                     }
                 } catch {
-                    self.traktStatus = "Failed to parse response"
+                    traktStatus = "Failed to parse response"
                 }
             }
         }.resume()
@@ -313,12 +317,12 @@ struct SettingsViewTrackers: View {
         URLSession.shared.dataTask(with: request) { data, _, error in
             DispatchQueue.main.async {
                 isAnilistLoading = false
-                if let error = error {
+                if let error {
                     anilistStatus = "Error: \(error.localizedDescription)"
                     Logger.shared.log("Error: \(error.localizedDescription)", type: "Error")
                     return
                 }
-                guard let data = data else {
+                guard let data else {
                     anilistStatus = "No data received"
                     Logger.shared.log("No data received", type: "Error")
                     return
@@ -330,7 +334,6 @@ struct SettingsViewTrackers: View {
                        let name = viewer["name"] as? String,
                        let options = viewer["options"] as? [String: Any],
                        let colorName = options["profileColor"] as? String {
-
                         anilistUsername = name
                         profileColor = colorFromName(colorName)
                         anilistStatus = "Logged in as \(name)"

@@ -118,6 +118,7 @@ struct SettingsViewTrackers: View {
         .onDisappear {
             removeNotificationObservers()
         }
+        .modifier(HideToolbarModifier())
     }
 
     func removeNotificationObservers() {

@@ -33,23 +33,6 @@
         }
       }
     },
-    "%@ - Episode %lld" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ - Episode %2$lld"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ - Episode %lld"
-          }
-        }
-      }
-    },
     "%@ %@" : {
       "localizations" : {
         "de" : {
@@ -64,7 +47,8 @@
             "value" : "%@ %@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%lld" : {
       "localizations" : {
@@ -96,7 +80,8 @@
             "value" : "%lld-%lld"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%llds" : {
       "localizations" : {
@@ -222,6 +207,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add Module"
+          }
+        }
+      }
+    },
+    "Add Modules" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Module hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Modules"
           }
         }
       }
@@ -867,21 +868,17 @@
       }
     },
     "Download Stream" : {
-
-    },
-    "Downloads" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Downloads"
+            "value" : "Stream Herunterladen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Downloads"
+            "value" : "Download Stream"
           }
         }
       }
@@ -935,7 +932,20 @@
       }
     },
     "Enter HLS URL" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HLS Link einfügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter HLS URL"
+          }
+        }
+      }
     },
     "Episode %lld" : {
       "localizations" : {
@@ -1259,7 +1269,20 @@
       }
     },
     "HLS Downloader" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HLS Manager"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HLS Downloader"
+          }
+        }
+      }
     },
     "Hold Speed:" : {
       "localizations" : {
@@ -1977,8 +2000,37 @@
         }
       }
     },
+    "No modules available" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Module verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Modules available"
+          }
+        }
+      }
+    },
     "No offline content available" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Offline Inhalt verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No offline content available"
+          }
+        }
+      }
     },
     "No Results Found" : {
       "localizations" : {
@@ -2061,7 +2113,20 @@
       }
     },
     "Play Offline Content" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline Inhalt abspielen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play Offline Content"
+          }
+        }
+      }
     },
     "Player" : {
       "localizations" : {

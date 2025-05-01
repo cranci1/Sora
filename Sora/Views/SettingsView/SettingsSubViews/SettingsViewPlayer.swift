@@ -108,6 +108,7 @@ struct SettingsViewPlayer: View {
             SubtitleSettingsSection()
         }
         .navigationTitle("Player")
+        .modifier(HideToolbarModifier())
     }
 }
 

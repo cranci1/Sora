@@ -83,5 +83,6 @@ struct SettingsViewLoggerFilter: View {
             }
         }
         .navigationTitle("Log Filters")
+        .modifier(HideToolbarModifier())
     }
 }

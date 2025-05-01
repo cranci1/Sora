@@ -32,6 +32,7 @@ struct ExploreView: View {
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var isModuleSelectorPresented = false
     @State private var showProfileSettings = false
+    @State private var showModuleSettings = false
     @State private var isLoading = false
 
     private var selectedModule: ScrapingModule? {
@@ -149,6 +150,13 @@ struct ExploreView: View {
                     label: { EmptyView() }
                 )
                 .hidden()
+
+                NavigationLink(
+                    destination: SettingsViewModule(),
+                    isActive: $showModuleSettings,
+                    label: { EmptyView() }
+                )
+                .hidden()
             }
             .navigationTitle("Explore")
             .navigationBarTitleDisplayMode(.large)
@@ -189,22 +197,35 @@ struct ExploreView: View {
 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
-                        ForEach(getModuleLanguageGroups(), id: \.self) { language in
-                            Menu(language) {
-                                ForEach(getModulesForLanguage(language), id: \.id) { module in
-                                    Button {
-                                        selectedModuleId = module.id.uuidString
-                                    } label: {
-                                        HStack {
-                                            KFImage(URL(string: module.metadata.iconUrl))
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(width: 20, height: 20)
-                                                .cornerRadius(4)
-                                            Text(module.metadata.sourceName)
-                                            if module.id.uuidString == selectedModuleId {
-                                                Image(systemName: "checkmark")
-                                                    .foregroundColor(.accentColor)
+                        if getModuleLanguageGroups().isEmpty {
+                            Button("No modules available") { }
+                                .disabled(true)
+
+                            Divider()
+
+                            Button {
+                                showModuleSettings = true
+                            } label: {
+                                Label("Add Modules", systemImage: "plus.app")
+                            }
+                        } else {
+                            ForEach(getModuleLanguageGroups(), id: \.self) { language in
+                                Menu(language) {
+                                    ForEach(getModulesForLanguage(language), id: \.id) { module in
+                                        Button {
+                                            selectedModuleId = module.id.uuidString
+                                        } label: {
+                                            HStack {
+                                                KFImage(URL(string: module.metadata.iconUrl))
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 20, height: 20)
+                                                    .cornerRadius(4)
+                                                Text(module.metadata.sourceName)
+                                                if module.id.uuidString == selectedModuleId {
+                                                    Image(systemName: "checkmark")
+                                                        .foregroundColor(.accentColor)
+                                                }
                                             }
                                         }
                                     }

@@ -54,6 +54,7 @@ struct SettingsViewData: View {
         }
         .navigationTitle("App Data")
         .navigationViewStyle(StackNavigationViewStyle())
+        .modifier(HideToolbarModifier())
     }
 
     func eraseAppData() {

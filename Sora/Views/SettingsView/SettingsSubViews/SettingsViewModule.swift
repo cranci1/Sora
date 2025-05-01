@@ -180,6 +180,7 @@ struct SettingsViewModule: View {
         } message: {
             Text(errorMessage ?? "Unknown error")
         }
+        .modifier(HideToolbarModifier())
     }
 
     func showAddModuleAlert() {

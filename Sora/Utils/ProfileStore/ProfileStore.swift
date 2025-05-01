@@ -75,16 +75,18 @@ class ProfileStore: ObservableObject {
         setCurrentProfile(profiles[index])
     }
 
-    public func deleteCurrentProfile() {
-        if profiles.count == 1 { return }
+    public func deleteProfile(removalID: UUID?) {
+        guard let removalID,
+              profiles.count == 1
+        else { return }
 
-        if let suite = UserDefaults(suiteName: currentProfile.id.uuidString) {
+        if let suite = UserDefaults(suiteName: removalID.uuidString) {
             for key in suite.dictionaryRepresentation().keys {
                 suite.removeObject(forKey: key)
             }
         }
 
-        profiles.removeAll { $0.id == currentProfile.id }
+        profiles.removeAll { $0.id == removalID }
 
         if let firstProfile = profiles.first {
             saveProfiles()

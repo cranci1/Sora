@@ -52,9 +52,9 @@ struct SettingsViewAlternateAppIconPicker: View {
                 }
                 .padding()
             }
-
             Spacer()
         }
+        .modifier(HideToolbarModifier())
     }
 
     private func setAppIcon(named iconName: String) {

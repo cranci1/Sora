@@ -54,5 +54,6 @@ struct SettingsViewLogger: View {
                 }
             }
         }
+        .modifier(HideToolbarModifier())
     }
 }

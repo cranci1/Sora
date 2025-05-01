@@ -41,6 +41,7 @@ struct SettingsViewProfile: View {
     @EnvironmentObject var profileStore: ProfileStore
 
     @State private var showDeleteAlert = false
+    @State private var profileIDToRemove: UUID?
 
     var body: some View {
         Form {
@@ -53,6 +54,16 @@ struct SettingsViewProfile: View {
                             isSelected: profile.id == profileStore.currentProfile.id
                         )
                     }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                       if profileStore.profiles.count > 1 {
+                           Button(role: .destructive) {
+                               profileIDToRemove = profile.id
+                               showDeleteAlert = true
+                           } label: {
+                               Label("Delete", systemImage: "trash")
+                           }
+                       }
+                   }
                 }
             }
 
@@ -92,6 +103,7 @@ struct SettingsViewProfile: View {
 
                 if profileStore.profiles.count > 1 {
                     Button(action: {
+                        profileIDToRemove = profileStore.currentProfile.id
                         showDeleteAlert = true
                     }) {
                         Text("Delete Selected Profile")
@@ -107,7 +119,7 @@ struct SettingsViewProfile: View {
                 title: Text("Delete Profile"),
                 message: Text("Are you sure you want to delete this profile? This action cannot be undone."),
                 primaryButton: .destructive(Text("Delete")) {
-                    profileStore.deleteCurrentProfile()
+                    profileStore.deleteProfile(removalID: profileIDToRemove)
                 },
                 secondaryButton: .cancel()
             )
@@ -133,5 +145,6 @@ struct SettingsViewProfile: View {
                 }
             }
         }
+        .modifier(HideToolbarModifier())
     }
 }

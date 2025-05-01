@@ -42,7 +42,7 @@ class ProfileStore: ObservableObject {
             fatalError("This can only fail if suiteName == app bundle id ...")
         }
 
-        Logger.shared.log("loaded UserDefaults suite for '\(currentProfile.name)'", type: "Profile")
+        Logger.shared.log("loaded UserDefaults suite for '\(currentProfile.name)'", type: .info)
 
         return suite
     }

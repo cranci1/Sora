@@ -52,14 +52,14 @@ class LibraryManager: ObservableObject {
         if let index = bookmarks.firstIndex(where: { $0.id == item.id }) {
             bookmarks.remove(at: index)
 
-            Logger.shared.log("Removed series \(item.id) from bookmarks.", type: "Debug")
+            Logger.shared.log("Removed series \(item.id) from bookmarks.", type: .debug)
             saveBookmarks()
         }
     }
 
     private func loadBookmarks() {
         guard let data = userDefaultsSuite.data(forKey: bookmarksKey) else {
-            Logger.shared.log("No bookmarks data found in UserDefaults.", type: "Debug")
+            Logger.shared.log("No bookmarks data found in UserDefaults.", type: .debug)
             bookmarks = []
             return
         }
@@ -67,7 +67,7 @@ class LibraryManager: ObservableObject {
         do {
             bookmarks = try JSONDecoder().decode([LibraryItem].self, from: data)
         } catch {
-            Logger.shared.log("Failed to decode bookmarks: \(error.localizedDescription)", type: "Error")
+            Logger.shared.log("Failed to decode bookmarks: \(error.localizedDescription)", type: .error)
             bookmarks = []
         }
     }
@@ -77,7 +77,7 @@ class LibraryManager: ObservableObject {
             let encoded = try JSONEncoder().encode(bookmarks)
             userDefaultsSuite.set(encoded, forKey: bookmarksKey)
         } catch {
-            Logger.shared.log("Failed to save bookmarks: \(error)", type: "Error")
+            Logger.shared.log("Failed to save bookmarks: \(error)", type: .error)
         }
     }
 

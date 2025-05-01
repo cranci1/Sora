@@ -85,7 +85,7 @@ extension JSController {
                             guard let title = item["title"] as? String,
                                   let imageUrl = item["image"] as? String,
                                   let href = item["href"] as? String else {
-                                      Logger.shared.log("Missing or invalid data in search result item: \(item)", type: "Error")
+                                      Logger.shared.log("Missing or invalid data in search result item: \(item)", type: .error)
                                       return nil
                                   }
                             return SearchItem(title: title, imageUrl: imageUrl, href: href)

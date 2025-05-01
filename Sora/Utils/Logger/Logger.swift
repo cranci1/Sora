@@ -25,10 +25,19 @@ class Logger {
         logFileURL = documentDirectory.appendingPathComponent("logs.txt")
     }
 
-    func log(_ message: String, type: String = "General") {
-        guard logFilterViewModel.isFilterEnabled(for: type) else { return }
+    enum LogLevel: String {
+        case info = "Info"
+        case warning = "Warning"
+        case error = "Error"
+        case general = "General"
+        case debug = "Debug"
+        case html = "HTML"
+    }
 
-        let entry = LogEntry(message: message, type: type, timestamp: Date())
+    func log(_ message: String, type: LogLevel = .general) {
+        guard logFilterViewModel.isFilterEnabled(for: type.rawValue) else { return }
+
+        let entry = LogEntry(message: message, type: type.rawValue, timestamp: Date())
         logs.append(entry)
         saveLogToFile(entry)
 

@@ -43,7 +43,7 @@ class TraktToken {
 
     static func exchangeAuthorizationCodeForToken(code: String, completion: @escaping (Bool) -> Void) {
         guard let url = URL(string: tokenEndpoint) else {
-            Logger.shared.log("Invalid token endpoint URL", type: "Error")
+            Logger.shared.log("Invalid token endpoint URL", type: .error)
             handleFailure(error: "Invalid token endpoint URL", completion: completion)
             return
         }
@@ -139,7 +139,7 @@ class TraktToken {
     }
 
     private static func handleFailure(error: String, completion: @escaping (Bool) -> Void) {
-        Logger.shared.log(error, type: "Error")
+        Logger.shared.log(error, type: .error)
         NotificationCenter.default.post(name: authFailureNotification, object: nil, userInfo: ["error": error])
         completion(false)
     }

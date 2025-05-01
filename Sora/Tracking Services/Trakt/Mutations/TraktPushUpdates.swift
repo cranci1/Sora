@@ -122,7 +122,7 @@ class TraktMutation {
                       return
                   }
 
-            Logger.shared.log("Successfully updated watch status on Trakt", type: "Debug")
+            Logger.shared.log("Successfully updated watch status on Trakt", type: .debug)
             completion(.success(()))
         }
 

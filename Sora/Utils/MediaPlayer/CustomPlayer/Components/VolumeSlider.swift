@@ -106,11 +106,11 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
         switch p {
         case muteThreshold:
             return "speaker.slash.fill"
-        case muteThreshold..<lowThreshold:
+        case muteThreshold ..< lowThreshold:
             return "speaker.fill"
-        case lowThreshold..<midThreshold:
+        case lowThreshold ..< midThreshold:
             return "speaker.wave.1.fill"
-        case midThreshold..<highThreshold:
+        case midThreshold ..< highThreshold:
             return "speaker.wave.2.fill"
         default:
             return "speaker.wave.3.fill"

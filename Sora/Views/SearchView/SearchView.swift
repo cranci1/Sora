@@ -218,7 +218,7 @@ struct SearchView: View {
                     Menu {
                         if getModuleLanguageGroups().isEmpty {
                             Button("No modules available") {
-                                print("[Error] No Modules Button clicked")
+                                Logger.shared.log("No Modules Button clicked", type: .error)
                             }
                                 .disabled(true)
 
@@ -290,7 +290,7 @@ struct SearchView: View {
     }
 
     private func performSearch() {
-        Logger.shared.log("Searching for: \(searchText)", type: "General")
+        Logger.shared.log("Searching for: \(searchText)", type: .general)
         guard !searchText.isEmpty, let module = selectedModule else {
             searchItems = []
             hasNoResults = false
@@ -320,7 +320,7 @@ struct SearchView: View {
                         }
                     }
                 } catch {
-                    Logger.shared.log("Error loading module: \(error)", type: "Error")
+                    Logger.shared.log("Error loading module: \(error)", type: .error)
                     isSearching = false
                     hasNoResults = true
                 }

@@ -100,7 +100,20 @@
       }
     },
     "+ Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus Icon"
+          }
+        }
+      }
     },
     "+10s" : {
       "localizations" : {
@@ -199,7 +212,20 @@
       }
     },
     "Alternative App Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alternatives App Icon Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alternative App Icon"
+          }
+        }
+      }
     },
     "AniList" : {
       "localizations" : {
@@ -218,7 +244,20 @@
       }
     },
     "AniList Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AniList Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AniList Icon"
+          }
+        }
+      }
     },
     "AniList.co" : {
       "localizations" : {
@@ -444,6 +483,22 @@
         }
       }
     },
+    "Bookmark Icon" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lesezeichen Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bookmark Icon"
+          }
+        }
+      }
+    },
     "Bookmark items for an easier access later." : {
       "localizations" : {
         "de" : {
@@ -492,6 +547,22 @@
         }
       }
     },
+    "Calendar Icon" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalendar Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendar Icon"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "de" : {
@@ -525,7 +596,20 @@
       }
     },
     "Checkmark Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählt Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checkmark Icon"
+          }
+        }
+      }
     },
     "Clear Cache" : {
       "localizations" : {
@@ -544,7 +628,20 @@
       }
     },
     "Clear Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Icon"
+          }
+        }
+      }
     },
     "Clear Logs" : {
       "localizations" : {
@@ -595,7 +692,20 @@
       }
     },
     "Configure Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfigurieren Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configure Icon"
+          }
+        }
+      }
     },
     "Confirm Erase App Data" : {
       "localizations" : {
@@ -934,7 +1044,20 @@
       }
     },
     "Episode Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episoden Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episode Icon"
+          }
+        }
+      }
     },
     "Episodes" : {
       "localizations" : {
@@ -1017,7 +1140,20 @@
       }
     },
     "Error Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehler Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error Icon"
+          }
+        }
+      }
     },
     "Error: %@" : {
       "localizations" : {
@@ -1053,7 +1189,20 @@
       }
     },
     "Expand Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufklappen Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expand Icon"
+          }
+        }
+      }
     },
     "Explore" : {
       "localizations" : {
@@ -1088,7 +1237,20 @@
       }
     },
     "External App Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Externe App Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "External App Icon"
+          }
+        }
+      }
     },
     "Failed to parse response" : {
       "localizations" : {
@@ -1695,10 +1857,36 @@
       }
     },
     "Magazine Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buch Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Magazine Icon"
+          }
+        }
+      }
     },
     "Magnifying Glass Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Magnifying Glass Icon"
+          }
+        }
+      }
     },
     "Main" : {
       "localizations" : {
@@ -1845,7 +2033,20 @@
       }
     },
     "More Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mehr Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More Icon"
+          }
+        }
+      }
     },
     "Name" : {
       "localizations" : {
@@ -1867,7 +2068,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Neuer Nutzer"
           }
         },
@@ -2120,7 +2321,20 @@
       }
     },
     "Play Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abspielen Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play Icon"
+          }
+        }
+      }
     },
     "Play Offline Content" : {
       "localizations" : {
@@ -2219,7 +2433,20 @@
       }
     },
     "Questionmark Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fragezeichen Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questionmark Icon"
+          }
+        }
+      }
     },
     "Recently watched content will appear here." : {
       "localizations" : {
@@ -2397,6 +2624,22 @@
         }
       }
     },
+    "Right Arrow Icon" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pfeil nach Rechts Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right Arrow Icon"
+          }
+        }
+      }
+    },
     "Running Sora %@\nby cranci1" : {
       "localizations" : {
         "de" : {
@@ -2430,7 +2673,20 @@
       }
     },
     "Safari Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari Icon"
+          }
+        }
+      }
     },
     "Scan to Visit" : {
       "localizations" : {
@@ -2465,7 +2721,20 @@
       }
     },
     "Search Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search Icon"
+          }
+        }
+      }
     },
     "Search View" : {
       "localizations" : {
@@ -2708,7 +2977,20 @@
       }
     },
     "Speaker Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lautsprecher Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speaker Icon"
+          }
+        }
+      }
     },
     "Speed Settings" : {
       "localizations" : {
@@ -2727,7 +3009,20 @@
       }
     },
     "Star Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stern Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Star Icon"
+          }
+        }
+      }
     },
     "Starting authentication..." : {
       "localizations" : {
@@ -2906,7 +3201,20 @@
       }
     },
     "Trakt Icon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trakt Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trakt Icon"
+          }
+        }
+      }
     },
     "Trakt.tv" : {
       "localizations" : {
@@ -3000,6 +3308,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "v%@"
+          }
+        }
+      }
+    },
+    "Warning Icon" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warnung Icon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warning Icon"
           }
         }
       }

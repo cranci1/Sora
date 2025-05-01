@@ -20,7 +20,7 @@ struct SoraApp: App {
             if isAuthenticated {
                 Logger.shared.log("Trakt authentication is valid")
             } else {
-                Logger.shared.log("Trakt authentication required", type: "Error")
+                Logger.shared.log("Trakt authentication required", type: .error)
             }
         }
     }
@@ -112,7 +112,7 @@ struct SoraApp: App {
             } else {
                 Logger.shared.log(
                     "Failed to present module addition view: No window scene found",
-                    type: "Error"
+                    type: .error
                 )
             }
 
@@ -134,7 +134,7 @@ struct SoraApp: App {
                 if success {
                     Logger.shared.log("AniList token exchange successful")
                 } else {
-                    Logger.shared.log("AniList token exchange failed", type: "Error")
+                    Logger.shared.log("AniList token exchange failed", type: .error)
                 }
             }
 
@@ -143,12 +143,12 @@ struct SoraApp: App {
                 if success {
                     Logger.shared.log("Trakt token exchange successful")
                 } else {
-                    Logger.shared.log("Trakt token exchange failed", type: "Error")
+                    Logger.shared.log("Trakt token exchange failed", type: .error)
                 }
             }
 
         default:
-            Logger.shared.log("Unknown authentication service", type: "Error")
+            Logger.shared.log("Unknown authentication service", type: .error)
         }
     }
 }

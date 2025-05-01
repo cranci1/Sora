@@ -18,18 +18,18 @@ extension JSController {
             guard let self else { return }
 
             if let error {
-                Logger.shared.log("Network error: \(error)", type: "Error")
+                Logger.shared.log("Network error: \(error)", type: .error)
                 DispatchQueue.main.async { completion((nil, nil)) }
                 return
             }
 
             guard let data, let html = String(data: data, encoding: .utf8) else {
-                Logger.shared.log("Failed to decode HTML", type: "Error")
+                Logger.shared.log("Failed to decode HTML", type: .error)
                 DispatchQueue.main.async { completion((nil, nil)) }
                 return
             }
 
-            Logger.shared.log(html, type: "HTMLStrings")
+            Logger.shared.log(html, type: .html)
             if let parseFunction = self.context.objectForKeyedSubscript("extractStreamUrl"),
                let resultString = parseFunction.call(withArguments: [html]).toString() {
                 if let data = resultString.data(using: .utf8) {
@@ -40,21 +40,21 @@ extension JSController {
 
                             if let streamsArray = json["streams"] as? [String] {
                                 streamUrls = streamsArray
-                                Logger.shared.log("Found \(streamsArray.count) streams", type: "Stream")
+                                Logger.shared.log("Found \(streamsArray.count) streams", type: .debug)
                             } else if let streamUrl = json["stream"] as? String {
                                 streamUrls = [streamUrl]
-                                Logger.shared.log("Found single stream", type: "Stream")
+                                Logger.shared.log("Found single stream", type: .debug)
                             }
 
                             if let subsArray = json["subtitles"] as? [String] {
                                 subtitleUrls = subsArray
-                                Logger.shared.log("Found \(subsArray.count) subtitle tracks", type: "Stream")
+                                Logger.shared.log("Found \(subsArray.count) subtitle tracks", type: .debug)
                             } else if let subtitleUrl = json["subtitles"] as? String {
                                 subtitleUrls = [subtitleUrl]
-                                Logger.shared.log("Found single subtitle track", type: "Stream")
+                                Logger.shared.log("Found single subtitle track", type: .debug)
                             }
 
-                            Logger.shared.log("Starting stream with \(streamUrls?.count ?? 0) sources and \(subtitleUrls?.count ?? 0) subtitles", type: "Stream")
+                            Logger.shared.log("Starting stream with \(streamUrls?.count ?? 0) sources and \(subtitleUrls?.count ?? 0) subtitles", type: .debug)
                             DispatchQueue.main.async {
                                 completion((streamUrls, subtitleUrls))
                             }
@@ -62,17 +62,17 @@ extension JSController {
                         }
 
                         if let streamsArray = try? JSONSerialization.jsonObject(with: data, options: []) as? [String] {
-                            Logger.shared.log("Starting multi-stream with \(streamsArray.count) sources", type: "Stream")
+                            Logger.shared.log("Starting multi-stream with \(streamsArray.count) sources", type: .debug)
                             DispatchQueue.main.async { completion((streamsArray, nil)) }
                             return
                         }
                     }
                 }
 
-                Logger.shared.log("Starting stream from: \(resultString)", type: "Stream")
+                Logger.shared.log("Starting stream from: \(resultString)", type: .debug)
                 DispatchQueue.main.async { completion(([resultString], nil)) }
             } else {
-                Logger.shared.log("Failed to extract stream URL", type: "Error")
+                Logger.shared.log("Failed to extract stream URL", type: .error)
                 DispatchQueue.main.async { completion((nil, nil)) }
             }
         }.resume()
@@ -80,20 +80,20 @@ extension JSController {
 
     func fetchStreamUrlJS(episodeUrl: String, softsub: Bool = false, module: ScrapingModule, completion: @escaping ((streams: [String]?, subtitles: [String]?)) -> Void) {
         if let exception = context.exception {
-            Logger.shared.log("JavaScript exception: \(exception)", type: "Error")
+            Logger.shared.log("JavaScript exception: \(exception)", type: .error)
             completion((nil, nil))
             return
         }
 
         guard let extractStreamUrlFunction = context.objectForKeyedSubscript("extractStreamUrl") else {
-            Logger.shared.log("No JavaScript function extractStreamUrl found", type: "Error")
+            Logger.shared.log("No JavaScript function extractStreamUrl found", type: .error)
             completion((nil, nil))
             return
         }
 
         let promiseValue = extractStreamUrlFunction.call(withArguments: [episodeUrl])
         guard let promise = promiseValue else {
-            Logger.shared.log("extractStreamUrl did not return a Promise", type: "Error")
+            Logger.shared.log("extractStreamUrl did not return a Promise", type: .error)
             completion((nil, nil))
             return
         }
@@ -110,21 +110,21 @@ extension JSController {
 
                         if let streamsArray = json["streams"] as? [String] {
                             streamUrls = streamsArray
-                            Logger.shared.log("Found \(streamsArray.count) streams", type: "Stream")
+                            Logger.shared.log("Found \(streamsArray.count) streams", type: .debug)
                         } else if let streamUrl = json["stream"] as? String {
                             streamUrls = [streamUrl]
-                            Logger.shared.log("Found single stream", type: "Stream")
+                            Logger.shared.log("Found single stream", type: .debug)
                         }
 
                         if let subsArray = json["subtitles"] as? [String] {
                             subtitleUrls = subsArray
-                            Logger.shared.log("Found \(subsArray.count) subtitle tracks", type: "Stream")
+                            Logger.shared.log("Found \(subsArray.count) subtitle tracks", type: .debug)
                         } else if let subtitleUrl = json["subtitles"] as? String {
                             subtitleUrls = [subtitleUrl]
-                            Logger.shared.log("Found single subtitle track", type: "Stream")
+                            Logger.shared.log("Found single subtitle track", type: .debug)
                         }
 
-                        Logger.shared.log("Starting stream with \(streamUrls?.count ?? 0) sources and \(subtitleUrls?.count ?? 0) subtitles", type: "Stream")
+                        Logger.shared.log("Starting stream with \(streamUrls?.count ?? 0) sources and \(subtitleUrls?.count ?? 0) subtitles", type: .debug)
                         DispatchQueue.main.async {
                             completion((streamUrls, subtitleUrls))
                         }
@@ -132,7 +132,7 @@ extension JSController {
                     }
 
                     if let streamsArray = try? JSONSerialization.jsonObject(with: data, options: []) as? [String] {
-                        Logger.shared.log("Starting multi-stream with \(streamsArray.count) sources", type: "Stream")
+                        Logger.shared.log("Starting multi-stream with \(streamsArray.count) sources", type: .debug)
                         DispatchQueue.main.async { completion((streamsArray, nil)) }
                         return
                     }
@@ -140,14 +140,14 @@ extension JSController {
             }
 
             let streamUrl = result.toString()
-            Logger.shared.log("Starting stream from: \(streamUrl ?? "nil")", type: "Stream")
+            Logger.shared.log("Starting stream from: \(streamUrl ?? "nil")", type: .debug)
             DispatchQueue.main.async {
                 completion((streamUrl != nil ? [streamUrl!] : nil, nil))
             }
         }
 
         let catchBlock: @convention(block) (JSValue) -> Void = { error in
-            Logger.shared.log("Promise rejected: \(String(describing: error.toString()))", type: "Error")
+            Logger.shared.log("Promise rejected: \(String(describing: error.toString()))", type: .error)
             DispatchQueue.main.async {
                 completion((nil, nil))
             }
@@ -166,33 +166,33 @@ extension JSController {
             guard let self else { return }
 
             if let error {
-                Logger.shared.log("URLSession error: \(error.localizedDescription)", type: "Error")
+                Logger.shared.log("URLSession error: \(error.localizedDescription)", type: .error)
                 DispatchQueue.main.async { completion((nil, nil)) }
                 return
             }
 
             guard let data, let htmlString = String(data: data, encoding: .utf8) else {
-                Logger.shared.log("Failed to fetch HTML data", type: "Error")
+                Logger.shared.log("Failed to fetch HTML data", type: .error)
                 DispatchQueue.main.async { completion((nil, nil)) }
                 return
             }
 
             DispatchQueue.main.async {
                 if let exception = self.context.exception {
-                    Logger.shared.log("JavaScript exception: \(exception)", type: "Error")
+                    Logger.shared.log("JavaScript exception: \(exception)", type: .error)
                     completion((nil, nil))
                     return
                 }
 
                 guard let extractStreamUrlFunction = self.context.objectForKeyedSubscript("extractStreamUrl") else {
-                    Logger.shared.log("No JavaScript function extractStreamUrl found", type: "Error")
+                    Logger.shared.log("No JavaScript function extractStreamUrl found", type: .error)
                     completion((nil, nil))
                     return
                 }
 
                 let promiseValue = extractStreamUrlFunction.call(withArguments: [htmlString])
                 guard let promise = promiseValue else {
-                    Logger.shared.log("extractStreamUrl did not return a Promise", type: "Error")
+                    Logger.shared.log("extractStreamUrl did not return a Promise", type: .error)
                     completion((nil, nil))
                     return
                 }
@@ -209,21 +209,21 @@ extension JSController {
 
                                 if let streamsArray = json["streams"] as? [String] {
                                     streamUrls = streamsArray
-                                    Logger.shared.log("Found \(streamsArray.count) streams", type: "Stream")
+                                    Logger.shared.log("Found \(streamsArray.count) streams", type: .debug)
                                 } else if let streamUrl = json["stream"] as? String {
                                     streamUrls = [streamUrl]
-                                    Logger.shared.log("Found single stream", type: "Stream")
+                                    Logger.shared.log("Found single stream", type: .debug)
                                 }
 
                                 if let subsArray = json["subtitles"] as? [String] {
                                     subtitleUrls = subsArray
-                                    Logger.shared.log("Found \(subsArray.count) subtitle tracks", type: "Stream")
+                                    Logger.shared.log("Found \(subsArray.count) subtitle tracks", type: .debug)
                                 } else if let subtitleUrl = json["subtitles"] as? String {
                                     subtitleUrls = [subtitleUrl]
-                                    Logger.shared.log("Found single subtitle track", type: "Stream")
+                                    Logger.shared.log("Found single subtitle track", type: .debug)
                                 }
 
-                                Logger.shared.log("Starting stream with \(streamUrls?.count ?? 0) sources and \(subtitleUrls?.count ?? 0) subtitles", type: "Stream")
+                                Logger.shared.log("Starting stream with \(streamUrls?.count ?? 0) sources and \(subtitleUrls?.count ?? 0) subtitles", type: .debug)
                                 DispatchQueue.main.async {
                                     completion((streamUrls, subtitleUrls))
                                 }
@@ -231,7 +231,7 @@ extension JSController {
                             }
 
                             if let streamsArray = try? JSONSerialization.jsonObject(with: data, options: []) as? [String] {
-                                Logger.shared.log("Starting multi-stream with \(streamsArray.count) sources", type: "Stream")
+                                Logger.shared.log("Starting multi-stream with \(streamsArray.count) sources", type: .debug)
                                 DispatchQueue.main.async { completion((streamsArray, nil)) }
                                 return
                             }
@@ -239,14 +239,14 @@ extension JSController {
                     }
 
                     let streamUrl = result.toString()
-                    Logger.shared.log("Starting stream from: \(streamUrl ?? "nil")", type: "Stream")
+                    Logger.shared.log("Starting stream from: \(streamUrl ?? "nil")", type: .debug)
                     DispatchQueue.main.async {
                         completion((streamUrl != nil ? [streamUrl!] : nil, nil))
                     }
                 }
 
                 let catchBlock: @convention(block) (JSValue) -> Void = { error in
-                    Logger.shared.log("Promise rejected: \(String(describing: error.toString()))", type: "Error")
+                    Logger.shared.log("Promise rejected: \(String(describing: error.toString()))", type: .error)
                     DispatchQueue.main.async {
                         completion((nil, nil))
                     }

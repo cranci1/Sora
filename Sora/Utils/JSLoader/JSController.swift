@@ -24,7 +24,7 @@ class JSController: ObservableObject {
         setupContext()
         context.evaluateScript(script)
         if let exception = context.exception {
-            Logger.shared.log("Error loading script: \(exception)", type: "Error")
+            Logger.shared.log("Error loading script: \(exception)", type: .error)
         }
     }
 }

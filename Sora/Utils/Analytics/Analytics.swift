@@ -23,7 +23,7 @@ class AnalyticsManager {
     private let moduleManager = ModuleManager()
 
     private init() {
-        print("[Info] Analytics initializer called")
+        Logger.shared.log("Analytics initializer called", type: .info)
     }
 
     // MARK: - Send Analytics Data
@@ -38,12 +38,12 @@ class AnalyticsManager {
         let analyticsEnabled = UserDefaults.standard.bool(forKey: "analyticsEnabled")
 
         guard analyticsEnabled else {
-            Logger.shared.log("Analytics is disabled, skipping event: \(event)", type: "Debug")
+            Logger.shared.log("Analytics is disabled, skipping event: \(event)", type: .debug)
             return
         }
 
         guard let selectedModule = getSelectedModule() else {
-            Logger.shared.log("No selected module found", type: "Debug")
+            Logger.shared.log("No selected module found", type: .debug)
             return
         }
 
@@ -76,30 +76,30 @@ class AnalyticsManager {
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: data, options: [])
         } catch {
-            Logger.shared.log("Failed to encode JSON: \(error.localizedDescription)", type: "Debug")
+            Logger.shared.log("Failed to encode JSON: \(error.localizedDescription)", type: .debug)
             return
         }
 
         URLSession.shared.dataTask(with: request) { data, _, error in
             if let error {
-                Logger.shared.log("Request failed: \(error.localizedDescription)", type: "Debug")
+                Logger.shared.log("Request failed: \(error.localizedDescription)", type: .debug)
                 return
             }
 
             guard let data else {
-                Logger.shared.log("No data received from server", type: "Debug")
+                Logger.shared.log("No data received from server", type: .debug)
                 return
             }
 
             do {
                 let decodedResponse = try JSONDecoder().decode(AnalyticsResponse.self, from: data)
                 if decodedResponse.status == "success" {
-                    Logger.shared.log("Analytics saved: \(decodedResponse.event ?? "unknown event") at \(decodedResponse.timestamp ?? "unknown time")", type: "Debug")
+                    Logger.shared.log("Analytics saved: \(decodedResponse.event ?? "unknown event") at \(decodedResponse.timestamp ?? "unknown time")", type: .debug)
                 } else {
-                    Logger.shared.log("Server error: \(decodedResponse.message)", type: "Debug")
+                    Logger.shared.log("Server error: \(decodedResponse.message)", type: .debug)
                 }
             } catch {
-                Logger.shared.log("Failed to decode response: \(error.localizedDescription)", type: "Debug")
+                Logger.shared.log("Failed to decode response: \(error.localizedDescription)", type: .debug)
             }
         }.resume()
     }

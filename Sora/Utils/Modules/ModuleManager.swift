@@ -18,9 +18,9 @@ class ModuleManager: ObservableObject {
         if !FileManager.default.fileExists(atPath: url.path) {
             do {
                 try "[]".write(to: url, atomically: true, encoding: .utf8)
-                Logger.shared.log("Created empty modules file", type: "Info")
+                Logger.shared.log("Created empty modules file", type: .info)
             } catch {
-                Logger.shared.log("Failed to create modules file: \(error.localizedDescription)", type: "Error")
+                Logger.shared.log("Failed to create modules file: \(error.localizedDescription)", type: .error)
             }
         }
         loadModules()
@@ -38,7 +38,7 @@ class ModuleManager: ObservableObject {
 
             let url = getModulesFilePath()
             guard FileManager.default.fileExists(atPath: url.path) else {
-                Logger.shared.log("No modules file found after sync", type: "Error")
+                Logger.shared.log("No modules file found after sync", type: .error)
                 modules = []
                 return
             }
@@ -53,7 +53,7 @@ class ModuleManager: ObservableObject {
                 }
                 Logger.shared.log("Reloaded modules after iCloud sync")
             } catch {
-                Logger.shared.log("Error handling modules sync: \(error.localizedDescription)", type: "Error")
+                Logger.shared.log("Error handling modules sync: \(error.localizedDescription)", type: .error)
                 modules = []
             }
         }
@@ -71,12 +71,12 @@ class ModuleManager: ObservableObject {
         let url = getModulesFilePath()
 
         guard FileManager.default.fileExists(atPath: url.path) else {
-            Logger.shared.log("Modules file does not exist, creating empty one", type: "Info")
+            Logger.shared.log("Modules file does not exist, creating empty one", type: .info)
             do {
                 try "[]".write(to: url, atomically: true, encoding: .utf8)
                 modules = []
             } catch {
-                Logger.shared.log("Failed to create modules file: \(error.localizedDescription)", type: "Error")
+                Logger.shared.log("Failed to create modules file: \(error.localizedDescription)", type: .error)
                 modules = []
             }
             return
@@ -92,18 +92,18 @@ class ModuleManager: ObservableObject {
                     await checkJSModuleFiles()
                 }
             } catch {
-                Logger.shared.log("Failed to decode modules: \(error.localizedDescription)", type: "Error")
+                Logger.shared.log("Failed to decode modules: \(error.localizedDescription)", type: .error)
                 try "[]".write(to: url, atomically: true, encoding: .utf8)
                 modules = []
             }
         } catch {
-            Logger.shared.log("Failed to load modules file: \(error.localizedDescription)", type: "Error")
+            Logger.shared.log("Failed to load modules file: \(error.localizedDescription)", type: .error)
             modules = []
         }
     }
 
     func checkJSModuleFiles() async {
-        Logger.shared.log("Checking JS module files...", type: "Info")
+        Logger.shared.log("Checking JS module files...", type: .info)
         var missingCount = 0
 
         for module in modules {
@@ -112,30 +112,30 @@ class ModuleManager: ObservableObject {
                 missingCount += 1
                 do {
                     guard let scriptUrl = URL(string: module.metadata.scriptUrl) else {
-                        Logger.shared.log("Invalid script URL for module: \(module.metadata.sourceName)", type: "Error")
+                        Logger.shared.log("Invalid script URL for module: \(module.metadata.sourceName)", type: .error)
                         continue
                     }
 
-                    Logger.shared.log("Downloading missing JS file for: \(module.metadata.sourceName)", type: "Info")
+                    Logger.shared.log("Downloading missing JS file for: \(module.metadata.sourceName)", type: .info)
 
                     let (scriptData, _) = try await URLSession.custom.data(from: scriptUrl)
                     guard let jsContent = String(data: scriptData, encoding: .utf8) else {
-                        Logger.shared.log("Invalid script encoding for module: \(module.metadata.sourceName)", type: "Error")
+                        Logger.shared.log("Invalid script encoding for module: \(module.metadata.sourceName)", type: .error)
                         continue
                     }
 
                     try jsContent.write(to: localUrl, atomically: true, encoding: .utf8)
                     Logger.shared.log("Successfully downloaded JS file for module: \(module.metadata.sourceName)")
                 } catch {
-                    Logger.shared.log("Failed to download JS file for module: \(module.metadata.sourceName) - \(error.localizedDescription)", type: "Error")
+                    Logger.shared.log("Failed to download JS file for module: \(module.metadata.sourceName) - \(error.localizedDescription)", type: .error)
                 }
             }
         }
 
         if missingCount > 0 {
-            Logger.shared.log("Downloaded \(missingCount) missing module JS files", type: "Info")
+            Logger.shared.log("Downloaded \(missingCount) missing module JS files", type: .info)
         } else {
-            Logger.shared.log("All module JS files are present", type: "Info")
+            Logger.shared.log("All module JS files are present", type: .info)
         }
     }
 

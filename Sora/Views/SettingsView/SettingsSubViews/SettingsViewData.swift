@@ -61,7 +61,7 @@ struct SettingsViewData: View {
         if let domain = Bundle.main.bundleIdentifier {
             UserDefaults.standard.removePersistentDomain(forName: domain)
             UserDefaults.standard.synchronize()
-            Logger.shared.log("Cleared app data!", type: "General")
+            Logger.shared.log("Cleared app data!", type: .general)
             exit(0)
         }
     }
@@ -75,10 +75,10 @@ struct SettingsViewData: View {
                 for filePath in filePaths {
                     try FileManager.default.removeItem(at: filePath)
                 }
-                Logger.shared.log("Cache cleared successfully!", type: "General")
+                Logger.shared.log("Cache cleared successfully!", type: .general)
             }
         } catch {
-            Logger.shared.log("Failed to clear cache.", type: "Error")
+            Logger.shared.log("Failed to clear cache.", type: .error)
         }
     }
 
@@ -90,10 +90,10 @@ struct SettingsViewData: View {
                 for fileURL in fileURLs {
                     try fileManager.removeItem(at: fileURL)
                 }
-                Logger.shared.log("All files in documents folder removed", type: "General")
+                Logger.shared.log("All files in documents folder removed", type: .general)
                 exit(0)
             } catch {
-                Logger.shared.log("Error removing files in documents folder: \(error)", type: "Error")
+                Logger.shared.log("Error removing files in documents folder: \(error)", type: .error)
             }
         }
     }

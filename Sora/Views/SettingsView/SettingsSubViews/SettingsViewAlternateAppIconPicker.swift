@@ -63,7 +63,7 @@ struct SettingsViewAlternateAppIconPicker: View {
             UIApplication.shared.setAlternateIconName(iconName == "Default" ? nil : "AppIcon_\(iconName)", completionHandler: { error in
                 isPresented = false
                 if let error {
-                    print("Failed to set alternate icon: \(error.localizedDescription)")
+                    Logger.shared.log("Failed to set alternate icon: \(error.localizedDescription)", type: .error)
                 }
             })
         }

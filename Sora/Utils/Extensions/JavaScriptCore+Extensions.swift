@@ -12,19 +12,19 @@ extension JSContext {
         let consoleObject = JSValue(newObjectIn: self)
 
         let consoleLogFunction: @convention(block) (String) -> Void = { message in
-            Logger.shared.log(message, type: "Debug")
+            Logger.shared.log(message, type: .debug)
         }
         consoleObject?.setObject(consoleLogFunction, forKeyedSubscript: "log" as NSString)
 
         let consoleErrorFunction: @convention(block) (String) -> Void = { message in
-            Logger.shared.log(message, type: "Error")
+            Logger.shared.log(message, type: .error)
         }
         consoleObject?.setObject(consoleErrorFunction, forKeyedSubscript: "error" as NSString)
 
         self.setObject(consoleObject, forKeyedSubscript: "console" as NSString)
 
         let logFunction: @convention(block) (String) -> Void = { message in
-            Logger.shared.log("JavaScript log: \(message)", type: "Debug")
+            Logger.shared.log("JavaScript log: \(message)", type: .debug)
         }
         self.setObject(logFunction, forKeyedSubscript: "log" as NSString)
     }
@@ -32,7 +32,7 @@ extension JSContext {
     func setupNativeFetch() {
         let fetchNativeFunction: @convention(block) (String, [String: String]?, JSValue, JSValue) -> Void = { urlString, headers, resolve, reject in
             guard let url = URL(string: urlString) else {
-                Logger.shared.log("Invalid URL", type: "Error")
+                Logger.shared.log("Invalid URL", type: .error)
                 reject.call(withArguments: ["Invalid URL"])
                 return
             }
@@ -44,19 +44,19 @@ extension JSContext {
             }
             let task = URLSession.custom.dataTask(with: request) { data, _, error in
                 if let error {
-                    Logger.shared.log("Network error in fetchNativeFunction: \(error.localizedDescription)", type: "Error")
+                    Logger.shared.log("Network error in fetchNativeFunction: \(error.localizedDescription)", type: .error)
                     reject.call(withArguments: [error.localizedDescription])
                     return
                 }
                 guard let data else {
-                    Logger.shared.log("No data in response", type: "Error")
+                    Logger.shared.log("No data in response", type: .error)
                     reject.call(withArguments: ["No data"])
                     return
                 }
                 if let text = String(data: data, encoding: .utf8) {
                     resolve.call(withArguments: [text])
                 } else {
-                    Logger.shared.log("Unable to decode data to text", type: "Error")
+                    Logger.shared.log("Unable to decode data to text", type: .error)
                     reject.call(withArguments: ["Unable to decode data"])
                 }
             }
@@ -77,7 +77,7 @@ extension JSContext {
     func setupFetchV2() {
         let fetchV2NativeFunction: @convention(block) (String, [String: String]?, String?, String?, ObjCBool, JSValue, JSValue) -> Void = { urlString, headers, method, body, redirect, resolve, reject in
             guard let url = URL(string: urlString) else {
-                Logger.shared.log("Invalid URL", type: "Error")
+                Logger.shared.log("Invalid URL", type: .error)
                 reject.call(withArguments: ["Invalid URL"])
                 return
             }
@@ -86,10 +86,10 @@ extension JSContext {
             var request = URLRequest(url: url)
             request.httpMethod = httpMethod
 
-            Logger.shared.log("FetchV2 Request: URL=\(url), Method=\(httpMethod), Body=\(body ?? "nil")", type: "Debug")
+            Logger.shared.log("FetchV2 Request: URL=\(url), Method=\(httpMethod), Body=\(body ?? "nil")", type: .debug)
 
             if httpMethod == "GET", let body, !body.isEmpty, body != "null", body != "undefined" {
-                Logger.shared.log("GET request must not have a body", type: "Error")
+                Logger.shared.log("GET request must not have a body", type: .error)
                 reject.call(withArguments: ["GET request must not have a body"])
                 return
             }
@@ -103,16 +103,16 @@ extension JSContext {
                     request.setValue(value, forHTTPHeaderField: key)
                 }
             }
-            Logger.shared.log("Redirect value is \(redirect.boolValue)", type: "Error")
+            Logger.shared.log("Redirect value is \(redirect.boolValue)", type: .error)
             let task = URLSession.fetchData(allowRedirects: redirect.boolValue).downloadTask(with: request) { tempFileURL, response, error in
                 if let error {
-                    Logger.shared.log("Network error in fetchV2NativeFunction: \(error.localizedDescription)", type: "Error")
+                    Logger.shared.log("Network error in fetchV2NativeFunction: \(error.localizedDescription)", type: .error)
                     reject.call(withArguments: [error.localizedDescription])
                     return
                 }
 
                 guard let tempFileURL else {
-                    Logger.shared.log("No data in response", type: "Error")
+                    Logger.shared.log("No data in response", type: .error)
                     reject.call(withArguments: ["No data"])
                     return
                 }
@@ -127,7 +127,7 @@ extension JSContext {
                     let data = try Data(contentsOf: tempFileURL)
 
                     if data.count > 10_000_000 {
-                        Logger.shared.log("Response exceeds maximum size", type: "Error")
+                        Logger.shared.log("Response exceeds maximum size", type: .error)
                         reject.call(withArguments: ["Response exceeds maximum size"])
                         return
                     }
@@ -137,11 +137,11 @@ extension JSContext {
                         resolve.call(withArguments: [responseDict])
                     } else {
                         // rather than reject -> resolve with empty body as user can utilise reponse headers.
-                        Logger.shared.log("Unable to decode data to text", type: "Error")
+                        Logger.shared.log("Unable to decode data to text", type: .error)
                         resolve.call(withArguments: [responseDict])
                     }
                 } catch {
-                    Logger.shared.log("Error reading downloaded file: \(error.localizedDescription)", type: "Error")
+                    Logger.shared.log("Error reading downloaded file: \(error.localizedDescription)", type: .error)
                     reject.call(withArguments: ["Error reading downloaded file"])
                 }
             }
@@ -190,7 +190,7 @@ extension JSContext {
     func setupBase64Functions() {
         let btoaFunction: @convention(block) (String) -> String? = { data in
             guard let data = data.data(using: .utf8) else {
-                Logger.shared.log("btoa: Failed to encode input as UTF-8", type: "Error")
+                Logger.shared.log("btoa: Failed to encode input as UTF-8", type: .error)
                 return nil
             }
             return data.base64EncodedString()
@@ -198,7 +198,7 @@ extension JSContext {
 
         let atobFunction: @convention(block) (String) -> String? = { base64String in
             guard let data = Data(base64Encoded: base64String) else {
-                Logger.shared.log("atob: Invalid base64 input", type: "Error")
+                Logger.shared.log("atob: Invalid base64 input", type: .error)
                 return nil
             }
 

@@ -168,14 +168,14 @@ class ICloudSyncManager {
                     try FileManager.default.copyItem(at: localModulesURL, to: iCloudModulesURL)
                 }
             } catch {
-                Logger.shared.log("iCloud modules sync error: \(error)", type: "Error")
+                Logger.shared.log("iCloud modules sync error: \(error)", type: .error)
             }
         }
     }
 
     func syncModulesFromiCloud() {
         guard let iCloudURL = self.ubiquityContainerURL else {
-            Logger.shared.log("iCloud container not available", type: "Error")
+            Logger.shared.log("iCloud container not available", type: .error)
             return
         }
 
@@ -184,13 +184,13 @@ class ICloudSyncManager {
 
         do {
             if !FileManager.default.fileExists(atPath: iCloudModulesURL.path) {
-                Logger.shared.log("No modules file found in iCloud", type: "Info")
+                Logger.shared.log("No modules file found in iCloud", type: .info)
 
                 if FileManager.default.fileExists(atPath: localModulesURL.path) {
-                    Logger.shared.log("Copying local modules file to iCloud", type: "Info")
+                    Logger.shared.log("Copying local modules file to iCloud", type: .info)
                     try FileManager.default.copyItem(at: localModulesURL, to: iCloudModulesURL)
                 } else {
-                    Logger.shared.log("Creating new empty modules file in iCloud", type: "Info")
+                    Logger.shared.log("Creating new empty modules file in iCloud", type: .info)
                     let emptyModules: [ScrapingModule] = []
                     let emptyData = try JSONEncoder().encode(emptyModules)
                     try emptyData.write(to: iCloudModulesURL)
@@ -214,7 +214,7 @@ class ICloudSyncManager {
             }
 
             if shouldCopy {
-                Logger.shared.log("Syncing modules from iCloud", type: "Info")
+                Logger.shared.log("Syncing modules from iCloud", type: .info)
                 if FileManager.default.fileExists(atPath: localModulesURL.path) {
                     try FileManager.default.removeItem(at: localModulesURL)
                 }
@@ -225,7 +225,7 @@ class ICloudSyncManager {
                 }
             }
         } catch {
-            Logger.shared.log("iCloud modules sync error: \(error)", type: "Error")
+            Logger.shared.log("iCloud modules sync error: \(error)", type: .error)
         }
     }
 

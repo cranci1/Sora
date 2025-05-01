@@ -12,7 +12,7 @@ class DropManager {
     static let shared = DropManager()
 
     private init() {
-        print("[Info] Drops initialized")
+        Logger.shared.log("Drops initialized", type: .info)
     }
 
     func showDrop(title: String, subtitle: String, duration: TimeInterval, icon: UIImage?) {

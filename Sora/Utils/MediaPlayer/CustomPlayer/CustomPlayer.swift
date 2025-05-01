@@ -38,8 +38,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var holdGesture: UILongPressGestureRecognizer?
 
     var isPlaying = true
-    var currentTimeVal: Double = 0.0
-    var duration: Double = 0.0
+    var currentTimeVal = 0.0
+    var duration = 0.0
     var isVideoLoaded = false
 
     private var isHoldPauseEnabled: Bool {
@@ -68,13 +68,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var currentMenuButtonTrailing: NSLayoutConstraint!
 
     var subtitleForegroundColor: UIColor = .white
-    var subtitleBackgroundEnabled: Bool = true
-    var subtitleFontSize: Double = 20.0
-    var subtitleShadowRadius: Double = 1.0
+    var subtitleBackgroundEnabled = true
+    var subtitleFontSize = 20.0
+    var subtitleShadowRadius = 1.0
     var subtitlesLoader = VTTSubtitlesLoader()
     var subtitleStackView: UIStackView!
     var subtitleLabels: [UILabel] = []
-    var subtitlesEnabled: Bool = true {
+    var subtitlesEnabled = true {
         didSet {
             subtitleStackView.isHidden = !subtitlesEnabled
         }
@@ -97,7 +97,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var qualityButton: UIButton!
     var holdSpeedIndicator: UIButton!
 
-    var isHLSStream: Bool = false
+    var isHLSStream = false
     var qualities: [(String, String)] = []
     var currentQualityURL: URL?
     var baseM3U8URL: URL?
@@ -165,10 +165,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var audioSession = AVAudioSession.sharedInstance()
     private var hiddenVolumeView = MPVolumeView(frame: .zero)
     private var systemVolumeSlider: UISlider?
-    private var volumeValue: Double = 0.0
+    private var volumeValue = 0.0
     private var volumeViewModel = VolumeViewModel()
     var volumeSliderHostingView: UIView?
-    private var subtitleDelay: Double = 0.0
+    private var subtitleDelay = 0.0
 
     init(module: ScrapingModule,
          continueWatchingManager: ContinueWatchingManager,
@@ -180,7 +180,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
          subtitlesURL: String?,
          aniListID: Int,
          episodeImageUrl: String) {
-
         self.module = module
         self.continueWatchingManager = continueWatchingManager
         self.streamURL = urlString
@@ -215,6 +214,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         }
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -255,7 +255,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self?.fetchSkipTimes(type: "op")
                 self?.fetchSkipTimes(type: "ed")
             case .failure(let error):
-                Logger.shared.log("Unable to fetch MAL ID: \(error)", type: "Error")
+                Logger.shared.log("Unable to fetch MAL ID: \(error)", type: .error)
             }
         }
 
@@ -272,7 +272,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         do {
             try audioSession.setActive(true)
         } catch {
-            Logger.shared.log("Error activating audio session: \(error)", type: "Debug")
+            Logger.shared.log("Error activating audio session: \(error)", type: .debug)
         }
 
         volumeViewModel.value = Double(audioSession.outputVolume)
@@ -281,7 +281,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             guard let newVol = change.newValue else { return }
             DispatchQueue.main.async {
                 self?.volumeViewModel.value = Double(newVol)
-                Logger.shared.log("Hardware volume changed, new value: \(newVol)", type: "Debug")
+                Logger.shared.log("Hardware volume changed, new value: \(newVol)", type: .debug)
             }
         }
 
@@ -329,7 +329,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        guard let marqueeLabel = marqueeLabel else {
+        guard let marqueeLabel else {
             return
         }
 
@@ -386,12 +386,12 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     @objc
     private func playerItemDidChange() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            if self.qualityButton.isHidden && self.isHLSStream {
-                self.qualityButton.isHidden = false
-                self.qualityButton.menu = self.qualitySelectionMenu()
+            guard let self else { return }
+            if qualityButton.isHidden && isHLSStream {
+                qualityButton.isHidden = false
+                qualityButton.menu = qualitySelectionMenu()
 
-                self.updateMenuButtonConstraints()
+                updateMenuButtonConstraints()
 
                 UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
                     self.view.layoutIfNeeded()
@@ -546,15 +546,15 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                         toleranceBefore: .zero,
                         toleranceAfter: .zero
                     ) { [weak self] _ in
-                        guard let self = self else { return }
+                        guard let self else { return }
 
-                        let final = self.player.currentTime().seconds
-                        self.sliderViewModel.sliderValue = final
-                        self.currentTimeVal = final
-                        self.isSliderEditing = false
+                        let final = player.currentTime().seconds
+                        sliderViewModel.sliderValue = final
+                        currentTimeVal = final
+                        isSliderEditing = false
 
-                        if self.wasPlayingBeforeSeek {
-                            self.player.playImmediately(atRate: self.originalRate)
+                        if wasPlayingBeforeSeek {
+                            player.playImmediately(atRate: originalRate)
                         }
                     }
                 }
@@ -726,7 +726,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         subtitleStackView.distribution = .fill
         subtitleStackView.spacing = 2
 
-        if let subtitleStackView = subtitleStackView {
+        if let subtitleStackView {
             view.addSubview(subtitleStackView)
             subtitleStackView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -749,7 +749,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             subtitleBottomToSafeAreaConstraint?.isActive = true
         }
 
-        for _ in 0..<2 {
+        for _ in 0 ..< 2 {
             let label = UILabel()
             label.textAlignment = .center
             label.numberOfLines = 0
@@ -866,7 +866,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         holdSpeedIndicator.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         holdSpeedIndicator.setImage(image, for: .normal)
 
-        holdSpeedIndicator.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
+        holdSpeedIndicator.backgroundColor = UIColor(red: 51 / 255.0, green: 51 / 255.0, blue: 51 / 255.0, alpha: 0.8)
         holdSpeedIndicator.tintColor = .white
         holdSpeedIndicator.setTitleColor(.white, for: .normal)
         holdSpeedIndicator.layer.cornerRadius = 21
@@ -975,7 +975,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
 
                         self.player.pause()
                     } else {
-
                         let target = CMTime(seconds: self.sliderViewModel.sliderValue,
                                             preferredTimescale: 600)
                         self.player.seek(
@@ -983,15 +982,15 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                             toleranceBefore: .zero,
                             toleranceAfter: .zero
                         ) { [weak self] _ in
-                            guard let self = self else { return }
+                            guard let self else { return }
 
-                            let final = self.player.currentTime().seconds
-                            self.sliderViewModel.sliderValue = final
-                            self.currentTimeVal = final
-                            self.isSliderEditing = false
+                            let final = player.currentTime().seconds
+                            sliderViewModel.sliderValue = final
+                            currentTimeVal = final
+                            isSliderEditing = false
 
-                            if self.wasPlayingBeforeSeek {
-                                self.player.playImmediately(atRate: self.originalRate)
+                            if wasPlayingBeforeSeek {
+                                player.playImmediately(atRate: originalRate)
                             }
                         }
                     }
@@ -1038,7 +1037,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skipIntroButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skipIntroButton.setImage(introImage, for: .normal)
 
-        skipIntroButton.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
+        skipIntroButton.backgroundColor = UIColor(red: 51 / 255.0, green: 51 / 255.0, blue: 51 / 255.0, alpha: 0.8)
 
         if #available(iOS 15.0, *) {
             var config = UIButton.Configuration.filled()
@@ -1083,7 +1082,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skipOutroButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skipOutroButton.setImage(outroImage, for: .normal)
 
-        skipOutroButton.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
+        skipOutroButton.backgroundColor = UIColor(red: 51 / 255.0, green: 51 / 255.0, blue: 51 / 255.0, alpha: 0.8)
 
         if #available(iOS 15.0, *) {
             var config = UIButton.Configuration.filled()
@@ -1174,7 +1173,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         menuButton.setImage(image, for: .normal)
         menuButton.tintColor = .white
 
-        if let subtitlesURL = subtitlesURL, !subtitlesURL.isEmpty {
+        if let subtitlesURL, !subtitlesURL.isEmpty {
             menuButton.showsMenuAsPrimaryAction = true
             menuButton.menu = buildOptionsMenu()
         } else {
@@ -1265,7 +1264,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skip85Button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skip85Button.setImage(image, for: .normal)
 
-        skip85Button.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
+        skip85Button.backgroundColor = UIColor(red: 51 / 255.0, green: 51 / 255.0, blue: 51 / 255.0, alpha: 0.8)
 
         if #available(iOS 15.0, *) {
             var config = UIButton.Configuration.filled()
@@ -1354,51 +1353,51 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let interval = CMTime(seconds: 1.0, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         timeObserverToken = player.addPeriodicTimeObserver(forInterval: interval,
                                                            queue: .main) { [weak self] time in
-            guard let self = self,
-                  let currentItem = self.player.currentItem,
+            guard let self,
+                  let currentItem = player.currentItem,
                   currentItem.duration.seconds.isFinite else { return }
 
             let currentDuration = currentItem.duration.seconds
             if currentDuration.isNaN || currentDuration <= 0 { return }
 
-            self.currentTimeVal = time.seconds
-            self.duration = currentDuration
-            self.updateSegments()
+            currentTimeVal = time.seconds
+            duration = currentDuration
+            updateSegments()
 
-            if !self.isSliderEditing {
-                self.sliderViewModel.sliderValue = max(0, min(self.currentTimeVal, self.duration))
+            if !isSliderEditing {
+                sliderViewModel.sliderValue = max(0, min(currentTimeVal, duration))
             }
 
-            self.updateSkipButtonsVisibility()
+            updateSkipButtonsVisibility()
 
-            UserDefaults.standard.set(self.currentTimeVal, forKey: "lastPlayedTime_\(self.fullUrl)")
-            UserDefaults.standard.set(self.duration, forKey: "totalTime_\(self.fullUrl)")
+            UserDefaults.standard.set(currentTimeVal, forKey: "lastPlayedTime_\(fullUrl)")
+            UserDefaults.standard.set(duration, forKey: "totalTime_\(fullUrl)")
 
             if subtitlesEnabled {
-                let adjustedTime = self.currentTimeVal - self.subtitleDelay
-                let cues = self.subtitlesLoader.cues.filter { adjustedTime >= $0.startTime && adjustedTime <= $0.endTime }
+                let adjustedTime = currentTimeVal - subtitleDelay
+                let cues = subtitlesLoader.cues.filter { adjustedTime >= $0.startTime && adjustedTime <= $0.endTime }
                 if cues.isEmpty {
-                    self.subtitleLabels[0].text = cues[0].text.strippedHTML
-                    self.subtitleLabels[0].isHidden = false
+                    subtitleLabels[0].text = cues[0].text.strippedHTML
+                    subtitleLabels[0].isHidden = false
                 } else {
-                    self.subtitleLabels[0].text = ""
-                    self.subtitleLabels[0].isHidden = !self.subtitlesEnabled
+                    subtitleLabels[0].text = ""
+                    subtitleLabels[0].isHidden = !subtitlesEnabled
                 }
                 if cues.count > 1 {
-                    self.subtitleLabels[1].text = cues[1].text.strippedHTML
-                    self.subtitleLabels[1].isHidden = false
+                    subtitleLabels[1].text = cues[1].text.strippedHTML
+                    subtitleLabels[1].isHidden = false
                 } else {
-                    self.subtitleLabels[1].text = ""
-                    self.subtitleLabels[1].isHidden = true
+                    subtitleLabels[1].text = ""
+                    subtitleLabels[1].isHidden = true
                 }
             } else {
-                self.subtitleLabels[0].text = ""
-                self.subtitleLabels[0].isHidden = true
-                self.subtitleLabels[1].text = ""
-                self.subtitleLabels[1].isHidden = true
+                subtitleLabels[0].text = ""
+                subtitleLabels[0].isHidden = true
+                subtitleLabels[1].text = ""
+                subtitleLabels[1].isHidden = true
             }
 
-            let segmentsColor = self.getSegmentsColor()
+            let segmentsColor = getSegmentsColor()
 
             DispatchQueue.main.async {
                 if let currentItem = self.player.currentItem, currentItem.duration.seconds > 0 {
@@ -1457,15 +1456,15 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                                 toleranceBefore: .zero,
                                 toleranceAfter: .zero
                             ) { [weak self] _ in
-                                guard let self = self else { return }
+                                guard let self else { return }
 
-                                let final = self.player.currentTime().seconds
-                                self.sliderViewModel.sliderValue = final
-                                self.currentTimeVal = final
-                                self.isSliderEditing = false
+                                let final = player.currentTime().seconds
+                                sliderViewModel.sliderValue = final
+                                currentTimeVal = final
+                                isSliderEditing = false
 
-                                if self.wasPlayingBeforeSeek {
-                                    self.player.playImmediately(atRate: self.originalRate)
+                                if wasPlayingBeforeSeek {
+                                    player.playImmediately(atRate: originalRate)
                                 }
                             }
                         }
@@ -1497,8 +1496,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
 
     func startUpdateTimer() {
         updateTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-            self.currentTimeVal = self.player.currentTime().seconds
+            guard let self else { return }
+            currentTimeVal = player.currentTime().seconds
         }
     }
 
@@ -1525,7 +1524,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             dimButton.alpha = 1.0
             dimButtonTimer?.invalidate()
             dimButtonTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
-                guard let self = self else { return }
+                guard let self else { return }
                 UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) {
                     self.dimButton.alpha = 0
                 }
@@ -1589,7 +1588,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let finalSkip = skipValue > 0 ? skipValue : 10
         currentTimeVal = min(currentTimeVal + finalSkip, duration)
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] _ in
-            guard self != nil else { return }        }
+            guard self != nil else {
+                return
+            }
+        }
         animateButtonRotation(forwardButton)
     }
 
@@ -1699,33 +1701,32 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private func tryAniListUpdate() {
         let aniListMutation = AniListMutation()
         aniListMutation.updateAnimeProgress(animeId: self.aniListID, episodeNumber: self.episodeNumber) { [weak self] result in
-            guard let self = self else { return }
+            guard let self else { return }
 
             switch result {
             case .success:
-                self.aniListUpdatedSuccessfully = true
-                Logger.shared.log("Successfully updated AniList progress for episode \(self.episodeNumber)", type: "General")
+                aniListUpdatedSuccessfully = true
+                Logger.shared.log("Successfully updated AniList progress for episode \(episodeNumber)", type: .general)
 
             case .failure(let error):
                 let errorString = error.localizedDescription.lowercased()
-                Logger.shared.log("AniList progress update failed: \(errorString)", type: "Error")
+                Logger.shared.log("AniList progress update failed: \(errorString)", type: .error)
 
                 if errorString.contains("access token not found") {
-                    Logger.shared.log("AniList update will NOT retry due to missing token.", type: "Error")
-                    self.aniListUpdateImpossible = true
-
+                    Logger.shared.log("AniList update will NOT retry due to missing token.", type: .error)
+                    aniListUpdateImpossible = true
                 } else {
-                    if self.aniListRetryCount < self.aniListMaxRetries {
-                        self.aniListRetryCount += 1
+                    if aniListRetryCount < aniListMaxRetries {
+                        aniListRetryCount += 1
 
                         let delaySeconds = 5.0
-                        Logger.shared.log("AniList update will retry in \(delaySeconds)s (attempt \(self.aniListRetryCount)).", type: "Debug")
+                        Logger.shared.log("AniList update will retry in \(delaySeconds)s (attempt \(aniListRetryCount)).", type: .debug)
 
                         DispatchQueue.main.asyncAfter(deadline: .now() + delaySeconds) {
                             self.tryAniListUpdate()
                         }
                     } else {
-                        Logger.shared.log("AniList update reached max retries. No more attempts.", type: "Error")
+                        Logger.shared.log("AniList update reached max retries. No more attempts.", type: .error)
                     }
                 }
             }
@@ -1763,7 +1764,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                          forHTTPHeaderField: "User-Agent")
 
         URLSession.shared.dataTask(with: request) { [weak self] data, _, _ in
-            guard let self = self,
+            guard let self,
                   let data,
                   let content = String(data: data, encoding: .utf8) else {
                       Logger.shared.log("Failed to load m3u8 file")
@@ -1782,8 +1783,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             func getQualityName(for height: Int) -> String {
                 switch height {
                 case 1080...: return "\(height)p (FHD)"
-                case 720..<1080: return "\(height)p (HD)"
-                case 480..<720: return "\(height)p (SD)"
+                case 720 ..< 1080: return "\(height)p (HD)"
+                case 480 ..< 720: return "\(height)p (SD)"
                 default: return "\(height)p"
                 }
             }
@@ -1793,17 +1794,15 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     if let resolutionRange = line.range(of: "RESOLUTION="),
                        let resolutionEndRange = line[resolutionRange.upperBound...].range(of: ",")
                         ?? line[resolutionRange.upperBound...].range(of: "\n") {
-
-                        let resolutionPart = String(line[resolutionRange.upperBound..<resolutionEndRange.lowerBound])
+                        let resolutionPart = String(line[resolutionRange.upperBound ..< resolutionEndRange.lowerBound])
                         if let heightStr = resolutionPart.components(separatedBy: "x").last,
                            let height = Int(heightStr) {
-
                             let nextLine = lines[index + 1].trimmingCharacters(in: .whitespacesAndNewlines)
                             let qualityName = getQualityName(for: height)
 
                             var qualityURL = nextLine
                             if !nextLine.hasPrefix("http") && nextLine.contains(".m3u8") {
-                                if let baseURL = self.baseM3U8URL {
+                                if let baseURL = baseM3U8URL {
                                     let baseURLString = baseURL.deletingLastPathComponent().absoluteString
                                     qualityURL = URL(string: nextLine, relativeTo: baseURL)?.absoluteString
                                     ?? baseURLString + "/" + nextLine
@@ -1876,7 +1875,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
 
         if isHLSStream {
             if qualities.isEmpty {
-                let loadingAction = UIAction(title: "Loading qualities...", attributes: .disabled) { _ in }
+                let loadingAction = UIAction(title: "Loading qualities...", attributes: .disabled) { _ in
+                    Logger.shared.log("Loading State Button clicked", type: .info)
+                }
                 menuItems.append(loadingAction)
             } else {
                 var menuTitle = "Video Quality"
@@ -1901,7 +1902,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 return UIMenu(title: menuTitle, children: menuItems)
             }
         } else {
-            let unavailableAction = UIAction(title: "Quality selection unavailable", attributes: .disabled) { _ in }
+            let unavailableAction = UIAction(title: "Quality selection unavailable", attributes: .disabled) { _ in
+                Logger.shared.log("Disabled State Button clicked", type: .info)
+            }
             menuItems.append(unavailableAction)
         }
 
@@ -1917,15 +1920,15 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             currentQualityURL = url
 
             parseM3U8(url: url) { [weak self] in
-                guard let self = self else { return }
+                guard let self else { return }
                 if let last = UserDefaults.standard.string(forKey: "lastSelectedQuality"),
-                   self.qualities.contains(where: { $0.1 == last }) {
-                    self.switchToQuality(urlString: last)
+                   qualities.contains(where: { $0.1 == last }) {
+                    switchToQuality(urlString: last)
                 }
 
-                self.qualityButton.isHidden = false
-                self.qualityButton.menu = self.qualitySelectionMenu()
-                self.updateMenuButtonConstraints()
+                qualityButton.isHidden = false
+                qualityButton.menu = qualitySelectionMenu()
+                updateMenuButtonConstraints()
                 UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
                     self.view.layoutIfNeeded()
                 }
@@ -1942,8 +1945,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
 
         if let subURL = subtitlesURL, !subURL.isEmpty {
             let subtitlesToggleAction = UIAction(title: "Toggle Subtitles") { [weak self] _ in
-                guard let self = self else { return }
-                self.subtitlesEnabled.toggle()
+                guard let self else { return }
+                subtitlesEnabled.toggle()
             }
 
             let foregroundActions = [
@@ -2062,32 +2065,32 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
 
             let delayActions = [
                 UIAction(title: "-0.5s") { [weak self] _ in
-                    guard let self = self else { return }
-                    self.adjustSubtitleDelay(by: -0.5)
+                    guard let self else { return }
+                    adjustSubtitleDelay(by: -0.5)
                 },
                 UIAction(title: "-0.2s") { [weak self] _ in
-                    guard let self = self else { return }
-                    self.adjustSubtitleDelay(by: -0.2)
+                    guard let self else { return }
+                    adjustSubtitleDelay(by: -0.2)
                 },
                 UIAction(title: "+0.2s") { [weak self] _ in
-                    guard let self = self else { return }
-                    self.adjustSubtitleDelay(by: 0.2)
+                    guard let self else { return }
+                    adjustSubtitleDelay(by: 0.2)
                 },
                 UIAction(title: "+0.5s") { [weak self] _ in
-                    guard let self = self else { return }
-                    self.adjustSubtitleDelay(by: 0.5)
+                    guard let self else { return }
+                    adjustSubtitleDelay(by: 0.5)
                 },
                 UIAction(title: "Custom...") { [weak self] _ in
-                    guard let self = self else { return }
-                    self.presentCustomDelayAlert()
+                    guard let self else { return }
+                    presentCustomDelayAlert()
                 }
             ]
 
             let resetDelayAction = UIAction(title: "Reset Delay") { [weak self] _ in
-                guard let self = self else { return }
+                guard let self else { return }
                 SubtitleSettingsManager.shared.update { settings in settings.subtitleDelay = 0.0 }
-                self.subtitleDelay = 0.0
-                self.loadSubtitleSettings()
+                subtitleDelay = 0.0
+                loadSubtitleSettings()
             }
 
             let delayMenu = UIMenu(title: "Subtitle Delay", children: delayActions + [resetDelayAction])
@@ -2187,11 +2190,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
-        return true
+        true
     }
 
     override var prefersStatusBarHidden: Bool {
-        return true
+        true
     }
 
     func setupAudioSession() {
@@ -2201,7 +2204,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             try audioSession.setActive(true)
             try audioSession.overrideOutputAudioPort(.speaker)
         } catch {
-            Logger.shared.log("Didn't set up AVAudioSession: \(error)", type: "Debug")
+            Logger.shared.log("Didn't set up AVAudioSession: \(error)", type: .debug)
         }
 
         volumeObserver = audioSession.observe(\.outputVolume, options: [.new]) { [weak self] _, change in
@@ -2211,7 +2214,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
             DispatchQueue.main.async {
                 self?.volumeViewModel.value = Double(newVol)
-                Logger.shared.log("Hardware volume changed, new value: \(newVol)", type: "Debug")
+                Logger.shared.log("Hardware volume changed, new value: \(newVol)", type: .debug)
             }
         }
     }
@@ -2219,7 +2222,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private func setupHoldGesture() {
         holdGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleHoldGesture(_:)))
         holdGesture?.minimumPressDuration = 0.5
-        if let holdGesture = holdGesture {
+        if let holdGesture {
             view.addGestureRecognizer(holdGesture)
         }
     }
@@ -2251,7 +2254,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
 
     private func beginHoldSpeed() {
-        guard let player = player else { return }
+        guard let player else { return }
         originalRate = player.rate
         let holdSpeed = UserDefaults.standard.float(forKey: "holdSpeedPlayer")
         let speed = holdSpeed > 0 ? holdSpeed : 2.0
@@ -2282,7 +2285,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             guard self != nil else { return }
             if player.timeControlStatus == .paused,
                let reason = player.reasonForWaitingToPlay {
-                Logger.shared.log("Paused reason: \(reason)", type: "Error")
+                Logger.shared.log("Paused reason: \(reason)", type: .error)
                 if reason == .toMinimizeStalls {
                     player.play()
                 }

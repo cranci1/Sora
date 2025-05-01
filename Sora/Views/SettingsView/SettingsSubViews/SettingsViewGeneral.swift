@@ -121,12 +121,12 @@ struct SettingsViewGeneral: View {
                 HStack {
                     if UIDevice.current.userInterfaceIdiom == .pad {
                         Picker("Portrait Columns", selection: $mediaColumnsPortrait) {
-                            ForEach(1..<6) { i in Text("\(i)").tag(i) }
+                            ForEach(1 ..< 6) { i in Text("\(i)").tag(i) }
                         }
                         .pickerStyle(MenuPickerStyle())
                     } else {
                         Picker("Portrait Columns", selection: $mediaColumnsPortrait) {
-                            ForEach(1..<5) { i in Text("\(i)").tag(i) }
+                            ForEach(1 ..< 5) { i in Text("\(i)").tag(i) }
                         }
                         .pickerStyle(MenuPickerStyle())
                     }
@@ -134,12 +134,12 @@ struct SettingsViewGeneral: View {
                 HStack {
                     if UIDevice.current.userInterfaceIdiom == .pad {
                         Picker("Landscape Columns", selection: $mediaColumnsLandscape) {
-                            ForEach(2..<9) { i in Text("\(i)").tag(i) }
+                            ForEach(2 ..< 9) { i in Text("\(i)").tag(i) }
                         }
                         .pickerStyle(MenuPickerStyle())
                     } else {
                         Picker("Landscape Columns", selection: $mediaColumnsLandscape) {
-                            ForEach(2..<6) { i in Text("\(i)").tag(i) }
+                            ForEach(2 ..< 6) { i in Text("\(i)").tag(i) }
                         }
                         .pickerStyle(MenuPickerStyle())
                     }

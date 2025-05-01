@@ -22,13 +22,13 @@ class TraktLogin {
         if UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url, options: [:]) { success in
                 if success {
-                    Logger.shared.log("Safari opened successfully", type: "Debug")
+                    Logger.shared.log("Safari opened successfully", type: .debug)
                 } else {
-                    Logger.shared.log("Failed to open Safari", type: "Error")
+                    Logger.shared.log("Failed to open Safari", type: .error)
                 }
             }
         } else {
-            Logger.shared.log("Cannot open URL", type: "Error")
+            Logger.shared.log("Cannot open URL", type: .error)
         }
     }
 }

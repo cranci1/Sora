@@ -160,7 +160,7 @@ struct EpisodeCell: View {
 
         URLSession.custom.dataTask(with: url) { data, _, error in
             if let error {
-                Logger.shared.log("Failed to fetch anime episode details: \(error)", type: "Error")
+                Logger.shared.log("Failed to fetch anime episode details: \(error)", type: .error)
                 DispatchQueue.main.async { isLoading = false }
                 return
             }
@@ -177,7 +177,7 @@ struct EpisodeCell: View {
                       let episodeDetails = episodes["\(episodeID + 1)"] as? [String: Any],
                       let title = episodeDetails["title"] as? [String: String],
                       let image = episodeDetails["image"] as? String else {
-                          Logger.shared.log("Invalid anime response format", type: "Error")
+                          Logger.shared.log("Invalid anime response format", type: .error)
                           DispatchQueue.main.async { isLoading = false }
                           return
                       }

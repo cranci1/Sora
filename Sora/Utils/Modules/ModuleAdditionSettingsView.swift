@@ -151,7 +151,7 @@ struct ModuleAdditionSettingsView: View {
                 await MainActor.run {
                     errorMessage = "Invalid URL"
                     isLoading = false
-                    Logger.shared.log("Failed to open add module ui with url: \(moduleUrl)", type: "Error")
+                    Logger.shared.log("Failed to open add module ui with url: \(moduleUrl)", type: .error)
                 }
                 return
             }

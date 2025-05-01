@@ -199,7 +199,7 @@ struct ExploreView: View {
                     Menu {
                         if getModuleLanguageGroups().isEmpty {
                             Button("No modules available") {
-                                print("[Error] No Modules Button clicked")
+                                Logger.shared.log("No Modules Button clicked", type: .error)
                             }
                                 .disabled(true)
 
@@ -262,7 +262,7 @@ struct ExploreView: View {
     }
 
     private func fetchData() {
-        Logger.shared.log("Fetching Explore Data", type: "General")
+        Logger.shared.log("Fetching Explore Data", type: .general)
         guard let module = selectedModule else {
             exploreItems = []
             hasNoResults = false
@@ -292,7 +292,7 @@ struct ExploreView: View {
                         }
                     }
                 } catch {
-                    Logger.shared.log("Error loading module: \(error)", type: "Error")
+                    Logger.shared.log("Error loading module: \(error)", type: .error)
                     isLoading = false
                     hasNoResults = true
                 }

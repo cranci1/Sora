@@ -309,7 +309,7 @@ struct SettingsViewTrackers: View {
             request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
         } catch {
             anilistStatus = "Failed to serialize request"
-            Logger.shared.log("Failed to serialize request", type: "Error")
+            Logger.shared.log("Failed to serialize request", type: .error)
             isAnilistLoading = false
             return
         }
@@ -319,12 +319,12 @@ struct SettingsViewTrackers: View {
                 isAnilistLoading = false
                 if let error {
                     anilistStatus = "Error: \(error.localizedDescription)"
-                    Logger.shared.log("Error: \(error.localizedDescription)", type: "Error")
+                    Logger.shared.log("Error: \(error.localizedDescription)", type: .error)
                     return
                 }
                 guard let data else {
                     anilistStatus = "No data received"
-                    Logger.shared.log("No data received", type: "Error")
+                    Logger.shared.log("No data received", type: .error)
                     return
                 }
                 do {
@@ -339,11 +339,11 @@ struct SettingsViewTrackers: View {
                         anilistStatus = "Logged in as \(name)"
                     } else {
                         anilistStatus = "Unexpected response format!"
-                        Logger.shared.log("Unexpected response format!", type: "Error")
+                        Logger.shared.log("Unexpected response format!", type: .error)
                     }
                 } catch {
                     anilistStatus = "Failed to parse response: \(error.localizedDescription)"
-                    Logger.shared.log("Failed to parse response: \(error.localizedDescription)", type: "Error")
+                    Logger.shared.log("Failed to parse response: \(error.localizedDescription)", type: .error)
                 }
             }
         }.resume()

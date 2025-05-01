@@ -64,12 +64,15 @@ disabled_rules:
   - discouraged_none_name
   - attributes
   - prefer_key_path
+  - block_based_kvo
+  - for_where
   # should be fixed sometimes:
   - implicitly_unwrapped_optional
   - cyclomatic_complexity
   - unused_parameter
   - fatal_error
   - force_cast
+  - object_literal
 
 large_tuple: 3
 number_separator:

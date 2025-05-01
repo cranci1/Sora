@@ -8,7 +8,7 @@
 import UIKit
 
 struct SubtitleSettings: Codable {
-    var foregroundColor: String = "white"
+    var foregroundColor: UIColor = .white
     var fontSize: Double = 20.0
     var shadowRadius: Double = 1.0
     var backgroundEnabled: Bool = true

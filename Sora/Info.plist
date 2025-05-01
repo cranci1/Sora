@@ -25,6 +25,7 @@
 		<string>infuse</string>
 		<string>vlc</string>
 		<string>nplayer-https</string>
+		<string>senplayer</string>
 	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>

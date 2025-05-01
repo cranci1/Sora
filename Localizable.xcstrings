@@ -34,6 +34,7 @@
       }
     },
     "%@ - Episode %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -865,7 +866,11 @@
         }
       }
     },
+    "Download Stream" : {
+
+    },
     "Downloads" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -928,6 +933,9 @@
           }
         }
       }
+    },
+    "Enter HLS URL" : {
+
     },
     "Episode %lld" : {
       "localizations" : {
@@ -1250,6 +1258,9 @@
         }
       }
     },
+    "HLS Downloader" : {
+
+    },
     "Hold Speed:" : {
       "localizations" : {
         "de" : {
@@ -1315,7 +1326,16 @@
       }
     },
     "Key" : {
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Key"
+          }
+        }
+      },
+      "shouldTranslate" : false
     },
     "Landscape Columns" : {
       "localizations" : {
@@ -1957,6 +1977,9 @@
         }
       }
     },
+    "No offline content available" : {
+
+    },
     "No Results Found" : {
       "localizations" : {
         "de" : {
@@ -2036,6 +2059,9 @@
           }
         }
       }
+    },
+    "Play Offline Content" : {
+
     },
     "Player" : {
       "localizations" : {

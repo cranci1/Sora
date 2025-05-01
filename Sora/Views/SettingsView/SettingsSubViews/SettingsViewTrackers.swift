@@ -7,17 +7,17 @@
 
 import SwiftUI
 import Security
-import Kingfisher
 
 struct SettingsViewTrackers: View {
     @AppStorage("sendPushUpdates") private var isSendPushUpdates = true
+    @AppStorage("sendTraktUpdates") private var isSendTraktUpdates = true
+
     @State private var anilistStatus: LocalizedStringKey = "You are not logged in"
     @State private var isAnilistLoggedIn: Bool = false
     @State private var anilistUsername: String = ""
     @State private var isAnilistLoading: Bool = false
     @State private var profileColor: Color = .accentColor
 
-    @AppStorage("sendTraktUpdates") private var isSendTraktUpdates = true
     @State private var traktStatus: LocalizedStringKey = "You are not logged in"
     @State private var isTraktLoggedIn: Bool = false
     @State private var traktUsername: String = ""
@@ -27,13 +27,7 @@ struct SettingsViewTrackers: View {
         Form {
             Section(header: Text("AniList")) {
                 HStack {
-                    KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png"))
-                        .placeholder {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 80, height: 80)
-                                .shimmering()
-                        }
+                    Image("AniList")
                         .resizable()
                         .frame(width: 80, height: 80)
                         .clipShape(Rectangle())
@@ -73,16 +67,11 @@ struct SettingsViewTrackers: View {
                 }
                 .font(.body)
             }
+                .modifier(SeparatorAlignmentModifier())
 
             Section(header: Text("Trakt")) {
                 HStack {
-                    KFImage(URL(string: "https://static-00.iconduck.com/assets.00/trakt-icon-2048x2048-2633ksxg.png"))
-                        .placeholder {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 80, height: 80)
-                                .shimmering()
-                        }
+                    Image("Trakt")
                         .resizable()
                         .frame(width: 80, height: 80)
                         .clipShape(Rectangle())
@@ -116,6 +105,7 @@ struct SettingsViewTrackers: View {
                 }
                 .font(.body)
             }
+                .modifier(SeparatorAlignmentModifier())
 
             Section(footer: Text("Sora and cranci1 are not affiliated with AniList nor Trakt in any way.\n\nAlso note that progresses update may not be 100% accurate.")) {}
         }

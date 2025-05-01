@@ -67,7 +67,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var currentMarqueeConstraints: [NSLayoutConstraint] = []
     private var currentMenuButtonTrailing: NSLayoutConstraint!
 
-    var subtitleForegroundColor: String = "white"
+    var subtitleForegroundColor: UIColor = .white
     var subtitleBackgroundEnabled: Bool = true
     var subtitleFontSize: Double = 20.0
     var subtitleShadowRadius: Double = 1.0
@@ -1336,7 +1336,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     func updateSubtitleLabelAppearance() {
         for subtitleLabel in subtitleLabels {
             subtitleLabel.font = UIFont.systemFont(ofSize: CGFloat(subtitleFontSize))
-            subtitleLabel.textColor = subtitleUIColor()
+            subtitleLabel.textColor = subtitleForegroundColor
             subtitleLabel.backgroundColor = subtitleBackgroundEnabled
             ? UIColor.black.withAlphaComponent(0.6)
             : .clear
@@ -1932,32 +1932,32 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
 
             let foregroundActions = [
                 UIAction(title: "White") { _ in
-                    SubtitleSettingsManager.shared.update { settings in settings.foregroundColor = "white" }
+                    SubtitleSettingsManager.shared.update { settings in settings.foregroundColor = .white }
                     self.loadSubtitleSettings()
                     self.updateSubtitleLabelAppearance()
                 },
                 UIAction(title: "Yellow") { _ in
-                    SubtitleSettingsManager.shared.update { settings in settings.foregroundColor = "yellow" }
+                    SubtitleSettingsManager.shared.update { settings in settings.foregroundColor = .yellow }
                     self.loadSubtitleSettings()
                     self.updateSubtitleLabelAppearance()
                 },
                 UIAction(title: "Green") { _ in
-                    SubtitleSettingsManager.shared.update { settings in settings.foregroundColor = "green" }
+                    SubtitleSettingsManager.shared.update { settings in settings.foregroundColor = .green }
                     self.loadSubtitleSettings()
                     self.updateSubtitleLabelAppearance()
                 },
                 UIAction(title: "Blue") { _ in
-                    SubtitleSettingsManager.shared.update { settings in settings.foregroundColor = "blue" }
+                    SubtitleSettingsManager.shared.update { settings in settings.foregroundColor = .blue }
                     self.loadSubtitleSettings()
                     self.updateSubtitleLabelAppearance()
                 },
                 UIAction(title: "Red") { _ in
-                    SubtitleSettingsManager.shared.update { settings in settings.foregroundColor = "red" }
+                    SubtitleSettingsManager.shared.update { settings in settings.foregroundColor = .red }
                     self.loadSubtitleSettings()
                     self.updateSubtitleLabelAppearance()
                 },
                 UIAction(title: "Purple") { _ in
-                    SubtitleSettingsManager.shared.update { settings in settings.foregroundColor = "purple" }
+                    SubtitleSettingsManager.shared.update { settings in settings.foregroundColor = .purple }
                     self.loadSubtitleSettings()
                     self.updateSubtitleLabelAppearance()
                 }
@@ -2066,17 +2066,16 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     self.presentCustomDelayAlert()
                 }
             ]
-
-            let resetDelayAction = UIAction(title: "Reset Timing") { [weak self] _ in
+            
+            let resetDelayAction = UIAction(title: "Reset Delay") { [weak self] _ in
                 guard let self = self else { return }
                 SubtitleSettingsManager.shared.update { settings in settings.subtitleDelay = 0.0 }
                 self.subtitleDelay = 0.0
                 self.loadSubtitleSettings()
-                DropManager.shared.showDrop(title: "Subtitle Timing Reset", subtitle: "", duration: 0.5, icon: UIImage(systemName: "clock.arrow.circlepath"))
             }
-
-            let delayMenu = UIMenu(title: "Subtitle Timing", children: delayActions + [resetDelayAction])
-
+            
+            let delayMenu = UIMenu(title: "Subtitle Delay", children: delayActions + [resetDelayAction])
+            
             let subtitleOptionsMenu = UIMenu(title: "Subtitle Options", children: [
                 subtitlesToggleAction, colorMenu, fontSizeMenu, shadowMenu, backgroundMenu, paddingMenu, delayMenu
             ])
@@ -2294,18 +2293,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 onEditingChanged: { _ in }
             )
                 .shadow(color: Color.black.opacity(0.6), radius: 4, x: 0, y: 2)
-        }
-    }
-
-    func subtitleUIColor() -> UIColor {
-        switch subtitleForegroundColor {
-        case "white": return .white
-        case "yellow": return .yellow
-        case "green": return .green
-        case "purple": return .purple
-        case "blue": return .blue
-        case "red": return .red
-        default: return .white
         }
     }
 }

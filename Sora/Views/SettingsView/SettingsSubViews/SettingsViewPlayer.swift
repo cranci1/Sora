@@ -18,9 +18,9 @@ struct SettingsViewPlayer: View {
     @AppStorage("skip85Visible") private var skip85Visible: Bool = true
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
-
-    private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "Sora"]
-
+    
+    private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "SenPlayer", "Sora"]
+    
     var body: some View {
         Form {
             Section(header: Text("Media Player"), footer: Text("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.")) {
@@ -112,34 +112,29 @@ struct SettingsViewPlayer: View {
 }
 
 struct SubtitleSettingsSection: View {
-    @State private var foregroundColor: String = SubtitleSettingsManager.shared.settings.foregroundColor
+    @State private var foregroundColor: UIColor = SubtitleSettingsManager.shared.settings.foregroundColor
     @State private var fontSize: Double = SubtitleSettingsManager.shared.settings.fontSize
     @State private var shadowRadius: Double = SubtitleSettingsManager.shared.settings.shadowRadius
     @State private var backgroundEnabled: Bool = SubtitleSettingsManager.shared.settings.backgroundEnabled
     @State private var bottomPadding: CGFloat = SubtitleSettingsManager.shared.settings.bottomPadding
     @State private var subtitleDelay: Double = SubtitleSettingsManager.shared.settings.subtitleDelay
 
-    private let colors = ["white", "yellow", "green", "blue", "red", "purple"]
     private let shadowOptions = [0, 1, 3, 6]
 
     var body: some View {
         Section(header: Text("Subtitle Settings")) {
-            HStack {
-                Text("Subtitle Color")
-                Spacer()
-                Menu(foregroundColor) {
-                    ForEach(colors, id: \.self) { color in
-                        Button(action: {
-                            foregroundColor = color
-                            SubtitleSettingsManager.shared.update { settings in
-                                settings.foregroundColor = color
-                            }
-                        }) {
-                            Text(color.capitalized)
-                        }
+            ColorPicker("Subtitle Color", selection: Binding(
+                get: {
+                    return Color(foregroundColor)
+                },
+                set: { newColor in
+                    let uiColor = UIColor(newColor)
+                    foregroundColor = uiColor
+                    SubtitleSettingsManager.shared.update { settings in
+                        settings.foregroundColor = uiColor
                     }
                 }
-            }
+            ))
 
             HStack {
                 Text("Shadow")

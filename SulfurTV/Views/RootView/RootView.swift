@@ -14,13 +14,13 @@ struct RootView: View {
                 .tabItem {
                     Label("Explore", systemImage: "star.fill")
                 }
-            LibraryView()
-                .tabItem {
-                    Label("Library", systemImage: "books.vertical.fill")
-                }
             SearchView()
                 .tabItem {
                     Label("Search", systemImage: "magnifyingglass")
+                }
+            LibraryView()
+                .tabItem {
+                    Label("Library", systemImage: "books.vertical.fill")
                 }
             SettingsView()
                 .tabItem {

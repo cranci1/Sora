@@ -20,19 +20,7 @@
 /* Begin PBXFileReference section */
 		120764652DB6F6E0003621E9 /* SulfurTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SulfurTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		120D3C712DBA40A40093D596 /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
-		126C428A2DB9921C006BC27D /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		126C428C2DB99627006BC27D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
-		130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
-		13103E8A2D58E028000F0673 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
-		13103E8D2D58E04A000F0673 /* SkeletonCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonCell.swift; sourceTree = "<group>"; };
-		131270162DC13A010093AA9C /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
-		131270182DC13A3C0093AA9C /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
-		131845F82D47C62D00CA7A54 /* SettingsViewGeneral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewGeneral.swift; sourceTree = "<group>"; };
-		1327FBA62D758CEA00FC6689 /* Analytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Analytics.swift; sourceTree = "<group>"; };
-		1327FBA82D758DEA00FC6689 /* UIDevice+Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIDevice+Model.swift"; sourceTree = "<group>"; };
-		132AF1202D99951700A0140B /* JSController-Streams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Streams.swift"; sourceTree = "<group>"; };
-		132AF1222D9995C300A0140B /* JSController-Details.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Details.swift"; sourceTree = "<group>"; };
-		132AF1242D9995F900A0140B /* JSController-Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Search.swift"; sourceTree = "<group>"; };
 		133D7C6A2D2BE2500075467E /* Sulfur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sulfur.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -80,33 +68,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		123FED0D2DC3F8BD001C4704 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				131270162DC13A010093AA9C /* DownloadManager.swift */,
-				1327FBA62D758CEA00FC6689 /* Analytics.swift */,
-				132AF1242D9995F900A0140B /* JSController-Search.swift */,
-				130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */,
-				132AF1202D99951700A0140B /* JSController-Streams.swift */,
-				131845F82D47C62D00CA7A54 /* SettingsViewGeneral.swift */,
-				13103E8D2D58E04A000F0673 /* SkeletonCell.swift */,
-				13103E8A2D58E028000F0673 /* View.swift */,
-				1327FBA82D758DEA00FC6689 /* UIDevice+Model.swift */,
-				131270182DC13A3C0093AA9C /* DownloadView.swift */,
-				132AF1222D9995C300A0140B /* JSController-Details.swift */,
-			);
-			name = "Recovered References";
-			sourceTree = "<group>";
-		};
-		126C42872DB99209006BC27D /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				126C428A2DB9921C006BC27D /* AVFoundation.framework */,
-			);
-			name = Frameworks;
-			path = "Tracking Services";
-			sourceTree = "<group>";
-		};
 		133D7C612D2BE2500075467E = {
 			isa = PBXGroup;
 			children = (
@@ -114,9 +75,7 @@
 				126C428C2DB99627006BC27D /* Localizable.xcstrings */,
 				126C42F62DB9AA97006BC27D /* Sora */,
 				120764662DB6F6E0003621E9 /* SulfurTV */,
-				126C42872DB99209006BC27D /* Frameworks */,
 				133D7C6B2D2BE2500075467E /* Products */,
-				123FED0D2DC3F8BD001C4704 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};

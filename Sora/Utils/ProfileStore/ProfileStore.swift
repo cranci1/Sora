@@ -20,7 +20,7 @@ class ProfileStore: ObservableObject {
         if profiles.isEmpty {
 
             // load default value
-            let defaultProfile = Profile(name: "Default User", emoji: "👤")
+            let defaultProfile = Profile(name: String(localized: "Default User"), emoji: "👤")
             profiles = [defaultProfile]
 
             saveProfiles()
@@ -44,7 +44,7 @@ class ProfileStore: ObservableObject {
             fatalError("This can only fail if suiteName == app bundle id ...")
         }
 
-        Logger.shared.log("loaded UserDefaults suite for \(currentProfile.name) (\(currentProfile.id.uuidString))", type: "Profile")
+        Logger.shared.log("loaded UserDefaults suite for '\(currentProfile.name)'", type: "Profile")
 
         return suite
     }

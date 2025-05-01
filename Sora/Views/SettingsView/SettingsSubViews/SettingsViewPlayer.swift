@@ -32,7 +32,18 @@ struct SettingsViewPlayer: View {
                             Button(action: {
                                 externalPlayer = player
                             }) {
-                                Text(player)
+                                HStack {
+                                    if player == externalPlayer {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(.accentColor)
+                                    } else if player != "Default" && player != "Sora" {
+                                        Image(systemName: "arrow.up.forward.app")
+                                            .foregroundColor(.secondary)
+                                    } else {
+                                        Color.clear.frame(width: 20)
+                                    }
+                                    Text(player)
+                                }
                             }
                         }
                     }
@@ -148,6 +159,10 @@ struct SubtitleSettingsSection: View {
                                 settings.shadowRadius = Double(option)
                             }
                         }) {
+                            if shadowRadius == Double(option) {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.accentColor)
+                            }
                             Text("\(option)")
                         }
                     }

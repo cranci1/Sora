@@ -138,7 +138,7 @@ struct SettingsViewProfile: View {
 
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    profileStore.addProfile(name: "New Profile", emoji: "🧙‍♂️")
+                    profileStore.addProfile(name: String(localized: "New Profile"), emoji: "🧙‍♂️")
                 } label: {
                     Image(systemName: "plus")
                         .foregroundColor(.accentColor)

@@ -79,13 +79,18 @@ struct SettingsViewGeneral: View {
                 HStack {
                     Text("Episodes Range")
                     Spacer()
-                    Menu {
-                        Button(action: { episodeChunkSize = 25 }) { Text("25") }
-                        Button(action: { episodeChunkSize = 50 }) { Text("50") }
-                        Button(action: { episodeChunkSize = 75 }) { Text("75") }
-                        Button(action: { episodeChunkSize = 100 }) { Text("100") }
-                    } label: {
-                        Text("\(episodeChunkSize)")
+                    Menu("\(episodeChunkSize)") {
+                        ForEach([25, 50, 75, 100], id: \.self) { chunkSize in
+                            Button(action: {
+                                episodeChunkSize = chunkSize
+                            }) {
+                                if episodeChunkSize == chunkSize {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.accentColor)
+                                }
+                                Text("\(chunkSize)")
+                            }
+                        }
                     }
                 }
 
@@ -97,7 +102,13 @@ struct SettingsViewGeneral: View {
                     Spacer()
                     Menu(metadataProviders) {
                         ForEach(metadataProvidersList, id: \.self) { provider in
-                            Button(action: { metadataProviders = provider }) {
+                            Button(action: {
+                                metadataProviders = provider
+                            }) {
+                                if provider == metadataProviders {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.accentColor)
+                                }
                                 Text(provider)
                             }
                         }

@@ -27,6 +27,8 @@
 		<string>nplayer-https</string>
 		<string>senplayer</string>
 	</array>
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

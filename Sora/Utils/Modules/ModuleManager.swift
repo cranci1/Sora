@@ -172,9 +172,26 @@ class ModuleManager: ObservableObject {
         let localUrl = getDocumentsDirectory().appendingPathComponent(fileName)
         try jsContent.write(to: localUrl, atomically: true, encoding: .utf8)
 
+        var exploreFileName: String?
+        if let exploreScriptValue = metadata.exploreScriptUrl {
+            guard let exploreScriptUrl = URL(string: exploreScriptValue) else {
+                throw NSError(domain: "Invalid script URL", code: -1)
+            }
+
+            let (exploreScriptData, _) = try await URLSession.custom.data(from: exploreScriptUrl)
+            guard let exploreJsContent = String(data: exploreScriptData, encoding: .utf8) else {
+                throw NSError(domain: "Invalid script encoding", code: -1)
+            }
+
+            exploreFileName = "\(UUID().uuidString).js"
+            let exploreLocalUrl = getDocumentsDirectory().appendingPathComponent(exploreFileName!)
+            try exploreJsContent.write(to: exploreLocalUrl, atomically: true, encoding: .utf8)
+        }
+
         let module = ScrapingModule(
             metadata: metadata,
             localPath: fileName,
+            exploreLocalPath: exploreFileName,
             metadataUrl: metadataUrl
         )
 
@@ -201,6 +218,15 @@ class ModuleManager: ObservableObject {
         return try String(contentsOf: localUrl, encoding: .utf8)
     }
 
+    func getModuleExploreContent(_ module: ScrapingModule) throws -> String? {
+        if let exploreLocalPath = module.exploreLocalPath {
+            let exploreLocalUrl = getDocumentsDirectory().appendingPathComponent(exploreLocalPath)
+            return try String(contentsOf: exploreLocalUrl, encoding: .utf8)
+        } else {
+            return nil
+        }
+    }
+
     func refreshModules() async {
         for (index, module) in modules.enumerated() {
             do {
@@ -220,10 +246,27 @@ class ModuleManager: ObservableObject {
                     let localUrl = getDocumentsDirectory().appendingPathComponent(module.localPath)
                     try jsContent.write(to: localUrl, atomically: true, encoding: .utf8)
 
+                    var exploreFileName: String?
+                    if let exploreScriptValue = newMetadata.exploreScriptUrl {
+                        guard let exploreScriptUrl = URL(string: exploreScriptValue) else {
+                            throw NSError(domain: "Invalid script URL", code: -1)
+                        }
+
+                        let (exploreScriptData, _) = try await URLSession.custom.data(from: exploreScriptUrl)
+                        guard let exploreJsContent = String(data: exploreScriptData, encoding: .utf8) else {
+                            throw NSError(domain: "Invalid script encoding", code: -1)
+                        }
+
+                        exploreFileName = module.exploreLocalPath ?? "\(UUID().uuidString).js"
+                        let exploreLocalUrl = getDocumentsDirectory().appendingPathComponent(exploreFileName!)
+                        try exploreJsContent.write(to: exploreLocalUrl, atomically: true, encoding: .utf8)
+                    }
+
                     let updatedModule = ScrapingModule(
                         id: module.id,
                         metadata: newMetadata,
                         localPath: module.localPath,
+                        exploreLocalPath: exploreFileName,
                         metadataUrl: module.metadataUrl,
                         isActive: module.isActive
                     )

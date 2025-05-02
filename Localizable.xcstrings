@@ -440,7 +440,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Author:"
+            "value" : "Author: %@"
           }
         },
         "en" : {

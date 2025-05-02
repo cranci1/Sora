@@ -284,7 +284,12 @@ struct ExploreView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             Task {
                 do {
-                    let jsContent = try moduleManager.getModuleContent(module)
+                    guard let jsContent = try moduleManager.getModuleExploreContent(module) else {
+                        isLoading = false
+                        hasNoResults = true
+                        return
+                    }
+
                     jsController.loadScript(jsContent)
                     if module.metadata.asyncJS == true {
                         jsController.fetchJsExploreResults(module: module) { items in

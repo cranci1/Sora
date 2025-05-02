@@ -7,13 +7,14 @@
 
 [![Build and Release IPA](https://github.com/cranci1/Sora/actions/workflows/build.yml/badge.svg)](https://github.com/cranci1/Sora/actions/workflows/build.yml) [![Discord](https://img.shields.io/discord/1293430817841741899.svg?logo=discord&color=blue)](https://discord.gg/XR3SrmUbpd) [![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20iPadOS%2015.0%2B%20%26%20macOS%2012.0%2B-red?logo=apple&logoColor=white)](https://img.shields.io/badge/Platform-iOS%20%7C%20iPadOS%2015.0%2B%20%26%20macOS%2012.0%2B-red?logo=apple&logoColor=white)
 
-An iOS and macOS modular web scraping app, under the GPLv3.0 License.
+**An iOS and macOS modular web scraping app, under the GPLv3.0 License.**
 
 </div>
 
 ## Table of Contents
 
 - [Features](#features)
+- [Installation](#installation)
 - [Frequently Asked Questions](#frequently-asked-questions)
 - [Acknowledgements](#acknowledgements)
 - [License](#license)
@@ -29,6 +30,20 @@ An iOS and macOS modular web scraping app, under the GPLv3.0 License.
 - [x] Streams support (Jellyfin/Plex like servers)
 - [x] External Media players (VLC, infuse, Outplayer, nPlayer)
 - [x] Background playback and Picture-in-Picture (PiP) support
+
+## Installation
+
+You can download Sora on the App Store for stable updates or on Testflight for more updates but maybe some instability. (Testflight is recommended):
+
+<a href="https://apps.apple.com/us/app/sulfur/id6742741043">
+  <img src="https://askyourself.app/assets/appstore.png" width="170" alt="Build and Release IPA">
+</a>
+
+<a href="https://testflight.apple.com/join/qMUCpNaS">
+  <img src="https://askyourself.app/assets/testflight.png" width="170" alt="Build and Release IPA">
+</a>
+
+Additionaly you can install the app using xCode or using the .ipa file that you can find on the [Releases](https://github.com/cranci1/Sora/releases) tab or on the [nightly](https://nightly.link/cranci1/Sora/workflows/build/dev/Sulfur-IPA.zip) build page.
 
 ## Frequently Asked Questions
 

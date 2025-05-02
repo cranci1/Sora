@@ -8,12 +8,16 @@
 import SwiftUI
 
 struct RootView: View {
+    @AppStorage("hideExploreTab") private var hideExploreTab: Bool?
+
     var body: some View {
         TabView {
-            ExploreView()
-                .tabItem {
-                    Label("Explore", systemImage: "star")
-                }
+            if !(hideExploreTab ?? false) {
+                ExploreView()
+                    .tabItem {
+                        Label("Explore", systemImage: "star")
+                    }
+            }
             SearchView()
                 .tabItem {
                     Label("Search", systemImage: "magnifyingglass")

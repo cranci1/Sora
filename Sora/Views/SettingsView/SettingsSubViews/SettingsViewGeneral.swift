@@ -17,6 +17,7 @@ struct SettingsViewGeneral: View {
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape = 4
     @AppStorage("hideEmptySections") private var hideEmptySections = false
+    @AppStorage("hideExploreTab") private var hideExploreTab = false
     @AppStorage("currentAppIcon") private var currentAppIcon = "Default"
     @AppStorage("episodeSortOrder") private var episodeSortOrder = "Ascending"
 
@@ -71,6 +72,8 @@ struct SettingsViewGeneral: View {
                     }
                 }
                 Toggle("Hide Empty Sections", isOn: $hideEmptySections)
+                    .tint(.accentColor)
+                Toggle("Hide Explore Tab", isOn: $hideExploreTab)
                     .tint(.accentColor)
             }
 

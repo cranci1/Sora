@@ -9,10 +9,12 @@
 /* Begin PBXBuildFile section */
 		120D3C722DBA40AB0093D596 /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 120D3C712DBA40A40093D596 /* .swiftlint.yml */; };
 		120D3C732DBA40AB0093D596 /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 120D3C712DBA40A40093D596 /* .swiftlint.yml */; };
+		1258EA372DC4404F009B8D12 /* Drops in Frameworks */ = {isa = PBXBuildFile; productRef = 1258EA362DC4404F009B8D12 /* Drops */; };
+		1258EA392DC4404F009B8D12 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 1258EA382DC4404F009B8D12 /* Kingfisher */; };
+		1258EA3B2DC4404F009B8D12 /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = 1258EA3A2DC4404F009B8D12 /* MarqueeLabel */; };
 		126C428D2DB99627006BC27D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 126C428C2DB99627006BC27D /* Localizable.xcstrings */; };
 		126C428E2DB99627006BC27D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 126C428C2DB99627006BC27D /* Localizable.xcstrings */; };
 		132E351D2D959DDB0007800E /* Drops in Frameworks */ = {isa = PBXBuildFile; productRef = 132E351C2D959DDB0007800E /* Drops */; };
-		132E35202D959E1D0007800E /* FFmpeg-iOS-Lame in Frameworks */ = {isa = PBXBuildFile; productRef = 132E351F2D959E1D0007800E /* FFmpeg-iOS-Lame */; };
 		132E35232D959E410007800E /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 132E35222D959E410007800E /* Kingfisher */; };
 		13B77E192DA44F8300126FDF /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = 13B77E182DA44F8300126FDF /* MarqueeLabel */; };
 /* End PBXBuildFile section */
@@ -51,6 +53,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1258EA392DC4404F009B8D12 /* Kingfisher in Frameworks */,
+				1258EA372DC4404F009B8D12 /* Drops in Frameworks */,
+				1258EA3B2DC4404F009B8D12 /* MarqueeLabel in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,7 +65,6 @@
 			files = (
 				13B77E192DA44F8300126FDF /* MarqueeLabel in Frameworks */,
 				132E35232D959E410007800E /* Kingfisher in Frameworks */,
-				132E35202D959E1D0007800E /* FFmpeg-iOS-Lame in Frameworks */,
 				132E351D2D959DDB0007800E /* Drops in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -109,6 +113,9 @@
 			);
 			name = SulfurTV;
 			packageProductDependencies = (
+				1258EA362DC4404F009B8D12 /* Drops */,
+				1258EA382DC4404F009B8D12 /* Kingfisher */,
+				1258EA3A2DC4404F009B8D12 /* MarqueeLabel */,
 			);
 			productName = SulfurTV;
 			productReference = 120764652DB6F6E0003621E9 /* SulfurTV.app */;
@@ -133,7 +140,6 @@
 			name = Sulfur;
 			packageProductDependencies = (
 				132E351C2D959DDB0007800E /* Drops */,
-				132E351F2D959E1D0007800E /* FFmpeg-iOS-Lame */,
 				132E35222D959E410007800E /* Kingfisher */,
 				13B77E182DA44F8300126FDF /* MarqueeLabel */,
 			);
@@ -170,7 +176,6 @@
 			mainGroup = 133D7C612D2BE2500075467E;
 			packageReferences = (
 				132E351B2D959DDB0007800E /* XCRemoteSwiftPackageReference "Drops" */,
-				132E351E2D959E1D0007800E /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */,
 				132E35212D959E410007800E /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				13B77E172DA44F8300126FDF /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
 				123FEDD22DC412F0001C4704 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
@@ -572,21 +577,13 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SimplyDanny/SwiftLintPlugins";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.59.1;
+				branch = main;
+				kind = branch;
 			};
 		};
 		132E351B2D959DDB0007800E /* XCRemoteSwiftPackageReference "Drops" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/omaralbeik/Drops.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-		132E351E2D959E1D0007800E /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kewlbear/FFmpeg-iOS-Lame";
 			requirement = {
 				branch = main;
 				kind = branch;
@@ -621,15 +618,25 @@
 			package = 123FEDD22DC412F0001C4704 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */;
 			productName = "plugin:SwiftLintBuildToolPlugin";
 		};
-		132E351C2D959DDB0007800E /* Drops */ = {
+		1258EA362DC4404F009B8D12 /* Drops */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 132E351B2D959DDB0007800E /* XCRemoteSwiftPackageReference "Drops" */;
 			productName = Drops;
 		};
-		132E351F2D959E1D0007800E /* FFmpeg-iOS-Lame */ = {
+		1258EA382DC4404F009B8D12 /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 132E351E2D959E1D0007800E /* XCRemoteSwiftPackageReference "FFmpeg-iOS-Lame" */;
-			productName = "FFmpeg-iOS-Lame";
+			package = 132E35212D959E410007800E /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+		1258EA3A2DC4404F009B8D12 /* MarqueeLabel */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 13B77E172DA44F8300126FDF /* XCRemoteSwiftPackageReference "MarqueeLabel" */;
+			productName = MarqueeLabel;
+		};
+		132E351C2D959DDB0007800E /* Drops */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 132E351B2D959DDB0007800E /* XCRemoteSwiftPackageReference "Drops" */;
+			productName = Drops;
 		};
 		132E35222D959E410007800E /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;

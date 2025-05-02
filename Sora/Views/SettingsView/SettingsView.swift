@@ -178,10 +178,12 @@ class Settings: ObservableObject {
     }
 
     private func applyColorToUIKit(_ color: Color) {
+        let newColor = UIColor(color)
         let tempStepper = UIStepper()
-        tempStepper.tintColor = UIColor(color)
+        tempStepper.tintColor = newColor
         UIStepper.appearance().setDecrementImage(tempStepper.decrementImage(for: .normal), for: .normal)
         UIStepper.appearance().setIncrementImage(tempStepper.incrementImage(for: .normal), for: .normal)
+        UIRefreshControl.appearance().tintColor = newColor
     }
 
     private func saveAccentColor(_ color: Color) {

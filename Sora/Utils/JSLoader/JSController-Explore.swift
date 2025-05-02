@@ -10,6 +10,7 @@ import JavaScriptCore
 // TODO: implement and test
 extension JSController {
     func fetchExploreResults(module: ScrapingModule, completion: @escaping ([ExploreItem]) -> Void) {
+        completion([])
         /*let searchUrl = module.metadata.searchBaseUrl.replacingOccurrences(of: "%s", with: keyword.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")
 
         guard let url = URL(string: searchUrl) else {
@@ -54,6 +55,7 @@ extension JSController {
     }
 
     func fetchJsExploreResults(module: ScrapingModule, completion: @escaping ([ExploreItem]) -> Void) {
+        completion([])
         /*
         if let exception = context.exception {
             Logger.shared.log("JavaScript exception: \(exception)",type: "Error")

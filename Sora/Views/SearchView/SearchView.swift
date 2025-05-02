@@ -118,20 +118,22 @@ struct SearchView: View {
                             .padding(.top)
                             .padding()
                         } else if hasNoResults {
-                            VStack(spacing: 8) {
-                                Image(systemName: "magnifyingglass")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.secondary)
-                                    .accessibilityLabel("Magnifying Glass Icon")
-                                Text("No Results Found")
-                                    .font(.headline)
-                                Text("Try different keywords")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                            if !(hideEmptySections ?? false) {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "magnifyingglass")
+                                        .font(.largeTitle)
+                                        .foregroundColor(.secondary)
+                                        .accessibilityLabel("Magnifying Glass Icon")
+                                    Text("No Results Found")
+                                        .font(.headline)
+                                    Text("Try different keywords")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .padding(.top)
                             }
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .padding(.top)
                         } else {
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
                                 ForEach(searchItems) { item in

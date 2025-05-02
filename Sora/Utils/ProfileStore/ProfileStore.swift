@@ -75,8 +75,8 @@ class ProfileStore: ObservableObject {
 
     func deleteProfile(removalID: UUID?) {
         guard let removalID,
-              profiles.count == 1
-        else { return }
+              profiles.count > 1
+            else { return }
 
         if let suite = UserDefaults(suiteName: removalID.uuidString) {
             for key in suite.dictionaryRepresentation().keys {

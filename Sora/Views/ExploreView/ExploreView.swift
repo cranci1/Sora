@@ -99,20 +99,22 @@ struct ExploreView: View {
                         .padding(.top)
                         .padding()
                     } else if hasNoResults {
-                        VStack(spacing: 8) {
-                            Image(systemName: "star")
-                                .font(.largeTitle)
-                                .foregroundColor(.secondary)
-                                .accessibilityLabel("Star Icon")
-                            Text("No Content Available")
-                                .font(.headline)
-                            Text("Try updating the Module")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                        if !(hideEmptySections ?? false) {
+                            VStack(spacing: 8) {
+                                Image(systemName: "star")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.secondary)
+                                    .accessibilityLabel("Star Icon")
+                                Text("No Content Available")
+                                    .font(.headline)
+                                Text("Try updating the Module")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .padding(.top)
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .padding(.top)
                     } else {
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
                             ForEach(exploreItems) { item in
@@ -161,6 +163,12 @@ struct ExploreView: View {
             }
             .navigationTitle("Explore")
             .navigationBarTitleDisplayMode(.large)
+            .refreshable {
+                await withCheckedContinuation { continuation in
+                    fetchData()
+                    continuation.resume()
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Menu {

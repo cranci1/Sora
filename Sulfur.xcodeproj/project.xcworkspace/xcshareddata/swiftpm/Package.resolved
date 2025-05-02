@@ -1,5 +1,5 @@
 {
-  "originHash" : "c4909124df3eb22bfcc539fb1f3936eb79c309605d2f34c5b02efa1fe3f48447",
+  "originHash" : "201a3201a2876c1cee578165a829a39bb460fe178ce209055cc70e0c28d43134",
   "pins" : [
     {
       "identity" : "drops",
@@ -8,24 +8,6 @@
       "state" : {
         "branch" : "main",
         "revision" : "5824681795286c36bdc4a493081a63e64e2a064e"
-      }
-    },
-    {
-      "identity" : "ffmpeg-ios-lame",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kewlbear/FFmpeg-iOS-Lame",
-      "state" : {
-        "branch" : "main",
-        "revision" : "1808fa5a1263c5e216646cd8421fc7dcb70520cc"
-      }
-    },
-    {
-      "identity" : "ffmpeg-ios-support",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kewlbear/FFmpeg-iOS-Support",
-      "state" : {
-        "revision" : "be3bd9149ac53760e8725652eee99c405b2be47a",
-        "version" : "0.0.2"
       }
     },
     {
@@ -51,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/SimplyDanny/SwiftLintPlugins",
       "state" : {
-        "revision" : "8545ddf4de043e6f2051c5cf204f39ef778ebf6b",
-        "version" : "0.59.1"
+        "branch" : "main",
+        "revision" : "8545ddf4de043e6f2051c5cf204f39ef778ebf6b"
       }
     }
   ],

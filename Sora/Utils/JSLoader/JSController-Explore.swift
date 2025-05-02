@@ -31,6 +31,10 @@ extension JSController {
                 return
             }
 
+            self.context.exceptionHandler = { _, exception in
+                Logger.shared.log(exception?.toString() ?? "Unknown JS Exception", type: .error)
+            }
+
             Logger.shared.log(html, type: .html)
             if let parseFunction = self.context.objectForKeyedSubscript("exploreResults"),
                let results = parseFunction.call(withArguments: [html]).toArray() as? [[String: String]] {

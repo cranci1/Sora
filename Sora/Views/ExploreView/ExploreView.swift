@@ -291,7 +291,7 @@ struct ExploreView: View {
                     }
 
                     jsController.loadScript(jsContent)
-                    if module.metadata.asyncJS == true {
+                    if module.metadata.exploreAsyncJS == true {
                         jsController.fetchJsExploreResults(module: module) { items in
                             exploreItems = items
                             hasNoResults = items.isEmpty

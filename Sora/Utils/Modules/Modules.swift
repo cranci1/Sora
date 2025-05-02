@@ -18,6 +18,7 @@ struct ModuleMetadata: Codable, Hashable {
     let quality: String
     let searchBaseUrl: String
     let scriptUrl: String
+    let exploreAsyncJS: Bool?
     let exploreBaseUrl: String?
     let exploreScriptUrl: String?
     let asyncJS: Bool?

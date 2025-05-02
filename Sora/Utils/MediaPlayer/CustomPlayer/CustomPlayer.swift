@@ -1530,16 +1530,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     }
                 }
 
-                // also show the lock button
-                lockButton.isHidden = false
-                lockButton.alpha = 1.0
-                lockButtonTimer?.invalidate()
-                lockButtonTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
-                    UIView.animate(withDuration: 0.3) {
-                        self?.lockButton.alpha = 0
-                    }
-                }
-
                 updateSkipButtonsVisibility()
                 return
             }
@@ -1652,6 +1642,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self.skipIntroButton.alpha = 0
                 self.skipOutroButton.alpha = 0
                 self.skip85Button.alpha    = 0
+                self.lockButton.alpha = 0
 
                 self.subtitleBottomToSafeAreaConstraint?.isActive = true
                 self.subtitleBottomToSliderConstraint?.isActive    = false
@@ -1660,12 +1651,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
 
             lockButton.setImage(UIImage(systemName: "lock.fill"), for: .normal)
-            lockButton.alpha = 1
-            lockButtonTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { [weak self] _ in
-                UIView.animate(withDuration: 0.3) {
-                    self?.lockButton.alpha = 0
-                }
-            }
+            
         } else {
             UIView.animate(withDuration: 0.25) {
                 self.controlsContainerView.alpha = 1

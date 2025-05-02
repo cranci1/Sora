@@ -267,6 +267,9 @@ struct ExploreView: View {
         .onChange(of: selectedModuleId) { _ in
             fetchData()
         }
+        .onAppear {
+            fetchData()
+        }
     }
 
     private func fetchData() {

@@ -54,8 +54,6 @@ struct LibraryView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                let columnsCount = determineColumns()
-
                 VStack(alignment: .leading, spacing: 12) {
                     if hideEmptySections != true || !continueWatchingManager.items.isEmpty {
                         Text("Continue Watching")
@@ -253,14 +251,6 @@ struct LibraryView: View {
     private func updateOrientation() {
         DispatchQueue.main.async {
             isLandscape = UIDevice.current.orientation.isLandscape
-        }
-    }
-
-    private func determineColumns() -> Int {
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
-        } else {
-            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }
     }
 }

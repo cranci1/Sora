@@ -26,7 +26,6 @@ class VTTSubtitlesLoader: ObservableObject {
 
     func load(from urlString: String) {
         guard let url = URL(string: urlString) else { return }
-
         let format = determineSubtitleFormat(from: url)
 
         URLSession.shared.dataTask(with: url) { data, _, error in

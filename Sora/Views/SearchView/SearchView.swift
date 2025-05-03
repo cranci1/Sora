@@ -72,7 +72,6 @@ struct SearchView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                let columnsCount = determineColumns()
                 VStack(spacing: 0) {
                     HStack {
                         SearchBar(text: $searchText, onSearchButtonClicked: performSearch)
@@ -333,14 +332,6 @@ struct SearchView: View {
     private func updateOrientation() {
         DispatchQueue.main.async {
             isLandscape = UIDevice.current.orientation.isLandscape
-        }
-    }
-
-    private func determineColumns() -> Int {
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
-        } else {
-            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }
     }
 

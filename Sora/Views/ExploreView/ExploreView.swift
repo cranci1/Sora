@@ -71,7 +71,6 @@ struct ExploreView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                let columnsCount = determineColumns()
                 VStack(spacing: 0) {
                     if !(hideEmptySections ?? false) && selectedModule == nil {
                         VStack(spacing: 8) {
@@ -319,14 +318,6 @@ struct ExploreView: View {
     private func updateOrientation() {
         DispatchQueue.main.async {
             isLandscape = UIDevice.current.orientation.isLandscape
-        }
-    }
-
-    private func determineColumns() -> Int {
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
-        } else {
-            return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }
     }
 

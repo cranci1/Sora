@@ -88,62 +88,62 @@ struct ExploreView: View {
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(Color(.systemBackground))
-                    }
-
-                    if isLoading {
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
-                            ForEach(0 ..< columnsCount * 4, id: \.self) { _ in
-                                SkeletonCell(type: .explore, cellWidth: cellWidth)
-                            }
-                        }
-                        .padding(.top)
-                        .padding()
-                    } else if hasNoResults {
-                        if !(hideEmptySections ?? false) {
-                            VStack(spacing: 8) {
-                                Image(systemName: "star")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.secondary)
-                                    .accessibilityLabel("Star Icon")
-                                Text("No Content Available")
-                                    .font(.headline)
-                                Text("Try updating the Module")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .padding(.top)
-                        }
                     } else {
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
-                            ForEach(exploreItems) { item in
-                                NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule!)) {
-                                    VStack {
-                                        KFImage(URL(string: item.imageUrl))
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(height: cellWidth * 3 / 2)
-                                            .frame(maxWidth: cellWidth)
-                                            .cornerRadius(10)
-                                            .clipped()
-                                        Text(item.title)
-                                            .font(.subheadline)
-                                            .foregroundColor(Color.primary)
-                                            .padding([.leading, .bottom], 8)
-                                            .lineLimit(1)
-                                    }
+                        if isLoading {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
+                                ForEach(0 ..< columnsCount * 4, id: \.self) { _ in
+                                    SkeletonCell(type: .explore, cellWidth: cellWidth)
                                 }
                             }
-                            .onAppear {
-                                updateOrientation()
+                            .padding(.top)
+                            .padding()
+                        } else if hasNoResults {
+                            if !(hideEmptySections ?? false) {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "star")
+                                        .font(.largeTitle)
+                                        .foregroundColor(.secondary)
+                                        .accessibilityLabel("Star Icon")
+                                    Text("No Content Available")
+                                        .font(.headline)
+                                    Text("Try updating the Module")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .padding(.top)
                             }
-                            .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-                                updateOrientation()
+                        } else {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
+                                ForEach(exploreItems) { item in
+                                    NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule!)) {
+                                        VStack {
+                                            KFImage(URL(string: item.imageUrl))
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                                .frame(height: cellWidth * 3 / 2)
+                                                .frame(maxWidth: cellWidth)
+                                                .cornerRadius(10)
+                                                .clipped()
+                                            Text(item.title)
+                                                .font(.subheadline)
+                                                .foregroundColor(Color.primary)
+                                                .padding([.leading, .bottom], 8)
+                                                .lineLimit(1)
+                                        }
+                                    }
+                                }
+                                .onAppear {
+                                    updateOrientation()
+                                }
+                                .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+                                    updateOrientation()
+                                }
                             }
+                            .padding(.top)
+                            .padding()
                         }
-                        .padding(.top)
-                        .padding()
                     }
                 }
 

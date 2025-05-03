@@ -1279,11 +1279,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skip85Button.layer.cornerRadius = 21
         skip85Button.alpha = 0.7
 
-/*
         if #unavailable(iOS 15) {
             skip85Button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         }
-*/
+
         skip85Button.layer.shadowColor = UIColor.black.cgColor
         skip85Button.layer.shadowOffset = CGSize(width: 0, height: 2)
         skip85Button.layer.shadowOpacity = 0.6

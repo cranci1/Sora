@@ -2640,22 +2640,6 @@
         }
       }
     },
-    "Right Arrow Icon" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pfeil nach Rechts Icon"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Right Arrow Icon"
-          }
-        }
-      }
-    },
     "Running Sora %@\nby cranci1" : {
       "localizations" : {
         "de" : {

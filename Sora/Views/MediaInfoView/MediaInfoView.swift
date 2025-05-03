@@ -217,42 +217,24 @@ struct MediaInfoView: View {
                                 }
                             }
 
-                            HStack {
-                                Button(action: {
-                                    playFirstUnwatchedEpisode()
-                                }) {
-                                    HStack {
-                                        Image(systemName: "play.fill")
-                                            .foregroundColor(.primary)
-                                            .accessibilityLabel("Play Icon")
-                                        Text(startWatchingText)
-                                            .font(.headline)
-                                            .foregroundColor(.primary)
-                                    }
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .background(Color.accentColor)
-                                    .cornerRadius(10)
+                            Button(action: {
+                                playFirstUnwatchedEpisode()
+                            }) {
+                                HStack {
+                                    Image(systemName: "play.fill")
+                                        .foregroundColor(.primary)
+                                        .accessibilityLabel("Play Icon")
+                                    Text(startWatchingText)
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
                                 }
-                                .disabled(isFetchingEpisode)
-                                .id(buttonRefreshTrigger)
-
-                                Button(action: {
-                                    libraryManager.toggleBookmark(
-                                        title: title,
-                                        imageUrl: imageUrl,
-                                        href: href,
-                                        moduleId: module.id.uuidString,
-                                        moduleName: module.metadata.sourceName
-                                    )
-                                }) {
-                                    Image(systemName: libraryManager.isBookmarked(href: href, moduleName: module.metadata.sourceName) ? "bookmark.fill" : "bookmark")
-                                        .resizable()
-                                        .frame(width: 20, height: 27)
-                                        .foregroundColor(Color.accentColor)
-                                        .accessibilityLabel("Bookmark Icon")
-                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.accentColor)
+                                .cornerRadius(10)
                             }
+                            .disabled(isFetchingEpisode)
+                            .id(buttonRefreshTrigger)
 
                             if !episodeLinks.isEmpty {
                                 VStack(alignment: .leading, spacing: 10) {
@@ -466,20 +448,21 @@ struct MediaInfoView: View {
                 .animation(.spring(response: 0.4, dampingFraction: 0.6), value: showStreamLoadingView)
             }
         }
-        .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
-                    activeFetchID = nil
-                    isFetchingEpisode = false
-                    showStreamLoadingView = false
-                    dismiss()
+                    libraryManager.toggleBookmark(
+                        title: title,
+                        imageUrl: imageUrl,
+                        href: href,
+                        moduleId: module.id.uuidString,
+                        moduleName: module.metadata.sourceName
+                    )
                 }) {
-                    HStack {
-                        Image(systemName: "chevron.left")
-                            .accessibilityLabel("Right Arrow Icon")
-                        Text("Search")
-                    }
+                    Image(systemName: libraryManager.isBookmarked(href: href, moduleName: module.metadata.sourceName) ? "bookmark.fill" : "bookmark")
+                        .resizable()
+                        .foregroundColor(Color.accentColor)
+                        .accessibilityLabel("Bookmark Icon")
                 }
             }
         }

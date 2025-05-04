@@ -7,16 +7,19 @@
 
 import JavaScriptCore
 
-class JSController: ObservableObject {
+class JSController: NSObject, ObservableObject {
     var context: JSContext
     
-    init() {
+    override init() {
         self.context = JSContext()
+        super.init()
         setupContext()
     }
     
     func setupContext() {
         context.setupJavaScriptEnvironment()
+        initializeDownloadSession()
+        setupDownloadFunction()
     }
     
     func loadScript(_ script: String) {

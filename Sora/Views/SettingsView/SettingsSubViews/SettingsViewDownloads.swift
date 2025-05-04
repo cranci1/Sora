@@ -8,26 +8,17 @@
 import SwiftUI
 
 struct SettingsViewDownloads: View {
-    @ObservedObject private var downloadManager = DownloadManager.shared
+    @StateObject private var jsController = JSController()
     @AppStorage("downloadQuality") private var downloadQuality: String = "Best"
     @AppStorage("allowCellularDownloads") private var allowCellularDownloads: Bool = true
-    @AppStorage("autoStartDownloads") private var autoStartDownloads: Bool = true
-    @AppStorage("maxConcurrentDownloads") private var maxConcurrentDownloads: Int = 3
-    @AppStorage("deleteWatchedDownloads") private var deleteWatchedDownloads: Bool = false
-    @AppStorage("downloadLocation") private var downloadLocation: String = "Documents"
-    @AppStorage("storageLimitGB") private var storageLimitGB: Int = 10
-    @AppStorage("autoCleanupEnabled") private var autoCleanupEnabled: Bool = true
-    @AppStorage("cleanupThreshold") private var cleanupThreshold: Double = 0.8
-    
     @State private var showClearConfirmation = false
-    @State private var showStorageLimitAlert = false
-    @State private var newStorageLimit: Int = 10
     
     private let qualityOptions = ["Best", "High", "Medium", "Low"]
-    private let locationOptions = ["Documents", "Cache"]
-    private let maxConcurrentOptions = [1, 2, 3, 5, 10]
-    private let storageLimitOptions = [5, 10, 20, 50, 100]
-    private let cleanupThresholdOptions = [0.7, 0.8, 0.9]
+    
+    // Calculate total storage used
+    private var totalStorageUsed: Int64 {
+        return jsController.savedAssets.compactMap { $0.fileSize }.reduce(0, +)
+    }
     
     var body: some View {
         Form {
@@ -38,25 +29,7 @@ struct SettingsViewDownloads: View {
                     }
                 }
                 
-                Picker("Storage Location", selection: $downloadLocation) {
-                    ForEach(locationOptions, id: \.self) { option in
-                        Text(option).tag(option)
-                    }
-                }
-                
-                Picker("Max Concurrent Downloads", selection: $maxConcurrentDownloads) {
-                    ForEach(maxConcurrentOptions, id: \.self) { option in
-                        Text("\(option)").tag(option)
-                    }
-                }
-                
                 Toggle("Allow Cellular Downloads", isOn: $allowCellularDownloads)
-                    .tint(.accentColor)
-                
-                Toggle("Auto-Start Downloads", isOn: $autoStartDownloads)
-                    .tint(.accentColor)
-                
-                Toggle("Delete Watched Downloads", isOn: $deleteWatchedDownloads)
                     .tint(.accentColor)
             }
             
@@ -64,40 +37,15 @@ struct SettingsViewDownloads: View {
                 HStack {
                     Text("Storage Used")
                     Spacer()
-                    Text(formatFileSize(downloadManager.totalStorageUsed))
+                    Text(formatFileSize(totalStorageUsed))
                         .foregroundColor(.secondary)
                 }
                 
                 HStack {
-                    Text("Storage Limit")
+                    Text("Files Downloaded")
                     Spacer()
-                    TextField("GB", value: $storageLimitGB, format: .number)
-                        .keyboardType(.numberPad)
-                        .multilineTextAlignment(.trailing)
-                        .frame(width: 60)
-                        .onChange(of: storageLimitGB) { newValue in
-                            if newValue <= 0 {
-                                storageLimitGB = 1
-                            }
-                            downloadManager.setStorageLimit(Int64(storageLimitGB) * 1024 * 1024 * 1024)
-                        }
-                    Text("GB")
+                    Text("\(jsController.savedAssets.count)")
                         .foregroundColor(.secondary)
-                }
-                
-                ProgressView(value: downloadManager.getStorageUsagePercentage()) {
-                    Text("\(Int(downloadManager.getStorageUsagePercentage() * 100))% Used")
-                }
-                
-                Toggle("Auto Cleanup", isOn: $autoCleanupEnabled)
-                    .tint(.accentColor)
-                
-                if autoCleanupEnabled {
-                    Picker("Cleanup Threshold", selection: $cleanupThreshold) {
-                        Text("70%").tag(0.7)
-                        Text("80%").tag(0.8)
-                        Text("90%").tag(0.9)
-                    }
                 }
                 
                 Button(action: {
@@ -116,36 +64,17 @@ struct SettingsViewDownloads: View {
                         clearAllDownloads()
                     }
                 } message: {
-                    Text("Are you sure you want to delete all downloaded episodes? This action cannot be undone.")
+                    Text("Are you sure you want to delete all downloaded assets? This action cannot be undone.")
                 }
             }
         }
         .navigationTitle("Downloads")
-        .onAppear {
-            downloadManager.setStorageLimit(Int64(storageLimitGB) * 1024 * 1024 * 1024)
-        }
-        .onChange(of: storageLimitGB) { newValue in
-            downloadManager.setStorageLimit(Int64(newValue) * 1024 * 1024 * 1024)
-        }
-        .alert("Set Storage Limit", isPresented: $showStorageLimitAlert) {
-            Picker("Storage Limit", selection: $newStorageLimit) {
-                ForEach(storageLimitOptions, id: \.self) { option in
-                    Text("\(option) GB").tag(option)
-                }
-            }
-            Button("Cancel", role: .cancel) { }
-            Button("Set") {
-                storageLimitGB = newStorageLimit
-            }
-        } message: {
-            Text("Select the maximum amount of storage to use for downloads")
-        }
     }
     
     private func clearAllDownloads() {
-        let episodesToDelete = downloadManager.savedEpisodes
-        for episode in episodesToDelete {
-            downloadManager.deleteEpisode(episode)
+        let assetsToDelete = jsController.savedAssets
+        for asset in assetsToDelete {
+            jsController.deleteAsset(asset)
         }
     }
     

@@ -19,6 +19,10 @@ struct ContentView: View {
                 .tabItem {
                     Label("Search", systemImage: "magnifyingglass")
                 }
+            DownloadView()
+                .tabItem {
+                    Label("Downloads", systemImage: "arrow.down.circle")
+                }
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")

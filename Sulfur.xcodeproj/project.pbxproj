@@ -11,7 +11,6 @@
 		13103E8B2D58E028000F0673 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8A2D58E028000F0673 /* View.swift */; };
 		13103E8E2D58E04A000F0673 /* SkeletonCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8D2D58E04A000F0673 /* SkeletonCell.swift */; };
 		131270172DC13A010093AA9C /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131270162DC13A010093AA9C /* DownloadManager.swift */; };
-		131270192DC13A3C0093AA9C /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131270182DC13A3C0093AA9C /* DownloadView.swift */; };
 		131845F92D47C62D00CA7A54 /* SettingsViewGeneral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131845F82D47C62D00CA7A54 /* SettingsViewGeneral.swift */; };
 		1327FBA72D758CEA00FC6689 /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1327FBA62D758CEA00FC6689 /* Analytics.swift */; };
 		1327FBA92D758DEA00FC6689 /* UIDevice+Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1327FBA82D758DEA00FC6689 /* UIDevice+Model.swift */; };
@@ -66,6 +65,9 @@
 		1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */; };
 		1EAC7A322D888BC50083984D /* MusicProgressSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */; };
 		1EF5C3A92DB988E40032BF07 /* CommunityLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EF5C3A82DB988D70032BF07 /* CommunityLib.swift */; };
+		72443C792DC8008B00A61321 /* JSController-Downloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C782DC8008B00A61321 /* JSController-Downloads.swift */; };
+		72443C7D2DC8036500A61321 /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C7C2DC8036500A61321 /* DownloadView.swift */; };
+		72443C7F2DC8038300A61321 /* SettingsViewDownloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */; };
 		73D164D52D8B5B470011A360 /* JavaScriptCore+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */; };
 /* End PBXBuildFile section */
 
@@ -75,7 +77,6 @@
 		13103E8A2D58E028000F0673 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
 		13103E8D2D58E04A000F0673 /* SkeletonCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonCell.swift; sourceTree = "<group>"; };
 		131270162DC13A010093AA9C /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
-		131270182DC13A3C0093AA9C /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		131845F82D47C62D00CA7A54 /* SettingsViewGeneral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewGeneral.swift; sourceTree = "<group>"; };
 		1327FBA62D758CEA00FC6689 /* Analytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Analytics.swift; sourceTree = "<group>"; };
 		1327FBA82D758DEA00FC6689 /* UIDevice+Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIDevice+Model.swift"; sourceTree = "<group>"; };
@@ -129,6 +130,9 @@
 		1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewLoggerFilter.swift; sourceTree = "<group>"; };
 		1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicProgressSlider.swift; sourceTree = "<group>"; };
 		1EF5C3A82DB988D70032BF07 /* CommunityLib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityLib.swift; sourceTree = "<group>"; };
+		72443C782DC8008B00A61321 /* JSController-Downloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Downloads.swift"; sourceTree = "<group>"; };
+		72443C7C2DC8036500A61321 /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
+		72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewDownloads.swift; sourceTree = "<group>"; };
 		73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JavaScriptCore+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -171,13 +175,6 @@
 				13B7F4C02D58FFDD0045714A /* Shimmer.swift */,
 			);
 			path = SkeletonCells;
-			sourceTree = "<group>";
-		};
-		131270152DC139CD0093AA9C /* DownloadManager */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = DownloadManager;
 			sourceTree = "<group>";
 		};
 		1327FBA52D758CEA00FC6689 /* Analytics */ = {
@@ -231,11 +228,11 @@
 		133D7C7B2D2BE2630075467E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				72443C7C2DC8036500A61321 /* DownloadView.swift */,
 				133D7C7F2D2BE2630075467E /* MediaInfoView */,
 				1399FAD22D3AB34F00E97C31 /* SettingsView */,
 				133F55B92D33B53E00E08EEA /* LibraryView */,
 				133D7C7C2D2BE2630075467E /* SearchView.swift */,
-				131270182DC13A3C0093AA9C /* DownloadView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -259,6 +256,7 @@
 				135CCBE12D4D1138008B9C0E /* SettingsViewPlayer.swift */,
 				130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */,
 				13DB46912D900BCE008CBC03 /* SettingsViewTrackers.swift */,
+				72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */,
 			);
 			path = SettingsSubViews;
 			sourceTree = "<group>";
@@ -266,7 +264,7 @@
 		133D7C852D2BE2640075467E /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				131270152DC139CD0093AA9C /* DownloadManager */,
+				72443C832DC8046500A61321 /* DownloadUtils */,
 				13C0E5E82D5F85DD00E7F619 /* ContinueWatching */,
 				13103E8C2D58E037000F0673 /* SkeletonCells */,
 				13DC0C442D302C6A00D0F966 /* MediaPlayer */,
@@ -309,6 +307,7 @@
 		133D7C8A2D2BE2640075467E /* JSLoader */ = {
 			isa = PBXGroup;
 			children = (
+				72443C782DC8008B00A61321 /* JSController-Downloads.swift */,
 				133D7C8B2D2BE2640075467E /* JSController.swift */,
 				132AF1202D99951700A0140B /* JSController-Streams.swift */,
 				132AF1222D9995C300A0140B /* JSController-Details.swift */,
@@ -452,6 +451,13 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		72443C832DC8046500A61321 /* DownloadUtils */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = DownloadUtils;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -539,6 +545,7 @@
 				1399FAD62D3AB3DB00E97C31 /* Logger.swift in Sources */,
 				13B7F4C12D58FFDD0045714A /* Shimmer.swift in Sources */,
 				139935662D468C450065CEFF /* ModuleManager.swift in Sources */,
+				72443C792DC8008B00A61321 /* JSController-Downloads.swift in Sources */,
 				133D7C902D2BE2640075467E /* SettingsView.swift in Sources */,
 				132AF1252D9995F900A0140B /* JSController-Search.swift in Sources */,
 				1EF5C3A92DB988E40032BF07 /* CommunityLib.swift in Sources */,
@@ -562,6 +569,7 @@
 				13103E8E2D58E04A000F0673 /* SkeletonCell.swift in Sources */,
 				13D842552D45267500EBBFA6 /* DropManager.swift in Sources */,
 				13103E8B2D58E028000F0673 /* View.swift in Sources */,
+				72443C7D2DC8036500A61321 /* DownloadView.swift in Sources */,
 				1327FBA92D758DEA00FC6689 /* UIDevice+Model.swift in Sources */,
 				138AA1B82D2D66FD0021F9DF /* EpisodeCell.swift in Sources */,
 				133D7C8C2D2BE2640075467E /* SearchView.swift in Sources */,
@@ -570,7 +578,6 @@
 				133D7C942D2BE2640075467E /* JSController.swift in Sources */,
 				133D7C922D2BE2640075467E /* URLSession.swift in Sources */,
 				133D7C912D2BE2640075467E /* SettingsViewModule.swift in Sources */,
-				131270192DC13A3C0093AA9C /* DownloadView.swift in Sources */,
 				13E62FC22DABC5830007E259 /* Trakt-Login.swift in Sources */,
 				133F55BB2D33B55100E08EEA /* LibraryManager.swift in Sources */,
 				13E62FC42DABC58C0007E259 /* Trakt-Token.swift in Sources */,
@@ -584,6 +591,7 @@
 				13B77E202DA457AA00126FDF /* AniListPushUpdates.swift in Sources */,
 				13EA2BD52D32D97400C1EBD7 /* CustomPlayer.swift in Sources */,
 				1399FAD42D3AB38C00E97C31 /* SettingsViewLogger.swift in Sources */,
+				72443C7F2DC8038300A61321 /* SettingsViewDownloads.swift in Sources */,
 				13DB46922D900BCE008CBC03 /* SettingsViewTrackers.swift in Sources */,
 				13C0E5EA2D5F85EA00E7F619 /* ContinueWatchingManager.swift in Sources */,
 			);

@@ -28,6 +28,9 @@ struct EpisodeCell: View {
     @State private var episodeImageUrl: String = ""
     @State private var isLoading: Bool = true
     @State private var currentProgress: Double = 0.0
+    @State private var showDownloadConfirmation = false
+    
+    @StateObject private var jsController = JSController()
     
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
@@ -77,11 +80,26 @@ struct EpisodeCell: View {
             
             Spacer()
             
+            Button(action: {
+                showDownloadConfirmation = true
+            }) {
+                Image(systemName: "arrow.down.circle")
+                    .foregroundColor(.blue)
+                    .font(.title3)
+            }
+            .padding(.horizontal, 8)
+            
             CircularProgressBar(progress: currentProgress)
                 .frame(width: 40, height: 40)
         }
         .contentShape(Rectangle())
         .contextMenu {
+            Button(action: {
+                showDownloadConfirmation = true
+            }) {
+                Label("Download Episode", systemImage: "arrow.down.circle")
+            }
+            
             if progress <= 0.9 {
                 Button(action: markAsWatched) {
                     Label("Mark as Watched", systemImage: "checkmark.circle")
@@ -111,6 +129,41 @@ struct EpisodeCell: View {
             let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
             onTap(imageUrl)
         }
+        .alert("Download Episode", isPresented: $showDownloadConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Download") {
+                downloadEpisode()
+            }
+        } message: {
+            Text("Do you want to download Episode \(episodeID + 1)\(episodeTitle.isEmpty ? "" : ": \(episodeTitle)")?")
+        }
+    }
+    
+    private func downloadEpisode() {
+        // This function will be called by the video player when a stream URL is available
+        // We'll set up an observer for a notification that will be sent by the video player
+        let notificationName = Notification.Name("EpisodeStreamURLAvailable")
+        NotificationCenter.default.addObserver(forName: notificationName, object: nil, queue: .main) { notification in
+            if let userInfo = notification.userInfo,
+               let streamURL = userInfo["streamURL"] as? String,
+               let episodeNumber = userInfo["episodeNumber"] as? Int,
+               episodeNumber == self.episodeID + 1 {
+                
+                // Remove the observer once we've received the notification
+                NotificationCenter.default.removeObserver(self, name: notificationName, object: nil)
+                
+                // Start the download
+                jsController.downloadAsset(fromString: streamURL, headers: [:])
+                
+                // Show a success message
+                DropManager.shared.success("Download started for Episode \(episodeNumber)")
+            }
+        }
+        
+        // Simulate a tap on the episode to start the video player
+        // The video player will extract the stream URL and post the notification
+        let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
+        onTap(imageUrl)
     }
     
     private func markAsWatched() {

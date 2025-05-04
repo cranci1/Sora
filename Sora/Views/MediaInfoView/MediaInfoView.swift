@@ -300,6 +300,7 @@ struct MediaInfoView: View {
                                                     episodeID: ep.number - 1,
                                                     progress: progress,
                                                     itemID: itemID ?? 0,
+                                                    module: module,
                                                     onTap: { imageUrl in
                                                         if !isFetchingEpisode {
                                                             selectedEpisodeNumber = ep.number
@@ -350,6 +351,7 @@ struct MediaInfoView: View {
                                                 episodeID: ep.number - 1,
                                                 progress: progress,
                                                 itemID: itemID ?? 0,
+                                                module: module,
                                                 onTap: { imageUrl in
                                                     if !isFetchingEpisode {
                                                         selectedEpisodeNumber = ep.number

@@ -20,6 +20,7 @@ struct EpisodeCell: View {
     let episodeID: Int
     let progress: Double
     let itemID: Int
+    let module: ScrapingModule
     
     let onTap: (String) -> Void
     let onMarkAllPrevious: () -> Void
@@ -29,6 +30,7 @@ struct EpisodeCell: View {
     @State private var isLoading: Bool = true
     @State private var currentProgress: Double = 0.0
     @State private var showDownloadConfirmation = false
+    @State private var isDownloading: Bool = false
     
     @StateObject private var jsController = JSController()
     @StateObject private var moduleManager = ModuleManager()
@@ -44,12 +46,13 @@ struct EpisodeCell: View {
     }
     
     init(episodeIndex: Int, episode: String, episodeID: Int, progress: Double,
-         itemID: Int, onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void) {
+         itemID: Int, module: ScrapingModule, onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void) {
         self.episodeIndex = episodeIndex
         self.episode = episode
         self.episodeID = episodeID
         self.progress = progress
         self.itemID = itemID
+        self.module = module
         self.onTap = onTap
         self.onMarkAllPrevious = onMarkAllPrevious
     }
@@ -141,82 +144,110 @@ struct EpisodeCell: View {
     }
     
     private func downloadEpisode() {
-        // Get the module content and load it into JSController
+        if isDownloading {
+            return
+        }
+        
+        isDownloading = true
+        let downloadID = UUID()
+        
+        DropManager.shared.showDrop(
+            title: "Preparing Download",
+            subtitle: "Episode \(episodeID + 1)",
+            duration: 0.5,
+            icon: UIImage(systemName: "arrow.down.circle")
+        )
+        
         Task {
             do {
-                let module = moduleManager.getModule(for: episode)
                 let jsContent = try moduleManager.getModuleContent(module)
                 jsController.loadScript(jsContent)
                 
-                // Use the same fetchStream logic as MediaInfoView
                 if module.metadata.softsub == true {
                     if module.metadata.asyncJS == true {
                         jsController.fetchStreamUrlJS(episodeUrl: episode, softsub: true, module: module) { result in
-                            if let streams = result.streams, !streams.isEmpty {
-                                // Start the download with the first stream URL
-                                jsController.downloadAsset(fromString: streams[0], headers: [:])
-                                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
-                            } else {
-                                DropManager.shared.error("Failed to get stream URL for download")
+                            self.handleDownloadResult(result, downloadID: downloadID)
+                        }
+                        
+                        if module.metadata.streamAsyncJS == true {
+                            jsController.fetchStreamUrlJSSecond(episodeUrl: episode, softsub: true, module: module) { result in
+                                self.handleDownloadResult(result, downloadID: downloadID)
                             }
+                        }
+                        
+                        jsController.fetchStreamUrl(episodeUrl: episode, softsub: true, module: module) { result in
+                            self.handleDownloadResult(result, downloadID: downloadID)
                         }
                     } else if module.metadata.streamAsyncJS == true {
                         jsController.fetchStreamUrlJSSecond(episodeUrl: episode, softsub: true, module: module) { result in
-                            if let streams = result.streams, !streams.isEmpty {
-                                // Start the download with the first stream URL
-                                jsController.downloadAsset(fromString: streams[0], headers: [:])
-                                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
-                            } else {
-                                DropManager.shared.error("Failed to get stream URL for download")
-                            }
+                            self.handleDownloadResult(result, downloadID: downloadID)
+                        }
+                        
+                        jsController.fetchStreamUrl(episodeUrl: episode, softsub: true, module: module) { result in
+                            self.handleDownloadResult(result, downloadID: downloadID)
                         }
                     } else {
                         jsController.fetchStreamUrl(episodeUrl: episode, softsub: true, module: module) { result in
-                            if let streams = result.streams, !streams.isEmpty {
-                                // Start the download with the first stream URL
-                                jsController.downloadAsset(fromString: streams[0], headers: [:])
-                                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
-                            } else {
-                                DropManager.shared.error("Failed to get stream URL for download")
-                            }
+                            self.handleDownloadResult(result, downloadID: downloadID)
                         }
                     }
                 } else {
                     if module.metadata.asyncJS == true {
                         jsController.fetchStreamUrlJS(episodeUrl: episode, module: module) { result in
-                            if let streams = result.streams, !streams.isEmpty {
-                                // Start the download with the first stream URL
-                                jsController.downloadAsset(fromString: streams[0], headers: [:])
-                                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
-                            } else {
-                                DropManager.shared.error("Failed to get stream URL for download")
+                            self.handleDownloadResult(result, downloadID: downloadID)
+                        }
+                        
+                        if module.metadata.streamAsyncJS == true {
+                            jsController.fetchStreamUrlJSSecond(episodeUrl: episode, module: module) { result in
+                                self.handleDownloadResult(result, downloadID: downloadID)
                             }
+                        }
+                        
+                        jsController.fetchStreamUrl(episodeUrl: episode, module: module) { result in
+                            self.handleDownloadResult(result, downloadID: downloadID)
                         }
                     } else if module.metadata.streamAsyncJS == true {
                         jsController.fetchStreamUrlJSSecond(episodeUrl: episode, module: module) { result in
-                            if let streams = result.streams, !streams.isEmpty {
-                                // Start the download with the first stream URL
-                                jsController.downloadAsset(fromString: streams[0], headers: [:])
-                                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
-                            } else {
-                                DropManager.shared.error("Failed to get stream URL for download")
-                            }
+                            self.handleDownloadResult(result, downloadID: downloadID)
+                        }
+                        
+                        jsController.fetchStreamUrl(episodeUrl: episode, module: module) { result in
+                            self.handleDownloadResult(result, downloadID: downloadID)
                         }
                     } else {
                         jsController.fetchStreamUrl(episodeUrl: episode, module: module) { result in
-                            if let streams = result.streams, !streams.isEmpty {
-                                // Start the download with the first stream URL
-                                jsController.downloadAsset(fromString: streams[0], headers: [:])
-                                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
-                            } else {
-                                DropManager.shared.error("Failed to get stream URL for download")
-                            }
+                            self.handleDownloadResult(result, downloadID: downloadID)
                         }
                     }
                 }
             } catch {
                 DropManager.shared.error("Failed to start download: \(error.localizedDescription)")
+                isDownloading = false
             }
+        }
+    }
+    
+    private func handleDownloadResult(_ result: (streams: [String]?, subtitles: [String]?), downloadID: UUID) {
+        // Only process this result if we're still downloading the same episode
+        if !isDownloading {
+            return
+        }
+        
+        if let streams = result.streams, !streams.isEmpty {
+            // Start the download with the first stream URL
+            jsController.downloadAsset(fromString: streams[0], headers: [:])
+            
+            DropManager.shared.success("Download started for Episode \(episodeID + 1)")
+            
+            // Log the download for analytics
+            Logger.shared.log("Started download for Episode \(episodeID + 1): \(episode)", type: "Download")
+            AnalyticsManager.shared.sendEvent(
+                event: "download",
+                additionalData: ["episode": episodeID + 1, "url": streams[0]]
+            )
+            
+            // Mark that we've handled this download
+            isDownloading = false
         }
     }
     

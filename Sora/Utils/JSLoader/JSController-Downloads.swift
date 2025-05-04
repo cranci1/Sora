@@ -148,6 +148,28 @@ extension JSController {
     
     // Download asset from string URL
     func downloadAsset(fromString urlString: String, headers: [String: String] = [:]) {
+        // Check if the string looks like HTML (contains basic HTML tags)
+        if urlString.contains("<html") || urlString.contains("<!DOCTYPE") {
+            Logger.shared.log("Received HTML content instead of URL. Attempting to extract URL.", type: "Warning")
+            
+            // Try to extract a video URL from the HTML content
+            // Look for common video URL patterns like m3u8 extensions or video domains
+            if let m3u8Range = urlString.range(of: "https?://[^\\s\"']+\\.m3u8[^\\s\"']*", options: .regularExpression) {
+                let extractedUrl = String(urlString[m3u8Range])
+                Logger.shared.log("Extracted URL from HTML: \(extractedUrl)", type: "Download")
+                downloadAsset(fromString: extractedUrl, headers: headers)
+                return
+            } else if let mp4Range = urlString.range(of: "https?://[^\\s\"']+\\.mp4[^\\s\"']*", options: .regularExpression) {
+                let extractedUrl = String(urlString[mp4Range])
+                Logger.shared.log("Extracted URL from HTML: \(extractedUrl)", type: "Download")
+                downloadAsset(fromString: extractedUrl, headers: headers)
+                return
+            } else {
+                Logger.shared.log("Failed to extract video URL from HTML content", type: "Error")
+                return
+            }
+        }
+        
         guard let url = URL(string: urlString) else {
             Logger.shared.log("Invalid URL: \(urlString)", type: "Error")
             return

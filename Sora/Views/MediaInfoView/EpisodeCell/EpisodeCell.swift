@@ -148,25 +148,69 @@ struct EpisodeCell: View {
                 let jsContent = try moduleManager.getModuleContent(module)
                 jsController.loadScript(jsContent)
                 
-                // Fetch the stream URL directly
+                // Use the same fetchStream logic as MediaInfoView
                 if module.metadata.softsub == true {
-                    jsController.fetchStreamUrlJS(episodeUrl: episode, softsub: true, module: module) { result in
-                        if let streams = result.streams, !streams.isEmpty {
-                            // Start the download with the first stream URL
-                            jsController.downloadAsset(fromString: streams[0], headers: [:])
-                            DropManager.shared.success("Download started for Episode \(episodeID + 1)")
-                        } else {
-                            DropManager.shared.error("Failed to get stream URL for download")
+                    if module.metadata.asyncJS == true {
+                        jsController.fetchStreamUrlJS(episodeUrl: episode, softsub: true, module: module) { result in
+                            if let streams = result.streams, !streams.isEmpty {
+                                // Start the download with the first stream URL
+                                jsController.downloadAsset(fromString: streams[0], headers: [:])
+                                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
+                            } else {
+                                DropManager.shared.error("Failed to get stream URL for download")
+                            }
+                        }
+                    } else if module.metadata.streamAsyncJS == true {
+                        jsController.fetchStreamUrlJSSecond(episodeUrl: episode, softsub: true, module: module) { result in
+                            if let streams = result.streams, !streams.isEmpty {
+                                // Start the download with the first stream URL
+                                jsController.downloadAsset(fromString: streams[0], headers: [:])
+                                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
+                            } else {
+                                DropManager.shared.error("Failed to get stream URL for download")
+                            }
+                        }
+                    } else {
+                        jsController.fetchStreamUrl(episodeUrl: episode, softsub: true, module: module) { result in
+                            if let streams = result.streams, !streams.isEmpty {
+                                // Start the download with the first stream URL
+                                jsController.downloadAsset(fromString: streams[0], headers: [:])
+                                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
+                            } else {
+                                DropManager.shared.error("Failed to get stream URL for download")
+                            }
                         }
                     }
                 } else {
-                    jsController.fetchStreamUrlJS(episodeUrl: episode, module: module) { result in
-                        if let streams = result.streams, !streams.isEmpty {
-                            // Start the download with the first stream URL
-                            jsController.downloadAsset(fromString: streams[0], headers: [:])
-                            DropManager.shared.success("Download started for Episode \(episodeID + 1)")
-                        } else {
-                            DropManager.shared.error("Failed to get stream URL for download")
+                    if module.metadata.asyncJS == true {
+                        jsController.fetchStreamUrlJS(episodeUrl: episode, module: module) { result in
+                            if let streams = result.streams, !streams.isEmpty {
+                                // Start the download with the first stream URL
+                                jsController.downloadAsset(fromString: streams[0], headers: [:])
+                                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
+                            } else {
+                                DropManager.shared.error("Failed to get stream URL for download")
+                            }
+                        }
+                    } else if module.metadata.streamAsyncJS == true {
+                        jsController.fetchStreamUrlJSSecond(episodeUrl: episode, module: module) { result in
+                            if let streams = result.streams, !streams.isEmpty {
+                                // Start the download with the first stream URL
+                                jsController.downloadAsset(fromString: streams[0], headers: [:])
+                                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
+                            } else {
+                                DropManager.shared.error("Failed to get stream URL for download")
+                            }
+                        }
+                    } else {
+                        jsController.fetchStreamUrl(episodeUrl: episode, module: module) { result in
+                            if let streams = result.streams, !streams.isEmpty {
+                                // Start the download with the first stream URL
+                                jsController.downloadAsset(fromString: streams[0], headers: [:])
+                                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
+                            } else {
+                                DropManager.shared.error("Failed to get stream URL for download")
+                            }
                         }
                     }
                 }

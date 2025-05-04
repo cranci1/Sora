@@ -31,6 +31,7 @@ struct EpisodeCell: View {
     @State private var showDownloadConfirmation = false
     
     @StateObject private var jsController = JSController()
+    @StateObject private var moduleManager = ModuleManager()
     
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
@@ -140,30 +141,39 @@ struct EpisodeCell: View {
     }
     
     private func downloadEpisode() {
-        // This function will be called by the video player when a stream URL is available
-        // We'll set up an observer for a notification that will be sent by the video player
-        let notificationName = Notification.Name("EpisodeStreamURLAvailable")
-        NotificationCenter.default.addObserver(forName: notificationName, object: nil, queue: .main) { notification in
-            if let userInfo = notification.userInfo,
-               let streamURL = userInfo["streamURL"] as? String,
-               let episodeNumber = userInfo["episodeNumber"] as? Int,
-               episodeNumber == self.episodeID + 1 {
+        // Get the module content and load it into JSController
+        Task {
+            do {
+                let module = moduleManager.getModule(for: episode)
+                let jsContent = try moduleManager.getModuleContent(module)
+                jsController.loadScript(jsContent)
                 
-                // Remove the observer once we've received the notification
-                NotificationCenter.default.removeObserver(self, name: notificationName, object: nil)
-                
-                // Start the download
-                jsController.downloadAsset(fromString: streamURL, headers: [:])
-                
-                // Show a success message
-                DropManager.shared.success("Download started for Episode \(episodeNumber)")
+                // Fetch the stream URL directly
+                if module.metadata.softsub == true {
+                    jsController.fetchStreamUrlJS(episodeUrl: episode, softsub: true, module: module) { result in
+                        if let streams = result.streams, !streams.isEmpty {
+                            // Start the download with the first stream URL
+                            jsController.downloadAsset(fromString: streams[0], headers: [:])
+                            DropManager.shared.success("Download started for Episode \(episodeID + 1)")
+                        } else {
+                            DropManager.shared.error("Failed to get stream URL for download")
+                        }
+                    }
+                } else {
+                    jsController.fetchStreamUrlJS(episodeUrl: episode, module: module) { result in
+                        if let streams = result.streams, !streams.isEmpty {
+                            // Start the download with the first stream URL
+                            jsController.downloadAsset(fromString: streams[0], headers: [:])
+                            DropManager.shared.success("Download started for Episode \(episodeID + 1)")
+                        } else {
+                            DropManager.shared.error("Failed to get stream URL for download")
+                        }
+                    }
+                }
+            } catch {
+                DropManager.shared.error("Failed to start download: \(error.localizedDescription)")
             }
         }
-        
-        // Simulate a tap on the episode to start the video player
-        // The video player will extract the stream URL and post the notification
-        let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
-        onTap(imageUrl)
     }
     
     private func markAsWatched() {

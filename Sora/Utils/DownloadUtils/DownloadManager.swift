@@ -157,10 +157,6 @@ class DownloadManager: NSObject, ObservableObject {
             throw NSError(domain: "DownloadManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to decode m3u8 content"])
         }
         
-        // Log first few lines of the m3u8 for debugging
-        let firstFewLines = content.components(separatedBy: .newlines).prefix(5).joined(separator: "\n")
-        Logger.shared.log("M3U8 content preview: \n\(firstFewLines)", type: "Download")
-        
         let lines = content.components(separatedBy: .newlines)
         var bestQualityURL: URL?
         var bestQuality = 0
@@ -391,6 +387,83 @@ class DownloadManager: NSObject, ObservableObject {
     private func startDownload(_ episode: DownloadableEpisode) {
         Logger.shared.log("Starting download task for episode: \(episode.title)", type: "Download")
         
+        // Check if this is a master playlist and process it accordingly
+        let streamURLString = episode.streamURL.absoluteString
+        if streamURLString.contains("master.m3u8") || streamURLString.contains("playlist.m3u8") {
+            Logger.shared.log("Detected master playlist, resolving highest quality stream before downloading", type: "Download")
+            resolveAndDownloadHighestQualityStream(episode)
+            return
+        }
+        
+        // For non-master playlists, proceed with regular download
+        proceedWithDownload(episode)
+    }
+    
+    // Process the master playlist to find the highest quality stream, then download it
+    private func resolveAndDownloadHighestQualityStream(_ episode: DownloadableEpisode) {
+        // Get the appropriate headers for this module type
+        let headers = moduleHeaders[episode.moduleType] ?? moduleHeaders["default"] ?? [:]
+        
+        // Create a request with the appropriate headers
+        var request = URLRequest(url: episode.streamURL)
+        for (key, value) in headers {
+            request.addValue(value, forHTTPHeaderField: key)
+        }
+        
+        // Ensure we're adding a user agent if not already present
+        if headers["User-Agent"] == nil {
+            request.addValue(standardUserAgent, forHTTPHeaderField: "User-Agent")
+        }
+        
+        Logger.shared.log("Fetching master playlist from: \(episode.streamURL.absoluteString)", type: "Download")
+        
+        // Fetch the master playlist
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                Logger.shared.log("Error fetching master playlist: \(error.localizedDescription)", type: "Error")
+                // Fall back to using the master URL directly
+                self.proceedWithDownload(episode)
+                return
+            }
+            
+            guard let data = data, let content = String(data: data, encoding: .utf8) else {
+                Logger.shared.log("Could not decode master playlist content", type: "Error")
+                // Fall back to using the master URL directly
+                self.proceedWithDownload(episode)
+                return
+            }
+            
+            // Parse the m3u8 master playlist
+            if let bestQualityUrl = self.parseMasterPlaylist(content: content, baseUrl: episode.streamURL),
+               let highQualityStreamURL = URL(string: bestQualityUrl) {
+                
+                Logger.shared.log("Found highest quality stream: \(bestQualityUrl)", type: "Download")
+                
+                // Create a new episode with the highest quality stream URL
+                let highQualityEpisode = DownloadableEpisode(
+                    episodeID: episode.episodeID,
+                    title: episode.title,
+                    moduleType: episode.moduleType,
+                    episodeNumber: episode.episodeNumber,
+                    streamURL: highQualityStreamURL,
+                    imageURL: episode.imageURL,
+                    aniListID: episode.aniListID
+                )
+                
+                // Download using the highest quality stream
+                self.proceedWithDownload(highQualityEpisode)
+            } else {
+                Logger.shared.log("Could not find high quality stream in master playlist, using master URL directly", type: "Download")
+                // Fall back to using the master URL directly
+                self.proceedWithDownload(episode)
+            }
+        }.resume()
+    }
+    
+    // Proceed with the actual download using the provided episode info
+    private func proceedWithDownload(_ episode: DownloadableEpisode) {
         // Prepare the stream URL with appropriate headers
         let (streamURL, headers) = prepareStreamForDownload(streamURL: episode.streamURL, moduleType: episode.moduleType)
         
@@ -459,6 +532,67 @@ class DownloadManager: NSObject, ObservableObject {
     }
     
     func downloadAsset(from url: URL) {
+        // Check if this is a master playlist
+        if url.absoluteString.contains("master.m3u8") || url.absoluteString.contains("playlist.m3u8") {
+            Logger.shared.log("Detected master playlist in legacy downloader, resolving highest quality stream", type: "Download")
+            resolveAndDownloadHighestQualityAsset(url)
+            return
+        }
+        
+        // For non-master playlists, proceed with regular download
+        proceedWithAssetDownload(url)
+    }
+    
+    private func resolveAndDownloadHighestQualityAsset(_ url: URL) {
+        // Create a request with default headers
+        var request = URLRequest(url: url)
+        let headers = moduleHeaders["default"] ?? [:]
+        
+        for (key, value) in headers {
+            request.addValue(value, forHTTPHeaderField: key)
+        }
+        
+        // Ensure we're adding a user agent
+        if headers["User-Agent"] == nil {
+            request.addValue(standardUserAgent, forHTTPHeaderField: "User-Agent")
+        }
+        
+        Logger.shared.log("Fetching master playlist from: \(url.absoluteString)", type: "Download")
+        
+        // Fetch the master playlist
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                Logger.shared.log("Error fetching master playlist: \(error.localizedDescription)", type: "Error")
+                // Fall back to using the master URL directly
+                self.proceedWithAssetDownload(url)
+                return
+            }
+            
+            guard let data = data, let content = String(data: data, encoding: .utf8) else {
+                Logger.shared.log("Could not decode master playlist content", type: "Error")
+                // Fall back to using the master URL directly
+                self.proceedWithAssetDownload(url)
+                return
+            }
+            
+            // Parse the m3u8 master playlist
+            if let bestQualityUrl = self.parseMasterPlaylist(content: content, baseUrl: url),
+               let highQualityURL = URL(string: bestQualityUrl) {
+                
+                Logger.shared.log("Found highest quality stream: \(bestQualityUrl)", type: "Download")
+                // Download using the highest quality stream
+                self.proceedWithAssetDownload(highQualityURL)
+            } else {
+                Logger.shared.log("Could not find high quality stream in master playlist, using master URL directly", type: "Download")
+                // Fall back to using the master URL directly
+                self.proceedWithAssetDownload(url)
+            }
+        }.resume()
+    }
+    
+    private func proceedWithAssetDownload(_ url: URL) {
         // Legacy method for backward compatibility
         let asset = AVURLAsset(url: url)
         let task = assetDownloadURLSession.makeAssetDownloadTask(
@@ -1116,68 +1250,9 @@ class DownloadManager: NSObject, ObservableObject {
         
         Logger.shared.log("Successfully fetched stream URL: \(streamUrl)", type: "Download")
         
-        // If this is a master playlist, we need to extract the highest quality stream
-        if streamUrl.contains("master.m3u8") || streamUrl.contains("playlist.m3u8") {
-            Logger.shared.log("Detected master playlist, fetching highest quality stream", type: "Download")
-            fetchHighestQualityStream(masterUrl: streamUrl, context: context)
-        } else {
-            // Direct stream URL, create episode and start download
-            createAndStartDownload(streamUrl: streamUrl, context: context)
-        }
-    }
-    
-    // Fetch the highest quality stream from a master playlist
-    private func fetchHighestQualityStream(masterUrl: String, context: DownloadContext) {
-        guard let url = URL(string: masterUrl) else {
-            Logger.shared.log("Invalid master playlist URL", type: "Error")
-            return
-        }
-        
-        // Get the appropriate headers for this module type
-        let headers = moduleHeaders[context.module.metadata.sourceName] ?? moduleHeaders["default"] ?? [:]
-        
-        // Create a request with the appropriate headers
-        var request = URLRequest(url: url)
-        for (key, value) in headers {
-            request.addValue(value, forHTTPHeaderField: key)
-        }
-        
-        // Ensure we're adding a user agent if not already present
-        if headers["User-Agent"] == nil {
-            request.addValue(standardUserAgent, forHTTPHeaderField: "User-Agent")
-        }
-        
-        Logger.shared.log("Fetching master playlist from: \(masterUrl)", type: "Download")
-        
-        // Fetch the master playlist
-        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-            guard let self = self else { return }
-            
-            if let error = error {
-                Logger.shared.log("Error fetching master playlist: \(error.localizedDescription)", type: "Error")
-                // Fall back to using the master URL directly
-                self.createAndStartDownload(streamUrl: masterUrl, context: context)
-                return
-            }
-            
-            guard let data = data, let content = String(data: data, encoding: .utf8) else {
-                Logger.shared.log("Could not decode master playlist content", type: "Error")
-                // Fall back to using the master URL directly
-                self.createAndStartDownload(streamUrl: masterUrl, context: context)
-                return
-            }
-            
-            // Parse the m3u8 master playlist
-            let bestQualityUrl = self.parseMasterPlaylist(content: content, baseUrl: url)
-            
-            if let highQualityUrl = bestQualityUrl {
-                Logger.shared.log("Found highest quality stream: \(highQualityUrl)", type: "Download")
-                self.createAndStartDownload(streamUrl: highQualityUrl, context: context)
-            } else {
-                Logger.shared.log("Could not find stream in master playlist, using master URL directly", type: "Download")
-                self.createAndStartDownload(streamUrl: masterUrl, context: context)
-            }
-        }.resume()
+        // Create episode and start download
+        // The startDownload method will handle master playlist resolution
+        createAndStartDownload(streamUrl: streamUrl, context: context)
     }
     
     // Parse the master playlist to find the highest quality stream
@@ -1186,10 +1261,6 @@ class DownloadManager: NSObject, ObservableObject {
         var bestQualityURL: String?
         var bestQuality = 0
         var bestBandwidth = 0
-        
-        // Log the first few lines for debugging
-        let firstFewLines = lines.prefix(10).joined(separator: "\n")
-        Logger.shared.log("Master playlist content (first 10 lines):\n\(firstFewLines)", type: "Download")
         
         for (index, line) in lines.enumerated() {
             if line.contains("#EXT-X-STREAM-INF"), index + 1 < lines.count {
@@ -1240,8 +1311,6 @@ class DownloadManager: NSObject, ObservableObject {
                     bestQualityURL = streamUrl
                     bestQuality = quality
                     bestBandwidth = bandwidth
-                    
-                    Logger.shared.log("Found better quality stream: Resolution=\(quality), Bandwidth=\(bandwidth), URL=\(streamUrl)", type: "Download")
                 }
             }
         }

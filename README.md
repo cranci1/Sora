@@ -28,7 +28,7 @@
 - [x] Tracking Services (AniList, Trakt)
 - [x] Apple KeyChain support for auth Tokens
 - [x] Streams support (Jellyfin/Plex like servers)
-- [x] External Media players (VLC, infuse, Outplayer, nPlayer)
+- [x] External Media players (VLC, infuse, Outplayer, nPlayer, SenPlayer)
 - [x] Background playback and Picture-in-Picture (PiP) support
 
 ## Installation

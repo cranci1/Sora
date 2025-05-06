@@ -234,8 +234,22 @@ struct EpisodeCell: View {
         }
         
         if let streams = result.streams, !streams.isEmpty {
-            // Start the download with the first stream URL
-            jsController.downloadAsset(fromString: streams[0], headers: [:])
+            // Get the first stream URL
+            let streamUrl = streams[0]
+            
+            // Extract base URL for headers
+            var headers: [String: String] = [:]
+            if let url = URL(string: streamUrl) {
+                let baseUrl = url.scheme! + "://" + url.host!
+                headers = [
+                    "Origin": baseUrl,
+                    "Referer": baseUrl,
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+                ]
+            }
+            
+            // Use jsController to handle the download 
+            jsController.downloadAsset(fromString: streamUrl, headers: headers)
             
             DropManager.shared.success("Download started for Episode \(episodeID + 1)")
             
@@ -243,10 +257,14 @@ struct EpisodeCell: View {
             Logger.shared.log("Started download for Episode \(episodeID + 1): \(episode)", type: "Download")
             AnalyticsManager.shared.sendEvent(
                 event: "download",
-                additionalData: ["episode": episodeID + 1, "url": streams[0]]
+                additionalData: ["episode": episodeID + 1, "url": streamUrl]
             )
             
             // Mark that we've handled this download
+            isDownloading = false
+        } else {
+            // If we didn't find any streams, show an error
+            DropManager.shared.error("No valid stream found for download")
             isDownloading = false
         }
     }

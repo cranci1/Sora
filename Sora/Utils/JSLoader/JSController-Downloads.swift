@@ -104,27 +104,54 @@ extension JSController {
         // Create request with headers
         var urlRequest = URLRequest(url: url)
         
-        // Add User-Agent header
-        urlRequest.addValue(URLSession.randomUserAgent, forHTTPHeaderField: "User-Agent")
+        // Start with empty headers dictionary
+        var finalHeaders = [String: String]()
         
-        // Add custom headers
+        // Add User-Agent header if not provided
+        if headers["User-Agent"] == nil {
+            finalHeaders["User-Agent"] = URLSession.randomUserAgent
+        }
+        
+        // Add Origin and Referer if not provided
+        if headers["Origin"] == nil && headers["Referer"] == nil {
+            if let host = url.host {
+                let baseUrl = "\(url.scheme ?? "https")://\(host)"
+                finalHeaders["Origin"] = baseUrl
+                finalHeaders["Referer"] = baseUrl
+            } else {
+                finalHeaders["Origin"] = "*/*"
+                finalHeaders["Referer"] = "*/*"
+            }
+        }
+        
+        // Add all provided headers, overriding defaults
         for (key, value) in headers {
+            finalHeaders[key] = value
+        }
+        
+        // Add headers to request
+        for (key, value) in finalHeaders {
             urlRequest.addValue(value, forHTTPHeaderField: key)
         }
         
-        // Default headers if none provided
-        if headers.isEmpty {
-            urlRequest.addValue("*/*", forHTTPHeaderField: "Origin")
-            urlRequest.addValue("*/*", forHTTPHeaderField: "Referer")
-        }
+        // Log headers for debugging
+        Logger.shared.log("Asset download headers: \(finalHeaders)", type: "Download")
         
-        let asset = AVURLAsset(url: urlRequest.url!, options: ["AVURLAssetHTTPHeaderFieldsKey": urlRequest.allHTTPHeaderFields ?? [:]])
+        // Create AVURLAsset with headers
+        let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": finalHeaders])
+        
+        // Set options based on quality
+        var options: [String: Any] = [:]
+        
+        // Default to high quality
+        let bitrate = 2_000_000
+        options[AVAssetDownloadTaskMinimumRequiredMediaBitrateKey] = NSNumber(value: bitrate)
         
         let task = session.makeAssetDownloadTask(
             asset: asset,
             assetTitle: url.lastPathComponent,
             assetArtworkData: nil,
-            options: [AVAssetDownloadTaskMinimumRequiredMediaBitrateKey: 2_000_000]
+            options: options
         )
         
         guard let downloadTask = task else {
@@ -174,7 +201,112 @@ extension JSController {
             Logger.shared.log("Invalid URL: \(urlString)", type: "Error")
             return
         }
-        downloadAsset(from: url, headers: headers)
+        
+        // Check if this is an m3u8 URL
+        if urlString.contains(".m3u8") {
+            if urlString.contains("master.m3u8") || urlString.contains("playlist.m3u8") {
+                Logger.shared.log("Detected master playlist, trying to resolve highest quality stream first", type: "Download")
+                
+                // Create a task to fetch the playlist and find the highest quality stream
+                let task = URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+                    guard let self = self else { return }
+                    
+                    if let error = error {
+                        Logger.shared.log("Error fetching m3u8 playlist: \(error.localizedDescription)", type: "Error")
+                        // Fall back to direct download
+                        DispatchQueue.main.async {
+                            self.downloadAsset(from: url, headers: headers)
+                        }
+                        return
+                    }
+                    
+                    guard let data = data, let content = String(data: data, encoding: .utf8) else {
+                        Logger.shared.log("Failed to decode m3u8 content", type: "Error")
+                        // Fall back to direct download
+                        DispatchQueue.main.async {
+                            self.downloadAsset(from: url, headers: headers)
+                        }
+                        return
+                    }
+                    
+                    // Check if this is a master playlist by looking for #EXT-X-STREAM-INF tags
+                    if content.contains("#EXT-X-STREAM-INF") {
+                        // Find the highest quality stream
+                        var bestQualityURL: URL?
+                        var bestQuality = 0
+                        var bestBandwidth = 0
+                        
+                        let lines = content.components(separatedBy: .newlines)
+                        for (index, line) in lines.enumerated() {
+                            if line.contains("#EXT-X-STREAM-INF") && index + 1 < lines.count {
+                                // Extract resolution if available
+                                var resolution = 0
+                                if let resolutionRange = line.range(of: "RESOLUTION=") {
+                                    let resolutionStr = String(line[resolutionRange.upperBound...])
+                                    if let xRange = resolutionStr.range(of: "x"),
+                                       let endRange = resolutionStr.range(of: ",") ?? resolutionStr.range(of: "\n") {
+                                        let heightStr = String(resolutionStr[xRange.upperBound..<endRange.lowerBound])
+                                        if let height = Int(heightStr.trimmingCharacters(in: .whitespacesAndNewlines)) {
+                                            resolution = height
+                                        }
+                                    }
+                                }
+                                
+                                // Extract bandwidth if available
+                                var bandwidth = 0
+                                if let bandwidthRange = line.range(of: "BANDWIDTH=") {
+                                    let bandwidthStr = String(line[bandwidthRange.upperBound...])
+                                    if let endRange = bandwidthStr.range(of: ",") ?? bandwidthStr.range(of: "\n") {
+                                        let bwStr = String(bandwidthStr[..<endRange.lowerBound])
+                                        if let bw = Int(bwStr.trimmingCharacters(in: .whitespacesAndNewlines)) {
+                                            bandwidth = bw
+                                        }
+                                    }
+                                }
+                                
+                                // If this stream has better quality, use it
+                                if resolution > bestQuality || (resolution == bestQuality && bandwidth > bestBandwidth) {
+                                    let streamURL = lines[index + 1].trimmingCharacters(in: .whitespacesAndNewlines)
+                                    if !streamURL.isEmpty && !streamURL.hasPrefix("#") {
+                                        // Handle relative URLs
+                                        if streamURL.hasPrefix("http") {
+                                            bestQualityURL = URL(string: streamURL)
+                                        } else {
+                                            bestQualityURL = URL(string: streamURL, relativeTo: url)
+                                        }
+                                        bestQuality = resolution
+                                        bestBandwidth = bandwidth
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // If we found a better quality URL, use it
+                        if let highQualityURL = bestQualityURL {
+                            Logger.shared.log("Found highest quality stream: \(highQualityURL)", type: "Download")
+                            DispatchQueue.main.async {
+                                self.downloadAsset(from: highQualityURL, headers: headers)
+                            }
+                            return
+                        }
+                    }
+                    
+                    // If we couldn't find a better quality stream or this isn't a master playlist,
+                    // fall back to the original URL
+                    Logger.shared.log("Using original stream URL for download", type: "Download")
+                    DispatchQueue.main.async {
+                        self.downloadAsset(from: url, headers: headers)
+                    }
+                }
+                task.resume()
+            } else {
+                // This is a direct media playlist, download it directly
+                downloadAsset(from: url, headers: headers)
+            }
+        } else {
+            // Not an m3u8 file, download directly
+            downloadAsset(from: url, headers: headers)
+        }
     }
     
     // Delete an asset

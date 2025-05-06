@@ -313,30 +313,67 @@ class DownloadManager: NSObject, ObservableObject {
             return
         }
         
-        // Detect megacloud specifically in the URL
+        // Auto-detect streaming service from URL
         var moduleTypeToUse = moduleType
-        if streamUrl.contains("megacloud") || streamUrl.contains("vidplay") {
+        let host = url.host?.lowercased() ?? ""
+        
+        if host.contains("megacloud") || host.contains("vidplay") {
             moduleTypeToUse = "megacloud"
             Logger.shared.log("Detected megacloud URL, using megacloud module type", type: "Download")
+        } else if host.contains("filemoon") {
+            moduleTypeToUse = "filemoon"
+            Logger.shared.log("Detected filemoon URL, using filemoon module type", type: "Download")
+        } else if host.contains("streamtape") {
+            moduleTypeToUse = "streamtape"
+            Logger.shared.log("Detected streamtape URL, using streamtape module type", type: "Download")
         }
         
-        // Get module from ModuleManager to access its baseUrl for headers
-        let moduleManager = ModuleManager()
+        // Process custom headers
+        var finalHeaders: [String: String] = [:]
         
-        // Register custom headers if provided, otherwise use headers from the module
-        if let customHeaders = headers {
+        // If custom headers were provided, use them
+        if let customHeaders = headers, !customHeaders.isEmpty {
             Logger.shared.log("Using provided custom headers from successful playlist fetch", type: "Download")
-            registerHeaders(customHeaders, forModule: moduleTypeToUse)
-        } else if let module = moduleManager.modules.first(where: { $0.metadata.sourceName == moduleTypeToUse }) {
-            // Register custom headers for this module using its baseUrl
-            let customHeaders = [
-                "Origin": module.metadata.baseUrl,
-                "Referer": module.metadata.baseUrl
-            ]
-            registerHeaders(customHeaders, forModule: moduleTypeToUse)
-            Logger.shared.log("Using custom headers from module baseUrl: \(module.metadata.baseUrl)", type: "Download")
+            finalHeaders = customHeaders
+        } else {
+            // Otherwise, try to get headers from module
+            let moduleManager = ModuleManager()
+            if let module = moduleManager.modules.first(where: { $0.metadata.sourceName == moduleTypeToUse }) {
+                // Get the base headers from module
+                finalHeaders = [
+                    "Origin": module.metadata.baseUrl,
+                    "Referer": module.metadata.baseUrl
+                ]
+                Logger.shared.log("Using custom headers from module baseUrl: \(module.metadata.baseUrl)", type: "Download")
+            } else {
+                // If no module found, generate headers from the stream URL
+                if let host = url.host {
+                    let baseUrl = "\(url.scheme ?? "https")://\(host)"
+                    finalHeaders = [
+                        "Origin": baseUrl,
+                        "Referer": baseUrl,
+                    ]
+                    Logger.shared.log("Generated headers from stream URL: \(baseUrl)", type: "Download")
+                } else {
+                    // Last resort default headers
+                    finalHeaders = moduleHeaders["default"] ?? [
+                        "Origin": "https://example.com",
+                        "Referer": "https://example.com"
+                    ]
+                    Logger.shared.log("Using default headers", type: "Download")
+                }
+            }
         }
         
+        // Ensure we have a User-Agent
+        if finalHeaders["User-Agent"] == nil {
+            finalHeaders["User-Agent"] = standardUserAgent
+        }
+        
+        // Register these headers for the module
+        registerHeaders(finalHeaders, forModule: moduleTypeToUse)
+        
+        // Prepare a downloadable episode
         let episode = DownloadableEpisode(
             episodeID: episodeID,
             title: title,
@@ -347,7 +384,7 @@ class DownloadManager: NSObject, ObservableObject {
             aniListID: aniListID
         )
         
-        // Start the download directly since we already have the stream URL
+        // Start the download
         startDownload(episode)
     }
     
@@ -631,12 +668,36 @@ class DownloadManager: NSObject, ObservableObject {
         // Prepare headers based on module type
         var headers = moduleHeaders[moduleType] ?? moduleHeaders["default"]!
         
-        // Log the headers we're using for debugging
-        Logger.shared.log("Using module-specific headers for download: \(moduleType)", type: "Download")
+        // Special case handling for common streaming domains
+        let host = streamURL.host?.lowercased() ?? ""
+        
+        // Vidplay/Megacloud
+        if host.contains("vidplay") || host.contains("megacloud") {
+            Logger.shared.log("Detected vidplay/megacloud stream, using specialized headers", type: "Download")
+            headers["Origin"] = "https://\(host)"
+            headers["Referer"] = "https://\(host)/"
+        }
+        // Filemoon
+        else if host.contains("filemoon") {
+            Logger.shared.log("Detected filemoon stream, using specialized headers", type: "Download")
+            headers["Origin"] = "https://\(host)"
+            headers["Referer"] = "https://\(host)/"
+        }
+        // Streamtape
+        else if host.contains("streamtape") {
+            Logger.shared.log("Detected streamtape stream, using specialized headers", type: "Download")
+            headers["Origin"] = "https://\(host)"
+            headers["Referer"] = "https://\(host)/"
+        }
         
         // Add standard user agent if not already present
         if headers["User-Agent"] == nil {
             headers["User-Agent"] = standardUserAgent
+        }
+        
+        // Set Accept header for m3u8 files
+        if streamURL.absoluteString.contains(".m3u8") {
+            headers["Accept"] = "*/*"
         }
         
         // Ensure we log the details for debugging

@@ -101,41 +101,22 @@ extension JSController {
             return
         }
         
-        // Create request with headers
-        var urlRequest = URLRequest(url: url)
+        // Use whatever headers are provided, don't modify them
+        var finalHeaders = headers
         
-        // Start with empty headers dictionary
-        var finalHeaders = [String: String]()
-        
-        // Add User-Agent header if not provided
-        if headers["User-Agent"] == nil {
+        // Only add a User-Agent if one wasn't provided
+        if finalHeaders["User-Agent"] == nil {
             finalHeaders["User-Agent"] = URLSession.randomUserAgent
-        }
-        
-        // Add Origin and Referer if not provided
-        if headers["Origin"] == nil && headers["Referer"] == nil {
-            if let host = url.host {
-                let baseUrl = "\(url.scheme ?? "https")://\(host)"
-                finalHeaders["Origin"] = baseUrl
-                finalHeaders["Referer"] = baseUrl
-            } else {
-                finalHeaders["Origin"] = "*/*"
-                finalHeaders["Referer"] = "*/*"
-            }
-        }
-        
-        // Add all provided headers, overriding defaults
-        for (key, value) in headers {
-            finalHeaders[key] = value
-        }
-        
-        // Add headers to request
-        for (key, value) in finalHeaders {
-            urlRequest.addValue(value, forHTTPHeaderField: key)
         }
         
         // Log headers for debugging
         Logger.shared.log("Asset download headers: \(finalHeaders)", type: "Download")
+        
+        // Validate the URL before proceeding
+        if !url.isFileURL && (url.scheme != "http" && url.scheme != "https") {
+            Logger.shared.log("Invalid URL scheme for download: \(url.absoluteString)", type: "Error")
+            return
+        }
         
         // Create AVURLAsset with headers
         let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": finalHeaders])
@@ -208,12 +189,26 @@ extension JSController {
                 Logger.shared.log("Detected master playlist, trying to resolve highest quality stream first", type: "Download")
                 
                 // Create a task to fetch the playlist and find the highest quality stream
-                let task = URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+                var request = URLRequest(url: url)
+                
+                // Use the provided headers directly for the master playlist request
+                for (key, value) in headers {
+                    request.addValue(value, forHTTPHeaderField: key)
+                }
+                
+                // Only add a User-Agent if one wasn't provided
+                if headers["User-Agent"] == nil {
+                    request.addValue(URLSession.randomUserAgent, forHTTPHeaderField: "User-Agent")
+                }
+                
+                Logger.shared.log("Fetching master playlist with headers: \(request.allHTTPHeaderFields ?? [:])", type: "Download")
+                
+                let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
                     guard let self = self else { return }
                     
                     if let error = error {
                         Logger.shared.log("Error fetching m3u8 playlist: \(error.localizedDescription)", type: "Error")
-                        // Fall back to direct download
+                        // Fall back to direct download with the same headers
                         DispatchQueue.main.async {
                             self.downloadAsset(from: url, headers: headers)
                         }
@@ -222,7 +217,7 @@ extension JSController {
                     
                     guard let data = data, let content = String(data: data, encoding: .utf8) else {
                         Logger.shared.log("Failed to decode m3u8 content", type: "Error")
-                        // Fall back to direct download
+                        // Fall back to direct download with the same headers
                         DispatchQueue.main.async {
                             self.downloadAsset(from: url, headers: headers)
                         }
@@ -284,15 +279,32 @@ extension JSController {
                         // If we found a better quality URL, use it
                         if let highQualityURL = bestQualityURL {
                             Logger.shared.log("Found highest quality stream: \(highQualityURL)", type: "Download")
+                            
+                            // If the URL is relative, resolve it against the base URL
+                            let finalURL: URL
+                            if highQualityURL.scheme == nil {
+                                // This is a relative URL, resolve it against the master playlist URL
+                                if let absoluteURL = URL(string: highQualityURL.absoluteString, relativeTo: url) {
+                                    finalURL = absoluteURL
+                                    Logger.shared.log("Resolved relative URL to: \(finalURL.absoluteString)", type: "Download")
+                                } else {
+                                    finalURL = highQualityURL
+                                    Logger.shared.log("Could not resolve relative URL, using as is", type: "Warning")
+                                }
+                            } else {
+                                finalURL = highQualityURL
+                            }
+                            
+                            // Use the same headers that worked for the master playlist
                             DispatchQueue.main.async {
-                                self.downloadAsset(from: highQualityURL, headers: headers)
+                                self.downloadAsset(from: finalURL, headers: headers)
                             }
                             return
                         }
                     }
                     
                     // If we couldn't find a better quality stream or this isn't a master playlist,
-                    // fall back to the original URL
+                    // fall back to the original URL with original headers
                     Logger.shared.log("Using original stream URL for download", type: "Download")
                     DispatchQueue.main.async {
                         self.downloadAsset(from: url, headers: headers)
@@ -300,11 +312,11 @@ extension JSController {
                 }
                 task.resume()
             } else {
-                // This is a direct media playlist, download it directly
+                // This is a direct media playlist, download it directly with provided headers
                 downloadAsset(from: url, headers: headers)
             }
         } else {
-            // Not an m3u8 file, download directly
+            // Not an m3u8 file, download directly with provided headers
             downloadAsset(from: url, headers: headers)
         }
     }
@@ -426,6 +438,28 @@ extension JSController: AVAssetDownloadDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error = error {
             Logger.shared.log("Download error: \(error.localizedDescription)", type: "Error")
+            
+            // Add more detailed error information
+            if let urlError = error as? URLError {
+                Logger.shared.log("Download URL error code: \(urlError.code.rawValue), description: \(urlError.localizedDescription)", type: "Error")
+                if let failingURL = urlError.failureURLString {
+                    Logger.shared.log("Failing URL: \(failingURL)", type: "Error")
+                }
+            }
+            
+            // If it's an AVError, log more info
+            if let avError = error as? AVError {
+                Logger.shared.log("AV error code: \(avError.code.rawValue), description: \(avError.localizedDescription)", type: "Error")
+                if let underlyingError = (error as NSError).userInfo[NSUnderlyingErrorKey] as? Error {
+                    Logger.shared.log("Underlying error: \(underlyingError)", type: "Error")
+                }
+            }
+            
+            // Log any helpful user info
+            let nsError = error as NSError
+            if !nsError.userInfo.isEmpty {
+                Logger.shared.log("Error user info: \(nsError.userInfo)", type: "Debug")
+            }
         }
         cleanupDownloadTask(task)
     }

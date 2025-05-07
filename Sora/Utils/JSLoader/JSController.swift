@@ -22,7 +22,7 @@ class JSController: NSObject, ObservableObject {
     
     // Downloaded assets storage
     @Published var savedAssets: [DownloadedAsset] = []
-    @Published var activeDownloads: [ActiveDownload] = []
+    @Published var activeDownloads: [JSActiveDownload] = []
     
     // Tracking map for download tasks
     var activeDownloadMap: [URLSessionTask: UUID] = [:]

@@ -18,9 +18,8 @@ extension JSController {
     ///   - url: The URL to download
     ///   - headers: HTTP headers to use for the request
     ///   - title: Title for the download (optional)
-    ///   - metadata: Metadata for the download (optional)
     ///   - completionHandler: Called when the download is initiated or fails
-    func downloadWithM3U8Support(url: URL, headers: [String: String], title: String? = nil, metadata: AssetMetadata? = nil, completionHandler: ((Bool, String) -> Void)? = nil) {
+    func downloadWithM3U8Support(url: URL, headers: [String: String], title: String? = nil, completionHandler: ((Bool, String) -> Void)? = nil) {
         // Use headers passed in from caller rather than generating our own baseUrl
         // Receiving code should already be setting module.metadata.baseUrl
         
@@ -45,7 +44,6 @@ extension JSController {
                             url: url,
                             headers: headers,
                             title: title,
-                            metadata: metadata,
                             completionHandler: completionHandler
                         )
                         return
@@ -64,7 +62,6 @@ extension JSController {
                             url: qualityURL,
                             headers: headers,
                             title: title,
-                            metadata: metadata,
                             completionHandler: completionHandler
                         )
                     } else {
@@ -73,7 +70,6 @@ extension JSController {
                             url: url,
                             headers: headers,
                             title: title,
-                            metadata: metadata,
                             completionHandler: completionHandler
                         )
                     }
@@ -85,7 +81,6 @@ extension JSController {
                 url: url,
                 headers: headers,
                 title: title,
-                metadata: metadata,
                 completionHandler: completionHandler
             )
         }
@@ -240,13 +235,12 @@ extension JSController {
     
     /// The original download method (adapted to be called internally)
     /// This method should match the existing download implementation in JSController-Downloads.swift
-    private func downloadWithOriginalMethod(url: URL, headers: [String: String], title: String? = nil, metadata: AssetMetadata? = nil, completionHandler: ((Bool, String) -> Void)? = nil) {
+    private func downloadWithOriginalMethod(url: URL, headers: [String: String], title: String? = nil, completionHandler: ((Bool, String) -> Void)? = nil) {
         // Call the existing download method
         self.startDownload(
             url: url,
             headers: headers,
             title: title,
-            metadata: metadata,
             completionHandler: completionHandler
         )
     }

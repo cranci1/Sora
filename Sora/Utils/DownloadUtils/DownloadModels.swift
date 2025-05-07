@@ -78,6 +78,44 @@ struct DownloadedAsset: Identifiable, Codable {
         }
     }
     
+    // MARK: - New Grouping Properties
+    
+    /// Returns the title to use for grouping (show title for episodes, name for movies)
+    var groupTitle: String {
+        if type == .episode, let showTitle = metadata?.showTitle, !showTitle.isEmpty {
+            return showTitle
+        }
+        // For movies or episodes without show title, use the asset name
+        return name
+    }
+    
+    /// Returns a display name suitable for showing in a list of episodes
+    var episodeDisplayName: String {
+        guard type == .episode else { return name }
+        
+        var display = name
+        
+        // Add season and episode prefix if available
+        if let season = metadata?.season, let episode = metadata?.episode {
+            display = "S\(season)E\(episode): \(name)"
+        } else if let episode = metadata?.episode {
+            display = "Episode \(episode): \(name)"
+        }
+        
+        return display
+    }
+    
+    /// Returns order priority for episodes within a show (by season and episode)
+    var episodeOrderPriority: Int {
+        guard type == .episode else { return 0 }
+        
+        // Calculate priority: Season number * 1000 + episode number
+        let seasonValue = metadata?.season ?? 0
+        let episodeValue = metadata?.episode ?? 0
+        
+        return (seasonValue * 1000) + episodeValue
+    }
+    
     init(
         id: UUID = UUID(),
         name: String,
@@ -105,6 +143,30 @@ struct ActiveDownload: Identifiable {
     let task: URLSessionTask
     let type: DownloadType
     let metadata: AssetMetadata?
+    
+    // Add the same grouping properties as DownloadedAsset for consistency
+    var groupTitle: String {
+        if type == .episode, let showTitle = metadata?.showTitle, !showTitle.isEmpty {
+            return showTitle
+        }
+        // For movies or episodes without show title, use the title from metadata or fallback to URL
+        return metadata?.title ?? originalURL.lastPathComponent
+    }
+    
+    var episodeDisplayName: String {
+        guard type == .episode else { return metadata?.title ?? originalURL.lastPathComponent }
+        
+        var display = metadata?.title ?? originalURL.lastPathComponent
+        
+        // Add season and episode prefix if available
+        if let season = metadata?.season, let episode = metadata?.episode {
+            display = "S\(season)E\(episode): \(display)"
+        } else if let episode = metadata?.episode {
+            display = "Episode \(episode): \(display)"
+        }
+        
+        return display
+    }
     
     init(
         id: UUID = UUID(),
@@ -153,5 +215,80 @@ struct AssetMetadata: Codable {
         self.showTitle = showTitle
         self.season = season
         self.episode = episode
+    }
+}
+
+// MARK: - New Group Model
+/// Represents a group of downloads (show/anime or movies)
+struct DownloadGroup: Identifiable {
+    let id = UUID()
+    let title: String
+    let type: DownloadType
+    var assets: [DownloadedAsset]
+    var posterURL: URL?
+    
+    var assetCount: Int {
+        return assets.count
+    }
+    
+    var isShow: Bool {
+        return type == .episode
+    }
+    
+    // For TV shows, organize episodes by season then episode number
+    func organizedEpisodes() -> [DownloadedAsset] {
+        guard isShow else { return assets }
+        return assets.sorted { $0.episodeOrderPriority < $1.episodeOrderPriority }
+    }
+}
+
+// MARK: - Grouping Extensions
+extension Array where Element == DownloadedAsset {
+    /// Groups assets by show title or movie
+    func groupedByTitle() -> [DownloadGroup] {
+        // First group by the relevant title (show title for episodes, name for movies)
+        let groupedDict = Dictionary(grouping: self) { asset in
+            return asset.groupTitle
+        }
+        
+        // Convert to array of DownloadGroup objects
+        return groupedDict.map { (title, assets) in
+            // Determine group type (if any asset is an episode, it's a show)
+            let isShow = assets.contains { $0.type == .episode }
+            let type: DownloadType = isShow ? .episode : .movie
+            
+            // Find poster URL (use first asset with a poster)
+            let posterURL = assets.compactMap { $0.metadata?.posterURL }.first
+            
+            return DownloadGroup(
+                title: title,
+                type: type,
+                assets: assets,
+                posterURL: posterURL
+            )
+        }.sorted { $0.title < $1.title }
+    }
+    
+    /// Sorts assets in a way suitable for flat list display
+    func sortedForDisplay(by sortOption: DownloadView.SortOption) -> [DownloadedAsset] {
+        switch sortOption {
+        case .newest:
+            return sorted { $0.downloadDate > $1.downloadDate }
+        case .oldest:
+            return sorted { $0.downloadDate < $1.downloadDate }
+        case .title:
+            return sorted { $0.name < $1.name }
+        }
+    }
+}
+
+// MARK: - Active Downloads Grouping
+extension Array where Element == ActiveDownload {
+    /// Groups active downloads by show title
+    func groupedByTitle() -> [String: [ActiveDownload]] {
+        let grouped = Dictionary(grouping: self) { download in
+            return download.groupTitle
+        }
+        return grouped
     }
 }

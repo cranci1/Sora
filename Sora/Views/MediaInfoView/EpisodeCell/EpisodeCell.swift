@@ -281,25 +281,8 @@ struct EpisodeCell: View {
                 
                 print("Download headers: \(headers)")
                 
-                // Create proper metadata for the download
-                let metadata = AssetMetadata(
-                    title: "Episode \(episodeID + 1)\(episodeTitle.isEmpty ? "" : ": \(episodeTitle)")",
-                    overview: nil,
-                    posterURL: !episodeImageUrl.isEmpty ? URL(string: episodeImageUrl) : nil,
-                    backdropURL: nil,
-                    releaseDate: nil,
-                    showTitle: nil,
-                    season: nil,
-                    episode: episodeID + 1
-                )
-                
-                // Use jsController to handle the download with comprehensive headers and metadata
-                jsController.downloadWithM3U8Support(
-                    url: url, 
-                    headers: headers, 
-                    title: "Episode \(episodeID + 1)\(episodeTitle.isEmpty ? "" : ": \(episodeTitle)")",
-                    metadata: metadata
-                )
+                // Use jsController to handle the download with comprehensive headers
+                jsController.downloadWithM3U8Support(url: url, headers: headers, title: "Episode \(episodeID + 1)")
                 
                 DropManager.shared.success("Download started for Episode \(episodeID + 1)")
                 

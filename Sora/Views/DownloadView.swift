@@ -5,7 +5,6 @@
 //  Created by Francesco on 29/04/25.
 //
 
-import Foundation
 import SwiftUI
 import AVKit
 import Kingfisher
@@ -200,31 +199,18 @@ struct DownloadView: View {
 
 // MARK: - ActiveDownloadRow
 struct ActiveDownloadRow: View {
-    let download: ActiveDownload
+    let download: JSActiveDownload
     
     var body: some View {
         HStack {
-            if let posterURL = download.metadata?.posterURL {
-                KFImage(posterURL)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 60, height: 60)
-                    .cornerRadius(6)
-            } else {
-                // Generic placeholder image if no metadata
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 60, height: 60)
-                    .cornerRadius(6)
-                    .overlay(
-                        Image(systemName: "play.circle")
-                            .foregroundColor(.white.opacity(0.7))
-                    )
-            }
+            // Generic placeholder image since we don't have imageURL in the ActiveDownload
+            Rectangle()
+                .fill(Color.gray.opacity(0.3))
+                .frame(width: 60, height: 60)
+                .cornerRadius(6)
             
             VStack(alignment: .leading, spacing: 4) {
-                // Use metadata title or fallback to filename
-                Text(download.metadata?.title ?? download.originalURL.lastPathComponent)
+                Text(download.title ?? download.originalURL.lastPathComponent)
                     .font(.headline)
                     .lineLimit(1)
                 
@@ -288,23 +274,11 @@ struct DownloadedAssetRow: View {
     
     var body: some View {
         HStack {
-            if let posterURL = asset.metadata?.posterURL {
-                KFImage(posterURL)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 60, height: 60)
-                    .cornerRadius(6)
-            } else {
-                // Generic placeholder image
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 60, height: 60)
-                    .cornerRadius(6)
-                    .overlay(
-                        Image(systemName: "play.circle")
-                            .foregroundColor(.white.opacity(0.7))
-                    )
-            }
+            // Generic placeholder image
+            Rectangle()
+                .fill(Color.gray.opacity(0.3))
+                .frame(width: 60, height: 60)
+                .cornerRadius(6)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(asset.name)

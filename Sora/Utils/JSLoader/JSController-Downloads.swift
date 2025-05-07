@@ -47,9 +47,8 @@ extension JSController {
     ///   - url: The URL to download
     ///   - headers: HTTP headers to use for the request
     ///   - title: Optional title for the download (defaults to filename)
-    ///   - metadata: Optional metadata for the download (episode title, image, etc.)
     ///   - completionHandler: Called when download is initiated or fails
-    func startDownload(url: URL, headers: [String: String], title: String? = nil, metadata: AssetMetadata? = nil, completionHandler: ((Bool, String) -> Void)? = nil) {
+    func startDownload(url: URL, headers: [String: String], title: String? = nil, completionHandler: ((Bool, String) -> Void)? = nil) {
         // Check if already downloaded
         if savedAssets.contains(where: { $0.originalURL == url }) {
             print("Asset already downloaded: \(url.absoluteString)")
@@ -67,7 +66,6 @@ extension JSController {
         print("==== DOWNLOAD ATTEMPT ====")
         print("URL: \(url.absoluteString)")
         print("Headers: \(headers)")
-        print("Metadata: \(metadata?.title ?? "None")")
         
         // Extract domain for simplicity in debugging
         let domain = url.host ?? "unknown"
@@ -93,7 +91,7 @@ extension JSController {
         print("AVURLAsset options: [\"AVURLAssetHTTPHeaderFieldsKey\": \(requestHeaders)]")
         
         // Generate a title for the download if not provided
-        let downloadTitle = title ?? metadata?.title ?? url.lastPathComponent
+        let downloadTitle = title ?? url.lastPathComponent
         
         // Create the download task with minimal options
         guard let task = downloadURLSession?.makeAssetDownloadTask(
@@ -110,13 +108,13 @@ extension JSController {
         print("Download task created successfully")
         
         // Create an ActiveDownload and add it to the list
-        let download = ActiveDownload(
+        let download = JSActiveDownload(
             id: UUID(),
             originalURL: url,
             progress: 0,
             task: task,
-            type: metadata?.episode != nil ? .episode : .movie,
-            metadata: metadata
+            type: .movie,  // Default to movie, can be refined with metadata
+            title: downloadTitle
         )
         
         activeDownloads.append(download)
@@ -168,7 +166,8 @@ extension JSController {
             return [
                 "id": download.id.uuidString,
                 "url": download.originalURL.absoluteString,
-                "type": download.type.rawValue
+                "type": download.type.rawValue,
+                "title": download.title ?? download.originalURL.lastPathComponent
             ]
         }
         
@@ -213,17 +212,14 @@ extension JSController: AVAssetDownloadDelegate {
         
         let download = activeDownloads[downloadIndex]
         
-        // Get the title from metadata or fallback to URL filename
-        let displayName = download.metadata?.title ?? download.originalURL.lastPathComponent
-        
         // Create a new DownloadedAsset
         let newAsset = DownloadedAsset(
-            name: displayName,
+            name: download.title ?? download.originalURL.lastPathComponent,
             downloadDate: Date(),
             originalURL: download.originalURL,
             localURL: location,
-            type: download.type,
-            metadata: download.metadata
+            type: .movie,  // Default to movie, can be refined with metadata
+            metadata: nil  // Metadata can be added in future versions
         )
         
         // Add to saved assets and save
@@ -333,31 +329,35 @@ extension JSController: URLSessionTaskDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
         // Log information about the redirect
         print("==== REDIRECT DETECTED ====")
-        print("Original URL: \(task.originalRequest?.url?.absoluteString ?? "unknown")")
         print("Redirecting to: \(request.url?.absoluteString ?? "unknown")")
         print("Redirect status code: \(response.statusCode)")
         
-        print("Original Headers: \(task.originalRequest?.allHTTPHeaderFields ?? [:])")
-        print("New Request Headers: \(request.allHTTPHeaderFields ?? [:])")
-        
-        // Create a modified request that preserves ALL original headers
-        var modifiedRequest = request
-        
-        if let originalHeaders = task.originalRequest?.allHTTPHeaderFields {
+        // Don't try to access originalRequest for AVAssetDownloadTask
+        if !(task is AVAssetDownloadTask), let originalRequest = task.originalRequest {
+            print("Original URL: \(originalRequest.url?.absoluteString ?? "unknown")")
+            print("Original Headers: \(originalRequest.allHTTPHeaderFields ?? [:])")
+            
+            // Create a modified request that preserves ALL original headers
+            var modifiedRequest = request
+            
             // Add all original headers to the new request
-            for (key, value) in originalHeaders {
+            for (key, value) in originalRequest.allHTTPHeaderFields ?? [:] {
                 // Only add if not already present in the redirect request
                 if modifiedRequest.value(forHTTPHeaderField: key) == nil {
                     print("Adding missing header: \(key): \(value)")
                     modifiedRequest.addValue(value, forHTTPHeaderField: key)
                 }
             }
+            
+            print("Final redirect headers: \(modifiedRequest.allHTTPHeaderFields ?? [:])")
+            
+            // Allow the redirect with our modified request
+            completionHandler(modifiedRequest)
+        } else {
+            // For AVAssetDownloadTask, just accept the redirect as is
+            print("Accepting redirect for AVAssetDownloadTask without header modification")
+            completionHandler(request)
         }
-        
-        print("Final redirect headers: \(modifiedRequest.allHTTPHeaderFields ?? [:])")
-        
-        // Allow the redirect with our modified request
-        completionHandler(modifiedRequest)
     }
     
     /// Handle authentication challenges
@@ -379,5 +379,35 @@ extension JSController: URLSessionTaskDelegate {
         // Default to performing authentication without credentials
         print("Using default handling for authentication challenge")
         completionHandler(.performDefaultHandling, nil)
+    }
+}
+
+// MARK: - Download Types
+/// Struct to represent an active download in JSController
+struct JSActiveDownload: Identifiable {
+    let id: UUID
+    let originalURL: URL
+    var progress: Double
+    let task: AVAssetDownloadTask
+    let type: DownloadType
+    var metadata: AssetMetadata?
+    var title: String?
+    
+    init(
+        id: UUID = UUID(),
+        originalURL: URL,
+        progress: Double = 0,
+        task: AVAssetDownloadTask,
+        type: DownloadType = .movie,
+        metadata: AssetMetadata? = nil,
+        title: String? = nil
+    ) {
+        self.id = id
+        self.originalURL = originalURL
+        self.progress = progress
+        self.task = task
+        self.type = type
+        self.metadata = metadata
+        self.title = title
     }
 } 

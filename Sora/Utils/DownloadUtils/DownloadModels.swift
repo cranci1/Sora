@@ -2,115 +2,156 @@
 //  DownloadModels.swift
 //  Sora
 //
-//  Created by Francesco on 29/04/25.
+//  Created by Francesco on 30/04/25.
 //
 
 import Foundation
-import AVFoundation
 
-/// The current state of a download
-enum DownloadState: String, Codable {
-    case notDownloaded
-    case downloading
-    case paused
-    case downloaded
-    case failed
-}
-
-/// A model representing an active download
-struct ActiveDownload: Identifiable, Codable, Equatable {
-    let id: UUID
-    let originalURL: URL
-    var progress: Double
-    var moduleType: String
-    let episodeNumber: Int
-    let title: String
-    let imageURL: URL?
-    let dateStarted: Date
-    let episodeID: String // This will be the href or unique identifier for the episode
+// MARK: - Quality Preference Constants
+enum DownloadQualityPreference: String, CaseIterable {
+    case best = "Best"
+    case high = "High"
+    case medium = "Medium"
+    case low = "Low"
     
-    // This is not encoded/decoded as it's transient
-    var task: URLSessionTask? = nil
-    
-    enum CodingKeys: String, CodingKey {
-        case id, originalURL, progress, moduleType, episodeNumber, title, imageURL, dateStarted, episodeID
+    static var defaultPreference: DownloadQualityPreference {
+        return .best
     }
     
-    static func == (lhs: ActiveDownload, rhs: ActiveDownload) -> Bool {
-        lhs.id == rhs.id &&
-        lhs.originalURL == rhs.originalURL &&
-        lhs.moduleType == rhs.moduleType &&
-        lhs.episodeNumber == rhs.episodeNumber &&
-        lhs.title == rhs.title &&
-        lhs.imageURL == rhs.imageURL &&
-        lhs.dateStarted == rhs.dateStarted &&
-        lhs.episodeID == rhs.episodeID
-    }
-}
-
-/// A model representing a completely downloaded episode
-struct DownloadedEpisode: Identifiable, Codable {
-    let id: UUID
-    var title: String
-    let moduleType: String
-    let episodeNumber: Int
-    let downloadDate: Date
-    let originalURL: URL
-    let localURL: URL
-    var fileSize: Int64?
-    let imageURL: URL?
-    let episodeID: String
-    let aniListID: Int?
-    
-    init(id: UUID = UUID(), title: String, moduleType: String, episodeNumber: Int, 
-         downloadDate: Date, originalURL: URL, localURL: URL, imageURL: URL?, 
-         episodeID: String, aniListID: Int?) {
-        self.id = id
-        self.title = title
-        self.moduleType = moduleType
-        self.episodeNumber = episodeNumber
-        self.downloadDate = downloadDate
-        self.originalURL = originalURL
-        self.localURL = localURL
-        self.imageURL = imageURL
-        self.episodeID = episodeID
-        self.aniListID = aniListID
-        self.fileSize = getFileSize()
+    static var userDefaultsKey: String {
+        return "downloadQuality"
     }
     
-    func getFileSize() -> Int64? {
-        do {
-            let values = try localURL.resourceValues(forKeys: [.fileSizeKey])
-            return Int64(values.fileSize ?? 0)
-        } catch {
-            return nil
+    /// Returns the current user preference for download quality
+    static var current: DownloadQualityPreference {
+        let storedValue = UserDefaults.standard.string(forKey: userDefaultsKey) ?? defaultPreference.rawValue
+        return DownloadQualityPreference(rawValue: storedValue) ?? defaultPreference
+    }
+    
+    /// Description of what each quality preference means
+    var description: String {
+        switch self {
+        case .best:
+            return "Highest available quality (largest file size)"
+        case .high:
+            return "High quality (720p or higher)"
+        case .medium:
+            return "Medium quality (480p-720p)"
+        case .low:
+            return "Lowest available quality (smallest file size)"
         }
     }
 }
 
-/// A model representing the status and metadata of a downloadable episode
-struct DownloadableEpisode: Identifiable, Equatable {
-    let id: UUID = UUID()
-    let episodeID: String  // Unique identifier (usually href)
-    let title: String
-    let moduleType: String
-    let episodeNumber: Int
-    let streamURL: URL
-    let imageURL: URL?
-    let aniListID: Int?
-    var state: DownloadState = .notDownloaded
-    var progress: Double = 0.0
+// MARK: - Download Types
+enum DownloadType: String, Codable {
+    case movie
+    case episode
     
-    static func == (lhs: DownloadableEpisode, rhs: DownloadableEpisode) -> Bool {
-        lhs.id == rhs.id &&
-        lhs.episodeID == rhs.episodeID &&
-        lhs.title == rhs.title &&
-        lhs.moduleType == rhs.moduleType &&
-        lhs.episodeNumber == rhs.episodeNumber &&
-        lhs.streamURL == rhs.streamURL &&
-        lhs.imageURL == rhs.imageURL &&
-        lhs.aniListID == rhs.aniListID &&
-        lhs.state == rhs.state &&
-        lhs.progress == rhs.progress
+    var description: String {
+        switch self {
+        case .movie:
+            return "Movie"
+        case .episode:
+            return "Episode"
+        }
     }
-} 
+}
+
+// MARK: - Downloaded Asset Model
+struct DownloadedAsset: Identifiable, Codable {
+    let id: UUID
+    var name: String
+    let downloadDate: Date
+    let originalURL: URL
+    let localURL: URL
+    let type: DownloadType
+    let metadata: AssetMetadata?
+    
+    var fileSize: Int64? {
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: localURL.path)
+            return attributes[.size] as? Int64
+        } catch {
+            print("Error getting file size: \(error)")
+            return nil
+        }
+    }
+    
+    init(
+        id: UUID = UUID(),
+        name: String,
+        downloadDate: Date,
+        originalURL: URL,
+        localURL: URL,
+        type: DownloadType = .movie,
+        metadata: AssetMetadata? = nil
+    ) {
+        self.id = id
+        self.name = name
+        self.downloadDate = downloadDate
+        self.originalURL = originalURL
+        self.localURL = localURL
+        self.type = type
+        self.metadata = metadata
+    }
+}
+
+// MARK: - Active Download Model
+struct ActiveDownload: Identifiable {
+    let id: UUID
+    let originalURL: URL
+    var progress: Double
+    let task: URLSessionTask
+    let type: DownloadType
+    let metadata: AssetMetadata?
+    
+    init(
+        id: UUID = UUID(),
+        originalURL: URL,
+        progress: Double = 0,
+        task: URLSessionTask,
+        type: DownloadType = .movie,
+        metadata: AssetMetadata? = nil
+    ) {
+        self.id = id
+        self.originalURL = originalURL
+        self.progress = progress
+        self.task = task
+        self.type = type
+        self.metadata = metadata
+    }
+}
+
+// MARK: - Asset Metadata
+struct AssetMetadata: Codable {
+    let title: String
+    let overview: String?
+    let posterURL: URL?
+    let backdropURL: URL?
+    let releaseDate: String?
+    // Additional fields for episodes
+    let showTitle: String?
+    let season: Int?
+    let episode: Int?
+    
+    init(
+        title: String,
+        overview: String? = nil,
+        posterURL: URL? = nil,
+        backdropURL: URL? = nil,
+        releaseDate: String? = nil,
+        showTitle: String? = nil,
+        season: Int? = nil,
+        episode: Int? = nil
+    ) {
+        self.title = title
+        self.overview = overview
+        self.posterURL = posterURL
+        self.backdropURL = backdropURL
+        self.releaseDate = releaseDate
+        self.showTitle = showTitle
+        self.season = season
+        self.episode = episode
+    }
+}

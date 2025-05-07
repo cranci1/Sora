@@ -6,14 +6,16 @@
 //
 
 import SwiftUI
+import Drops
+
+// No need to import DownloadQualityPreference as it's in the same module
 
 struct SettingsViewDownloads: View {
-    @StateObject private var jsController = JSController()
-    @AppStorage("downloadQuality") private var downloadQuality: String = "Best"
+    @ObservedObject private var jsController = JSController()
+    @AppStorage(DownloadQualityPreference.userDefaultsKey) 
+    private var downloadQuality = DownloadQualityPreference.defaultPreference.rawValue
     @AppStorage("allowCellularDownloads") private var allowCellularDownloads: Bool = true
     @State private var showClearConfirmation = false
-    
-    private let qualityOptions = ["Best", "High", "Medium", "Low"]
     
     // Calculate total storage used
     private var totalStorageUsed: Int64 {
@@ -24,13 +26,25 @@ struct SettingsViewDownloads: View {
         Form {
             Section(header: Text("Download Settings")) {
                 Picker("Quality", selection: $downloadQuality) {
-                    ForEach(qualityOptions, id: \.self) { option in
-                        Text(option).tag(option)
+                    ForEach(DownloadQualityPreference.allCases, id: \.rawValue) { option in
+                        Text(option.rawValue)
+                            .tag(option.rawValue)
                     }
+                }
+                .onChange(of: downloadQuality) { newValue in
+                    print("Download quality preference changed to: \(newValue)")
                 }
                 
                 Toggle("Allow Cellular Downloads", isOn: $allowCellularDownloads)
                     .tint(.accentColor)
+            }
+            
+            Section(header: Text("Quality Information")) {
+                if let preferenceDescription = DownloadQualityPreference(rawValue: downloadQuality)?.description {
+                    Text(preferenceDescription)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             
             Section(header: Text("Storage Management")) {

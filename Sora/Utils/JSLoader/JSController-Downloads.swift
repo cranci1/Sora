@@ -47,8 +47,9 @@ extension JSController {
     ///   - url: The URL to download
     ///   - headers: HTTP headers to use for the request
     ///   - title: Optional title for the download (defaults to filename)
+    ///   - metadata: Optional metadata for the download (episode title, image, etc.)
     ///   - completionHandler: Called when download is initiated or fails
-    func startDownload(url: URL, headers: [String: String], title: String? = nil, completionHandler: ((Bool, String) -> Void)? = nil) {
+    func startDownload(url: URL, headers: [String: String], title: String? = nil, metadata: AssetMetadata? = nil, completionHandler: ((Bool, String) -> Void)? = nil) {
         // Check if already downloaded
         if savedAssets.contains(where: { $0.originalURL == url }) {
             print("Asset already downloaded: \(url.absoluteString)")
@@ -66,6 +67,7 @@ extension JSController {
         print("==== DOWNLOAD ATTEMPT ====")
         print("URL: \(url.absoluteString)")
         print("Headers: \(headers)")
+        print("Metadata: \(metadata?.title ?? "None")")
         
         // Extract domain for simplicity in debugging
         let domain = url.host ?? "unknown"
@@ -91,7 +93,7 @@ extension JSController {
         print("AVURLAsset options: [\"AVURLAssetHTTPHeaderFieldsKey\": \(requestHeaders)]")
         
         // Generate a title for the download if not provided
-        let downloadTitle = title ?? url.lastPathComponent
+        let downloadTitle = title ?? metadata?.title ?? url.lastPathComponent
         
         // Create the download task with minimal options
         guard let task = downloadURLSession?.makeAssetDownloadTask(
@@ -113,7 +115,8 @@ extension JSController {
             originalURL: url,
             progress: 0,
             task: task,
-            type: .movie
+            type: metadata?.episode != nil ? .episode : .movie,
+            metadata: metadata
         )
         
         activeDownloads.append(download)
@@ -210,9 +213,12 @@ extension JSController: AVAssetDownloadDelegate {
         
         let download = activeDownloads[downloadIndex]
         
+        // Get the title from metadata or fallback to URL filename
+        let displayName = download.metadata?.title ?? download.originalURL.lastPathComponent
+        
         // Create a new DownloadedAsset
         let newAsset = DownloadedAsset(
-            name: download.originalURL.lastPathComponent,
+            name: displayName,
             downloadDate: Date(),
             originalURL: download.originalURL,
             localURL: location,

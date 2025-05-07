@@ -241,33 +241,60 @@ struct EpisodeCell: View {
             // Extract base URL for headers
             var headers: [String: String] = [:]
             if let url = URL(string: streamUrl) {
-                if let scheme = url.scheme, let host = url.host {
-                    let baseUrl = scheme + "://" + host
+                // Always use the module's baseUrl for Origin and Referer
+                if !module.metadata.baseUrl.isEmpty && !module.metadata.baseUrl.contains("undefined") {
+                    print("Using module baseUrl: \(module.metadata.baseUrl)")
+                    
+                    // Create comprehensive headers prioritizing the module's baseUrl
                     headers = [
-                        "Origin": baseUrl,
-                        "Referer": baseUrl,
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+                        "Origin": module.metadata.baseUrl,
+                        "Referer": module.metadata.baseUrl,
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                        "Accept": "*/*",
+                        "Accept-Language": "en-US,en;q=0.9",
+                        "Sec-Fetch-Dest": "empty",
+                        "Sec-Fetch-Mode": "cors",
+                        "Sec-Fetch-Site": "same-origin"
                     ]
-                    
-                    // Use jsController to handle the download 
-                    jsController.downloadWithM3U8Support(url: url, headers: headers)
-                    
-                    DropManager.shared.success("Download started for Episode \(episodeID + 1)")
-                    
-                    // Log the download for analytics
-                    Logger.shared.log("Started download for Episode \(episodeID + 1): \(episode)", type: "Download")
-                    AnalyticsManager.shared.sendEvent(
-                        event: "download",
-                        additionalData: ["episode": episodeID + 1, "url": streamUrl]
-                    )
-                    
-                    // Mark that we've handled this download
-                    isDownloading = false
                 } else {
-                    // Missing URL components
-                    DropManager.shared.error("Invalid stream URL - missing scheme or host")
-                    isDownloading = false
+                    // Fallback to using the stream URL's domain if module.baseUrl isn't available
+                    if let scheme = url.scheme, let host = url.host {
+                        let baseUrl = scheme + "://" + host
+                        
+                        headers = [
+                            "Origin": baseUrl,
+                            "Referer": baseUrl,
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                            "Accept": "*/*",
+                            "Accept-Language": "en-US,en;q=0.9",
+                            "Sec-Fetch-Dest": "empty",
+                            "Sec-Fetch-Mode": "cors",
+                            "Sec-Fetch-Site": "same-origin"
+                        ]
+                    } else {
+                        // Missing URL components
+                        DropManager.shared.error("Invalid stream URL - missing scheme or host")
+                        isDownloading = false
+                        return
+                    }
                 }
+                
+                print("Download headers: \(headers)")
+                
+                // Use jsController to handle the download with comprehensive headers
+                jsController.downloadWithM3U8Support(url: url, headers: headers, title: "Episode \(episodeID + 1)")
+                
+                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
+                
+                // Log the download for analytics
+                Logger.shared.log("Started download for Episode \(episodeID + 1): \(episode)", type: "Download")
+                AnalyticsManager.shared.sendEvent(
+                    event: "download",
+                    additionalData: ["episode": episodeID + 1, "url": streamUrl]
+                )
+                
+                // Mark that we've handled this download
+                isDownloading = false
             } else {
                 // Invalid URL
                 DropManager.shared.error("Invalid stream URL format")

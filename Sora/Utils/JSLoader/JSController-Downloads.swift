@@ -19,6 +19,13 @@ extension JSController {
         let sessionIdentifier = "hls-downloader-\(UUID().uuidString)"
         
         let configuration = URLSessionConfiguration.background(withIdentifier: sessionIdentifier)
+        
+        // Configure session
+        configuration.allowsCellularAccess = true
+        configuration.shouldUseExtendedBackgroundIdleMode = true
+        configuration.waitsForConnectivity = true
+        
+        // Create session with configuration
         downloadURLSession = AVAssetDownloadURLSession(
             configuration: configuration,
             assetDownloadDelegate: self,
@@ -56,34 +63,49 @@ extension JSController {
             return
         }
         
-        // Create a URL request with the headers
-        var urlRequest = URLRequest(url: url)
-        for (key, value) in headers {
-            urlRequest.addValue(value, forHTTPHeaderField: key)
-        }
-        
-        // Log the request details
-        print("Starting download for URL: \(url.absoluteString)")
+        print("==== DOWNLOAD ATTEMPT ====")
+        print("URL: \(url.absoluteString)")
         print("Headers: \(headers)")
         
-        // Create an asset with the headers
-        let assetOptions = ["AVURLAssetHTTPHeaderFieldsKey": headers]
-        let asset = AVURLAsset(url: url, options: assetOptions)
+        // Extract domain for simplicity in debugging
+        let domain = url.host ?? "unknown"
+        print("Domain: \(domain)")
+        
+        // Create a URLRequest first (this is what CustomPlayer does)
+        var request = URLRequest(url: url)
+        
+        // Add all headers precisely as received
+        for (key, value) in headers {
+            request.addValue(value, forHTTPHeaderField: key)
+        }
+        
+        // Get the headers from the request - this is key for AVURLAsset
+        let requestHeaders = request.allHTTPHeaderFields ?? [:]
+        print("Final request headers: \(requestHeaders)")
+        
+        // Create the asset with the EXACT same pattern as CustomPlayer
+        let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": requestHeaders])
+        
+        // Log advanced debug information
+        print("AVURLAsset created with URL: \(url.absoluteString)")
+        print("AVURLAsset options: [\"AVURLAssetHTTPHeaderFieldsKey\": \(requestHeaders)]")
         
         // Generate a title for the download if not provided
         let downloadTitle = title ?? url.lastPathComponent
         
-        // Create the download task
+        // Create the download task with minimal options
         guard let task = downloadURLSession?.makeAssetDownloadTask(
             asset: asset,
             assetTitle: downloadTitle,
             assetArtworkData: nil,
-            options: [AVAssetDownloadTaskMinimumRequiredMediaBitrateKey: 500_000]
+            options: nil  // Remove unnecessary options that might interfere
         ) else {
             print("Failed to create download task")
             completionHandler?(false, "Failed to create download task")
             return
         }
+        
+        print("Download task created successfully")
         
         // Create an ActiveDownload and add it to the list
         let download = ActiveDownload(
@@ -99,6 +121,7 @@ extension JSController {
         
         // Start the download
         task.resume()
+        print("Download task resumed")
         
         // Inform caller of success
         completionHandler?(true, "Download started")
@@ -189,7 +212,7 @@ extension JSController: AVAssetDownloadDelegate {
         
         // Create a new DownloadedAsset
         let newAsset = DownloadedAsset(
-            name: download.task.originalRequest?.url?.lastPathComponent ?? "Unknown",
+            name: download.originalURL.lastPathComponent,
             downloadDate: Date(),
             originalURL: download.originalURL,
             localURL: location,
@@ -215,15 +238,45 @@ extension JSController: AVAssetDownloadDelegate {
     /// Called when a download task encounters an error
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error = error {
+            // Enhanced error logging
             print("Download error: \(error.localizedDescription)")
             
+            // Extract and log the underlying error details
+            if let nsError = error as? NSError {
+                print("Error domain: \(nsError.domain), code: \(nsError.code)")
+                
+                if let underlyingError = nsError.userInfo["NSUnderlyingError"] as? NSError {
+                    print("Underlying error: \(underlyingError)")
+                }
+                
+                for (key, value) in nsError.userInfo {
+                    print("Error info - \(key): \(value)")
+                }
+            }
+            
             // Check if there's a system network error 
-            if let urlError = error as? URLError, 
-               urlError.code == .notConnectedToInternet || urlError.code == .networkConnectionLost {
-                print("Network error: \(urlError.localizedDescription)")
+            if let urlError = error as? URLError {
+                print("URLError code: \(urlError.code.rawValue)")
+                
+                if urlError.code == .notConnectedToInternet || urlError.code == .networkConnectionLost {
+                    print("Network error: \(urlError.localizedDescription)")
+                    
+                    DispatchQueue.main.async {
+                        DropManager.shared.error("Network error: \(urlError.localizedDescription)")
+                    }
+                } else if urlError.code == .userAuthenticationRequired || urlError.code == .userCancelledAuthentication {
+                    print("Authentication error: \(urlError.localizedDescription)")
+                    
+                    DispatchQueue.main.async {
+                        DropManager.shared.error("Authentication error: Check headers")
+                    }
+                }
+            } else if error.localizedDescription.contains("403") {
+                // Specific handling for 403 Forbidden errors
+                print("403 Forbidden error - Server rejected the request")
                 
                 DispatchQueue.main.async {
-                    DropManager.shared.error("Network error: \(urlError.localizedDescription)")
+                    DropManager.shared.error("Access denied (403): The server refused access to this content")
                 }
             } else {
                 DispatchQueue.main.async {
@@ -248,16 +301,22 @@ extension JSController: AVAssetDownloadDelegate {
         }
         
         // Calculate progress
-        let progress = loadedTimeRanges
-            .map { $0.timeRangeValue.duration.seconds / timeRangeExpectedToLoad.duration.seconds }
-            .reduce(0, +)
+        var percentComplete = 0.0
         
-        // Update the progress
-        activeDownloads[downloadIndex].progress = progress
+        for rangeValue in loadedTimeRanges {
+            let range = rangeValue.timeRangeValue
+            let duration = CMTimeGetSeconds(range.duration)
+            percentComplete += duration
+        }
         
-        // Notify UI to update every 5% or so
-        if Int(progress * 100) % 5 == 0 {
-            print("Download progress: \(Int(progress * 100))%")
+        let totalDuration = CMTimeGetSeconds(timeRangeExpectedToLoad.duration)
+        if totalDuration > 0 {
+            percentComplete = percentComplete / totalDuration
+        }
+        
+        // Update the progress on the main thread
+        DispatchQueue.main.async {
+            self.activeDownloads[downloadIndex].progress = percentComplete
         }
     }
 }
@@ -266,19 +325,53 @@ extension JSController: AVAssetDownloadDelegate {
 extension JSController: URLSessionTaskDelegate {
     /// Called when a redirect is received
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
-        // Allow redirects but ensure headers are maintained
-        var redirectRequest = request
+        // Log information about the redirect
+        print("==== REDIRECT DETECTED ====")
+        print("Original URL: \(task.originalRequest?.url?.absoluteString ?? "unknown")")
+        print("Redirecting to: \(request.url?.absoluteString ?? "unknown")")
+        print("Redirect status code: \(response.statusCode)")
         
-        if let originalRequest = task.originalRequest, 
-           let headers = originalRequest.allHTTPHeaderFields {
-            
-            for (key, value) in headers {
-                if redirectRequest.value(forHTTPHeaderField: key) == nil {
-                    redirectRequest.addValue(value, forHTTPHeaderField: key)
+        print("Original Headers: \(task.originalRequest?.allHTTPHeaderFields ?? [:])")
+        print("New Request Headers: \(request.allHTTPHeaderFields ?? [:])")
+        
+        // Create a modified request that preserves ALL original headers
+        var modifiedRequest = request
+        
+        if let originalHeaders = task.originalRequest?.allHTTPHeaderFields {
+            // Add all original headers to the new request
+            for (key, value) in originalHeaders {
+                // Only add if not already present in the redirect request
+                if modifiedRequest.value(forHTTPHeaderField: key) == nil {
+                    print("Adding missing header: \(key): \(value)")
+                    modifiedRequest.addValue(value, forHTTPHeaderField: key)
                 }
             }
         }
         
-        completionHandler(redirectRequest)
+        print("Final redirect headers: \(modifiedRequest.allHTTPHeaderFields ?? [:])")
+        
+        // Allow the redirect with our modified request
+        completionHandler(modifiedRequest)
+    }
+    
+    /// Handle authentication challenges
+    func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        print("==== AUTH CHALLENGE ====")
+        print("Authentication method: \(challenge.protectionSpace.authenticationMethod)")
+        print("Host: \(challenge.protectionSpace.host)")
+        
+        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
+            // Handle SSL/TLS certificate validation
+            if let serverTrust = challenge.protectionSpace.serverTrust {
+                let credential = URLCredential(trust: serverTrust)
+                print("Accepting server trust for host: \(challenge.protectionSpace.host)")
+                completionHandler(.useCredential, credential)
+                return
+            }
+        }
+        
+        // Default to performing authentication without credentials
+        print("Using default handling for authentication challenge")
+        completionHandler(.performDefaultHandling, nil)
     }
 } 

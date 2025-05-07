@@ -20,9 +20,11 @@ extension JSController {
     ///   - title: Title for the download (optional)
     ///   - completionHandler: Called when the download is initiated or fails
     func downloadWithM3U8Support(url: URL, headers: [String: String], title: String? = nil, completionHandler: ((Bool, String) -> Void)? = nil) {
-        // Ensure headers are properly set for streaming
-        let optimizedHeaders = ensureStreamingHeaders(headers: headers, for: url)
-        logHeadersForRequest(headers: optimizedHeaders, url: url, operation: "Initial download request")
+        // Use headers passed in from caller rather than generating our own baseUrl
+        // Receiving code should already be setting module.metadata.baseUrl
+        
+        print("Starting download process for URL: \(url.absoluteString)")
+        print("Using headers: \(headers)")
         
         // Check if the URL is an M3U8 file
         if url.absoluteString.contains(".m3u8") {
@@ -31,177 +33,203 @@ extension JSController {
             
             print("Starting M3U8 download with quality preference: \(preferredQuality)")
             
-            // Check if it's a master playlist
-            if url.lastPathComponent == "master.m3u8" {
-                print("Detected master playlist URL, generating direct stream URLs")
-                
-                // Generate stream URLs directly without downloading the master playlist
-                let streamURLs = generateStreamURLs(from: url)
-                
-                // Select the appropriate quality based on user preference
-                let selectedURL = selectStreamURLBasedOnQuality(streamURLs: streamURLs, preferredQuality: preferredQuality)
-                
-                print("Using direct stream URL for quality \(selectedURL.quality): \(selectedURL.url.absoluteString)")
-                
-                // Re-optimize headers for the stream URL
-                let streamHeaders = ensureStreamingHeaders(headers: optimizedHeaders, for: selectedURL.url)
-                logHeadersForRequest(headers: streamHeaders, url: selectedURL.url, operation: "Downloading direct stream")
-                
-                // Initiate download with the stream URL and properly optimized headers
-                downloadWithOriginalMethod(
-                    url: selectedURL.url,
-                    headers: streamHeaders,
-                    title: title,
-                    completionHandler: completionHandler
-                )
-            } else {
-                // Not a master playlist, likely already a specific quality stream
-                print("URL appears to be a direct stream URL, not a master playlist")
-                
-                // Just download it directly
-                downloadWithOriginalMethod(
-                    url: url,
-                    headers: optimizedHeaders,
-                    title: title,
-                    completionHandler: completionHandler
-                )
+            // Parse the M3U8 content to extract available qualities, matching CustomPlayer approach
+            parseM3U8(url: url, baseUrl: url.absoluteString, headers: headers) { [weak self] qualities in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    
+                    if qualities.isEmpty {
+                        print("No quality options found in M3U8, downloading the original URL")
+                        self.downloadWithOriginalMethod(
+                            url: url,
+                            headers: headers,
+                            title: title,
+                            completionHandler: completionHandler
+                        )
+                        return
+                    }
+                    
+                    print("Found \(qualities.count) quality options in M3U8")
+                    
+                    // Select appropriate quality based on user preference
+                    let selectedQuality = self.selectQualityBasedOnPreference(qualities: qualities, preferredQuality: preferredQuality)
+                    
+                    if let qualityURL = URL(string: selectedQuality.1) {
+                        print("Selected quality: \(selectedQuality.0) at URL: \(qualityURL.absoluteString)")
+                        
+                        // Download with standard headers that match the player
+                        self.downloadWithOriginalMethod(
+                            url: qualityURL,
+                            headers: headers,
+                            title: title,
+                            completionHandler: completionHandler
+                        )
+                    } else {
+                        print("Invalid quality URL, falling back to original URL")
+                        self.downloadWithOriginalMethod(
+                            url: url,
+                            headers: headers,
+                            title: title,
+                            completionHandler: completionHandler
+                        )
+                    }
+                }
             }
         } else {
-            // Not an M3U8 file, use the original download method
+            // Not an M3U8 file, use the original download method with standard headers
             downloadWithOriginalMethod(
                 url: url,
-                headers: optimizedHeaders,
+                headers: headers,
                 title: title,
                 completionHandler: completionHandler
             )
         }
     }
     
-    /// Generates stream URLs for different qualities based on a master URL pattern
-    /// - Parameter masterURL: The URL of the master M3U8 playlist
-    /// - Returns: Array of stream URLs with quality information
-    private func generateStreamURLs(from masterURL: URL) -> [(url: URL, quality: String, resolution: Int)] {
-        // Get the base directory without the master.m3u8 file
-        let baseURLString = masterURL.absoluteString.replacingOccurrences(of: "master.m3u8", with: "")
+    /// Parses an M3U8 file to extract available quality options, matching CustomPlayer's approach exactly
+    /// - Parameters:
+    ///   - url: The URL of the M3U8 file
+    ///   - baseUrl: The base URL for setting headers
+    ///   - headers: HTTP headers to use for the request
+    ///   - completion: Called with the array of quality options (name, URL)
+    private func parseM3U8(url: URL, baseUrl: String, headers: [String: String], completion: @escaping ([(String, String)]) -> Void) {
+        var request = URLRequest(url: url)
         
-        // Ensure the base URL doesn't have a trailing slash for consistent joining
-        let normalizedBaseURL = baseURLString.hasSuffix("/") ? baseURLString : baseURLString + "/"
-        
-        print("Generating stream URLs from base: \(normalizedBaseURL)")
-        
-        // Common quality paths for various streaming providers
-        let qualities: [(suffix: String, quality: String, resolution: Int)] = [
-            ("index-v1-a1.m3u8", "Best", 1080),
-            ("index-v1-a2.m3u8", "High", 720),
-            ("index-v1-a3.m3u8", "Medium", 480),
-            ("index-v1-a4.m3u8", "Low", 360),
-            ("1080/index.m3u8", "Best", 1080),
-            ("720/index.m3u8", "High", 720),
-            ("480/index.m3u8", "Medium", 480),
-            ("360/index.m3u8", "Low", 360),
-            ("1080p.m3u8", "Best", 1080),
-            ("720p.m3u8", "High", 720),
-            ("480p.m3u8", "Medium", 480),
-            ("360p.m3u8", "Low", 360)
-        ]
-        
-        var streamURLs: [(url: URL, quality: String, resolution: Int)] = []
-        
-        for quality in qualities {
-            if let url = URL(string: normalizedBaseURL + quality.suffix) {
-                streamURLs.append((url: url, quality: quality.quality, resolution: quality.resolution))
-                print("Generated URL for \(quality.quality) (\(quality.resolution)p): \(url.absoluteString)")
-            }
+        // Add headers from headers passed to downloadWithM3U8Support
+        // This ensures we use the same headers as the player (from module.metadata.baseUrl)
+        for (key, value) in headers {
+            request.addValue(value, forHTTPHeaderField: key)
         }
         
-        // If we couldn't generate any URLs using standard patterns, try to use a different approach
-        if streamURLs.isEmpty {
-            print("No stream URLs generated with standard patterns, using alternative approach")
+        print("Fetching M3U8 content from: \(url.absoluteString)")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            // Log HTTP status for debugging
+            if let httpResponse = response as? HTTPURLResponse {
+                print("HTTP Status: \(httpResponse.statusCode) for \(url.absoluteString)")
+                
+                if httpResponse.statusCode >= 400 {
+                    print("HTTP Error: \(httpResponse.statusCode)")
+                    completion([])
+                    return
+                }
+            }
             
-            // Alternative approach: Modify the master.m3u8 to the specific quality file
-            let urlString = masterURL.absoluteString
-            if let masterRange = urlString.range(of: "master.m3u8") {
-                let basePath = urlString[..<masterRange.lowerBound]
-                
-                let alternativeQualities: [(filename: String, quality: String, resolution: Int)] = [
-                    ("1080p.m3u8", "Best", 1080),
-                    ("720p.m3u8", "High", 720),
-                    ("480p.m3u8", "Medium", 480),
-                    ("360p.m3u8", "Low", 360),
-                    ("hls/1080p/index.m3u8", "Best", 1080),
-                    ("hls/720p/index.m3u8", "High", 720),
-                    ("hls/480p/index.m3u8", "Medium", 480),
-                    ("hls/360p/index.m3u8", "Low", 360)
-                ]
-                
-                for quality in alternativeQualities {
-                    if let url = URL(string: String(basePath) + quality.filename) {
-                        streamURLs.append((url: url, quality: quality.quality, resolution: quality.resolution))
-                        print("Generated alternative URL for \(quality.quality) (\(quality.resolution)p): \(url.absoluteString)")
+            guard let data = data, let content = String(data: data, encoding: .utf8) else {
+                print("Failed to load or decode M3U8 file")
+                completion([])
+                return
+            }
+            
+            let lines = content.components(separatedBy: .newlines)
+            var qualities: [(String, String)] = []
+            
+            // Always include the original URL as "Auto" option
+            qualities.append(("Auto (Recommended)", url.absoluteString))
+            
+            func getQualityName(for height: Int) -> String {
+                switch height {
+                case 1080...: return "\(height)p (FHD)"
+                case 720..<1080: return "\(height)p (HD)"
+                case 480..<720: return "\(height)p (SD)"
+                default: return "\(height)p"
+                }
+            }
+            
+            // Parse the M3U8 content to extract available streams - exactly like CustomPlayer
+            for (index, line) in lines.enumerated() {
+                if line.contains("#EXT-X-STREAM-INF"), index + 1 < lines.count {
+                    if let resolutionRange = line.range(of: "RESOLUTION="),
+                       let resolutionEndRange = line[resolutionRange.upperBound...].range(of: ",")
+                        ?? line[resolutionRange.upperBound...].range(of: "\n") {
+                        
+                        let resolutionPart = String(line[resolutionRange.upperBound..<resolutionEndRange.lowerBound])
+                        if let heightStr = resolutionPart.components(separatedBy: "x").last,
+                           let height = Int(heightStr) {
+                            
+                            let nextLine = lines[index + 1].trimmingCharacters(in: .whitespacesAndNewlines)
+                            let qualityName = getQualityName(for: height)
+                            
+                            var qualityURL = nextLine
+                            if !nextLine.hasPrefix("http") && nextLine.contains(".m3u8") {
+                                // Handle relative URLs
+                                let baseURLString = url.deletingLastPathComponent().absoluteString
+                                qualityURL = URL(string: nextLine, relativeTo: url)?.absoluteString
+                                    ?? baseURLString + "/" + nextLine
+                            }
+                            
+                            if !qualities.contains(where: { $0.0 == qualityName }) {
+                                qualities.append((qualityName, qualityURL))
+                            }
+                        }
                     }
                 }
             }
-        }
-        
-        // If still no URLs, return the master URL as a fallback
-        if streamURLs.isEmpty {
-            print("No stream URLs could be generated, using master URL as fallback")
-            streamURLs.append((url: masterURL, quality: "Unknown", resolution: 0))
-        }
-        
-        return streamURLs
-    }
-    
-    /// Selects the appropriate stream URL based on quality preference
-    /// - Parameters:
-    ///   - streamURLs: Array of available stream URLs with quality information
-    ///   - preferredQuality: User's preferred quality
-    /// - Returns: The selected stream URL with quality information
-    private func selectStreamURLBasedOnQuality(streamURLs: [(url: URL, quality: String, resolution: Int)], preferredQuality: String) -> (url: URL, quality: String, resolution: Int) {
-        // Sort by resolution (highest first)
-        let sortedStreams = streamURLs.sorted { $0.resolution > $1.resolution }
-        
-        // Default to highest quality in case the switch cases don't match
-        guard !sortedStreams.isEmpty else {
-            print("Warning: No stream URLs available to select from")
-            return (URL(string: "about:blank")!, "Unknown", 0)
-        }
-        
-        switch preferredQuality {
-        case "Best":
-            // Return the highest quality stream
-            return sortedStreams.first!
             
-        case "High":
-            // Return a high quality stream (720p or higher, but not the highest)
-            let highStreams = sortedStreams.filter { $0.resolution >= 720 }
-            if highStreams.count > 1 {
-                return highStreams[1]  // Second highest if available
-            } else if !highStreams.isEmpty {
-                return highStreams[0]  // Highest if only one high quality stream
-            } else {
-                return sortedStreams.first!  // Fallback to highest available
+            // Sort qualities like CustomPlayer does - on the main thread
+            let autoQuality = qualities.first
+            var sortedQualities = qualities.dropFirst().sorted { first, second in
+                let firstHeight = Int(first.0.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
+                let secondHeight = Int(second.0.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
+                return firstHeight > secondHeight
             }
             
+            if let auto = autoQuality {
+                sortedQualities.insert(auto, at: 0)
+            }
+            
+            print("Extracted \(sortedQualities.count) quality options from M3U8")
+            completion(sortedQualities)
+        }.resume()
+    }
+    
+    /// Selects the appropriate quality based on user preference
+    /// - Parameters:
+    ///   - qualities: Available quality options (name, URL)
+    ///   - preferredQuality: User's preferred quality
+    /// - Returns: The selected quality (name, URL)
+    private func selectQualityBasedOnPreference(qualities: [(String, String)], preferredQuality: String) -> (String, String) {
+        // If only one quality is available, return it
+        if qualities.count <= 1 {
+            return qualities[0]
+        }
+        
+        // Select quality based on preference
+        switch preferredQuality {
+        case "Best":
+            // Skip the "Auto" option which is at index 0
+            return qualities.count > 1 ? qualities[1] : qualities[0]
+            
+        case "High":
+            // Look for 720p quality
+            let highQuality = qualities.first {
+                $0.0.contains("720p") || $0.0.contains("HD")
+            }
+            return highQuality ?? (qualities.count > 1 ? qualities[1] : qualities[0])
+            
         case "Medium":
-            // Return a medium quality stream (between 480p and 720p)
-            let mediumStreams = sortedStreams.filter { $0.resolution >= 480 && $0.resolution < 720 }
-            if !mediumStreams.isEmpty {
-                return mediumStreams.first!
-            } else if sortedStreams.count > 1 {
-                let medianIndex = sortedStreams.count / 2
-                return sortedStreams[medianIndex]  // Return median quality as fallback
+            // Look for 480p quality
+            let mediumQuality = qualities.first {
+                $0.0.contains("480p") || $0.0.contains("SD")
+            }
+            
+            if let medium = mediumQuality {
+                return medium
+            } else if qualities.count > 2 {
+                // Return middle quality if no exact match
+                return qualities[qualities.count / 2]
             } else {
-                return sortedStreams.first!  // Fallback to highest available
+                // Last quality or Auto if nothing else
+                return qualities.last ?? qualities[0]
             }
             
         case "Low":
-            // Return the lowest quality stream
-            return sortedStreams.last!
+            // Return lowest quality (excluding Auto)
+            return qualities.count > 1 ? qualities.last! : qualities[0]
             
         default:
-            // Default to best quality
-            return sortedStreams.first!
+            // Default to Auto
+            return qualities[0]
         }
     }
     

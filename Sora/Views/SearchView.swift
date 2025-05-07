@@ -21,7 +21,7 @@ struct SearchView: View {
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     
-    @StateObject private var jsController = JSController()
+    @StateObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
     @Environment(\.verticalSizeClass) var verticalSizeClass
     

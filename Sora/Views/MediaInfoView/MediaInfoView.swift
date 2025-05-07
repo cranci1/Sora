@@ -45,7 +45,10 @@ struct MediaInfoView: View {
     @AppStorage("externalPlayer") private var externalPlayer: String = "Default"
     @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 100
     
-    @StateObject private var jsController = JSController()
+    @State private var isModuleSelectorPresented = false
+    @State private var isError = false
+    
+    @StateObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
     @EnvironmentObject private var libraryManager: LibraryManager
     

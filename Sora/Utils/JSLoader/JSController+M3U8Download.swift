@@ -43,10 +43,14 @@ extension JSController {
                 
                 print("Using direct stream URL for quality \(selectedURL.quality): \(selectedURL.url.absoluteString)")
                 
-                // Initiate download with the stream URL
+                // Re-optimize headers for the stream URL
+                let streamHeaders = ensureStreamingHeaders(headers: optimizedHeaders, for: selectedURL.url)
+                logHeadersForRequest(headers: streamHeaders, url: selectedURL.url, operation: "Downloading direct stream")
+                
+                // Initiate download with the stream URL and properly optimized headers
                 downloadWithOriginalMethod(
                     url: selectedURL.url,
-                    headers: optimizedHeaders,
+                    headers: streamHeaders,
                     title: title,
                     completionHandler: completionHandler
                 )
@@ -77,7 +81,13 @@ extension JSController {
     /// - Parameter masterURL: The URL of the master M3U8 playlist
     /// - Returns: Array of stream URLs with quality information
     private func generateStreamURLs(from masterURL: URL) -> [(url: URL, quality: String, resolution: Int)] {
-        let baseURLString = masterURL.deletingLastPathComponent().absoluteString
+        // Get the base directory without the master.m3u8 file
+        let baseURLString = masterURL.absoluteString.replacingOccurrences(of: "master.m3u8", with: "")
+        
+        // Ensure the base URL doesn't have a trailing slash for consistent joining
+        let normalizedBaseURL = baseURLString.hasSuffix("/") ? baseURLString : baseURLString + "/"
+        
+        print("Generating stream URLs from base: \(normalizedBaseURL)")
         
         // Common quality paths for various streaming providers
         let qualities: [(suffix: String, quality: String, resolution: Int)] = [
@@ -95,12 +105,10 @@ extension JSController {
             ("360p.m3u8", "Low", 360)
         ]
         
-        print("Generating stream URLs from base: \(baseURLString)")
-        
         var streamURLs: [(url: URL, quality: String, resolution: Int)] = []
         
         for quality in qualities {
-            if let url = URL(string: baseURLString + "/" + quality.suffix) {
+            if let url = URL(string: normalizedBaseURL + quality.suffix) {
                 streamURLs.append((url: url, quality: quality.quality, resolution: quality.resolution))
                 print("Generated URL for \(quality.quality) (\(quality.resolution)p): \(url.absoluteString)")
             }
@@ -152,6 +160,12 @@ extension JSController {
     private func selectStreamURLBasedOnQuality(streamURLs: [(url: URL, quality: String, resolution: Int)], preferredQuality: String) -> (url: URL, quality: String, resolution: Int) {
         // Sort by resolution (highest first)
         let sortedStreams = streamURLs.sorted { $0.resolution > $1.resolution }
+        
+        // Default to highest quality in case the switch cases don't match
+        guard !sortedStreams.isEmpty else {
+            print("Warning: No stream URLs available to select from")
+            return (URL(string: "about:blank")!, "Unknown", 0)
+        }
         
         switch preferredQuality {
         case "Best":
@@ -207,11 +221,6 @@ extension JSController {
 // MARK: - Private API Compatibility Extension
 // This extension ensures compatibility with the existing JSController-Downloads.swift implementation
 private extension JSController {
-    // This is a stub for the actual implementation in JSController-Downloads.swift
-    // The real implementation should be present in that file
-    func startDownload(url: URL, headers: [String: String], title: String? = nil, completionHandler: ((Bool, String) -> Void)? = nil) {
-        // This method should already be implemented in JSController-Downloads.swift
-        // It's defined here only to satisfy the compiler
-        // The actual implementation will be used at runtime
-    }
+    // No longer needed since JSController-Downloads.swift has been implemented
+    // Remove the duplicate startDownload method to avoid conflicts
 } 

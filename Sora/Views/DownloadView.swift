@@ -11,11 +11,13 @@ import Kingfisher
 import UIKit
 
 struct DownloadView: View {
-    @StateObject private var jsController = JSController()
+    @State private var searchText = ""
+    
+    // Use the shared JSController instance
+    @StateObject private var jsController = JSController.shared
     @State private var selectedTab = 0
     @State private var showDeleteAlert = false
     @State private var assetToDelete: DownloadedAsset?
-    @State private var searchText = ""
     @State private var sortOption: SortOption = .newest
     
     enum SortOption {

@@ -33,7 +33,7 @@ struct EpisodeCell: View {
     @State private var isDownloading: Bool = false
     @State private var isPlaying = false
     
-    @ObservedObject private var jsController = JSController()
+    @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
     
     @Environment(\.colorScheme) private var colorScheme

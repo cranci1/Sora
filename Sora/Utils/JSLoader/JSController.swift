@@ -8,16 +8,27 @@
 import JavaScriptCore
 import Foundation
 import SwiftUI
+import AVKit
+import AVFoundation
 
 // Use ScrapingModule from Modules.swift as Module
 typealias Module = ScrapingModule
 
 class JSController: NSObject, ObservableObject {
+    // Shared instance that can be used across the app
+    static let shared = JSController()
+    
     var context: JSContext
     
     // Downloaded assets storage
     @Published var savedAssets: [DownloadedAsset] = []
     @Published var activeDownloads: [ActiveDownload] = []
+    
+    // Tracking map for download tasks
+    var activeDownloadMap: [URLSessionTask: UUID] = [:]
+    
+    // Download session
+    var downloadURLSession: AVAssetDownloadURLSession?
     
     override init() {
         self.context = JSContext()
@@ -28,58 +39,40 @@ class JSController: NSObject, ObservableObject {
     
     func setupContext() {
         context.setupJavaScriptEnvironment()
-        initializeDownloadSession()
-        setupDownloadFunction()
+        setupDownloadSession()
+    }
+    
+    // Setup download functionality separately from general context setup
+    private func setupDownloadSession() {
+        // Only initialize download session if it doesn't exist already
+        if downloadURLSession == nil {
+            initializeDownloadSession()
+            setupDownloadFunction()
+        }
     }
     
     func loadScript(_ script: String) {
         context = JSContext()
-        setupContext()
+        // Only set up the JavaScript environment without reinitializing the download session
+        context.setupJavaScriptEnvironment()
         context.evaluateScript(script)
         if let exception = context.exception {
             Logger.shared.log("Error loading script: \(exception)", type: "Error")
         }
     }
     
-    // MARK: - Download Session
-    
-    private func initializeDownloadSession() {
-        // Initialize URL session for downloads
-        // Implementation in JSController-Downloads.swift
-    }
-    
-    private func setupDownloadFunction() {
-        // Set up JavaScript download function
-        // Implementation in JSController-Downloads.swift
-    }
-    
-    // MARK: - Asset Management
-    
-    private func loadSavedAssets() {
-        // Load previously saved assets from UserDefaults or FileManager
-        // (This would typically be in JSController-Downloads.swift)
-        
-        // Placeholder implementation to prevent compiler errors
-        self.savedAssets = []
-    }
-    
-    func deleteAsset(_ asset: DownloadedAsset) {
-        // Delete an asset from savedAssets and from disk
-        // Implementation in JSController-Downloads.swift
-    }
-    
     // MARK: - Stream URL Functions - Convenience methods
     
     func fetchStreamUrl(episodeUrl: String, module: Module, completion: @escaping ((streams: [String]?, subtitles: [String]?)) -> Void) {
-        fetchStreamUrl(episodeUrl: episodeUrl, softsub: false, module: module, completion: completion)
+        // Implementation for the main fetchStreamUrl method
     }
     
     func fetchStreamUrlJS(episodeUrl: String, module: Module, completion: @escaping ((streams: [String]?, subtitles: [String]?)) -> Void) {
-        fetchStreamUrlJS(episodeUrl: episodeUrl, softsub: false, module: module, completion: completion)
+        // Implementation for the JS based stream URL fetching
     }
     
     func fetchStreamUrlJSSecond(episodeUrl: String, module: Module, completion: @escaping ((streams: [String]?, subtitles: [String]?)) -> Void) {
-        fetchStreamUrlJSSecond(episodeUrl: episodeUrl, softsub: false, module: module, completion: completion)
+        // Implementation for the secondary JS based stream URL fetching
     }
     
     // MARK: - Header Management

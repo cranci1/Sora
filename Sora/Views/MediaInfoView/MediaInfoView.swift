@@ -63,6 +63,9 @@ struct MediaInfoView: View {
     
     @State private var orientationChanged: Bool = false
     
+    @Environment(\.colorScheme) private var colorScheme
+    @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
+    
     private var isGroupedBySeasons: Bool {
         return groupedEpisodes().count > 1
     }
@@ -303,7 +306,12 @@ struct MediaInfoView: View {
                                                     episodeID: ep.number - 1,
                                                     progress: progress,
                                                     itemID: itemID ?? 0,
+                                                    totalEpisodes: episodeLinks.count,
+                                                    defaultBannerImage: selectedAppearance == .light || (selectedAppearance == .system && colorScheme == .light) ?
+                                                        "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner1.png" :
+                                                        "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner2.png",
                                                     module: module,
+                                                    parentTitle: title,
                                                     onTap: { imageUrl in
                                                         if !isFetchingEpisode {
                                                             selectedEpisodeNumber = ep.number
@@ -354,7 +362,12 @@ struct MediaInfoView: View {
                                                 episodeID: ep.number - 1,
                                                 progress: progress,
                                                 itemID: itemID ?? 0,
+                                                totalEpisodes: episodeLinks.count,
+                                                defaultBannerImage: selectedAppearance == .light || (selectedAppearance == .system && colorScheme == .light) ?
+                                                    "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner1.png" :
+                                                    "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner2.png",
                                                 module: module,
+                                                parentTitle: title,
                                                 onTap: { imageUrl in
                                                     if !isFetchingEpisode {
                                                         selectedEpisodeNumber = ep.number

@@ -80,7 +80,7 @@ struct DownloadedAsset: Identifiable, Codable {
     
     // MARK: - New Grouping Properties
     
-    /// Returns the title to use for grouping (show title for episodes, name for movies)
+    /// Returns the anime title to use for grouping (show title for episodes, name for movies)
     var groupTitle: String {
         if type == .episode, let showTitle = metadata?.showTitle, !showTitle.isEmpty {
             return showTitle
@@ -219,10 +219,10 @@ struct AssetMetadata: Codable {
 }
 
 // MARK: - New Group Model
-/// Represents a group of downloads (show/anime or movies)
+/// Represents a group of downloads (anime/show or movies)
 struct DownloadGroup: Identifiable {
     let id = UUID()
-    let title: String
+    let title: String  // Anime title for shows
     let type: DownloadType
     var assets: [DownloadedAsset]
     var posterURL: URL?
@@ -235,7 +235,11 @@ struct DownloadGroup: Identifiable {
         return type == .episode
     }
     
-    // For TV shows, organize episodes by season then episode number
+    var isAnime: Bool {
+        return isShow
+    }
+    
+    // For anime/TV shows, organize episodes by season then episode number
     func organizedEpisodes() -> [DownloadedAsset] {
         guard isShow else { return assets }
         return assets.sorted { $0.episodeOrderPriority < $1.episodeOrderPriority }
@@ -244,11 +248,17 @@ struct DownloadGroup: Identifiable {
 
 // MARK: - Grouping Extensions
 extension Array where Element == DownloadedAsset {
-    /// Groups assets by show title or movie
+    /// Groups assets by anime title or movie
     func groupedByTitle() -> [DownloadGroup] {
-        // First group by the relevant title (show title for episodes, name for movies)
+        // First group by the anime title (show title for episodes, name for movies)
         let groupedDict = Dictionary(grouping: self) { asset in
-            return asset.groupTitle
+            // For episodes, prioritize the showTitle from metadata
+            if asset.type == .episode, let showTitle = asset.metadata?.showTitle, !showTitle.isEmpty {
+                return showTitle
+            }
+            
+            // For movies or episodes without proper metadata, use the asset name
+            return asset.name
         }
         
         // Convert to array of DownloadGroup objects

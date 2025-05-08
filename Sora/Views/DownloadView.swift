@@ -19,6 +19,7 @@ struct DownloadView: View {
     @State private var showDeleteAlert = false
     @State private var assetToDelete: DownloadedAsset?
     @State private var sortOption: SortOption = .newest
+    @State private var expandedGroups: Set<UUID> = []
     
     enum SortOption {
         case newest, oldest, title
@@ -79,30 +80,50 @@ struct DownloadView: View {
     
     // MARK: - Active Downloads List
     private var activeDownloadsList: some View {
-        List {
-            ForEach(jsController.activeDownloads) { download in
-                ActiveDownloadRow(download: download)
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                // Group active downloads by anime title
+                ForEach(groupActiveDownloads().keys.sorted(), id: \.self) { title in
+                    if let downloads = groupActiveDownloads()[title] {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(title)
+                                .font(.headline)
+                                .padding(.horizontal)
+                            
+                            ForEach(downloads) { download in
+                                ActiveDownloadRow(download: download)
+                                    .padding(.horizontal)
+                                    .background(Color(UIColor.secondarySystemBackground))
+                                    .cornerRadius(8)
+                                    .padding(.horizontal)
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                }
             }
+            .padding(.vertical)
         }
-        .listStyle(PlainListStyle())
     }
     
     // MARK: - Downloaded Content List
     private var downloadedContentList: some View {
-        List {
-            ForEach(filterAndSortAssets()) { asset in
-                DownloadedAssetRow(asset: asset)
-                    .contextMenu {
-                        Button(role: .destructive, action: { confirmDelete(asset) }) {
-                            Label("Delete", systemImage: "trash")
-                        }
-                    }
-                    .onTapGesture {
-                        playAsset(asset)
-                    }
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                let groups = filterAndGroupAssets()
+                
+                ForEach(groups) { group in
+                    DownloadGroupView(
+                        group: group, 
+                        isExpanded: expandedGroups.contains(group.id),
+                        onDelete: confirmDelete,
+                        onPlay: playAsset,
+                        onToggleExpand: { toggleGroup(group.id) }
+                    )
+                }
             }
+            .padding()
         }
-        .listStyle(InsetGroupedListStyle())
     }
     
     // MARK: - Empty States
@@ -152,6 +173,14 @@ struct DownloadView: View {
         showDeleteAlert = true
     }
     
+    private func toggleGroup(_ id: UUID) {
+        if expandedGroups.contains(id) {
+            expandedGroups.remove(id)
+        } else {
+            expandedGroups.insert(id)
+        }
+    }
+    
     private func playAsset(_ asset: DownloadedAsset) {
         // Create a player for the downloaded file
         if UserDefaults.standard.string(forKey: "externalPlayer") == "Default" {
@@ -181,19 +210,120 @@ struct DownloadView: View {
     }
     
     // MARK: - Data Organization
-    private func filterAndSortAssets() -> [DownloadedAsset] {
+    private func filterAndGroupAssets() -> [DownloadGroup] {
         let filteredAssets = searchText.isEmpty
             ? jsController.savedAssets
-            : jsController.savedAssets.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            : jsController.savedAssets.filter { 
+                $0.name.localizedCaseInsensitiveContains(searchText) ||
+                ($0.metadata?.showTitle?.localizedCaseInsensitiveContains(searchText) ?? false)
+            }
         
+        let sortedAssets: [DownloadedAsset]
         switch sortOption {
         case .newest:
-            return filteredAssets.sorted { $0.downloadDate > $1.downloadDate }
+            sortedAssets = filteredAssets.sorted { $0.downloadDate > $1.downloadDate }
         case .oldest:
-            return filteredAssets.sorted { $0.downloadDate < $1.downloadDate }
+            sortedAssets = filteredAssets.sorted { $0.downloadDate < $1.downloadDate }
         case .title:
-            return filteredAssets.sorted { $0.name < $1.name }
+            sortedAssets = filteredAssets.sorted { $0.name < $1.name }
         }
+        
+        return sortedAssets.groupedByTitle()
+    }
+    
+    private func groupActiveDownloads() -> [String: [JSActiveDownload]] {
+        // Group JSActiveDownload objects by anime title from metadata
+        let groupedDict = Dictionary(grouping: jsController.activeDownloads) { download in
+            // Prioritize showTitle from metadata for episodes
+            if let metadata = download.metadata, 
+               let showTitle = metadata.showTitle, 
+               !showTitle.isEmpty {
+                return showTitle
+            }
+            // Fallback to title or URL
+            return download.title ?? download.originalURL.lastPathComponent
+        }
+        return groupedDict
+    }
+}
+
+// MARK: - DownloadGroupView
+struct DownloadGroupView: View {
+    let group: DownloadGroup
+    let isExpanded: Bool
+    let onDelete: (DownloadedAsset) -> Void
+    let onPlay: (DownloadedAsset) -> Void
+    let onToggleExpand: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // Group header
+            Button(action: onToggleExpand) {
+                HStack {
+                    if let posterURL = group.posterURL {
+                        KFImage(posterURL)
+                            .placeholder {
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.3))
+                            }
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 50, height: 75)
+                            .cornerRadius(6)
+                    } else {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 50, height: 75)
+                            .cornerRadius(6)
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text(group.title)
+                            .font(.headline)
+                        
+                        Text("\(group.assetCount) \(group.isAnime ? "Episodes" : "Files")")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .background(Color(UIColor.secondarySystemBackground))
+                .cornerRadius(10)
+            }
+            .buttonStyle(PlainButtonStyle())
+            
+            // Group content (episodes or files)
+            if isExpanded {
+                VStack(spacing: 4) {
+                    let assets = group.isAnime ? group.organizedEpisodes() : group.assets
+                    
+                    ForEach(assets) { asset in
+                        DownloadedAssetRow(asset: asset)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color(UIColor.tertiarySystemBackground))
+                            .cornerRadius(8)
+                            .contextMenu {
+                                Button(role: .destructive, action: { onDelete(asset) }) {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                            .onTapGesture {
+                                onPlay(asset)
+                            }
+                    }
+                }
+                .padding(.leading, 12)
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: isExpanded)
     }
 }
 
@@ -203,11 +333,25 @@ struct ActiveDownloadRow: View {
     
     var body: some View {
         HStack {
-            // Generic placeholder image since we don't have imageURL in the ActiveDownload
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 60, height: 60)
-                .cornerRadius(6)
+            // Use the imageURL from the download if available
+            if let imageURL = download.imageURL {
+                KFImage(imageURL)
+                    .placeholder {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 60, height: 60)
+                    }
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 60, height: 60)
+                    .cornerRadius(6)
+            } else {
+                // Fallback to placeholder
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 60, height: 60)
+                    .cornerRadius(6)
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(download.title ?? download.originalURL.lastPathComponent)
@@ -264,7 +408,6 @@ struct ActiveDownloadRow: View {
                     .font(.title2)
             }
         }
-        .padding(.vertical, 8)
     }
 }
 
@@ -274,14 +417,28 @@ struct DownloadedAssetRow: View {
     
     var body: some View {
         HStack {
-            // Generic placeholder image
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 60, height: 60)
-                .cornerRadius(6)
+            // Use KFImage to load the actual image from metadata if available
+            if let posterURL = asset.metadata?.posterURL {
+                KFImage(posterURL)
+                    .placeholder {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 60, height: 60)
+                    }
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 60, height: 60)
+                    .cornerRadius(6)
+            } else {
+                // Fallback to placeholder
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 60, height: 60)
+                    .cornerRadius(6)
+            }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(asset.name)
+                Text(asset.type == .episode ? asset.episodeDisplayName : asset.name)
                     .font(.headline)
                     .lineLimit(1)
                 
@@ -303,7 +460,6 @@ struct DownloadedAssetRow: View {
                 .foregroundColor(.blue)
                 .font(.title2)
         }
-        .padding(.vertical, 8)
     }
     
     private func formatFileSize(_ size: Int64) -> String {

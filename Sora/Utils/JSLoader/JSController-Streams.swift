@@ -70,8 +70,18 @@ extension JSController {
                     }
                 }
                 
+                // Check if the result is a Promise object and handle it properly
+                if resultString == "[object Promise]" {
+                    Logger.shared.log("Received Promise object instead of resolved value, waiting for proper resolution", type: "Stream")
+                    // Skip this result - other methods will provide the resolved URL
+                    DispatchQueue.main.async { completion((nil, nil)) }
+                    return
+                }
+                
                 Logger.shared.log("Starting stream from: \(resultString)", type: "Stream")
-                DispatchQueue.main.async { completion(([resultString], nil)) }
+                DispatchQueue.main.async {
+                    completion(([resultString], nil))
+                }
             } else {
                 Logger.shared.log("Failed to extract stream URL", type: "Error")
                 DispatchQueue.main.async { completion((nil, nil)) }
@@ -142,6 +152,14 @@ extension JSController {
             
             let streamUrl = result.toString()
             Logger.shared.log("Starting stream from: \(streamUrl ?? "nil")", type: "Stream")
+            
+            // Check if the result is a Promise object and handle it properly
+            if streamUrl == "[object Promise]" {
+                Logger.shared.log("Received Promise object instead of resolved value, waiting for proper resolution", type: "Stream")
+                // Skip this result - other methods will provide the resolved URL
+                return
+            }
+            
             DispatchQueue.main.async {
                 completion((streamUrl != nil ? [streamUrl!] : nil, nil))
             }
@@ -241,6 +259,14 @@ extension JSController {
                     
                     let streamUrl = result.toString()
                     Logger.shared.log("Starting stream from: \(streamUrl ?? "nil")", type: "Stream")
+                    
+                    // Check if the result is a Promise object and handle it properly
+                    if streamUrl == "[object Promise]" {
+                        Logger.shared.log("Received Promise object instead of resolved value, waiting for proper resolution", type: "Stream")
+                        // Skip this result - other methods will provide the resolved URL
+                        return
+                    }
+                    
                     DispatchQueue.main.async {
                         completion((streamUrl != nil ? [streamUrl!] : nil, nil))
                     }

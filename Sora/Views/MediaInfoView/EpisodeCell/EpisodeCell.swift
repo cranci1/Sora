@@ -20,10 +20,13 @@ struct EpisodeCell: View {
     let episodeID: Int
     let progress: Double
     let itemID: Int
-    let module: ScrapingModule
+    var totalEpisodes: Int?
+    var defaultBannerImage: String
+    var module: ScrapingModule
+    var parentTitle: String
     
-    let onTap: (String) -> Void
-    let onMarkAllPrevious: () -> Void
+    var onTap: (String) -> Void
+    var onMarkAllPrevious: () -> Void
     
     @State private var episodeTitle: String = ""
     @State private var episodeImageUrl: String = ""
@@ -32,6 +35,7 @@ struct EpisodeCell: View {
     @State private var showDownloadConfirmation = false
     @State private var isDownloading: Bool = false
     @State private var isPlaying = false
+    @State private var loadedFromCache: Bool = false
     
     @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
@@ -39,21 +43,29 @@ struct EpisodeCell: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     
-    var defaultBannerImage: String {
-        let isLightMode = selectedAppearance == .light || (selectedAppearance == .system && colorScheme == .light)
-        return isLightMode
-            ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner1.png"
-            : "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner2.png"
-    }
-    
     init(episodeIndex: Int, episode: String, episodeID: Int, progress: Double,
-         itemID: Int, module: ScrapingModule, onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void) {
+         itemID: Int, totalEpisodes: Int? = nil, defaultBannerImage: String = "",
+         module: ScrapingModule, parentTitle: String, 
+         onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void) {
         self.episodeIndex = episodeIndex
         self.episode = episode
         self.episodeID = episodeID
         self.progress = progress
         self.itemID = itemID
+        self.totalEpisodes = totalEpisodes
+        
+        // Initialize banner image based on appearance
+        let isLightMode = (UserDefaults.standard.string(forKey: "selectedAppearance") == "light") || 
+                         ((UserDefaults.standard.string(forKey: "selectedAppearance") == "system") && 
+                          UITraitCollection.current.userInterfaceStyle == .light)
+        let defaultLightBanner = "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner1.png"
+        let defaultDarkBanner = "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner2.png"
+        
+        self.defaultBannerImage = defaultBannerImage.isEmpty ? 
+            (isLightMode ? defaultLightBanner : defaultDarkBanner) : defaultBannerImage
+        
         self.module = module
+        self.parentTitle = parentTitle
         self.onTap = onTap
         self.onMarkAllPrevious = onMarkAllPrevious
     }
@@ -62,6 +74,19 @@ struct EpisodeCell: View {
         HStack {
             ZStack {
                 KFImage(URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl))
+                    .setProcessor(DownsamplingImageProcessor(size: CGSize(width: 100, height: 56)))
+                    .memoryCacheExpiration(.seconds(300)) // 5 minutes
+                    .cacheOriginalImage()
+                    .cacheMemoryOnly(!KingfisherCacheManager.shared.isCachingEnabled)
+                    .fade(duration: 0.25)
+                    .onSuccess { _ in
+                        if !loadedFromCache {
+                            Logger.shared.log("Loaded episode \(episodeID + 1) image from network", type: "Debug")
+                        }
+                    }
+                    .onFailure { error in
+                        Logger.shared.log("Failed to load episode image: \(error)", type: "Error")
+                    }
                     .resizable()
                     .aspectRatio(16/9, contentMode: .fill)
                     .frame(width: 100, height: 56)
@@ -164,63 +189,8 @@ struct EpisodeCell: View {
                 let jsContent = try moduleManager.getModuleContent(module)
                 jsController.loadScript(jsContent)
                 
-                if module.metadata.softsub == true {
-                    if module.metadata.asyncJS == true {
-                        jsController.fetchStreamUrlJS(episodeUrl: episode, softsub: true, module: module) { result in
-                            self.handleDownloadResult(result, downloadID: downloadID)
-                        }
-                        
-                        if module.metadata.streamAsyncJS == true {
-                            jsController.fetchStreamUrlJSSecond(episodeUrl: episode, softsub: true, module: module) { result in
-                                self.handleDownloadResult(result, downloadID: downloadID)
-                            }
-                        }
-                        
-                        jsController.fetchStreamUrl(episodeUrl: episode, softsub: true, module: module) { result in
-                            self.handleDownloadResult(result, downloadID: downloadID)
-                        }
-                    } else if module.metadata.streamAsyncJS == true {
-                        jsController.fetchStreamUrlJSSecond(episodeUrl: episode, softsub: true, module: module) { result in
-                            self.handleDownloadResult(result, downloadID: downloadID)
-                        }
-                        
-                        jsController.fetchStreamUrl(episodeUrl: episode, softsub: true, module: module) { result in
-                            self.handleDownloadResult(result, downloadID: downloadID)
-                        }
-                    } else {
-                        jsController.fetchStreamUrl(episodeUrl: episode, softsub: true, module: module) { result in
-                            self.handleDownloadResult(result, downloadID: downloadID)
-                        }
-                    }
-                } else {
-                    if module.metadata.asyncJS == true {
-                        jsController.fetchStreamUrlJS(episodeUrl: episode, module: module) { result in
-                            self.handleDownloadResult(result, downloadID: downloadID)
-                        }
-                        
-                        if module.metadata.streamAsyncJS == true {
-                            jsController.fetchStreamUrlJSSecond(episodeUrl: episode, module: module) { result in
-                                self.handleDownloadResult(result, downloadID: downloadID)
-                            }
-                        }
-                        
-                        jsController.fetchStreamUrl(episodeUrl: episode, module: module) { result in
-                            self.handleDownloadResult(result, downloadID: downloadID)
-                        }
-                    } else if module.metadata.streamAsyncJS == true {
-                        jsController.fetchStreamUrlJSSecond(episodeUrl: episode, module: module) { result in
-                            self.handleDownloadResult(result, downloadID: downloadID)
-                        }
-                        
-                        jsController.fetchStreamUrl(episodeUrl: episode, module: module) { result in
-                            self.handleDownloadResult(result, downloadID: downloadID)
-                        }
-                    } else {
-                        jsController.fetchStreamUrl(episodeUrl: episode, module: module) { result in
-                            self.handleDownloadResult(result, downloadID: downloadID)
-                        }
-                    }
-                }
+                // Try download methods sequentially instead of in parallel
+                tryNextDownloadMethod(methodIndex: 0, downloadID: downloadID, softsub: module.metadata.softsub == true)
             } catch {
                 DropManager.shared.error("Failed to start download: \(error.localizedDescription)")
                 isDownloading = false
@@ -228,83 +198,160 @@ struct EpisodeCell: View {
         }
     }
     
-    private func handleDownloadResult(_ result: (streams: [String]?, subtitles: [String]?), downloadID: UUID) {
-        // Only process this result if we're still downloading the same episode
+    // Try each download method sequentially
+    private func tryNextDownloadMethod(methodIndex: Int, downloadID: UUID, softsub: Bool) {
         if !isDownloading {
             return
         }
         
-        if let streams = result.streams, !streams.isEmpty {
-            // Get the first stream URL
-            let streamUrl = streams[0]
-            
-            // Extract base URL for headers
-            var headers: [String: String] = [:]
-            if let url = URL(string: streamUrl) {
-                // Always use the module's baseUrl for Origin and Referer
-                if !module.metadata.baseUrl.isEmpty && !module.metadata.baseUrl.contains("undefined") {
-                    print("Using module baseUrl: \(module.metadata.baseUrl)")
-                    
-                    // Create comprehensive headers prioritizing the module's baseUrl
-                    headers = [
-                        "Origin": module.metadata.baseUrl,
-                        "Referer": module.metadata.baseUrl,
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
-                        "Accept": "*/*",
-                        "Accept-Language": "en-US,en;q=0.9",
-                        "Sec-Fetch-Dest": "empty",
-                        "Sec-Fetch-Mode": "cors",
-                        "Sec-Fetch-Site": "same-origin"
-                    ]
-                } else {
-                    // Fallback to using the stream URL's domain if module.baseUrl isn't available
-                    if let scheme = url.scheme, let host = url.host {
-                        let baseUrl = scheme + "://" + host
-                        
-                        headers = [
-                            "Origin": baseUrl,
-                            "Referer": baseUrl,
-                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
-                            "Accept": "*/*",
-                            "Accept-Language": "en-US,en;q=0.9",
-                            "Sec-Fetch-Dest": "empty",
-                            "Sec-Fetch-Mode": "cors",
-                            "Sec-Fetch-Site": "same-origin"
-                        ]
-                    } else {
-                        // Missing URL components
-                        DropManager.shared.error("Invalid stream URL - missing scheme or host")
-                        isDownloading = false
-                        return
-                    }
+        print("[Download] Trying download method #\(methodIndex+1) for Episode \(episodeID + 1)")
+        
+        switch methodIndex {
+        case 0:
+            // First try fetchStreamUrlJS if asyncJS is true
+            if module.metadata.asyncJS == true {
+                jsController.fetchStreamUrlJS(episodeUrl: episode, softsub: softsub, module: module) { result in
+                    self.handleSequentialDownloadResult(result, downloadID: downloadID, methodIndex: methodIndex, softsub: softsub)
                 }
-                
-                print("Download headers: \(headers)")
-                
-                // Use jsController to handle the download with comprehensive headers
-                jsController.downloadWithM3U8Support(url: url, headers: headers, title: "Episode \(episodeID + 1)")
-                
-                DropManager.shared.success("Download started for Episode \(episodeID + 1)")
-                
-                // Log the download for analytics
-                Logger.shared.log("Started download for Episode \(episodeID + 1): \(episode)", type: "Download")
-                AnalyticsManager.shared.sendEvent(
-                    event: "download",
-                    additionalData: ["episode": episodeID + 1, "url": streamUrl]
-                )
-                
-                // Mark that we've handled this download
-                isDownloading = false
             } else {
-                // Invalid URL
-                DropManager.shared.error("Invalid stream URL format")
-                isDownloading = false
+                // Skip to next method if not applicable
+                tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
             }
-        } else {
-            // If we didn't find any streams, show an error
-            DropManager.shared.error("No valid stream found for download")
+            
+        case 1:
+            // Then try fetchStreamUrlJSSecond if streamAsyncJS is true
+            if module.metadata.streamAsyncJS == true {
+                jsController.fetchStreamUrlJSSecond(episodeUrl: episode, softsub: softsub, module: module) { result in
+                    self.handleSequentialDownloadResult(result, downloadID: downloadID, methodIndex: methodIndex, softsub: softsub)
+                }
+            } else {
+                // Skip to next method if not applicable
+                tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
+            }
+            
+        case 2:
+            // Finally try fetchStreamUrl (most reliable method)
+            jsController.fetchStreamUrl(episodeUrl: episode, softsub: softsub, module: module) { result in
+                self.handleSequentialDownloadResult(result, downloadID: downloadID, methodIndex: methodIndex, softsub: softsub)
+            }
+            
+        default:
+            // We've tried all methods and none worked
+            DropManager.shared.error("Failed to find a valid stream for download after trying all methods")
             isDownloading = false
         }
+    }
+    
+    // Handle result from sequential download attempts
+    private func handleSequentialDownloadResult(_ result: (streams: [String]?, subtitles: [String]?), downloadID: UUID, methodIndex: Int, softsub: Bool) {
+        // Skip if we're no longer downloading
+        if !isDownloading {
+            return
+        }
+        
+        // Check if we have valid streams
+        if let streams = result.streams, !streams.isEmpty, let url = URL(string: streams[0]) {
+            // Check if it's a Promise object
+            if streams[0] == "[object Promise]" {
+                print("[Download] Method #\(methodIndex+1) returned a Promise object, trying next method")
+                tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
+                return
+            }
+            
+            // We found a valid stream URL, proceed with download
+            print("[Download] Method #\(methodIndex+1) returned valid stream URL: \(streams[0])")
+            startActualDownload(url: url, streamUrl: streams[0], downloadID: downloadID)
+        } else {
+            // No valid streams from this method, try the next one
+            print("[Download] Method #\(methodIndex+1) did not return valid streams, trying next method")
+            tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
+        }
+    }
+    
+    // Start the actual download process once we have a valid URL
+    private func startActualDownload(url: URL, streamUrl: String, downloadID: UUID) {
+        // Extract base URL for headers
+        var headers: [String: String] = [:]
+        
+        // Always use the module's baseUrl for Origin and Referer
+        if !module.metadata.baseUrl.isEmpty && !module.metadata.baseUrl.contains("undefined") {
+            print("Using module baseUrl: \(module.metadata.baseUrl)")
+            
+            // Create comprehensive headers prioritizing the module's baseUrl
+            headers = [
+                "Origin": module.metadata.baseUrl,
+                "Referer": module.metadata.baseUrl,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                "Accept": "*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-origin"
+            ]
+        } else {
+            // Fallback to using the stream URL's domain if module.baseUrl isn't available
+            if let scheme = url.scheme, let host = url.host {
+                let baseUrl = scheme + "://" + host
+                
+                headers = [
+                    "Origin": baseUrl,
+                    "Referer": baseUrl,
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                    "Accept": "*/*",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-origin"
+                ]
+            } else {
+                // Missing URL components
+                DropManager.shared.error("Invalid stream URL - missing scheme or host")
+                isDownloading = false
+                return
+            }
+        }
+        
+        print("Download headers: \(headers)")
+        
+        // Get the image URL for the episode
+        let episodeImg = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
+        let imageURL = URL(string: episodeImg)
+        
+        // Get the episode title and information
+        let episodeName = episodeTitle.isEmpty ? "Episode \(episodeID + 1)" : episodeTitle
+        let fullEpisodeTitle = "Episode \(episodeID + 1): \(episodeName)"
+        
+        // Extract show title from the parent view
+        let animeTitle = parentTitle.isEmpty ? "Unknown Anime" : parentTitle
+        
+        // Use jsController to handle the download with comprehensive headers and metadata
+        jsController.startDownload(
+            url: url,
+            headers: headers,
+            title: fullEpisodeTitle,
+            imageURL: imageURL,
+            isEpisode: true,
+            showTitle: animeTitle,
+            season: 1, // Default to season 1 if not known
+            episode: episodeID + 1,
+            completionHandler: { success, message in
+                if success {
+                    DropManager.shared.success("Download started for Episode \(self.episodeID + 1)")
+                    
+                    // Log the download for analytics
+                    Logger.shared.log("Started download for Episode \(self.episodeID + 1): \(self.episode)", type: "Download")
+                    AnalyticsManager.shared.sendEvent(
+                        event: "download",
+                        additionalData: ["episode": self.episodeID + 1, "url": streamUrl]
+                    )
+                } else {
+                    DropManager.shared.error(message)
+                }
+                
+                // Mark that we've handled this download
+                self.isDownloading = false
+            }
+        )
     }
     
     private func markAsWatched() {
@@ -335,6 +382,32 @@ struct EpisodeCell: View {
     }
     
     private func fetchEpisodeDetails() {
+        // Check if metadata caching is enabled
+        if MetadataCacheManager.shared.isCachingEnabled && 
+           (UserDefaults.standard.object(forKey: "fetchEpisodeMetadata") == nil || 
+           UserDefaults.standard.bool(forKey: "fetchEpisodeMetadata")) {
+            
+            // Create a cache key using the anilist ID and episode number
+            let cacheKey = "anilist_\(itemID)_episode_\(episodeID + 1)"
+            
+            // Try to get from cache first
+            if let cachedData = MetadataCacheManager.shared.getMetadata(forKey: cacheKey),
+               let metadata = EpisodeMetadata.fromData(cachedData) {
+                
+                // Successfully loaded from cache
+                DispatchQueue.main.async {
+                    self.episodeTitle = metadata.title["en"] ?? ""
+                    self.episodeImageUrl = metadata.imageUrl
+                    self.isLoading = false
+                    self.loadedFromCache = true
+                    
+                    Logger.shared.log("Loaded episode \(self.episodeID + 1) metadata from cache", type: "Debug")
+                }
+                return
+            }
+        }
+        
+        // Cache miss or caching disabled, fetch from network
         fetchAnimeEpisodeDetails()
     }
     
@@ -367,6 +440,23 @@ struct EpisodeCell: View {
                           DispatchQueue.main.async { self.isLoading = false }
                           return
                       }
+                
+                // Cache the metadata if caching is enabled
+                if MetadataCacheManager.shared.isCachingEnabled {
+                    let metadata = EpisodeMetadata(
+                        title: title,
+                        imageUrl: image,
+                        anilistId: self.itemID,
+                        episodeNumber: self.episodeID + 1
+                    )
+                    
+                    if let metadataData = metadata.toData() {
+                        MetadataCacheManager.shared.storeMetadata(
+                            metadataData,
+                            forKey: metadata.cacheKey
+                        )
+                    }
+                }
                 
                 DispatchQueue.main.async {
                     self.isLoading = false

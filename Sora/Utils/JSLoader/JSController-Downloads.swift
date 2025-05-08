@@ -47,8 +47,16 @@ extension JSController {
     ///   - url: The URL to download
     ///   - headers: HTTP headers to use for the request
     ///   - title: Optional title for the download (defaults to filename)
+    ///   - imageURL: Optional image URL for the download
+    ///   - isEpisode: Indicates if the download is for an episode
+    ///   - showTitle: Optional show title for the episode (anime title)
+    ///   - season: Optional season number for the episode
+    ///   - episode: Optional episode number for the episode
     ///   - completionHandler: Called when download is initiated or fails
-    func startDownload(url: URL, headers: [String: String], title: String? = nil, completionHandler: ((Bool, String) -> Void)? = nil) {
+    func startDownload(url: URL, headers: [String: String], title: String? = nil, 
+                     imageURL: URL? = nil, isEpisode: Bool = false, 
+                     showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
+                     completionHandler: ((Bool, String) -> Void)? = nil) {
         // Check if already downloaded
         if savedAssets.contains(where: { $0.originalURL == url }) {
             print("Asset already downloaded: \(url.absoluteString)")
@@ -66,6 +74,14 @@ extension JSController {
         print("==== DOWNLOAD ATTEMPT ====")
         print("URL: \(url.absoluteString)")
         print("Headers: \(headers)")
+        print("Title: \(title ?? "Unknown")")
+        print("Image URL: \(imageURL?.absoluteString ?? "None")")
+        print("Is Episode: \(isEpisode)")
+        if isEpisode {
+            print("Anime Title: \(showTitle ?? "Unknown")")
+            print("Season: \(season ?? 0)")
+            print("Episode: \(episode ?? 0)")
+        }
         
         // Extract domain for simplicity in debugging
         let domain = url.host ?? "unknown"
@@ -93,6 +109,22 @@ extension JSController {
         // Generate a title for the download if not provided
         let downloadTitle = title ?? url.lastPathComponent
         
+        // Ensure we have a proper anime title for episodes
+        let animeTitle = isEpisode ? (showTitle ?? "Unknown Anime") : nil
+        
+        // Create metadata for the download with proper anime title
+        let downloadType: DownloadType = isEpisode ? .episode : .movie
+        let assetMetadata = AssetMetadata(
+            title: downloadTitle,
+            overview: nil,
+            posterURL: imageURL,
+            backdropURL: imageURL,
+            releaseDate: nil,
+            showTitle: animeTitle,
+            season: season,
+            episode: episode
+        )
+        
         // Create the download task with minimal options
         guard let task = downloadURLSession?.makeAssetDownloadTask(
             asset: asset,
@@ -113,8 +145,10 @@ extension JSController {
             originalURL: url,
             progress: 0,
             task: task,
-            type: .movie,  // Default to movie, can be refined with metadata
-            title: downloadTitle
+            type: downloadType,
+            metadata: assetMetadata,
+            title: downloadTitle,
+            imageURL: imageURL
         )
         
         activeDownloads.append(download)
@@ -212,14 +246,14 @@ extension JSController: AVAssetDownloadDelegate {
         
         let download = activeDownloads[downloadIndex]
         
-        // Create a new DownloadedAsset
+        // Create a new DownloadedAsset with metadata from the active download
         let newAsset = DownloadedAsset(
             name: download.title ?? download.originalURL.lastPathComponent,
             downloadDate: Date(),
             originalURL: download.originalURL,
             localURL: location,
-            type: .movie,  // Default to movie, can be refined with metadata
-            metadata: nil  // Metadata can be added in future versions
+            type: download.type,
+            metadata: download.metadata  // Use the metadata we created when starting the download
         )
         
         // Add to saved assets and save
@@ -297,8 +331,8 @@ extension JSController: AVAssetDownloadDelegate {
                    totalTimeRangesLoaded loadedTimeRanges: [NSValue],
                    timeRangeExpectedToLoad: CMTimeRange) {
         
-        guard let downloadID = activeDownloadMap[assetDownloadTask],
-              let downloadIndex = activeDownloads.firstIndex(where: { $0.id == downloadID }) else { 
+        // Safely get the download ID and calculate progress
+        guard let downloadID = activeDownloadMap[assetDownloadTask] else { 
             return 
         }
         
@@ -316,9 +350,22 @@ extension JSController: AVAssetDownloadDelegate {
             percentComplete = percentComplete / totalDuration
         }
         
-        // Update the progress on the main thread
-        DispatchQueue.main.async {
-            self.activeDownloads[downloadIndex].progress = percentComplete
+        // Capture the progress value to use in the async block
+        let finalProgress = percentComplete
+        
+        // Update the progress on the main thread with additional safety checks
+        DispatchQueue.main.async { [weak self] in
+            guard let strongSelf = self else { return }
+            
+            // Find the index again inside the main thread to avoid race conditions
+            guard let downloadIndex = strongSelf.activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
+                return
+            }
+            
+            // Only update if the index is still valid
+            if downloadIndex < strongSelf.activeDownloads.count {
+                strongSelf.activeDownloads[downloadIndex].progress = finalProgress
+            }
         }
     }
 }
@@ -392,6 +439,7 @@ struct JSActiveDownload: Identifiable {
     let type: DownloadType
     var metadata: AssetMetadata?
     var title: String?
+    var imageURL: URL?  // Added property to store image URL
     
     init(
         id: UUID = UUID(),
@@ -400,7 +448,8 @@ struct JSActiveDownload: Identifiable {
         task: AVAssetDownloadTask,
         type: DownloadType = .movie,
         metadata: AssetMetadata? = nil,
-        title: String? = nil
+        title: String? = nil,
+        imageURL: URL? = nil  // Added parameter
     ) {
         self.id = id
         self.originalURL = originalURL
@@ -409,5 +458,6 @@ struct JSActiveDownload: Identifiable {
         self.type = type
         self.metadata = metadata
         self.title = title
+        self.imageURL = imageURL  // Set the image URL
     }
 } 

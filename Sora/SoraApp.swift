@@ -14,6 +14,10 @@ struct SoraApp: App {
     @StateObject private var librarykManager = LibraryManager()
 
     init() {
+        // Initialize caching systems
+        _ = MetadataCacheManager.shared
+        _ = KingfisherCacheManager.shared
+        
         TraktToken.checkAuthenticationStatus { isAuthenticated in
             if isAuthenticated {
                 Logger.shared.log("Trakt authentication is valid")

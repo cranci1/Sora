@@ -162,7 +162,7 @@ extension JSContext {
                     if(method != "GET")
                     {
                         // Ensure body is properly serialized
-                        processedBody = body ? JSON.stringify(body) : null
+                        processedBody = (body && (typeof body === 'object')) ? JSON.stringify(body) : (body || null)
                     }
             
                         return new Promise(function(resolve, reject) {

@@ -18,6 +18,7 @@ class VideoPlayerViewController: UIViewController {
     var fullUrl: String = ""
     var subtitles: String = ""
     var aniListID: Int = 0
+    var headers: [String:String]? = nil
     
     var episodeNumber: Int = 0
     var episodeImageUrl: String = ""
@@ -40,8 +41,18 @@ class VideoPlayerViewController: UIViewController {
         }
         
         var request = URLRequest(url: url)
-        request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Referer")
-        request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Origin")
+        if let mydict = headers, !mydict.isEmpty
+        {
+            for (key,value) in mydict
+            {
+                request.addValue(value, forHTTPHeaderField: key)
+            }
+        }
+        else
+        {
+            request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Referer")
+            request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Origin")
+        }
         request.addValue("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
         
         let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": request.allHTTPHeaderFields ?? [:]])
@@ -127,7 +138,8 @@ class VideoPlayerViewController: UIViewController {
                     fullUrl: self.fullUrl,
                     subtitles: self.subtitles,
                     aniListID: self.aniListID,
-                    module: self.module
+                    module: self.module,
+                    headers: self.headers
                 )
                 ContinueWatchingManager.shared.save(item: item)
             }

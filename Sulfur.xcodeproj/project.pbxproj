@@ -176,6 +176,7 @@
 		131270152DC139CD0093AA9C /* DownloadManager */ = {
 			isa = PBXGroup;
 			children = (
+				131270162DC13A010093AA9C /* DownloadManager.swift */,
 			);
 			path = DownloadManager;
 			sourceTree = "<group>";
@@ -374,7 +375,6 @@
 			children = (
 				13C0E5E92D5F85EA00E7F619 /* ContinueWatchingManager.swift */,
 				13C0E5EB2D5F85F800E7F619 /* ContinueWatchingItem.swift */,
-				131270162DC13A010093AA9C /* DownloadManager.swift */,
 			);
 			path = ContinueWatching;
 			sourceTree = "<group>";

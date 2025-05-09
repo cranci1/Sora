@@ -14,6 +14,9 @@ extension JSController {
     
     // MARK: - Download Session Setup
     
+    // Class-level property to track asset validation
+    private static var hasValidatedAssets = false
+    
     func initializeDownloadSession() {
         // Create a unique identifier for the background session
         let sessionIdentifier = "hls-downloader-\(UUID().uuidString)"
@@ -52,10 +55,12 @@ extension JSController {
     ///   - showTitle: Optional show title for the episode (anime title)
     ///   - season: Optional season number for the episode
     ///   - episode: Optional episode number for the episode
+    ///   - subtitleURL: Optional URL for the subtitle file to download
     ///   - completionHandler: Called when download is initiated or fails
     func startDownload(url: URL, headers: [String: String], title: String? = nil, 
                      imageURL: URL? = nil, isEpisode: Bool = false, 
                      showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
+                     subtitleURL: URL? = nil,
                      completionHandler: ((Bool, String) -> Void)? = nil) {
         // Check if already downloaded
         if savedAssets.contains(where: { $0.originalURL == url }) {
@@ -81,6 +86,9 @@ extension JSController {
             print("Anime Title: \(showTitle ?? "Unknown")")
             print("Season: \(season ?? 0)")
             print("Episode: \(episode ?? 0)")
+        }
+        if let subtitleURL = subtitleURL {
+            print("Subtitle URL: \(subtitleURL.absoluteString)")
         }
         
         // Extract domain for simplicity in debugging
@@ -148,7 +156,8 @@ extension JSController {
             type: downloadType,
             metadata: assetMetadata,
             title: downloadTitle,
-            imageURL: imageURL
+            imageURL: imageURL,
+            subtitleURL: subtitleURL // Store subtitle URL in the active download
         )
         
         activeDownloads.append(download)
@@ -165,6 +174,160 @@ extension JSController {
         saveDownloadState()
     }
     
+    /// Downloads a subtitle file for a video asset
+    /// - Parameters:
+    ///   - subtitleURL: The URL of the subtitle file to download
+    ///   - assetID: The ID of the asset this subtitle is associated with
+    private func downloadSubtitle(subtitleURL: URL, assetID: String) {
+        print("Downloading subtitle from: \(subtitleURL.absoluteString) for asset ID: \(assetID)")
+        
+        let session = URLSession.shared
+        var request = URLRequest(url: subtitleURL)
+        
+        // Add more comprehensive headers for subtitle downloads
+        request.addValue("*/*", forHTTPHeaderField: "Accept")
+        request.addValue("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
+        request.addValue("cors", forHTTPHeaderField: "Sec-Fetch-Mode")
+        request.addValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
+        
+        // Extract domain from subtitle URL to use as referer
+        if let host = subtitleURL.host {
+            let referer = "https://\(host)/"
+            request.addValue(referer, forHTTPHeaderField: "Referer")
+            request.addValue(referer, forHTTPHeaderField: "Origin")
+        }
+        
+        print("Subtitle download request headers: \(request.allHTTPHeaderFields ?? [:])")
+        
+        // Create a task to download the subtitle file
+        let task = session.downloadTask(with: request) { [weak self] (tempURL, response, error) in
+            guard let self = self else {
+                print("Self reference lost during subtitle download")
+                return
+            }
+            
+            if let error = error {
+                print("Subtitle download error: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let tempURL = tempURL else {
+                print("No temporary URL received for subtitle download")
+                return
+            }
+            
+            guard let downloadDir = self.getPersistentDownloadDirectory() else {
+                print("Failed to get persistent download directory for subtitle")
+                return
+            }
+            
+            // Log response details for debugging
+            if let httpResponse = response as? HTTPURLResponse {
+                print("Subtitle download HTTP status: \(httpResponse.statusCode)")
+                print("Subtitle download content type: \(httpResponse.mimeType ?? "unknown")")
+            }
+            
+            // Try to read content to validate it's actually a subtitle file
+            do {
+                let subtitleData = try Data(contentsOf: tempURL)
+                let subtitleContent = String(data: subtitleData, encoding: .utf8) ?? ""
+                
+                if subtitleContent.isEmpty {
+                    print("Warning: Subtitle file appears to be empty")
+                } else {
+                    print("Subtitle file contains \(subtitleData.count) bytes of data")
+                    if subtitleContent.hasPrefix("WEBVTT") {
+                        print("Valid WebVTT subtitle detected")
+                    } else if subtitleContent.contains(" --> ") {
+                        print("Subtitle file contains timing markers")
+                    } else {
+                        print("Warning: Subtitle content doesn't appear to be in a recognized format")
+                    }
+                }
+            } catch {
+                print("Error reading subtitle content for validation: \(error.localizedDescription)")
+            }
+            
+            // Determine file extension based on the content type or URL
+            let fileExtension: String
+            if let mimeType = response?.mimeType {
+                switch mimeType.lowercased() {
+                case "text/vtt", "text/webvtt":
+                    fileExtension = "vtt"
+                case "text/srt", "application/x-subrip":
+                    fileExtension = "srt"
+                default:
+                    // Use original extension or default to vtt
+                    fileExtension = subtitleURL.pathExtension.isEmpty ? "vtt" : subtitleURL.pathExtension
+                }
+            } else {
+                fileExtension = subtitleURL.pathExtension.isEmpty ? "vtt" : subtitleURL.pathExtension
+            }
+            
+            // Create a filename for the subtitle using the asset ID
+            let localFilename = "subtitle-\(assetID).\(fileExtension)"
+            let localURL = downloadDir.appendingPathComponent(localFilename)
+            
+            do {
+                // If file already exists, remove it
+                if FileManager.default.fileExists(atPath: localURL.path) {
+                    try FileManager.default.removeItem(at: localURL)
+                    print("Removed existing subtitle file at \(localURL.path)")
+                }
+                
+                // Move the downloaded file to the persistent location
+                try FileManager.default.moveItem(at: tempURL, to: localURL)
+                
+                // Update the asset with the subtitle URL
+                self.updateAssetWithSubtitle(assetID: assetID, 
+                                         subtitleURL: subtitleURL, 
+                                         localSubtitleURL: localURL)
+                
+                print("Subtitle downloaded successfully: \(localURL.path)")
+                
+                // Show success notification
+                DispatchQueue.main.async {
+                    DropManager.shared.success("Subtitle downloaded successfully")
+                }
+            } catch {
+                print("Error moving subtitle file: \(error.localizedDescription)")
+            }
+        }
+        
+        task.resume()
+        print("Subtitle download task started")
+    }
+    
+    /// Updates an asset with subtitle information after subtitle download completes
+    /// - Parameters:
+    ///   - assetID: The ID of the asset to update
+    ///   - subtitleURL: The original subtitle URL
+    ///   - localSubtitleURL: The local path where the subtitle file is stored
+    private func updateAssetWithSubtitle(assetID: String, subtitleURL: URL, localSubtitleURL: URL) {
+        // Find the asset in the saved assets array
+        if let index = savedAssets.firstIndex(where: { $0.id.uuidString == assetID }) {
+            // Create a new asset with the subtitle info (since struct is immutable)
+            let existingAsset = savedAssets[index]
+            let updatedAsset = DownloadedAsset(
+                id: existingAsset.id,
+                name: existingAsset.name,
+                downloadDate: existingAsset.downloadDate,
+                originalURL: existingAsset.originalURL,
+                localURL: existingAsset.localURL,
+                type: existingAsset.type,
+                metadata: existingAsset.metadata,
+                subtitleURL: subtitleURL,
+                localSubtitleURL: localSubtitleURL
+            )
+            
+            // Replace the old asset with the updated one
+            savedAssets[index] = updatedAsset
+            
+            // Save the updated assets array
+            saveAssets()
+        }
+    }
+    
     // MARK: - Asset Management
     
     /// Load saved assets from UserDefaults
@@ -174,6 +337,7 @@ extension JSController {
         
         guard let data = UserDefaults.standard.data(forKey: "downloadedAssets") else { 
             print("No saved assets found")
+            JSController.hasValidatedAssets = true // Mark as validated since there's nothing to validate
             return 
         }
         
@@ -181,8 +345,12 @@ extension JSController {
             savedAssets = try JSONDecoder().decode([DownloadedAsset].self, from: data)
             print("Loaded \(savedAssets.count) saved assets")
             
-            // Verify that saved assets exist in the persistent storage location
-            validateAndUpdateAssetLocations()
+            // Only validate once per app session to avoid excessive file checks
+            if !JSController.hasValidatedAssets {
+                print("Validating asset locations...")
+                validateAndUpdateAssetLocations()
+                JSController.hasValidatedAssets = true
+            }
         } catch {
             print("Error loading saved assets: \(error.localizedDescription)")
         }
@@ -243,6 +411,7 @@ extension JSController {
     private func validateAndUpdateAssetLocations() {
         let fileManager = FileManager.default
         var updatedAssets = false
+        var assetsToRemove: [UUID] = []
         
         // Check each asset and update its location if needed
         for (index, asset) in savedAssets.enumerated() {
@@ -261,11 +430,25 @@ extension JSController {
                         originalURL: asset.originalURL,
                         localURL: persistentURL,
                         type: asset.type,
-                        metadata: asset.metadata
+                        metadata: asset.metadata,
+                        subtitleURL: asset.subtitleURL,
+                        localSubtitleURL: asset.localSubtitleURL
                     )
+                    updatedAssets = true
+                } else {
+                    // If we can't find the file, mark it for removal
+                    print("Asset not found in persistent storage. Marking for removal: \(asset.name)")
+                    assetsToRemove.append(asset.id)
                     updatedAssets = true
                 }
             }
+        }
+        
+        // Remove assets that don't exist anymore
+        if !assetsToRemove.isEmpty {
+            let countBefore = savedAssets.count
+            savedAssets.removeAll { assetsToRemove.contains($0.id) }
+            print("Removed \(countBefore - savedAssets.count) missing assets from the library")
         }
         
         // Save the updated asset information if changes were made
@@ -378,6 +561,71 @@ extension JSController {
         
         print("Cleaned up download task")
     }
+    
+    /// Returns the directory for persistent downloads
+    private func getPersistentDownloadDirectory() -> URL? {
+        let fileManager = FileManager.default
+        
+        // Get Application Support directory
+        guard let appSupportDir = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            print("Cannot access Application Support directory")
+            return nil
+        }
+        
+        // Create a dedicated subdirectory for our downloads if it doesn't exist
+        let downloadDir = appSupportDir.appendingPathComponent("SoraDownloads", isDirectory: true)
+        
+        do {
+            if !fileManager.fileExists(atPath: downloadDir.path) {
+                try fileManager.createDirectory(at: downloadDir, withIntermediateDirectories: true)
+                print("Created persistent download directory at \(downloadDir.path)")
+            }
+            return downloadDir
+        } catch {
+            print("Error creating download directory: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    /// Checks if an asset file exists before attempting to play it
+    /// - Parameter asset: The asset to verify
+    /// - Returns: True if the file exists, false otherwise
+    func verifyAssetFileExists(_ asset: DownloadedAsset) -> Bool {
+        let fileExists = FileManager.default.fileExists(atPath: asset.localURL.path)
+        
+        if !fileExists {
+            // Try to find the file in a different location
+            if let newLocation = findAssetInPersistentStorage(assetName: asset.name) {
+                // Update the asset with the new location
+                if let index = savedAssets.firstIndex(where: { $0.id == asset.id }) {
+                    savedAssets[index] = DownloadedAsset(
+                        id: asset.id,
+                        name: asset.name, 
+                        downloadDate: asset.downloadDate,
+                        originalURL: asset.originalURL,
+                        localURL: newLocation,
+                        type: asset.type,
+                        metadata: asset.metadata,
+                        subtitleURL: asset.subtitleURL,
+                        localSubtitleURL: asset.localSubtitleURL
+                    )
+                    saveAssets()
+                    return true
+                }
+            } else {
+                // File is truly missing - remove it from saved assets
+                savedAssets.removeAll { $0.id == asset.id }
+                saveAssets()
+                
+                // Show an error to the user
+                DispatchQueue.main.async {
+                    DropManager.shared.error("File not found: \(asset.name)")
+                }
+            }
+        }
+        
+        return fileExists
+    }
 }
 
 // MARK: - AVAssetDownloadDelegate
@@ -406,12 +654,18 @@ extension JSController: AVAssetDownloadDelegate {
             originalURL: download.originalURL,
             localURL: persistentURL,
             type: download.type,
-            metadata: download.metadata  // Use the metadata we created when starting the download
+            metadata: download.metadata,  // Use the metadata we created when starting the download
+            subtitleURL: download.subtitleURL // Store the subtitle URL, but localSubtitleURL will be nil until subtitle is downloaded
         )
         
         // Add to saved assets and save
         savedAssets.append(newAsset)
         saveAssets()
+        
+        // If there's a subtitle URL, download it now that the video is saved
+        if let subtitleURL = download.subtitleURL {
+            downloadSubtitle(subtitleURL: subtitleURL, assetID: newAsset.id.uuidString)
+        }
         
         // Clean up the download task
         cleanupDownloadTask(assetDownloadTask)
@@ -634,6 +888,7 @@ struct JSActiveDownload: Identifiable {
     var metadata: AssetMetadata?
     var title: String?
     var imageURL: URL?  // Added property to store image URL
+    var subtitleURL: URL?  // Added property to store subtitle URL
     
     init(
         id: UUID = UUID(),
@@ -643,7 +898,8 @@ struct JSActiveDownload: Identifiable {
         type: DownloadType = .movie,
         metadata: AssetMetadata? = nil,
         title: String? = nil,
-        imageURL: URL? = nil  // Added parameter
+        imageURL: URL? = nil,  // Added parameter
+        subtitleURL: URL? = nil  // Added parameter
     ) {
         self.id = id
         self.originalURL = originalURL
@@ -653,5 +909,6 @@ struct JSActiveDownload: Identifiable {
         self.metadata = metadata
         self.title = title
         self.imageURL = imageURL  // Set the image URL
+        self.subtitleURL = subtitleURL  // Set the subtitle URL
     }
 } 

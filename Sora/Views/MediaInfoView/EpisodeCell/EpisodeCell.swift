@@ -260,7 +260,14 @@ struct EpisodeCell: View {
             
             // We found a valid stream URL, proceed with download
             print("[Download] Method #\(methodIndex+1) returned valid stream URL: \(streams[0])")
-            startActualDownload(url: url, streamUrl: streams[0], downloadID: downloadID)
+            
+            // Get subtitle URL if available
+            let subtitleURL = result.subtitles?.first.flatMap { URL(string: $0) }
+            if let subtitleURL = subtitleURL {
+                print("[Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+            }
+            
+            startActualDownload(url: url, streamUrl: streams[0], downloadID: downloadID, subtitleURL: subtitleURL)
         } else {
             // No valid streams from this method, try the next one
             print("[Download] Method #\(methodIndex+1) did not return valid streams, trying next method")
@@ -269,7 +276,7 @@ struct EpisodeCell: View {
     }
     
     // Start the actual download process once we have a valid URL
-    private func startActualDownload(url: URL, streamUrl: String, downloadID: UUID) {
+    private func startActualDownload(url: URL, streamUrl: String, downloadID: UUID, subtitleURL: URL? = nil) {
         // Extract base URL for headers
         var headers: [String: String] = [:]
         
@@ -334,6 +341,7 @@ struct EpisodeCell: View {
             showTitle: animeTitle,
             season: 1, // Default to season 1 if not known
             episode: episodeID + 1,
+            subtitleURL: subtitleURL,
             completionHandler: { success, message in
                 if success {
                     DropManager.shared.success("Download started for Episode \(self.episodeID + 1)")

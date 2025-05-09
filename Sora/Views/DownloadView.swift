@@ -11,18 +11,23 @@ import Kingfisher
 import UIKit
 
 struct DownloadView: View {
+    @EnvironmentObject var jsController: JSController
     @State private var searchText = ""
-    
-    // Use the shared JSController instance
-    @StateObject private var jsController = JSController.shared
-    @State private var selectedTab = 0
+    @State private var expandedGroups = Set<UUID>()
+    @State private var isDeleteModeActive = false
     @State private var showDeleteAlert = false
     @State private var assetToDelete: DownloadedAsset?
     @State private var sortOption: SortOption = .newest
-    @State private var expandedGroups: Set<UUID> = []
+    @State private var currentAsset: DownloadedAsset?
+    @State private var selectedTab = 0
     
-    enum SortOption {
-        case newest, oldest, title
+    // MARK: - Sort Options
+    enum SortOption: String, CaseIterable, Identifiable {
+        case newest = "Newest"
+        case oldest = "Oldest"
+        case title = "Title"
+        
+        var id: String { self.rawValue }
     }
     
     var body: some View {
@@ -182,27 +187,78 @@ struct DownloadView: View {
     }
     
     private func playAsset(_ asset: DownloadedAsset) {
-        // Create a player for the downloaded file
-        if UserDefaults.standard.string(forKey: "externalPlayer") == "Default" {
-            let player = AVPlayer(url: asset.localURL)
-            let playerViewController = AVPlayerViewController()
-            playerViewController.player = player
+        // Verify that the asset file exists before attempting to play
+        if !jsController.verifyAssetFileExists(asset) {
+            // File doesn't exist and couldn't be found in alternate locations
+            // (error is already displayed by verifyAssetFileExists)
+            return
+        }
+        
+        currentAsset = asset
+        
+        // Check if we have a subtitle file for this asset
+        if let localSubtitleURL = asset.localSubtitleURL {
+            // Use the custom player which supports subtitles
+            let dummyMetadata = ModuleMetadata(
+                sourceName: "",
+                author: ModuleMetadata.Author(name: "", icon: ""),
+                iconUrl: "",
+                version: "",
+                language: "",
+                baseUrl: "",
+                streamType: "",
+                quality: "",
+                searchBaseUrl: "",
+                scriptUrl: "",
+                asyncJS: nil,
+                streamAsyncJS: nil,
+                softsub: nil,
+                multiStream: nil,
+                multiSubs: nil,
+                type: nil
+            )
             
+            let dummyModule = ScrapingModule(
+                metadata: dummyMetadata,
+                localPath: "",
+                metadataUrl: ""
+            )
+            
+            let customPlayer = CustomMediaPlayerViewController(
+                module: dummyModule,
+                urlString: asset.localURL.absoluteString,
+                fullUrl: asset.originalURL.absoluteString,
+                title: asset.name,
+                episodeNumber: asset.metadata?.episode ?? 0,
+                onWatchNext: {},
+                subtitlesURL: localSubtitleURL.absoluteString,
+                aniListID: 0,
+                episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? ""
+            )
+            
+            customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+            
+            // Present the custom player
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let rootVC = windowScene.windows.first?.rootViewController {
-                rootVC.present(playerViewController, animated: true) {
-                    player.play()
-                }
+               let rootViewController = windowScene.windows.first?.rootViewController {
+                rootViewController.present(customPlayer, animated: true)
             }
         } else {
-            // Using custom player - simplified for now
-            let player = AVPlayer(url: asset.localURL)
-            let playerViewController = AVPlayerViewController()
-            playerViewController.player = player
+            // No subtitle file available, use standard player
+            // Create an AVPlayerItem from the local URL
+            let playerItem = AVPlayerItem(url: asset.localURL)
             
+            // Configure the player
+            let player = AVPlayer(playerItem: playerItem)
+            
+            // Create the controller
+            let playerController = AVPlayerViewController()
+            playerController.player = player
+            
+            // Present the player
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let rootVC = windowScene.windows.first?.rootViewController {
-                rootVC.present(playerViewController, animated: true) {
+               let rootViewController = windowScene.windows.first?.rootViewController {
+                rootViewController.present(playerController, animated: true) {
                     player.play()
                 }
             }
@@ -430,57 +486,48 @@ struct DownloadedAssetRow: View {
     let asset: DownloadedAsset
     
     var body: some View {
-        HStack {
-            // Use KFImage to load the actual image from metadata if available
-            if let posterURL = asset.metadata?.posterURL {
-                KFImage(posterURL)
+        HStack(spacing: 8) {
+            // Use image from asset metadata if available, otherwise use placeholder
+            if let backdropURL = asset.metadata?.backdropURL {
+                KFImage(backdropURL)
                     .placeholder {
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
-                            .frame(width: 60, height: 60)
                     }
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: 60, height: 60)
-                    .cornerRadius(6)
+                    .frame(width: 60, height: 40)
+                    .cornerRadius(4)
             } else {
-                // Fallback to placeholder
                 Rectangle()
                     .fill(Color.gray.opacity(0.3))
-                    .frame(width: 60, height: 60)
-                    .cornerRadius(6)
+                    .frame(width: 60, height: 40)
+                    .cornerRadius(4)
             }
             
-            VStack(alignment: .leading, spacing: 4) {
-                Text(asset.type == .episode ? asset.episodeDisplayName : asset.name)
-                    .font(.headline)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(asset.episodeDisplayName)
+                    .font(.subheadline)
                     .lineLimit(1)
                 
-                Text(asset.downloadDate.formatted(date: .abbreviated, time: .shortened))
-                    .font(.subheadline)
+                Text(asset.downloadDate.formatted(date: .abbreviated, time: .omitted))
+                    .font(.caption)
                     .foregroundColor(.secondary)
-                
-                if let fileSize = asset.fileSize {
-                    Text(formatFileSize(fileSize))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
             }
-            .padding(.leading, 4)
             
             Spacer()
             
+            // Show subtitle indicator if subtitles are available
+            if asset.localSubtitleURL != nil {
+                Image(systemName: "captions.bubble")
+                    .foregroundColor(.blue)
+                    .font(.caption)
+            }
+            
             Image(systemName: "play.circle.fill")
                 .foregroundColor(.blue)
-                .font(.title2)
+                .font(.title3)
         }
-    }
-    
-    private func formatFileSize(_ size: Int64) -> String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useKB, .useMB, .useGB]
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: size)
     }
 }
 
@@ -599,23 +646,80 @@ struct DownloadedMediaDetailView: View {
     }
     
     private func playAsset(_ asset: DownloadedAsset) {
+        // Verify that the asset file exists before attempting to play
+        if !jsController.verifyAssetFileExists(asset) {
+            // File doesn't exist and couldn't be found in alternate locations
+            // (error is already displayed by verifyAssetFileExists)
+            return
+        }
+        
         currentAsset = asset
         
-        // Create an AVPlayerItem from the local URL
-        let playerItem = AVPlayerItem(url: asset.localURL)
-        
-        // Configure the player
-        let player = AVPlayer(playerItem: playerItem)
-        
-        // Create the controller
-        let playerController = AVPlayerViewController()
-        playerController.player = player
-        
-        // Present the player
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootViewController = windowScene.windows.first?.rootViewController {
-            rootViewController.present(playerController, animated: true) {
-                player.play()
+        // Check if we have a subtitle file for this asset
+        if let localSubtitleURL = asset.localSubtitleURL {
+            // Use the custom player which supports subtitles
+            let dummyMetadata = ModuleMetadata(
+                sourceName: "",
+                author: ModuleMetadata.Author(name: "", icon: ""),
+                iconUrl: "",
+                version: "",
+                language: "",
+                baseUrl: "",
+                streamType: "",
+                quality: "",
+                searchBaseUrl: "",
+                scriptUrl: "",
+                asyncJS: nil,
+                streamAsyncJS: nil,
+                softsub: nil,
+                multiStream: nil,
+                multiSubs: nil,
+                type: nil
+            )
+            
+            let dummyModule = ScrapingModule(
+                metadata: dummyMetadata,
+                localPath: "",
+                metadataUrl: ""
+            )
+            
+            let customPlayer = CustomMediaPlayerViewController(
+                module: dummyModule,
+                urlString: asset.localURL.absoluteString,
+                fullUrl: asset.originalURL.absoluteString,
+                title: asset.name,
+                episodeNumber: asset.metadata?.episode ?? 0,
+                onWatchNext: {},
+                subtitlesURL: localSubtitleURL.absoluteString,
+                aniListID: 0,
+                episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? ""
+            )
+            
+            customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+            
+            // Present the custom player
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootViewController = windowScene.windows.first?.rootViewController {
+                rootViewController.present(customPlayer, animated: true)
+            }
+        } else {
+            // No subtitle file available, use standard player
+            // Create an AVPlayerItem from the local URL
+            let playerItem = AVPlayerItem(url: asset.localURL)
+            
+            // Configure the player
+            let player = AVPlayer(playerItem: playerItem)
+            
+            // Create the controller
+            let playerController = AVPlayerViewController()
+            playerController.player = player
+            
+            // Present the player
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootViewController = windowScene.windows.first?.rootViewController {
+                rootViewController.present(playerController, animated: true) {
+                    player.play()
+                }
             }
         }
     }
@@ -677,9 +781,18 @@ struct DownloadedEpisodeRow: View {
                         .foregroundColor(.secondary)
                 }
                 
-                Text(asset.downloadDate.formatted(date: .abbreviated, time: .shortened))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                HStack(spacing: 6) {
+                    Text(asset.downloadDate.formatted(date: .abbreviated, time: .shortened))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    // Display subtitle indicator if subtitles are available
+                    if asset.localSubtitleURL != nil {
+                        Image(systemName: "captions.bubble")
+                            .foregroundColor(.blue)
+                            .font(.caption)
+                    }
+                }
             }
             
             Spacer()

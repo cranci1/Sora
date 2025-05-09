@@ -67,6 +67,9 @@ struct DownloadedAsset: Identifiable, Codable {
     let localURL: URL
     let type: DownloadType
     let metadata: AssetMetadata?
+    // New fields for subtitle support
+    let subtitleURL: URL?
+    let localSubtitleURL: URL?
     
     var fileSize: Int64? {
         do {
@@ -130,6 +133,30 @@ struct DownloadedAsset: Identifiable, Codable {
         return (seasonValue * 1000) + episodeValue
     }
     
+    // Add coding keys to ensure backward compatibility
+    enum CodingKeys: String, CodingKey {
+        case id, name, downloadDate, originalURL, localURL, type, metadata
+        case subtitleURL, localSubtitleURL
+    }
+    
+    // Custom decoding to handle optional new fields
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Decode required fields
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        downloadDate = try container.decode(Date.self, forKey: .downloadDate)
+        originalURL = try container.decode(URL.self, forKey: .originalURL)
+        localURL = try container.decode(URL.self, forKey: .localURL)
+        type = try container.decode(DownloadType.self, forKey: .type)
+        metadata = try container.decodeIfPresent(AssetMetadata.self, forKey: .metadata)
+        
+        // Decode new optional fields
+        subtitleURL = try container.decodeIfPresent(URL.self, forKey: .subtitleURL)
+        localSubtitleURL = try container.decodeIfPresent(URL.self, forKey: .localSubtitleURL)
+    }
+    
     init(
         id: UUID = UUID(),
         name: String,
@@ -137,7 +164,9 @@ struct DownloadedAsset: Identifiable, Codable {
         originalURL: URL,
         localURL: URL,
         type: DownloadType = .movie,
-        metadata: AssetMetadata? = nil
+        metadata: AssetMetadata? = nil,
+        subtitleURL: URL? = nil,
+        localSubtitleURL: URL? = nil
     ) {
         self.id = id
         self.name = name
@@ -146,6 +175,8 @@ struct DownloadedAsset: Identifiable, Codable {
         self.localURL = localURL
         self.type = type
         self.metadata = metadata
+        self.subtitleURL = subtitleURL
+        self.localSubtitleURL = localSubtitleURL
     }
 }
 

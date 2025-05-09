@@ -1,5 +1,5 @@
 # Sora
-> Also known as Sulfur, for copyright issues.
+> Also known as Sulfur due to copyright considerations.
 
 <div align="center"> 
 
@@ -23,13 +23,13 @@
 ## Features
 
 - [x] iOS/iPadOS 15.0+ support
-- [x] macOS support 12.0+
+- [x] macOS 12.0+ support
 - [x] JavaScript Main Core
-- [ ] Download support (HLS & mp4)
+- [ ] Download support (HLS & MP4)
 - [x] Tracking Services (AniList, Trakt)
 - [x] Apple KeyChain support for auth Tokens
 - [x] Streams support (Jellyfin/Plex like servers)
-- [x] External Media players (VLC, infuse, Outplayer, nPlayer, SenPlayer, IINA)
+- [x] External media player support (VLC, Infuse, Outplayer, nPlayer, SenPlayer, IINA)
 - [x] Background playback and Picture-in-Picture (PiP) support
 
 ## Installation
@@ -44,7 +44,7 @@ You can download Sora on the App Store for stable updates or on Testflight for m
   <img src="https://askyourself.app/assets/testflight.png" width="170" alt="Build and Release IPA">
 </a>
 
-Additionaly you can install the app using xCode or using the .ipa file that you can find on the [Releases](https://github.com/cranci1/Sora/releases) tab or on the [nightly](https://nightly.link/cranci1/Sora/workflows/build/dev/Sulfur-IPA.zip) build page.
+Additionally, you can install the app using Xcode or using the .ipa file, which you can find in the [Releases](https://github.com/cranci1/Sora/releases) tab or the [nightly](https://nightly.link/cranci1/Sora/workflows/build/dev/Sulfur-IPA.zip) build page.
 
 ## Frequently Asked Questions
 
@@ -57,12 +57,12 @@ Yes, Sora is open-source and prioritizes user privacy. It does not store user da
 3. **Will Sora ever be paid?**
 No, Sora will always remain free without subscriptions, paid content, or any type of login.
 
-4. **How can i get module?**
-Sora does not include any modules by default. You will need to find and add the necessary modules yourself, or make them.
+4. **How can I get modules?**
+Sora does not include any modules by default. You will need to find and add the necessary modules yourself, or create your own.
 
 ## Acknowledgements
 
-FrameWorks:
+Frameworks:
 - [KingFisher](https://github.com/onevcat/Kingfisher) - MIT License
 - [Drops](https://github.com/omaralbeik/Drops) - MIT License
 - [MarqueeLabel](https://github.com/cbpowell/MarqueeLabel) - MIT License
@@ -105,4 +105,4 @@ This software is not affiliated with or endorsed by any third-party entity. Any 
 
 ### DMCA
 
-The developer(s) is not responsible for the misuse of any content inside or outside the app and shall not be responsible for the dissemination of any content within the app. Any violations should be send to the source website or module creator. The developer is not legally responsible for any module used inside the app.
+The developer(s) are not responsible for the misuse of any content inside or outside the app and shall not be responsible for the dissemination of any content within the app. Any violations should be sent to the source website or module creator. The developer is not legally responsible for any module used inside the app.

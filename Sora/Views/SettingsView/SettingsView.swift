@@ -81,7 +81,7 @@ struct SettingsView: View {
                         }
                     }) {
                         HStack {
-                            Text("License (GPLv3.0)")
+                            Text("Licensed under GPLv3.0")
                                 .foregroundColor(.primary)
                             Spacer()
                             Image(systemName: "safari")

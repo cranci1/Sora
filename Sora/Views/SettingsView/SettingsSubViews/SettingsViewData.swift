@@ -11,12 +11,32 @@ struct SettingsViewData: View {
     @State private var showEraseAppDataAlert = false
     @State private var showRemoveDocumentsAlert = false
     @State private var showSizeAlert = false
+    @State private var cacheSize: Int64 = 0
+    @State private var documentsSize: Int64 = 0
     
     var body: some View {
         Form {
             Section(header: Text("App storage"), footer: Text("The caches used by Sora are stored images that help load content faster\n\nThe App Data should never be erased if you dont know what that will cause.\n\nClearing the documents folder will remove all the modules and downloads")) {
-                Button(action: clearCache) {
-                    Text("Clear Cache")
+                HStack {
+                    Button(action: clearCache) {
+                        Text("Clear Cache")
+                    }
+                    Spacer()
+                    Text("\(formatSize(cacheSize))")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                
+                HStack {
+                    Button(action: {
+                        showRemoveDocumentsAlert = true
+                    }) {
+                        Text("Remove All Files in Documents")
+                    }
+                    Spacer()
+                    Text("\(formatSize(documentsSize))")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
                 
                 Button(action: {
@@ -24,36 +44,13 @@ struct SettingsViewData: View {
                 }) {
                     Text("Erase all App Data")
                 }
-                .alert(isPresented: $showEraseAppDataAlert) {
-                    Alert(
-                        title: Text("Confirm Erase App Data"),
-                        message: Text("Are you sure you want to erase all app data? This action cannot be undone. (The app will then close)"),
-                        primaryButton: .destructive(Text("Erase")) {
-                            eraseAppData()
-                        },
-                        secondaryButton: .cancel()
-                    )
-                }
-                
-                Button(action: {
-                    showRemoveDocumentsAlert = true
-                }) {
-                    Text("Remove All Files in Documents")
-                }
-                .alert(isPresented: $showRemoveDocumentsAlert) {
-                    Alert(
-                        title: Text("Confirm Remove All Files"),
-                        message: Text("Are you sure you want to remove all files in the documents folder? This will also remove all modules and you will lose the favorite items. This action cannot be undone. (The app will then close)"),
-                        primaryButton: .destructive(Text("Remove")) {
-                            removeAllFilesInDocuments()
-                        },
-                        secondaryButton: .cancel()
-                    )
-                }
             }
         }
         .navigationTitle("App Data")
         .navigationViewStyle(StackNavigationViewStyle())
+        .onAppear {
+            updateSizes()
+        }
     }
     
     func eraseAppData() {
@@ -75,6 +72,7 @@ struct SettingsViewData: View {
                     try FileManager.default.removeItem(at: filePath)
                 }
                 Logger.shared.log("Cache cleared successfully!", type: "General")
+                updateSizes()
             }
         } catch {
             Logger.shared.log("Failed to clear cache.", type: "Error")
@@ -94,6 +92,44 @@ struct SettingsViewData: View {
             } catch {
                 Logger.shared.log("Error removing files in documents folder: \(error)", type: "Error")
             }
+        }
+    }
+    
+    private func calculateDirectorySize(for url: URL) -> Int64 {
+        let fileManager = FileManager.default
+        var totalSize: Int64 = 0
+        
+        do {
+            let contents = try fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: [.fileSizeKey])
+            for url in contents {
+                let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey, .isDirectoryKey])
+                if resourceValues.isDirectory == true {
+                    totalSize += calculateDirectorySize(for: url)
+                } else {
+                    totalSize += Int64(resourceValues.fileSize ?? 0)
+                }
+            }
+        } catch {
+            Logger.shared.log("Error calculating directory size: \(error)", type: "Error")
+        }
+        
+        return totalSize
+    }
+    
+    private func formatSize(_ bytes: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: bytes)
+    }
+    
+    private func updateSizes() {
+        if let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first {
+            cacheSize = calculateDirectorySize(for: cacheURL)
+        }
+        
+        if let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            documentsSize = calculateDirectorySize(for: documentsURL)
         }
     }
 }

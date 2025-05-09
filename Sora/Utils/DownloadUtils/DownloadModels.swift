@@ -70,10 +70,24 @@ struct DownloadedAsset: Identifiable, Codable {
     
     var fileSize: Int64? {
         do {
-            let attributes = try FileManager.default.attributesOfItem(atPath: localURL.path)
-            return attributes[.size] as? Int64
+            if FileManager.default.fileExists(atPath: localURL.path) {
+                let attributes = try FileManager.default.attributesOfItem(atPath: localURL.path)
+                if let size = attributes[.size] as? Int64 {
+                    return size
+                } else if let size = attributes[.size] as? Int {
+                    return Int64(size)
+                } else if let size = attributes[.size] as? NSNumber {
+                    return size.int64Value
+                } else {
+                    Logger.shared.log("Could not get file size as Int64 for: \(localURL.path)", type: "Warning")
+                    return nil
+                }
+            } else {
+                Logger.shared.log("File does not exist at path: \(localURL.path)", type: "Warning")
+                return nil
+            }
         } catch {
-            print("Error getting file size: \(error)")
+            Logger.shared.log("Error getting file size: \(error.localizedDescription) for \(localURL.path)", type: "Error")
             return nil
         }
     }
@@ -237,6 +251,17 @@ struct DownloadGroup: Identifiable {
     
     var isAnime: Bool {
         return isShow
+    }
+    
+    /// Returns the total file size of all assets in the group
+    var totalFileSize: Int64 {
+        var total: Int64 = 0
+        for asset in assets {
+            if let size = asset.fileSize {
+                total += size
+            }
+        }
+        return total
     }
     
     // For anime/TV shows, organize episodes by season then episode number

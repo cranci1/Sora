@@ -169,6 +169,9 @@ extension JSController {
     
     /// Load saved assets from UserDefaults
     func loadSavedAssets() {
+        // First, migrate any existing files from Documents to Application Support
+        migrateExistingFilesToPersistentStorage()
+        
         guard let data = UserDefaults.standard.data(forKey: "downloadedAssets") else { 
             print("No saved assets found")
             return 
@@ -177,9 +180,137 @@ extension JSController {
         do {
             savedAssets = try JSONDecoder().decode([DownloadedAsset].self, from: data)
             print("Loaded \(savedAssets.count) saved assets")
+            
+            // Verify that saved assets exist in the persistent storage location
+            validateAndUpdateAssetLocations()
         } catch {
             print("Error loading saved assets: \(error.localizedDescription)")
         }
+    }
+    
+    /// Migrates any existing .movpkg files from Documents directory to the persistent location
+    private func migrateExistingFilesToPersistentStorage() {
+        let fileManager = FileManager.default
+        
+        // Get Documents and Application Support directories
+        guard let documentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first,
+              let appSupportDir = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            return
+        }
+        
+        // Create persistent downloads directory if it doesn't exist
+        let persistentDir = appSupportDir.appendingPathComponent("SoraDownloads", isDirectory: true)
+        do {
+            if !fileManager.fileExists(atPath: persistentDir.path) {
+                try fileManager.createDirectory(at: persistentDir, withIntermediateDirectories: true)
+                print("Created persistent download directory at \(persistentDir.path)")
+            }
+            
+            // Find any .movpkg files in the Documents directory
+            let files = try fileManager.contentsOfDirectory(at: documentsDir, includingPropertiesForKeys: nil)
+            let movpkgFiles = files.filter { $0.pathExtension == "movpkg" }
+            
+            if !movpkgFiles.isEmpty {
+                print("Found \(movpkgFiles.count) .movpkg files in Documents directory to migrate")
+                
+                // Migrate each file
+                for fileURL in movpkgFiles {
+                    let filename = fileURL.lastPathComponent
+                    let destinationURL = persistentDir.appendingPathComponent(filename)
+                    
+                    // Check if file already exists in destination
+                    if fileManager.fileExists(atPath: destinationURL.path) {
+                        // Generate a unique name to avoid conflicts
+                        let uniqueID = UUID().uuidString
+                        let newDestinationURL = persistentDir.appendingPathComponent("\(filename)-\(uniqueID)")
+                        try fileManager.copyItem(at: fileURL, to: newDestinationURL)
+                        print("Migrated file with unique name: \(filename) → \(newDestinationURL.lastPathComponent)")
+                    } else {
+                        // Move the file to the persistent directory
+                        try fileManager.copyItem(at: fileURL, to: destinationURL)
+                        print("Migrated file: \(filename)")
+                    }
+                }
+            } else {
+                print("No .movpkg files found in Documents directory for migration")
+            }
+        } catch {
+            print("Error during migration: \(error.localizedDescription)")
+        }
+    }
+    
+    /// Validates that saved assets exist and updates their locations if needed
+    private func validateAndUpdateAssetLocations() {
+        let fileManager = FileManager.default
+        var updatedAssets = false
+        
+        // Check each asset and update its location if needed
+        for (index, asset) in savedAssets.enumerated() {
+            // Check if the file exists at the stored path
+            if !fileManager.fileExists(atPath: asset.localURL.path) {
+                print("Asset file not found at saved path: \(asset.localURL.path)")
+                
+                // Try to find the file in the persistent directory
+                if let persistentURL = findAssetInPersistentStorage(assetName: asset.name) {
+                    // Update the asset with the new URL
+                    print("Found asset in persistent storage: \(persistentURL.path)")
+                    savedAssets[index] = DownloadedAsset(
+                        id: asset.id,
+                        name: asset.name,
+                        downloadDate: asset.downloadDate,
+                        originalURL: asset.originalURL,
+                        localURL: persistentURL,
+                        type: asset.type,
+                        metadata: asset.metadata
+                    )
+                    updatedAssets = true
+                }
+            }
+        }
+        
+        // Save the updated asset information if changes were made
+        if updatedAssets {
+            saveAssets()
+        }
+    }
+    
+    /// Attempts to find an asset in the persistent storage directory
+    /// - Parameter assetName: The name of the asset to find
+    /// - Returns: URL to the found asset or nil if not found
+    private func findAssetInPersistentStorage(assetName: String) -> URL? {
+        let fileManager = FileManager.default
+        
+        // Get Application Support directory
+        guard let appSupportDir = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+        
+        // Path to our downloads directory
+        let downloadDir = appSupportDir.appendingPathComponent("SoraDownloads", isDirectory: true)
+        
+        // Check if directory exists
+        guard fileManager.fileExists(atPath: downloadDir.path) else {
+            return nil
+        }
+        
+        do {
+            // Get all files in the directory
+            let files = try fileManager.contentsOfDirectory(at: downloadDir, includingPropertiesForKeys: nil)
+            
+            // Try to find a file that contains the asset name
+            for file in files where file.pathExtension == "movpkg" {
+                let filename = file.lastPathComponent
+                
+                // If the filename contains the asset name, it's likely our file
+                if filename.contains(assetName) || assetName.contains(filename.components(separatedBy: "-").first ?? "") {
+                    return file
+                }
+            }
+        } catch {
+            print("Error searching for asset in persistent storage: \(error.localizedDescription)")
+        }
+        
+        return nil
     }
     
     /// Save assets to UserDefaults
@@ -212,13 +343,29 @@ extension JSController {
     /// Delete an asset
     func deleteAsset(_ asset: DownloadedAsset) {
         do {
-            try FileManager.default.removeItem(at: asset.localURL)
+            // Check if file exists before attempting to delete
+            if FileManager.default.fileExists(atPath: asset.localURL.path) {
+                try FileManager.default.removeItem(at: asset.localURL)
+                print("Deleted asset file: \(asset.localURL.path)")
+            } else {
+                print("Asset file not found at path: \(asset.localURL.path)")
+            }
+            
+            // Remove from saved assets regardless of whether file was found
             savedAssets.removeAll { $0.id == asset.id }
             saveAssets()
-            print("Deleted asset: \(asset.name)")
+            print("Removed asset from library: \(asset.name)")
         } catch {
             print("Error deleting asset: \(error.localizedDescription)")
         }
+    }
+    
+    /// Remove an asset from the library without deleting the file
+    func removeAssetFromLibrary(_ asset: DownloadedAsset) {
+        // Only remove the entry from savedAssets
+        savedAssets.removeAll { $0.id == asset.id }
+        saveAssets()
+        print("Removed asset from library (file preserved): \(asset.name)")
     }
     
     /// Clean up a download task when it's completed or failed
@@ -245,13 +392,19 @@ extension JSController: AVAssetDownloadDelegate {
         }
         
         let download = activeDownloads[downloadIndex]
+
+        // Move the downloaded file to Application Support directory for persistence
+        guard let persistentURL = moveToApplicationSupportDirectory(from: location, filename: download.title ?? download.originalURL.lastPathComponent) else {
+            print("Failed to move downloaded file to persistent storage")
+            return
+        }
         
         // Create a new DownloadedAsset with metadata from the active download
         let newAsset = DownloadedAsset(
             name: download.title ?? download.originalURL.lastPathComponent,
             downloadDate: Date(),
             originalURL: download.originalURL,
-            localURL: location,
+            localURL: persistentURL,
             type: download.type,
             metadata: download.metadata  // Use the metadata we created when starting the download
         )
@@ -263,11 +416,52 @@ extension JSController: AVAssetDownloadDelegate {
         // Clean up the download task
         cleanupDownloadTask(assetDownloadTask)
         
-        print("Download completed: \(newAsset.name)")
+        print("Download completed and moved to persistent storage: \(newAsset.name)")
         
         // Notify the user of successful download
         DispatchQueue.main.async {
             DropManager.shared.success("Download complete: \(newAsset.name)")
+        }
+    }
+    
+    /// Moves a downloaded file to Application Support directory to preserve it across app updates
+    /// - Parameters:
+    ///   - location: The original location from the download task
+    ///   - filename: Name to use for the file
+    /// - Returns: URL to the new persistent location or nil if move failed
+    private func moveToApplicationSupportDirectory(from location: URL, filename: String) -> URL? {
+        let fileManager = FileManager.default
+        
+        // Get Application Support directory 
+        guard let appSupportDir = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            print("Cannot access Application Support directory")
+            return nil
+        }
+        
+        // Create a dedicated subdirectory for our downloads if it doesn't exist
+        let downloadDir = appSupportDir.appendingPathComponent("SoraDownloads", isDirectory: true)
+        
+        do {
+            if !fileManager.fileExists(atPath: downloadDir.path) {
+                try fileManager.createDirectory(at: downloadDir, withIntermediateDirectories: true)
+                print("Created persistent download directory at \(downloadDir.path)")
+            }
+            
+            // Generate unique filename with UUID to avoid conflicts
+            let uniqueID = UUID().uuidString
+            let safeFilename = filename.replacingOccurrences(of: "/", with: "-")
+                                      .replacingOccurrences(of: ":", with: "-")
+            
+            let destinationURL = downloadDir.appendingPathComponent("\(safeFilename)-\(uniqueID).movpkg")
+            
+            // Move the file to the persistent location
+            try fileManager.moveItem(at: location, to: destinationURL)
+            print("Successfully moved download to persistent storage: \(destinationURL.path)")
+            
+            return destinationURL
+        } catch {
+            print("Error moving download to persistent storage: \(error.localizedDescription)")
+            return nil
         }
     }
     

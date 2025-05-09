@@ -257,8 +257,8 @@ struct DownloadGroupView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Group header
-            Button(action: onToggleExpand) {
+            // Group header with navigation
+            NavigationLink(destination: DownloadedMediaDetailView(group: group)) {
                 HStack {
                     if let posterURL = group.posterURL {
                         KFImage(posterURL)
@@ -281,15 +281,22 @@ struct DownloadGroupView: View {
                         Text(group.title)
                             .font(.headline)
                         
-                        Text("\(group.assetCount) \(group.isAnime ? "Episodes" : "Files")")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                        HStack {
+                            Text("\(group.assetCount) \(group.isAnime ? "Episodes" : "Files")")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
+                            Text("•")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                
+                            Text(formatFileSize(group.totalFileSize))
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
                     }
                     
                     Spacer()
-                    
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.secondary)
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 6)
@@ -298,7 +305,7 @@ struct DownloadGroupView: View {
             }
             .buttonStyle(PlainButtonStyle())
             
-            // Group content (episodes or files)
+            // Group content (episodes or files) when expanded
             if isExpanded {
                 VStack(spacing: 4) {
                     let assets = group.isAnime ? group.organizedEpisodes() : group.assets
@@ -324,6 +331,13 @@ struct DownloadGroupView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: isExpanded)
+    }
+    
+    private func formatFileSize(_ size: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useKB, .useMB, .useGB]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: size)
     }
 }
 
@@ -460,6 +474,221 @@ struct DownloadedAssetRow: View {
                 .foregroundColor(.blue)
                 .font(.title2)
         }
+    }
+    
+    private func formatFileSize(_ size: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useKB, .useMB, .useGB]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: size)
+    }
+}
+
+// MARK: - DownloadedMediaDetailView
+struct DownloadedMediaDetailView: View {
+    let group: DownloadGroup
+    @StateObject private var jsController = JSController.shared
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
+    
+    @State private var isPlaying = false
+    @State private var currentAsset: DownloadedAsset?
+    @State private var showDeleteAlert = false
+    @State private var assetToDelete: DownloadedAsset?
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                // Header with poster image
+                HStack(alignment: .top, spacing: 16) {
+                    if let posterURL = group.posterURL {
+                        KFImage(posterURL)
+                            .placeholder {
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.3))
+                            }
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 130, height: 195)
+                            .cornerRadius(10)
+                    } else {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 130, height: 195)
+                            .cornerRadius(10)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(group.title)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .lineLimit(2)
+                        
+                        Text("\(group.assetCount) \(group.isAnime ? "Episodes" : "Files")")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        // Total file size
+                        if group.totalFileSize > 0 {
+                            Text(formatFileSize(group.totalFileSize))
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal)
+                
+                // Episode list
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Episodes")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .padding(.horizontal)
+                    
+                    let assets = group.isAnime ? group.organizedEpisodes() : group.assets
+                    
+                    ForEach(assets) { asset in
+                        DownloadedEpisodeRow(asset: asset)
+                            .padding(.horizontal)
+                            .background(Color(UIColor.secondarySystemBackground))
+                            .cornerRadius(10)
+                            .padding(.horizontal)
+                            .contextMenu {
+                                Button(action: { playAsset(asset) }) {
+                                    Label("Play", systemImage: "play.fill")
+                                }
+                                
+                                Button(role: .destructive, action: { confirmDelete(asset) }) {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                            .onTapGesture {
+                                playAsset(asset)
+                            }
+                    }
+                }
+            }
+            .padding(.vertical)
+        }
+        .navigationTitle("Downloaded Episodes")
+        .navigationBarTitleDisplayMode(.inline)
+        .alert("Delete Download", isPresented: $showDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                if let asset = assetToDelete {
+                    deleteAsset(asset)
+                }
+            }
+        } message: {
+            if let asset = assetToDelete {
+                Text("Are you sure you want to delete '\(asset.episodeDisplayName)'?")
+            } else {
+                Text("Are you sure you want to delete this download?")
+            }
+        }
+    }
+    
+    private func formatFileSize(_ size: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useKB, .useMB, .useGB]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: size)
+    }
+    
+    private func playAsset(_ asset: DownloadedAsset) {
+        currentAsset = asset
+        
+        // Create an AVPlayerItem from the local URL
+        let playerItem = AVPlayerItem(url: asset.localURL)
+        
+        // Configure the player
+        let player = AVPlayer(playerItem: playerItem)
+        
+        // Create the controller
+        let playerController = AVPlayerViewController()
+        playerController.player = player
+        
+        // Present the player
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first?.rootViewController {
+            rootViewController.present(playerController, animated: true) {
+                player.play()
+            }
+        }
+    }
+    
+    private func confirmDelete(_ asset: DownloadedAsset) {
+        assetToDelete = asset
+        showDeleteAlert = true
+    }
+    
+    private func deleteAsset(_ asset: DownloadedAsset) {
+        jsController.deleteAsset(asset)
+        
+        // If we've deleted all episodes in this group, go back
+        let remainingAssets = jsController.savedAssets.filter { 
+            if asset.type == .episode {
+                return $0.metadata?.showTitle == group.title && $0.id != asset.id
+            } else {
+                return $0.name == group.title && $0.id != asset.id
+            }
+        }
+        
+        if remainingAssets.isEmpty {
+            dismiss()
+        }
+    }
+}
+
+struct DownloadedEpisodeRow: View {
+    let asset: DownloadedAsset
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Use image from asset metadata if available, otherwise use placeholder
+            if let backdropURL = asset.metadata?.backdropURL ?? asset.metadata?.posterURL {
+                KFImage(backdropURL)
+                    .placeholder {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                    }
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 120, height: 68)
+                    .cornerRadius(8)
+            } else {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 120, height: 68)
+                    .cornerRadius(8)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(asset.episodeDisplayName)
+                    .font(.headline)
+                    .lineLimit(1)
+                
+                if let fileSize = asset.fileSize {
+                    Text(formatFileSize(fileSize))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Text(asset.downloadDate.formatted(date: .abbreviated, time: .shortened))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            Image(systemName: "play.circle.fill")
+                .foregroundColor(.blue)
+                .font(.title2)
+        }
+        .padding(.vertical, 8)
     }
     
     private func formatFileSize(_ size: Int64) -> String {

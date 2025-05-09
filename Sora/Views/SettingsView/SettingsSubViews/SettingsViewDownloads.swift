@@ -75,20 +75,29 @@ struct SettingsViewDownloads: View {
                 .alert("Delete All Downloads", isPresented: $showClearConfirmation) {
                     Button("Cancel", role: .cancel) { }
                     Button("Delete All", role: .destructive) {
-                        clearAllDownloads()
+                        clearAllDownloads(preservePersistentDownloads: false)
+                    }
+                    Button("Clear Library Only", role: .destructive) {
+                        clearAllDownloads(preservePersistentDownloads: true)
                     }
                 } message: {
-                    Text("Are you sure you want to delete all downloaded assets? This action cannot be undone.")
+                    Text("Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use.")
                 }
             }
         }
         .navigationTitle("Downloads")
     }
     
-    private func clearAllDownloads() {
+    private func clearAllDownloads(preservePersistentDownloads: Bool = false) {
         let assetsToDelete = jsController.savedAssets
         for asset in assetsToDelete {
-            jsController.deleteAsset(asset)
+            if preservePersistentDownloads {
+                // Only remove from library without deleting files
+                jsController.removeAssetFromLibrary(asset)
+            } else {
+                // Delete both library entry and files
+                jsController.deleteAsset(asset)
+            }
         }
     }
     

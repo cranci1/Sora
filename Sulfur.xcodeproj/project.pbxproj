@@ -65,7 +65,14 @@
 		1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */; };
 		1EAC7A322D888BC50083984D /* MusicProgressSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */; };
 		1EF5C3A92DB988E40032BF07 /* CommunityLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EF5C3A82DB988D70032BF07 /* CommunityLib.swift */; };
-		72443C792DC8008B00A61321 /* JSController-Downloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C782DC8008B00A61321 /* JSController-Downloads.swift */; };
+		7205AEDB2DCCEF9500943F3F /* EpisodeMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7205AED72DCCEF9500943F3F /* EpisodeMetadata.swift */; };
+		7205AEDC2DCCEF9500943F3F /* MetadataCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7205AED92DCCEF9500943F3F /* MetadataCacheManager.swift */; };
+		7205AEDD2DCCEF9500943F3F /* KingfisherManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7205AED82DCCEF9500943F3F /* KingfisherManager.swift */; };
+		7222485F2DCBAA2C00CABE2D /* DownloadModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7222485D2DCBAA2C00CABE2D /* DownloadModels.swift */; };
+		722248602DCBAA2C00CABE2D /* M3U8StreamExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7222485E2DCBAA2C00CABE2D /* M3U8StreamExtractor.swift */; };
+		722248632DCBAA4700CABE2D /* JSController-HeaderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722248612DCBAA4700CABE2D /* JSController-HeaderManager.swift */; };
+		722248642DCBAA4700CABE2D /* JSController+M3U8Download.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722248622DCBAA4700CABE2D /* JSController+M3U8Download.swift */; };
+		722248662DCBC13E00CABE2D /* JSController-Downloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722248652DCBC13E00CABE2D /* JSController-Downloads.swift */; };
 		72443C7D2DC8036500A61321 /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C7C2DC8036500A61321 /* DownloadView.swift */; };
 		72443C7F2DC8038300A61321 /* SettingsViewDownloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */; };
 		73D164D52D8B5B470011A360 /* JavaScriptCore+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */; };
@@ -130,7 +137,14 @@
 		1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewLoggerFilter.swift; sourceTree = "<group>"; };
 		1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicProgressSlider.swift; sourceTree = "<group>"; };
 		1EF5C3A82DB988D70032BF07 /* CommunityLib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityLib.swift; sourceTree = "<group>"; };
-		72443C782DC8008B00A61321 /* JSController-Downloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Downloads.swift"; sourceTree = "<group>"; };
+		7205AED72DCCEF9500943F3F /* EpisodeMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeMetadata.swift; sourceTree = "<group>"; };
+		7205AED82DCCEF9500943F3F /* KingfisherManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KingfisherManager.swift; sourceTree = "<group>"; };
+		7205AED92DCCEF9500943F3F /* MetadataCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataCacheManager.swift; sourceTree = "<group>"; };
+		7222485D2DCBAA2C00CABE2D /* DownloadModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadModels.swift; sourceTree = "<group>"; };
+		7222485E2DCBAA2C00CABE2D /* M3U8StreamExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3U8StreamExtractor.swift; sourceTree = "<group>"; };
+		722248612DCBAA4700CABE2D /* JSController-HeaderManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-HeaderManager.swift"; sourceTree = "<group>"; };
+		722248622DCBAA4700CABE2D /* JSController+M3U8Download.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController+M3U8Download.swift"; sourceTree = "<group>"; };
+		722248652DCBC13E00CABE2D /* JSController-Downloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Downloads.swift"; sourceTree = "<group>"; };
 		72443C7C2DC8036500A61321 /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewDownloads.swift; sourceTree = "<group>"; };
 		73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JavaScriptCore+Extensions.swift"; sourceTree = "<group>"; };
@@ -264,6 +278,7 @@
 		133D7C852D2BE2640075467E /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				7205AEDA2DCCEF9500943F3F /* Cache */,
 				72443C832DC8046500A61321 /* DownloadUtils */,
 				13C0E5E82D5F85DD00E7F619 /* ContinueWatching */,
 				13103E8C2D58E037000F0673 /* SkeletonCells */,
@@ -307,7 +322,9 @@
 		133D7C8A2D2BE2640075467E /* JSLoader */ = {
 			isa = PBXGroup;
 			children = (
-				72443C782DC8008B00A61321 /* JSController-Downloads.swift */,
+				722248652DCBC13E00CABE2D /* JSController-Downloads.swift */,
+				722248612DCBAA4700CABE2D /* JSController-HeaderManager.swift */,
+				722248622DCBAA4700CABE2D /* JSController+M3U8Download.swift */,
 				133D7C8B2D2BE2640075467E /* JSController.swift */,
 				132AF1202D99951700A0140B /* JSController-Streams.swift */,
 				132AF1222D9995C300A0140B /* JSController-Details.swift */,
@@ -451,9 +468,21 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		7205AEDA2DCCEF9500943F3F /* Cache */ = {
+			isa = PBXGroup;
+			children = (
+				7205AED72DCCEF9500943F3F /* EpisodeMetadata.swift */,
+				7205AED82DCCEF9500943F3F /* KingfisherManager.swift */,
+				7205AED92DCCEF9500943F3F /* MetadataCacheManager.swift */,
+			);
+			path = Cache;
+			sourceTree = "<group>";
+		};
 		72443C832DC8046500A61321 /* DownloadUtils */ = {
 			isa = PBXGroup;
 			children = (
+				7222485D2DCBAA2C00CABE2D /* DownloadModels.swift */,
+				7222485E2DCBAA2C00CABE2D /* M3U8StreamExtractor.swift */,
 			);
 			path = DownloadUtils;
 			sourceTree = "<group>";
@@ -545,11 +574,13 @@
 				1399FAD62D3AB3DB00E97C31 /* Logger.swift in Sources */,
 				13B7F4C12D58FFDD0045714A /* Shimmer.swift in Sources */,
 				139935662D468C450065CEFF /* ModuleManager.swift in Sources */,
-				72443C792DC8008B00A61321 /* JSController-Downloads.swift in Sources */,
 				133D7C902D2BE2640075467E /* SettingsView.swift in Sources */,
 				132AF1252D9995F900A0140B /* JSController-Search.swift in Sources */,
 				1EF5C3A92DB988E40032BF07 /* CommunityLib.swift in Sources */,
 				13CBEFDA2D5F7D1200D011EE /* String.swift in Sources */,
+				7205AEDB2DCCEF9500943F3F /* EpisodeMetadata.swift in Sources */,
+				7205AEDC2DCCEF9500943F3F /* MetadataCacheManager.swift in Sources */,
+				7205AEDD2DCCEF9500943F3F /* KingfisherManager.swift in Sources */,
 				1E26E9E72DA9577900B9DC02 /* VolumeSlider.swift in Sources */,
 				136BBE802DB1038000906B5E /* Notification+Name.swift in Sources */,
 				13DB46902D900A38008CBC03 /* URL.swift in Sources */,
@@ -572,9 +603,12 @@
 				72443C7D2DC8036500A61321 /* DownloadView.swift in Sources */,
 				1327FBA92D758DEA00FC6689 /* UIDevice+Model.swift in Sources */,
 				138AA1B82D2D66FD0021F9DF /* EpisodeCell.swift in Sources */,
+				722248662DCBC13E00CABE2D /* JSController-Downloads.swift in Sources */,
 				133D7C8C2D2BE2640075467E /* SearchView.swift in Sources */,
 				13DB468E2D90093A008CBC03 /* Anilist-Token.swift in Sources */,
 				1EAC7A322D888BC50083984D /* MusicProgressSlider.swift in Sources */,
+				722248632DCBAA4700CABE2D /* JSController-HeaderManager.swift in Sources */,
+				722248642DCBAA4700CABE2D /* JSController+M3U8Download.swift in Sources */,
 				133D7C942D2BE2640075467E /* JSController.swift in Sources */,
 				133D7C922D2BE2640075467E /* URLSession.swift in Sources */,
 				133D7C912D2BE2640075467E /* SettingsViewModule.swift in Sources */,
@@ -593,6 +627,8 @@
 				1399FAD42D3AB38C00E97C31 /* SettingsViewLogger.swift in Sources */,
 				72443C7F2DC8038300A61321 /* SettingsViewDownloads.swift in Sources */,
 				13DB46922D900BCE008CBC03 /* SettingsViewTrackers.swift in Sources */,
+				7222485F2DCBAA2C00CABE2D /* DownloadModels.swift in Sources */,
+				722248602DCBAA2C00CABE2D /* M3U8StreamExtractor.swift in Sources */,
 				13C0E5EA2D5F85EA00E7F619 /* ContinueWatchingManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -725,11 +761,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Sora/Sora.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Sora/Preview Content\"";
-				DEVELOPMENT_TEAM = 399LMK6Q2Y;
+				DEVELOPMENT_TEAM = V9MT5Y43YG;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -750,10 +785,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.2.2;
-				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur;
+				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur.test;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -768,11 +802,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Sora/Sora.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Sora/Preview Content\"";
-				DEVELOPMENT_TEAM = 399LMK6Q2Y;
+				DEVELOPMENT_TEAM = V9MT5Y43YG;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -793,10 +826,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.2.2;
-				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur;
+				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur.test;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

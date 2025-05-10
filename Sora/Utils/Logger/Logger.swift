@@ -16,6 +16,7 @@ class Logger {
         let timestamp: Date
     }
     
+    private let queue = DispatchQueue(label: "me.cranci.sora.logger", attributes: .concurrent)
     private var logs: [LogEntry] = []
     private let logFileURL: URL
     private let logFilterViewModel = LogFilterViewModel.shared
@@ -29,23 +30,30 @@ class Logger {
         guard logFilterViewModel.isFilterEnabled(for: type) else { return }
         
         let entry = LogEntry(message: message, type: type, timestamp: Date())
-        logs.append(entry)
-        saveLogToFile(entry)
         
-        debugLog(entry)
+        queue.async(flags: .barrier) {
+            self.logs.append(entry)
+            self.saveLogToFile(entry)
+            self.debugLog(entry)
+        }
     }
     
-    
     func getLogs() -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd-MM HH:mm:ss"
-        return logs.map { "[\(dateFormatter.string(from: $0.timestamp))] [\($0.type)] \($0.message)" }
+        var result = ""
+        queue.sync {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd-MM HH:mm:ss"
+            result = logs.map { "[\(dateFormatter.string(from: $0.timestamp))] [\($0.type)] \($0.message)" }
             .joined(separator: "\n----\n")
+        }
+        return result
     }
     
     func clearLogs() {
-        logs.removeAll()
-        try? FileManager.default.removeItem(at: logFileURL)
+        queue.async(flags: .barrier) {
+            self.logs.removeAll()
+            try? FileManager.default.removeItem(at: self.logFileURL)
+        }
     }
     
     private func saveLogToFile(_ log: LogEntry) {
@@ -69,10 +77,11 @@ class Logger {
     
     /// Prints log messages to the Xcode console only in DEBUG mode
     private func debugLog(_ entry: LogEntry) {
-        #if DEBUG
+#if DEBUG
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd-MM HH:mm:ss"
         let formattedMessage = "[\(dateFormatter.string(from: entry.timestamp))] [\(entry.type)] \(entry.message)"
         print(formattedMessage)
-        #endif
-    }}
+#endif
+    }
+}

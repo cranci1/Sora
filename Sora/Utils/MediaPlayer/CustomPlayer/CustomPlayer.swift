@@ -957,26 +957,36 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         sliderViewModel.outroSegments.removeAll()
         
         if let op = skipIntervals.op {
-            let start = max(0, op.start.seconds / duration)
-            let end = min(1, op.end.seconds / duration)
-            sliderViewModel.introSegments.append(start...end)
+            let start = max(0, op.start.seconds / max(duration, 0.01))
+            let end = min(1, op.end.seconds / max(duration, 0.01))
+            
+            if start <= end {
+                sliderViewModel.introSegments.append(start...end)
+            }
         }
         
         if let ed = skipIntervals.ed {
-            let start = max(0, ed.start.seconds / duration)
-            let end = min(1, ed.end.seconds / duration)
-            sliderViewModel.outroSegments.append(start...end)
+            let start = max(0, ed.start.seconds / max(duration, 0.01))
+            let end = min(1, ed.end.seconds / max(duration, 0.01))
+            
+            if start <= end {
+                sliderViewModel.outroSegments.append(start...end)
+            }
         }
         
         let segmentsColor = self.getSegmentsColor()
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let validDuration = max(self.duration, 0.01)
+            
             self.sliderHostingController?.rootView = MusicProgressSlider(
                 value: Binding(
-                    get: { max(0, min(self.sliderViewModel.sliderValue, self.duration)) }, // Remove extra ')'
-                    set: { self.sliderViewModel.sliderValue = max(0, min($0, self.duration)) } // Remove extra ')'
+                    get: { max(0, min(self.sliderViewModel.sliderValue, validDuration)) },
+                    set: { self.sliderViewModel.sliderValue = max(0, min($0, validDuration)) }
                 ),
-                inRange: 0...(self.duration > 0 ? self.duration : 1.0),
+                inRange: 0...validDuration,
                 activeFillColor: .white,
                 fillColor: .white.opacity(0.6),
                 textColor: .white.opacity(0.7),
@@ -985,22 +995,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 onEditingChanged: { editing in
                     if editing {
                         self.isSliderEditing = true
-                        
                         self.wasPlayingBeforeSeek = (self.player.timeControlStatus == .playing)
                         self.originalRate = self.player.rate
-                        
                         self.player.pause()
                     } else {
-                        
-                        let target = CMTime(seconds: self.sliderViewModel.sliderValue,
-                                            preferredTimescale: 600)
-                        self.player.seek(
-                            to: target,
-                            toleranceBefore: .zero,
-                            toleranceAfter: .zero
-                        ) { [weak self] _ in
+                        let target = CMTime(seconds: self.sliderViewModel.sliderValue, preferredTimescale: 600)
+                        self.player.seek(to: target, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
                             guard let self = self else { return }
-                            
                             let final = self.player.currentTime().seconds
                             self.sliderViewModel.sliderValue = final
                             self.currentTimeVal = final

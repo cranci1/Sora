@@ -672,8 +672,8 @@ struct MediaInfoView: View {
     func showStreamSelectionAlert(streams: [Any], fullURL: String, subtitles: String? = nil) {
         self.isFetchingEpisode = false
         self.showLoadingAlert = false
-        print("MULTIPLE STREAMS \(streams)")
-        DispatchQueue.main.async {
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             let alert = UIAlertController(title: "Select Server", message: "Choose a server to play from", preferredStyle: .actionSheet)
             
             var index = 0
@@ -757,7 +757,7 @@ struct MediaInfoView: View {
         self.isFetchingEpisode = false
         self.showLoadingAlert = false
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             let externalPlayer = UserDefaults.standard.string(forKey: "externalPlayer") ?? "Sora"
             var scheme: String?
             

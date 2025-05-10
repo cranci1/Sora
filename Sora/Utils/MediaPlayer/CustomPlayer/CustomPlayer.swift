@@ -96,6 +96,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var skip85Button: UIButton!
     var qualityButton: UIButton!
     var holdSpeedIndicator: UIButton!
+    private var lockButton: UIButton!
     
     var isHLSStream: Bool = false
     var qualities: [(String, String)] = []
@@ -138,6 +139,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var loadedTimeRangesObservation: NSKeyValueObservation?
     private var playerTimeControlStatusObserver: NSKeyValueObservation?
     
+    private var controlsLocked = false
+    private var lockButtonTimer: Timer?
+    
     private var isDimmed = false
     private var dimButton: UIButton!
     private var dimButtonToSlider: NSLayoutConstraint!
@@ -149,15 +153,15 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         playPauseButton,
         backwardButton,
         forwardButton,
-        sliderHostingController!.view,
+        sliderHostingController?.view,
         skip85Button,
         marqueeLabel,
         menuButton,
         qualityButton,
         speedButton,
         watchNextButton,
-        volumeSliderHostingView!
-    ]
+        volumeSliderHostingView
+    ].compactMap { $0 }
     
     private var originalHiddenStates: [UIView: Bool] = [:]
     
@@ -252,6 +256,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupSkipAndDismissGestures()
         addTimeObserver()
         startUpdateTimer()
+        setupLockButton()
         setupAudioSession()
         updateSkipButtonsVisibility()
         setupHoldSpeedIndicator()
@@ -1135,6 +1140,33 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         dimButtonToSlider.isActive = true
     }
     
+    private func setupLockButton() {
+      // copy dim-button styling
+      let cfg = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
+      lockButton = UIButton(type: .system)
+      lockButton.setImage(
+        UIImage(systemName: "lock.open.fill", withConfiguration: cfg),
+        for: .normal
+      )
+      lockButton.tintColor = .white
+      lockButton.layer.shadowColor   = UIColor.black.cgColor
+      lockButton.layer.shadowOffset  = CGSize(width: 0, height: 2)
+      lockButton.layer.shadowOpacity = 0.6
+      lockButton.layer.shadowRadius  = 4
+      lockButton.layer.masksToBounds = false
+
+      lockButton.addTarget(self, action: #selector(lockTapped), for: .touchUpInside)
+
+      view.addSubview(lockButton)
+      lockButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            lockButton.topAnchor.constraint(equalTo: volumeSliderHostingView!.bottomAnchor, constant: 60),
+            lockButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor),
+            lockButton.widthAnchor.constraint(equalToConstant: 24),
+            lockButton.heightAnchor.constraint(equalToConstant: 24),
+        ])
+    }
+    
     func updateMarqueeConstraints() {
         UIView.performWithoutAnimation {
             NSLayoutConstraint.deactivate(currentMarqueeConstraints)
@@ -1462,20 +1494,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         }
     }
     
-    @objc private func skipIntro() {
-        if let range = skipIntervals.op {
-            player.seek(to: range.end)
-            skipIntroButton.isHidden = true
-        }
-    }
-    
-    @objc private func skipOutro() {
-        if let range = skipIntervals.ed {
-            player.seek(to: range.end)
-            skipOutroButton.isHidden = true
-        }
-    }
-    
     
     func startUpdateTimer() {
         updateTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
@@ -1501,31 +1519,48 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     @objc func toggleControls() {
-        if isDimmed {
-            dimButton.isHidden = false
-            dimButton.alpha = 1.0
-            dimButtonTimer?.invalidate()
-            dimButtonTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
-                guard let self = self else { return }
-                UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) {
-                    self.dimButton.alpha = 0
+        if controlsLocked {
+            lockButton.alpha = 1.0
+            lockButtonTimer?.invalidate()
+            lockButtonTimer = Timer.scheduledTimer(
+                withTimeInterval: 3.0,
+                repeats: false
+            ) { [weak self] _ in
+                UIView.animate(withDuration: 0.3) {
+                    self?.lockButton.alpha = 0
                 }
             }
-        } else {
-            isControlsVisible.toggle()
-            UIView.animate(withDuration: 0.2) {
-                let a: CGFloat = self.isControlsVisible ? 1 : 0
-                self.controlsContainerView.alpha = a
-                self.skip85Button.alpha = a
-                
-                self.subtitleBottomToSafeAreaConstraint?.isActive = !self.isControlsVisible
-                self.subtitleBottomToSliderConstraint?.isActive = self.isControlsVisible
-                
-                self.view.layoutIfNeeded()
-            }
-            self.updateSkipButtonsVisibility()
+            updateSkipButtonsVisibility()
+            return
         }
-    }
+
+        if isDimmed {
+                // show the dim button
+                dimButton.isHidden = false
+                dimButton.alpha = 1.0
+                dimButtonTimer?.invalidate()
+                dimButtonTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
+                    UIView.animate(withDuration: 0.3) {
+                        self?.dimButton.alpha = 0
+                    }
+                }
+
+                updateSkipButtonsVisibility()
+                return
+            }
+
+        isControlsVisible.toggle()
+           UIView.animate(withDuration: 0.2) {
+               let alpha: CGFloat = self.isControlsVisible ? 1.0 : 0.0
+               self.controlsContainerView.alpha = alpha
+               self.skip85Button.alpha = alpha
+               self.lockButton.alpha = alpha // Fade lock button with controls
+               self.subtitleBottomToSafeAreaConstraint?.isActive = !self.isControlsVisible
+               self.subtitleBottomToSliderConstraint?.isActive = self.isControlsVisible
+               self.view.layoutIfNeeded()
+           }
+           updateSkipButtonsVisibility()
+       }
     
     @objc func seekBackwardLongPress(_ gesture: UILongPressGestureRecognizer) {
         if gesture.state == .began {
@@ -1610,6 +1645,61 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         }
     }
     
+    @objc private func lockTapped() {
+        controlsLocked.toggle()
+
+        isControlsVisible = !controlsLocked
+        lockButtonTimer?.invalidate()
+
+        if controlsLocked {
+            UIView.animate(withDuration: 0.25) {
+                self.controlsContainerView.alpha = 0
+                self.dimButton.alpha             = 0
+                for v in self.controlsToHide { v.alpha = 0 }
+                self.skipIntroButton.alpha = 0
+                self.skipOutroButton.alpha = 0
+                self.skip85Button.alpha    = 0
+                self.lockButton.alpha = 0
+
+                self.subtitleBottomToSafeAreaConstraint?.isActive = true
+                self.subtitleBottomToSliderConstraint?.isActive    = false
+
+                self.view.layoutIfNeeded()
+            }
+
+            lockButton.setImage(UIImage(systemName: "lock.fill"), for: .normal)
+            
+        } else {
+            UIView.animate(withDuration: 0.25) {
+                self.controlsContainerView.alpha = 1
+                self.dimButton.alpha             = 1
+                for v in self.controlsToHide { v.alpha = 1 }
+
+                self.subtitleBottomToSafeAreaConstraint?.isActive = false
+                self.subtitleBottomToSliderConstraint?.isActive    = true
+
+                self.view.layoutIfNeeded()
+            }
+
+            lockButton.setImage(UIImage(systemName: "lock.open.fill"), for: .normal)
+            updateSkipButtonsVisibility()
+        }
+    }
+    
+    @objc private func skipIntro() {
+        if let range = skipIntervals.op {
+            player.seek(to: range.end)
+            skipIntroButton.isHidden = true
+        }
+    }
+    
+    @objc private func skipOutro() {
+        if let range = skipIntervals.ed {
+            player.seek(to: range.end)
+            skipOutroButton.isHidden = true
+        }
+    }
+    
     @objc func dismissTapped() {
         dismiss(animated: true, completion: nil)
     }
@@ -1636,22 +1726,26 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     @objc private func dimTapped() {
         isDimmed.toggle()
+        isControlsVisible = !isDimmed
         dimButtonTimer?.invalidate()
         
         UIView.animate(withDuration: 0.25) {
             self.blackCoverView.alpha = self.isDimmed ? 1.0 : 0.4
+            // fade all controls (and lock button) in or out
+            for v in self.controlsToHide { v.alpha = self.isDimmed ? 0 : 1 }
+            self.dimButton.alpha  = self.isDimmed ? 0 : 1
+            self.lockButton.alpha = self.isDimmed ? 0 : 1
+
+            // switch subtitle constraints just like toggleControls()
+            self.subtitleBottomToSafeAreaConstraint?.isActive = !self.isControlsVisible
+            self.subtitleBottomToSliderConstraint?.isActive    =  self.isControlsVisible
+
+            self.view.layoutIfNeeded()
         }
-        
-        UIView.animate(withDuration: 0.25) {
-            for view in self.controlsToHide {
-                view.alpha = self.isDimmed ? 0 : 1
-            }
-            self.dimButton.alpha = self.isDimmed ? 0 : 1
-        }
-        
+
+        // slide the dim-icon over
         dimButtonToSlider.isActive = !isDimmed
-        dimButtonToRight.isActive  = isDimmed
-        UIView.animate(withDuration: 0.25) { self.view.layoutIfNeeded() }
+        dimButtonToRight.isActive  =  isDimmed
     }
     
     func speedChangerMenu() -> UIMenu {

@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 class ModuleManager: ObservableObject {
     @Published var modules: [ScrapingModule] = []
     

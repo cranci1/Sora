@@ -16,7 +16,7 @@ struct AnalyticsResponse: Codable {
     let timestamp: String?
 }
 
-// MARK: - Analytics Manager
+@MainActor
 class AnalyticsManager {
     
     static let shared = AnalyticsManager()

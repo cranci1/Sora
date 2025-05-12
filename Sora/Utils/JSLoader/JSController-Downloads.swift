@@ -806,16 +806,15 @@ extension JSController: AVAssetDownloadDelegate {
             print("Download error: \(error.localizedDescription)")
             
             // Extract and log the underlying error details
-            if let nsError = error as? NSError {
-                print("Error domain: \(nsError.domain), code: \(nsError.code)")
-                
-                if let underlyingError = nsError.userInfo["NSUnderlyingError"] as? NSError {
-                    print("Underlying error: \(underlyingError)")
-                }
-                
-                for (key, value) in nsError.userInfo {
-                    print("Error info - \(key): \(value)")
-                }
+            let nsError = error as NSError
+            print("Error domain: \(nsError.domain), code: \(nsError.code)")
+            
+            if let underlyingError = nsError.userInfo["NSUnderlyingError"] as? NSError {
+                print("Underlying error: \(underlyingError)")
+            }
+            
+            for (key, value) in nsError.userInfo {
+                print("Error info - \(key): \(value)")
             }
             
             // Check if there's a system network error 

@@ -130,14 +130,15 @@ struct EpisodeCell: View {
                     }
                     .padding(.horizontal, 8)
                     
-                case .downloading(let activeDownload):
+                case .downloading(_):
                     // Show download progress
                     HStack(spacing: 4) {
-                        Text("\(Int(downloadProgress * 100))%")
+                        let clampedProgress = min(max(downloadProgress, 0.0), 1.0)
+                        Text("\(Int(clampedProgress * 100))%")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        ProgressView(value: downloadProgress)
+                        ProgressView(value: clampedProgress)
                             .progressViewStyle(LinearProgressViewStyle())
                             .frame(width: 40)
                     }
@@ -234,18 +235,32 @@ struct EpisodeCell: View {
             
             // Update our local download progress state
             let newProgress = activeDownload.progress
+            let clampedProgress = min(max(newProgress, 0.0), 1.0)
             
             // Check if the progress has actually changed to avoid unnecessary UI updates
             if case .downloading(let prevDownload) = previousStatus, prevDownload.progress == newProgress {
                 // No progress change, do nothing
             } else {
                 // Progress has changed, update state and force refresh
-                downloadProgress = newProgress
+                downloadProgress = clampedProgress
                 lastUpdateTime = Date() // Update timestamp
                 downloadRefreshTrigger.toggle()
                 
+                // If progress is complete, force state to .downloaded
+                if clampedProgress >= 1.0 {
+                    // Try to get the downloaded asset
+                    if let asset = jsController.savedAssets.first(where: { asset in
+                        asset.type == .episode &&
+                        asset.metadata?.showTitle?.caseInsensitiveCompare(parentTitle) == .orderedSame &&
+                        asset.metadata?.episode == episodeID + 1
+                    }) {
+                        downloadStatus = .downloaded(asset)
+                        downloadProgress = 1.0
+                        downloadRefreshTrigger.toggle()
+                    }
+                }
                 // Log for debugging
-                print("Episode \(episodeID + 1) progress updated: \(Int(newProgress * 100))%")
+                print("Episode \(episodeID + 1) progress updated: \(Int(clampedProgress * 100))%")
             }
         } else {
             // Reset download progress if no longer downloading

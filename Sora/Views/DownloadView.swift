@@ -400,6 +400,15 @@ struct DownloadGroupView: View {
 // MARK: - ActiveDownloadRow
 struct ActiveDownloadRow: View {
     let download: JSActiveDownload
+    @State private var taskState: URLSessionTask.State
+    @State private var currentProgress: Double
+    
+    init(download: JSActiveDownload) {
+        self.download = download
+        // Initialize the state from the current task state
+        _taskState = State(initialValue: download.task.state)
+        _currentProgress = State(initialValue: download.progress)
+    }
     
     var body: some View {
         HStack {
@@ -430,22 +439,22 @@ struct ActiveDownloadRow: View {
                 
                 // Enhanced progress view
                 VStack(alignment: .leading, spacing: 2) {
-                    ProgressView(value: download.progress)
+                    ProgressView(value: currentProgress)
                         .progressViewStyle(LinearProgressViewStyle())
-                        .tint(download.progress == 1.0 ? .green : .blue)
+                        .tint(currentProgress == 1.0 ? .green : .blue)
                     
                     HStack {
-                        Text("\(Int(download.progress * 100))%")
+                        Text("\(Int(currentProgress * 100))%")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
                         Spacer()
                         
-                        if download.task.state == .running {
+                        if taskState == .running {
                             Text("Downloading")
                                 .font(.caption)
                                 .foregroundColor(.blue)
-                        } else if download.task.state == .suspended {
+                        } else if taskState == .suspended {
                             Text("Paused")
                                 .font(.caption)
                                 .foregroundColor(.orange)
@@ -457,27 +466,49 @@ struct ActiveDownloadRow: View {
             
             Spacer()
             
-            // Download controls - limited for JSController implementation
+            // Download controls with state tracking
             Button(action: {
-                if download.task.state == .running {
+                if taskState == .running {
                     download.task.suspend()
-                } else if download.task.state == .suspended {
+                    taskState = .suspended
+                } else if taskState == .suspended {
                     download.task.resume()
+                    taskState = .running
                 }
+                // Post notification for UI updates across the app
+                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
             }) {
-                Image(systemName: download.task.state == .running ? "pause.circle.fill" : "play.circle.fill")
-                    .foregroundColor(download.task.state == .running ? .orange : .blue)
+                Image(systemName: taskState == .running ? "pause.circle.fill" : "play.circle.fill")
+                    .foregroundColor(taskState == .running ? .orange : .blue)
                     .font(.title2)
             }
             
             Button(action: {
                 download.task.cancel()
+                taskState = .canceling
+                // Post notification for UI updates across the app
+                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
             }) {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundColor(.red)
                     .font(.title2)
             }
         }
+        .onAppear {
+            // Update state when view appears
+            updateDownloadState()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadStatusChanged"))) { _ in
+            updateDownloadState()
+        }
+    }
+    
+    private func updateDownloadState() {
+        // Update task state from the actual download task
+        self.taskState = download.task.state
+        
+        // Update progress from the actual download
+        self.currentProgress = download.progress
     }
 }
 

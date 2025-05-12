@@ -343,11 +343,15 @@ extension JSController {
                 localSubtitleURL: localSubtitleURL
             )
             
-            // Replace the old asset with the updated one
-            savedAssets[index] = updatedAsset
-            
-            // Save the updated assets array
-            saveAssets()
+            // Dispatch the UI update to the main thread
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                // Replace the old asset with the updated one
+                self.savedAssets[index] = updatedAsset
+                
+                // Save the updated assets array
+                self.saveAssets()
+            }
         }
     }
     
@@ -888,7 +892,23 @@ extension JSController: AVAssetDownloadDelegate {
             
             // Only update if the index is still valid
             if downloadIndex < strongSelf.activeDownloads.count {
+                let download = strongSelf.activeDownloads[downloadIndex]
                 strongSelf.activeDownloads[downloadIndex].progress = finalProgress
+                
+                // Post both notifications for UI updates
+                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+                
+                // Post the new progress notification with episode number if it's an episode
+                if let episodeNumber = download.metadata?.episode {
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("downloadProgressUpdated"),
+                        object: nil,
+                        userInfo: [
+                            "episodeNumber": episodeNumber,
+                            "progress": finalProgress
+                        ]
+                    )
+                }
             }
         }
     }

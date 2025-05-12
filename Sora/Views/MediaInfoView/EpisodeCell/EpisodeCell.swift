@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Kingfisher
+import AVFoundation
 
 struct EpisodeLink: Identifiable {
     let id = UUID()
@@ -37,7 +38,10 @@ struct EpisodeCell: View {
     @State private var isPlaying = false
     @State private var loadedFromCache: Bool = false
     @State private var downloadStatus: EpisodeDownloadStatus = .notDownloaded
-    @State private var statusCheckTimer: Timer? = nil
+    @State private var downloadProgress: Double = 0.0
+    @State private var downloadRefreshTrigger: Bool = false
+    @State private var lastUpdateTime: Date = Date()
+    @State private var activeDownloadTask: AVAssetDownloadTask? = nil
     
     @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
@@ -129,15 +133,16 @@ struct EpisodeCell: View {
                 case .downloading(let activeDownload):
                     // Show download progress
                     HStack(spacing: 4) {
-                        Text("\(Int(activeDownload.progress * 100))%")
+                        Text("\(Int(downloadProgress * 100))%")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        ProgressView(value: activeDownload.progress)
+                        ProgressView(value: downloadProgress)
                             .progressViewStyle(LinearProgressViewStyle())
                             .frame(width: 40)
                     }
                     .padding(.horizontal, 8)
+                    .id("progress_\(Int(downloadProgress * 100))_\(lastUpdateTime.timeIntervalSince1970)")
                     
                 case .downloaded:
                     // Show downloaded indicator
@@ -184,18 +189,19 @@ struct EpisodeCell: View {
             updateProgress()
             fetchEpisodeDetails()
             updateDownloadStatus()
-            
-            // Set up a timer to check for download status changes
-            statusCheckTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-                updateDownloadStatus()
-            }
+            observeDownloadProgress() // Start observing download progress
         }
         .onDisappear {
-            // Invalidate timer when view disappears
-            statusCheckTimer?.invalidate()
-            statusCheckTimer = nil
+            // Clean up any active timers
+            activeDownloadTask = nil
         }
         .onChange(of: progress) { _ in
+            updateProgress()
+        }
+        // Add notification center observer for download state changes
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadStatusChanged"))) { _ in
+            updateDownloadStatus()
+            // Also update viewing progress when download status changes
             updateProgress()
         }
         .onTapGesture {
@@ -210,13 +216,76 @@ struct EpisodeCell: View {
         } message: {
             Text("Do you want to download Episode \(episodeID + 1)\(episodeTitle.isEmpty ? "" : ": \(episodeTitle)")?")
         }
+        // Add an ID modifier tied to the refresh trigger to force UI updates
+        .id("\(episode)_\(downloadRefreshTrigger)_\(Int(downloadProgress * 100))")
     }
     
     private func updateDownloadStatus() {
+        let previousStatus = downloadStatus
         downloadStatus = jsController.isEpisodeDownloadedOrInProgress(
             showTitle: parentTitle,
             episodeNumber: episodeID + 1
         )
+        
+        // Update download progress when status changes
+        if case .downloading(let activeDownload) = downloadStatus {
+            // Store the active download task for direct progress observation
+            activeDownloadTask = activeDownload.task
+            
+            // Update our local download progress state
+            let newProgress = activeDownload.progress
+            
+            // Check if the progress has actually changed to avoid unnecessary UI updates
+            if case .downloading(let prevDownload) = previousStatus, prevDownload.progress == newProgress {
+                // No progress change, do nothing
+            } else {
+                // Progress has changed, update state and force refresh
+                downloadProgress = newProgress
+                lastUpdateTime = Date() // Update timestamp
+                downloadRefreshTrigger.toggle()
+                
+                // Log for debugging
+                print("Episode \(episodeID + 1) progress updated: \(Int(newProgress * 100))%")
+            }
+        } else {
+            // Reset download progress if no longer downloading
+            if downloadProgress != 0.0 {
+                downloadProgress = 0.0
+                lastUpdateTime = Date() // Update timestamp
+                downloadRefreshTrigger.toggle()
+            }
+            
+            // Clear the active download task
+            activeDownloadTask = nil
+            
+            // Also toggle refresh trigger when status changes to not downloading
+            if case .downloading = previousStatus {
+                downloadRefreshTrigger.toggle()
+            }
+        }
+    }
+    
+    private func observeDownloadProgress() {
+        // We'll rely on the notification system instead of a timer
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("downloadProgressUpdated"),
+            object: nil,
+            queue: .main
+        ) { notification in
+            guard let userInfo = notification.userInfo,
+                  let episodeNumber = userInfo["episodeNumber"] as? Int,
+                  let progress = userInfo["progress"] as? Double,
+                  episodeNumber == self.episodeID + 1 else {
+                return
+            }
+            
+            // Only update if the progress has changed significantly
+            if abs(progress - self.downloadProgress) > 0.001 {
+                self.downloadProgress = progress
+                self.lastUpdateTime = Date()
+                self.downloadRefreshTrigger.toggle()
+            }
+        }
     }
     
     private func downloadEpisode() {

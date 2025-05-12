@@ -62,14 +62,37 @@ extension JSController {
                      showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
                      subtitleURL: URL? = nil,
                      completionHandler: ((Bool, String) -> Void)? = nil) {
-        // Check if already downloaded
+        
+        // For episodes, first check if already downloaded by metadata (more reliable)
+        if isEpisode && showTitle != nil && episode != nil {
+            let episodeStatus = isEpisodeDownloadedOrInProgress(
+                showTitle: showTitle!,
+                episodeNumber: episode!,
+                season: season ?? 1
+            )
+            
+            if episodeStatus.isDownloadedOrInProgress {
+                // Episode is already downloaded or being downloaded based on metadata
+                let message: String
+                if case .downloaded = episodeStatus {
+                    message = "This episode has already been downloaded"
+                } else {
+                    message = "This episode is already being downloaded"
+                }
+                print("Episode already handled: \(message)")
+                completionHandler?(false, message)
+                return
+            }
+        }
+        
+        // Fallback to URL check for non-episodes or if metadata is incomplete
         if savedAssets.contains(where: { $0.originalURL == url }) {
             print("Asset already downloaded: \(url.absoluteString)")
             completionHandler?(false, "This content has already been downloaded")
             return
         }
         
-        // Check if already downloading
+        // Check if already downloading by URL
         if activeDownloads.contains(where: { $0.originalURL == url }) {
             print("Asset already being downloaded: \(url.absoluteString)")
             completionHandler?(false, "This content is already being downloaded")
@@ -626,6 +649,59 @@ extension JSController {
         
         return fileExists
     }
+    
+    /// Checks if an episode is already downloaded or currently being downloaded
+    /// - Parameters:
+    ///   - showTitle: The title of the show (anime title)
+    ///   - episodeNumber: The episode number
+    ///   - season: The season number (defaults to 1)
+    /// - Returns: Download status indicating if the episode is downloaded, being downloaded, or not downloaded
+    func isEpisodeDownloadedOrInProgress(
+        showTitle: String,
+        episodeNumber: Int,
+        season: Int = 1
+    ) -> EpisodeDownloadStatus {
+        // First check if it's already downloaded
+        for asset in savedAssets {
+            // Skip if not an episode or show title doesn't match
+            if asset.type != .episode { continue }
+            guard let metadata = asset.metadata, 
+                  let assetShowTitle = metadata.showTitle, 
+                  assetShowTitle.caseInsensitiveCompare(showTitle) == .orderedSame else { 
+                continue 
+            }
+            
+            // Check episode number
+            let assetEpisode = metadata.episode ?? 0
+            let assetSeason = metadata.season ?? 1
+            
+            if assetEpisode == episodeNumber && assetSeason == season {
+                return .downloaded(asset)
+            }
+        }
+        
+        // Then check if it's currently being downloaded
+        for download in activeDownloads {
+            // Skip if not an episode or show title doesn't match
+            if download.type != .episode { continue }
+            guard let metadata = download.metadata, 
+                  let assetShowTitle = metadata.showTitle, 
+                  assetShowTitle.caseInsensitiveCompare(showTitle) == .orderedSame else { 
+                continue 
+            }
+            
+            // Check episode number
+            let assetEpisode = metadata.episode ?? 0
+            let assetSeason = metadata.season ?? 1
+            
+            if assetEpisode == episodeNumber && assetSeason == season {
+                return .downloading(download)
+            }
+        }
+        
+        // Not downloaded or being downloaded
+        return .notDownloaded
+    }
 }
 
 // MARK: - AVAssetDownloadDelegate
@@ -879,7 +955,7 @@ extension JSController: URLSessionTaskDelegate {
 
 // MARK: - Download Types
 /// Struct to represent an active download in JSController
-struct JSActiveDownload: Identifiable {
+struct JSActiveDownload: Identifiable, Equatable {
     let id: UUID
     let originalURL: URL
     var progress: Double
@@ -889,6 +965,11 @@ struct JSActiveDownload: Identifiable {
     var title: String?
     var imageURL: URL?  // Added property to store image URL
     var subtitleURL: URL?  // Added property to store subtitle URL
+    
+    // Implement Equatable
+    static func == (lhs: JSActiveDownload, rhs: JSActiveDownload) -> Bool {
+        return lhs.id == rhs.id
+    }
     
     init(
         id: UUID = UUID(),
@@ -910,5 +991,25 @@ struct JSActiveDownload: Identifiable {
         self.title = title
         self.imageURL = imageURL  // Set the image URL
         self.subtitleURL = subtitleURL  // Set the subtitle URL
+    }
+}
+
+/// Represents the download status of an episode
+enum EpisodeDownloadStatus {
+    /// Episode is not downloaded and not being downloaded
+    case notDownloaded
+    /// Episode is currently being downloaded
+    case downloading(JSActiveDownload)
+    /// Episode is already downloaded
+    case downloaded(DownloadedAsset)
+    
+    /// Returns true if the episode is either downloaded or being downloaded
+    var isDownloadedOrInProgress: Bool {
+        switch self {
+        case .notDownloaded:
+            return false
+        case .downloading, .downloaded:
+            return true
+        }
     }
 } 

@@ -59,7 +59,7 @@ enum DownloadType: String, Codable {
 }
 
 // MARK: - Downloaded Asset Model
-struct DownloadedAsset: Identifiable, Codable {
+struct DownloadedAsset: Identifiable, Codable, Equatable {
     let id: UUID
     var name: String
     let downloadDate: Date
@@ -70,6 +70,11 @@ struct DownloadedAsset: Identifiable, Codable {
     // New fields for subtitle support
     let subtitleURL: URL?
     let localSubtitleURL: URL?
+    
+    // Implement Equatable
+    static func == (lhs: DownloadedAsset, rhs: DownloadedAsset) -> Bool {
+        return lhs.id == rhs.id
+    }
     
     var fileSize: Int64? {
         do {
@@ -181,13 +186,18 @@ struct DownloadedAsset: Identifiable, Codable {
 }
 
 // MARK: - Active Download Model
-struct ActiveDownload: Identifiable {
+struct ActiveDownload: Identifiable, Equatable {
     let id: UUID
     let originalURL: URL
     var progress: Double
     let task: URLSessionTask
     let type: DownloadType
     let metadata: AssetMetadata?
+    
+    // Implement Equatable
+    static func == (lhs: ActiveDownload, rhs: ActiveDownload) -> Bool {
+        return lhs.id == rhs.id
+    }
     
     // Add the same grouping properties as DownloadedAsset for consistency
     var groupTitle: String {

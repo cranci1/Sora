@@ -36,6 +36,8 @@ struct EpisodeCell: View {
     @State private var isDownloading: Bool = false
     @State private var isPlaying = false
     @State private var loadedFromCache: Bool = false
+    @State private var downloadStatus: EpisodeDownloadStatus = .notDownloaded
+    @State private var statusCheckTimer: Timer? = nil
     
     @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
@@ -110,24 +112,54 @@ struct EpisodeCell: View {
             
             Spacer()
             
-            Button(action: {
-                showDownloadConfirmation = true
-            }) {
-                Image(systemName: "arrow.down.circle")
-                    .foregroundColor(.blue)
-                    .font(.title3)
+            // Download Button or Status Indicator
+            Group {
+                switch downloadStatus {
+                case .notDownloaded:
+                    // Show download button
+                    Button(action: {
+                        showDownloadConfirmation = true
+                    }) {
+                        Image(systemName: "arrow.down.circle")
+                            .foregroundColor(.blue)
+                            .font(.title3)
+                    }
+                    .padding(.horizontal, 8)
+                    
+                case .downloading(let activeDownload):
+                    // Show download progress
+                    HStack(spacing: 4) {
+                        Text("\(Int(activeDownload.progress * 100))%")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        ProgressView(value: activeDownload.progress)
+                            .progressViewStyle(LinearProgressViewStyle())
+                            .frame(width: 40)
+                    }
+                    .padding(.horizontal, 8)
+                    
+                case .downloaded:
+                    // Show downloaded indicator
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.title3)
+                        .padding(.horizontal, 8)
+                }
             }
-            .padding(.horizontal, 8)
             
             CircularProgressBar(progress: currentProgress)
                 .frame(width: 40, height: 40)
         }
         .contentShape(Rectangle())
         .contextMenu {
-            Button(action: {
-                showDownloadConfirmation = true
-            }) {
-                Label("Download Episode", systemImage: "arrow.down.circle")
+            // Only show download option if not already downloaded or downloading
+            if case .notDownloaded = downloadStatus {
+                Button(action: {
+                    showDownloadConfirmation = true
+                }) {
+                    Label("Download Episode", systemImage: "arrow.down.circle")
+                }
             }
             
             if progress <= 0.9 {
@@ -151,6 +183,17 @@ struct EpisodeCell: View {
         .onAppear {
             updateProgress()
             fetchEpisodeDetails()
+            updateDownloadStatus()
+            
+            // Set up a timer to check for download status changes
+            statusCheckTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+                updateDownloadStatus()
+            }
+        }
+        .onDisappear {
+            // Invalidate timer when view disappears
+            statusCheckTimer?.invalidate()
+            statusCheckTimer = nil
         }
         .onChange(of: progress) { _ in
             updateProgress()
@@ -169,31 +212,47 @@ struct EpisodeCell: View {
         }
     }
     
-    private func downloadEpisode() {
-        if isDownloading {
-            return
-        }
-        
-        isDownloading = true
-        let downloadID = UUID()
-        
-        DropManager.shared.showDrop(
-            title: "Preparing Download",
-            subtitle: "Episode \(episodeID + 1)",
-            duration: 0.5,
-            icon: UIImage(systemName: "arrow.down.circle")
+    private func updateDownloadStatus() {
+        downloadStatus = jsController.isEpisodeDownloadedOrInProgress(
+            showTitle: parentTitle,
+            episodeNumber: episodeID + 1
         )
+    }
+    
+    private func downloadEpisode() {
+        // Check the current download status
+        updateDownloadStatus()
         
-        Task {
-            do {
-                let jsContent = try moduleManager.getModuleContent(module)
-                jsController.loadScript(jsContent)
-                
-                // Try download methods sequentially instead of in parallel
-                tryNextDownloadMethod(methodIndex: 0, downloadID: downloadID, softsub: module.metadata.softsub == true)
-            } catch {
-                DropManager.shared.error("Failed to start download: \(error.localizedDescription)")
-                isDownloading = false
+        // Don't proceed if the episode is already downloaded or being downloaded
+        if case .notDownloaded = downloadStatus, !isDownloading {
+            isDownloading = true
+            let downloadID = UUID()
+            
+            DropManager.shared.showDrop(
+                title: "Preparing Download",
+                subtitle: "Episode \(episodeID + 1)",
+                duration: 0.5,
+                icon: UIImage(systemName: "arrow.down.circle")
+            )
+            
+            Task {
+                do {
+                    let jsContent = try moduleManager.getModuleContent(module)
+                    jsController.loadScript(jsContent)
+                    
+                    // Try download methods sequentially instead of in parallel
+                    tryNextDownloadMethod(methodIndex: 0, downloadID: downloadID, softsub: module.metadata.softsub == true)
+                } catch {
+                    DropManager.shared.error("Failed to start download: \(error.localizedDescription)")
+                    isDownloading = false
+                }
+            }
+        } else {
+            // Handle case where download is already in progress or completed
+            if case .downloaded = downloadStatus {
+                DropManager.shared.info("Episode \(episodeID + 1) is already downloaded")
+            } else if case .downloading = downloadStatus {
+                DropManager.shared.info("Episode \(episodeID + 1) is already being downloaded")
             }
         }
     }

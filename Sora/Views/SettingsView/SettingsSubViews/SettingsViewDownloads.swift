@@ -16,11 +16,9 @@ struct SettingsViewDownloads: View {
     private var downloadQuality = DownloadQualityPreference.defaultPreference.rawValue
     @AppStorage("allowCellularDownloads") private var allowCellularDownloads: Bool = true
     @State private var showClearConfirmation = false
-    
-    // Calculate total storage used
-    private var totalStorageUsed: Int64 {
-        return jsController.savedAssets.compactMap { $0.fileSize }.reduce(0, +)
-    }
+    @State private var totalStorageSize: Int64 = 0
+    @State private var existingDownloadCount: Int = 0
+    @State private var isCalculating: Bool = false
     
     var body: some View {
         Form {
@@ -51,15 +49,32 @@ struct SettingsViewDownloads: View {
                 HStack {
                     Text("Storage Used")
                     Spacer()
-                    Text(formatFileSize(totalStorageUsed))
+                    
+                    if isCalculating {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                            .padding(.trailing, 5)
+                    }
+                    
+                    Text(formatFileSize(totalStorageSize))
                         .foregroundColor(.secondary)
                 }
                 
                 HStack {
                     Text("Files Downloaded")
                     Spacer()
-                    Text("\(jsController.savedAssets.count)")
+                    Text("\(existingDownloadCount) of \(jsController.savedAssets.count)")
                         .foregroundColor(.secondary)
+                }
+                
+                Button(action: {
+                    // Recalculate sizes in case files were externally modified
+                    calculateTotalStorage()
+                }) {
+                    HStack {
+                        Image(systemName: "arrow.clockwise")
+                        Text("Refresh Storage Info")
+                    }
                 }
                 
                 Button(action: {
@@ -86,6 +101,35 @@ struct SettingsViewDownloads: View {
             }
         }
         .navigationTitle("Downloads")
+        .onAppear {
+            calculateTotalStorage()
+        }
+    }
+    
+    private func calculateTotalStorage() {
+        guard !jsController.savedAssets.isEmpty else {
+            totalStorageSize = 0
+            existingDownloadCount = 0
+            return
+        }
+        
+        isCalculating = true
+        
+        // Clear any cached file sizes before recalculating
+        DownloadedAsset.clearFileSizeCache()
+        DownloadGroup.clearFileSizeCache()
+        
+        // Use background task to avoid UI freezes with many files
+        DispatchQueue.global(qos: .userInitiated).async {
+            let total = jsController.savedAssets.reduce(0) { $0 + $1.fileSize }
+            let existing = jsController.savedAssets.filter { $0.fileExists }.count
+            
+            DispatchQueue.main.async {
+                self.totalStorageSize = total
+                self.existingDownloadCount = existing
+                self.isCalculating = false
+            }
+        }
     }
     
     private func clearAllDownloads(preservePersistentDownloads: Bool = false) {
@@ -99,6 +143,10 @@ struct SettingsViewDownloads: View {
                 jsController.deleteAsset(asset)
             }
         }
+        
+        // Reset calculated values
+        totalStorageSize = 0
+        existingDownloadCount = 0
     }
     
     private func formatFileSize(_ size: Int64) -> String {

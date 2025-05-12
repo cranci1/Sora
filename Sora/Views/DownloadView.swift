@@ -510,9 +510,20 @@ struct DownloadedAssetRow: View {
                     .font(.subheadline)
                     .lineLimit(1)
                 
-                Text(asset.downloadDate.formatted(date: .abbreviated, time: .omitted))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                HStack(spacing: 4) {
+                    Text(asset.downloadDate.formatted(date: .abbreviated, time: .omitted))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    // Show file size
+                    Text("•")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text(formatFileSize(asset.fileSize))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             
             Spacer()
@@ -524,10 +535,24 @@ struct DownloadedAssetRow: View {
                     .font(.caption)
             }
             
+            // Show warning if file doesn't exist
+            if !asset.fileExists {
+                Image(systemName: "exclamationmark.triangle")
+                    .foregroundColor(.orange)
+                    .font(.caption)
+            }
+            
             Image(systemName: "play.circle.fill")
-                .foregroundColor(.blue)
+                .foregroundColor(asset.fileExists ? .blue : .gray)
                 .font(.title3)
         }
+    }
+    
+    private func formatFileSize(_ size: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useKB, .useMB, .useGB]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: size)
     }
 }
 
@@ -775,11 +800,10 @@ struct DownloadedEpisodeRow: View {
                     .font(.headline)
                     .lineLimit(1)
                 
-                if let fileSize = asset.fileSize {
-                    Text(formatFileSize(fileSize))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                // Always show file size (will be zero if file doesn't exist)
+                Text(formatFileSize(asset.fileSize))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
                 
                 HStack(spacing: 6) {
                     Text(asset.downloadDate.formatted(date: .abbreviated, time: .shortened))
@@ -792,13 +816,20 @@ struct DownloadedEpisodeRow: View {
                             .foregroundColor(.blue)
                             .font(.caption)
                     }
+                    
+                    // Show warning if file doesn't exist
+                    if !asset.fileExists {
+                        Image(systemName: "exclamationmark.triangle")
+                            .foregroundColor(.orange)
+                            .font(.caption)
+                    }
                 }
             }
             
             Spacer()
             
             Image(systemName: "play.circle.fill")
-                .foregroundColor(.blue)
+                .foregroundColor(asset.fileExists ? .blue : .gray)
                 .font(.title2)
         }
         .padding(.vertical, 8)

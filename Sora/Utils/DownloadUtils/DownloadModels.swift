@@ -71,33 +71,80 @@ struct DownloadedAsset: Identifiable, Codable, Equatable {
     let subtitleURL: URL?
     let localSubtitleURL: URL?
     
+    // For caching purposes, but not stored as part of the codable object
+    private var _cachedFileSize: Int64? = nil
+    
     // Implement Equatable
     static func == (lhs: DownloadedAsset, rhs: DownloadedAsset) -> Bool {
         return lhs.id == rhs.id
     }
     
-    var fileSize: Int64? {
-        do {
-            if FileManager.default.fileExists(atPath: localURL.path) {
-                let attributes = try FileManager.default.attributesOfItem(atPath: localURL.path)
+    /// Returns the combined file size of the video file and subtitle file (if exists)
+    var fileSize: Int64 {
+        // This implementation calculates file size without caching it in the struct property
+        // Instead we'll use a static cache dictionary
+        let cacheKey = localURL.path
+        
+        // Check the static cache
+        if let size = DownloadedAsset.fileSizeCache[cacheKey] {
+            return size
+        }
+        
+        var totalSize: Int64 = 0
+        let fileManager = FileManager.default
+        
+        // Get video file size
+        if fileManager.fileExists(atPath: localURL.path) {
+            do {
+                let attributes = try fileManager.attributesOfItem(atPath: localURL.path)
                 if let size = attributes[.size] as? Int64 {
-                    return size
+                    totalSize += size
                 } else if let size = attributes[.size] as? Int {
-                    return Int64(size)
+                    totalSize += Int64(size)
                 } else if let size = attributes[.size] as? NSNumber {
-                    return size.int64Value
+                    totalSize += size.int64Value
                 } else {
                     Logger.shared.log("Could not get file size as Int64 for: \(localURL.path)", type: "Warning")
-                    return nil
                 }
-            } else {
-                Logger.shared.log("File does not exist at path: \(localURL.path)", type: "Warning")
-                return nil
+            } catch {
+                Logger.shared.log("Error getting file size: \(error.localizedDescription) for \(localURL.path)", type: "Error")
             }
-        } catch {
-            Logger.shared.log("Error getting file size: \(error.localizedDescription) for \(localURL.path)", type: "Error")
-            return nil
+        } else {
+            Logger.shared.log("Video file does not exist at path: \(localURL.path)", type: "Warning")
         }
+        
+        // Add subtitle file size if it exists
+        if let subtitlePath = localSubtitleURL?.path, fileManager.fileExists(atPath: subtitlePath) {
+            do {
+                let attributes = try fileManager.attributesOfItem(atPath: subtitlePath)
+                if let size = attributes[.size] as? Int64 {
+                    totalSize += size
+                } else if let size = attributes[.size] as? Int {
+                    totalSize += Int64(size)
+                } else if let size = attributes[.size] as? NSNumber {
+                    totalSize += size.int64Value
+                }
+            } catch {
+                Logger.shared.log("Error getting subtitle file size: \(error.localizedDescription)", type: "Warning")
+            }
+        }
+        
+        // Store in static cache
+        DownloadedAsset.fileSizeCache[cacheKey] = totalSize
+        return totalSize
+    }
+    
+    /// Global file size cache for performance
+    private static var fileSizeCache: [String: Int64] = [:]
+    
+    /// Clears the global file size cache
+    static func clearFileSizeCache() {
+        fileSizeCache.removeAll()
+    }
+    
+    /// Returns true if the main video file exists
+    var fileExists: Bool {
+        return FileManager.default.fileExists(atPath: localURL.path)
     }
     
     // MARK: - New Grouping Properties
@@ -160,6 +207,9 @@ struct DownloadedAsset: Identifiable, Codable, Equatable {
         // Decode new optional fields
         subtitleURL = try container.decodeIfPresent(URL.self, forKey: .subtitleURL)
         localSubtitleURL = try container.decodeIfPresent(URL.self, forKey: .localSubtitleURL)
+        
+        // Initialize cache
+        _cachedFileSize = nil
     }
     
     init(
@@ -276,11 +326,19 @@ struct AssetMetadata: Codable {
 // MARK: - New Group Model
 /// Represents a group of downloads (anime/show or movies)
 struct DownloadGroup: Identifiable {
-    let id = UUID()
+    var id = UUID()
     let title: String  // Anime title for shows
     let type: DownloadType
     var assets: [DownloadedAsset]
     var posterURL: URL?
+    
+    // Cache key for this group
+    private var cacheKey: String {
+        return "\(id)-\(title)-\(assets.count)"
+    }
+    
+    // Static file size cache
+    private static var fileSizeCache: [String: Int64] = [:]
     
     var assetCount: Int {
         return assets.count
@@ -296,19 +354,54 @@ struct DownloadGroup: Identifiable {
     
     /// Returns the total file size of all assets in the group
     var totalFileSize: Int64 {
-        var total: Int64 = 0
-        for asset in assets {
-            if let size = asset.fileSize {
-                total += size
-            }
+        // Check if we have a cached size for this group
+        let key = cacheKey
+        if let cachedSize = DownloadGroup.fileSizeCache[key] {
+            return cachedSize
         }
+        
+        // Calculate total size from all assets
+        let total = assets.reduce(0) { runningTotal, asset in
+            return runningTotal + asset.fileSize
+        }
+        
+        // Store in static cache
+        DownloadGroup.fileSizeCache[key] = total
         return total
+    }
+    
+    /// Returns the count of assets that actually exist on disk
+    var existingAssetsCount: Int {
+        return assets.filter { $0.fileExists }.count
+    }
+    
+    /// Returns true if all assets in this group exist
+    var allAssetsExist: Bool {
+        return existingAssetsCount == assets.count
+    }
+    
+    /// Clear the file size cache for all groups
+    static func clearFileSizeCache() {
+        fileSizeCache.removeAll()
     }
     
     // For anime/TV shows, organize episodes by season then episode number
     func organizedEpisodes() -> [DownloadedAsset] {
         guard isShow else { return assets }
         return assets.sorted { $0.episodeOrderPriority < $1.episodeOrderPriority }
+    }
+    
+    /// Refresh the calculated size for this group
+    mutating func refreshFileSize() {
+        DownloadGroup.fileSizeCache.removeValue(forKey: cacheKey)
+        _ = totalFileSize
+    }
+    
+    init(title: String, type: DownloadType, assets: [DownloadedAsset], posterURL: URL? = nil) {
+        self.title = title
+        self.type = type
+        self.assets = assets
+        self.posterURL = posterURL
     }
 }
 

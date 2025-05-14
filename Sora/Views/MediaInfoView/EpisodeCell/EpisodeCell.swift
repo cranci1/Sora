@@ -45,6 +45,11 @@ struct EpisodeCell: View {
     @State private var lastStatusCheck: Date = Date()
     @State private var lastLoggedStatus: EpisodeDownloadStatus?
     
+    // Add retry configuration
+    @State private var retryAttempts: Int = 0
+    private let maxRetryAttempts: Int = 3
+    private let initialBackoffDelay: TimeInterval = 1.0
+    
     @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
     
@@ -662,35 +667,86 @@ struct EpisodeCell: View {
     private func fetchAnimeEpisodeDetails() {
         guard let url = URL(string: "https://api.ani.zip/mappings?anilist_id=\(itemID)") else {
             isLoading = false
+            Logger.shared.log("Invalid URL for itemID: \(itemID)", type: "Error")
             return
         }
         
-        URLSession.custom.dataTask(with: url) { data, _, error in
+        // For debugging
+        if retryAttempts > 0 {
+            Logger.shared.log("Retrying episode details fetch (attempt \(retryAttempts)/\(maxRetryAttempts))", type: "Debug")
+        }
+        
+        URLSession.custom.dataTask(with: url) { data, response, error in
             if let error = error {
                 Logger.shared.log("Failed to fetch anime episode details: \(error)", type: "Error")
-                DispatchQueue.main.async { self.isLoading = false }
+                self.handleFetchFailure(error: error)
                 return
             }
             
             guard let data = data else {
-                DispatchQueue.main.async { self.isLoading = false }
+                self.handleFetchFailure(error: NSError(domain: "com.sora.episode", code: 1, userInfo: [NSLocalizedDescriptionKey: "No data received"]))
                 return
             }
             
             do {
                 let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
-                guard let json = jsonObject as? [String: Any],
-                      let episodes = json["episodes"] as? [String: Any],
-                      let episodeDetails = episodes["\(episodeID + 1)"] as? [String: Any],
-                      let title = episodeDetails["title"] as? [String: String],
-                      let image = episodeDetails["image"] as? String else {
-                          Logger.shared.log("Invalid anime response format", type: "Error")
-                          DispatchQueue.main.async { self.isLoading = false }
-                          return
-                      }
+                guard let json = jsonObject as? [String: Any] else {
+                    self.handleFetchFailure(error: NSError(domain: "com.sora.episode", code: 2, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON format"]))
+                    return
+                }
                 
-                // Cache the metadata if caching is enabled
-                if MetadataCacheManager.shared.isCachingEnabled {
+                // Check if episodes object exists
+                guard let episodes = json["episodes"] as? [String: Any] else {
+                    Logger.shared.log("Missing 'episodes' object in response", type: "Error")
+                    // Still proceed with empty data rather than failing
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                        self.retryAttempts = 0
+                    }
+                    return
+                }
+                
+                // Check if this specific episode exists in the response
+                let episodeKey = "\(episodeID + 1)"
+                guard let episodeDetails = episodes[episodeKey] as? [String: Any] else {
+                    Logger.shared.log("Episode \(episodeKey) not found in response", type: "Error")
+                    // Still proceed with empty data rather than failing
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                        self.retryAttempts = 0
+                    }
+                    return
+                }
+                
+                // Extract available fields, log if they're missing but continue anyway
+                var title: [String: String] = [:]
+                var image: String = ""
+                var missingFields: [String] = []
+                
+                if let titleData = episodeDetails["title"] as? [String: String], !titleData.isEmpty {
+                    title = titleData
+                    
+                    // Check if we have any non-empty title values
+                    if title.values.allSatisfy({ $0.isEmpty }) {
+                        missingFields.append("title (all values empty)")
+                    }
+                } else {
+                    missingFields.append("title")
+                }
+                
+                if let imageUrl = episodeDetails["image"] as? String, !imageUrl.isEmpty {
+                    image = imageUrl
+                } else {
+                    missingFields.append("image")
+                }
+                
+                // Log missing fields but continue processing
+                if !missingFields.isEmpty {
+                    Logger.shared.log("Episode \(episodeKey) missing fields: \(missingFields.joined(separator: ", "))", type: "Warning")
+                }
+                
+                // Cache whatever metadata we have if caching is enabled
+                if MetadataCacheManager.shared.isCachingEnabled && (!title.isEmpty || !image.isEmpty) {
                     let metadata = EpisodeMetadata(
                         title: title,
                         imageUrl: image,
@@ -706,17 +762,57 @@ struct EpisodeCell: View {
                     }
                 }
                 
+                // Update UI with whatever data we have
                 DispatchQueue.main.async {
                     self.isLoading = false
+                    self.retryAttempts = 0 // Reset retry counter on success (even partial)
+                    
                     if UserDefaults.standard.object(forKey: "fetchEpisodeMetadata") == nil
                         || UserDefaults.standard.bool(forKey: "fetchEpisodeMetadata") {
-                        self.episodeTitle   = title["en"] ?? ""
-                        self.episodeImageUrl = image
+                        // Use whatever title we have, or leave as empty string
+                        self.episodeTitle = title["en"] ?? title.values.first ?? ""
+                        
+                        // Use image if available, otherwise leave current value
+                        if !image.isEmpty {
+                            self.episodeImageUrl = image
+                        }
                     }
                 }
             } catch {
-                DispatchQueue.main.async { self.isLoading = false }
+                Logger.shared.log("JSON parsing error: \(error.localizedDescription)", type: "Error")
+                // Still continue with empty data rather than failing
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.retryAttempts = 0
+                }
             }
         }.resume()
+    }
+    
+    private func handleFetchFailure(error: Error) {
+        Logger.shared.log("Episode details fetch error: \(error.localizedDescription)", type: "Error")
+        
+        DispatchQueue.main.async {
+            // Check if we should retry
+            if self.retryAttempts < self.maxRetryAttempts {
+                // Increment retry counter
+                self.retryAttempts += 1
+                
+                // Calculate backoff delay with exponential backoff
+                let backoffDelay = self.initialBackoffDelay * pow(2.0, Double(self.retryAttempts - 1))
+                
+                Logger.shared.log("Will retry episode details fetch in \(backoffDelay) seconds", type: "Debug")
+                
+                // Schedule retry after backoff delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + backoffDelay) {
+                    self.fetchAnimeEpisodeDetails()
+                }
+            } else {
+                // Max retries reached, give up but still update UI with what we have
+                Logger.shared.log("Failed to fetch episode details after \(self.maxRetryAttempts) attempts", type: "Error")
+                self.isLoading = false
+                self.retryAttempts = 0
+            }
+        }
     }
 }

@@ -42,17 +42,4 @@ struct EpisodeMetadata: Codable {
         self.episodeNumber = episodeNumber
         self.cacheDate = Date()
     }
-    
-    /// Convert the metadata to Data for storage
-    /// - Returns: Data representation of the metadata
-    func toData() -> Data? {
-        return try? JSONEncoder().encode(self)
-    }
-    
-    /// Create metadata from cached Data
-    /// - Parameter data: Data to decode
-    /// - Returns: EpisodeMetadata instance if valid, nil otherwise
-    static func fromData(_ data: Data) -> EpisodeMetadata? {
-        return try? JSONDecoder().decode(EpisodeMetadata.self, from: data)
-    }
 } 

@@ -96,6 +96,21 @@ struct EpisodeCell: View {
             fetchEpisodeDetails()
             updateDownloadStatus()
             observeDownloadProgress()
+            
+            // Prefetch next episodes when this one becomes visible
+            if let totalEpisodes = totalEpisodes, episodeID + 1 < totalEpisodes {
+                // Prefetch the next 5 episodes when this one appears
+                let nextEpisodeStart = episodeID + 1
+                let count = min(5, totalEpisodes - episodeID - 1)
+                
+                // Also prefetch images for the next few episodes
+                // Commented out prefetching until ImagePrefetchManager is ready
+                // ImagePrefetchManager.shared.prefetchEpisodeImages(
+                //     anilistId: itemID,
+                //     startEpisode: nextEpisodeStart,
+                //     count: count
+                // )
+            }
         }
         .onDisappear {
             activeDownloadTask = nil
@@ -126,24 +141,42 @@ struct EpisodeCell: View {
     
     private var episodeThumbnail: some View {
         ZStack {
-            KFImage(URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl))
-                .setProcessor(DownsamplingImageProcessor(size: CGSize(width: 100, height: 56)))
-                .memoryCacheExpiration(.seconds(300))
-                .cacheOriginalImage()
-                .cacheMemoryOnly(!KingfisherCacheManager.shared.isCachingEnabled)
-                .fade(duration: 0.25)
-                .onSuccess { _ in
-                    if !loadedFromCache {
-                        Logger.shared.log("Loaded episode \(episodeID + 1) image from network", type: "Debug")
+            if let url = URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl) {
+                KFImage.optimizedEpisodeThumbnail(url: url)
+                    // Convert back to the regular KFImage since the extension isn't available yet
+                    .setProcessor(DownsamplingImageProcessor(size: CGSize(width: 100, height: 56)))
+                    .memoryCacheExpiration(.seconds(300))
+                    .cacheOriginalImage()
+                    .fade(duration: 0.25)
+                    .onFailure { error in
+                        Logger.shared.log("Failed to load episode image: \(error)", type: "Error")
                     }
-                }
-                .onFailure { error in
-                    Logger.shared.log("Failed to load episode image: \(error)", type: "Error")
-                }
-                .resizable()
-                .aspectRatio(16/9, contentMode: .fill)
-                .frame(width: 100, height: 56)
-                .cornerRadius(8)
+                    .cacheMemoryOnly(!KingfisherCacheManager.shared.isCachingEnabled)
+                    .resizable()
+                    .aspectRatio(16/9, contentMode: .fill)
+                    .frame(width: 100, height: 56)
+                    .cornerRadius(8)
+                    .onAppear {
+                        if !episodeImageUrl.isEmpty {
+                            // Commented out prefetching until ImagePrefetchManager is ready
+                            // if let totalEpisodes = totalEpisodes, episodeID + 1 < totalEpisodes {
+                            //     // Try to prefetch the next episode image
+                            //     EpisodeMetadataManager.shared.fetchMetadata(
+                            //         anilistId: itemID, 
+                            //         episodeNumber: episodeID + 2) { result in
+                            //             if case .success(let metadata) = result {
+                            //                 ImagePrefetchManager.shared.prefetchImage(metadata.imageUrl)
+                            //             }
+                            //         }
+                            // }
+                        }
+                    }
+            } else {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 100, height: 56)
+                    .cornerRadius(8)
+            }
             
             if isLoading {
                 ProgressView()

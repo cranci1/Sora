@@ -83,7 +83,8 @@ struct DownloadedAsset: Identifiable, Codable, Equatable {
     var fileSize: Int64 {
         // This implementation calculates file size without caching it in the struct property
         // Instead we'll use a static cache dictionary
-        let cacheKey = localURL.path
+        let subtitlePathString = localSubtitleURL?.path ?? ""
+        let cacheKey = localURL.path + ":" + subtitlePathString
         
         // Check the static cache
         if let size = DownloadedAsset.fileSizeCache[cacheKey] {
@@ -93,21 +94,32 @@ struct DownloadedAsset: Identifiable, Codable, Equatable {
         var totalSize: Int64 = 0
         let fileManager = FileManager.default
         
-        // Get video file size
+        // Get video file or directory size
         if fileManager.fileExists(atPath: localURL.path) {
-            do {
-                let attributes = try fileManager.attributesOfItem(atPath: localURL.path)
-                if let size = attributes[.size] as? Int64 {
-                    totalSize += size
-                } else if let size = attributes[.size] as? Int {
-                    totalSize += Int64(size)
-                } else if let size = attributes[.size] as? NSNumber {
-                    totalSize += size.int64Value
-                } else {
-                    Logger.shared.log("Could not get file size as Int64 for: \(localURL.path)", type: "Warning")
+            // Check if it's a .movpkg directory or a regular file
+            var isDirectory: ObjCBool = false
+            fileManager.fileExists(atPath: localURL.path, isDirectory: &isDirectory)
+            
+            if isDirectory.boolValue {
+                // If it's a directory (like .movpkg), calculate size of all contained files
+                totalSize += calculateDirectorySize(localURL)
+                Logger.shared.log("Calculated directory size for .movpkg: \(totalSize) bytes", type: "Info")
+            } else {
+                // If it's a single file, get its size
+                do {
+                    let attributes = try fileManager.attributesOfItem(atPath: localURL.path)
+                    if let size = attributes[.size] as? Int64 {
+                        totalSize += size
+                    } else if let size = attributes[.size] as? Int {
+                        totalSize += Int64(size)
+                    } else if let size = attributes[.size] as? NSNumber {
+                        totalSize += size.int64Value
+                    } else {
+                        Logger.shared.log("Could not get file size as Int64 for: \(localURL.path)", type: "Warning")
+                    }
+                } catch {
+                    Logger.shared.log("Error getting file size: \(error.localizedDescription) for \(localURL.path)", type: "Error")
                 }
-            } catch {
-                Logger.shared.log("Error getting file size: \(error.localizedDescription) for \(localURL.path)", type: "Error")
             }
         } else {
             Logger.shared.log("Video file does not exist at path: \(localURL.path)", type: "Warning")
@@ -131,6 +143,36 @@ struct DownloadedAsset: Identifiable, Codable, Equatable {
         
         // Store in static cache
         DownloadedAsset.fileSizeCache[cacheKey] = totalSize
+        return totalSize
+    }
+    
+    /// Calculates the size of all files in a directory recursively
+    private func calculateDirectorySize(_ directoryURL: URL) -> Int64 {
+        let fileManager = FileManager.default
+        var totalSize: Int64 = 0
+        
+        do {
+            // Get all content URLs
+            let contents = try fileManager.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: [.fileSizeKey, .isDirectoryKey], options: [])
+            
+            // Calculate size for each item
+            for url in contents {
+                let resourceValues = try url.resourceValues(forKeys: [.isDirectoryKey, .fileSizeKey])
+                
+                if let isDirectory = resourceValues.isDirectory, isDirectory {
+                    // If it's a directory, recursively calculate its size
+                    totalSize += calculateDirectorySize(url)
+                } else {
+                    // If it's a file, add its size
+                    if let fileSize = resourceValues.fileSize {
+                        totalSize += Int64(fileSize)
+                    }
+                }
+            }
+        } catch {
+            Logger.shared.log("Error calculating directory size: \(error.localizedDescription)", type: "Error")
+        }
+        
         return totalSize
     }
     

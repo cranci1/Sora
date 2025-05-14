@@ -311,6 +311,25 @@ extension JSController {
                 // Show success notification
                 DispatchQueue.main.async {
                     DropManager.shared.success("Subtitle downloaded successfully")
+                    
+                    // Force a UI update for the episode cell
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("downloadStatusChanged"),
+                        object: nil
+                    )
+                    
+                    // If this is an episode, also post a progress update to force UI refresh
+                    if let asset = self.savedAssets.first(where: { $0.id.uuidString == assetID }),
+                       let episodeNumber = asset.metadata?.episode {
+                        NotificationCenter.default.post(
+                            name: NSNotification.Name("downloadProgressUpdated"),
+                            object: nil,
+                            userInfo: [
+                                "episodeNumber": episodeNumber,
+                                "progress": 1.0
+                            ]
+                        )
+                    }
                 }
             } catch {
                 print("Error moving subtitle file: \(error.localizedDescription)")
@@ -745,17 +764,36 @@ extension JSController: AVAssetDownloadDelegate {
         // If there's a subtitle URL, download it now that the video is saved
         if let subtitleURL = download.subtitleURL {
             downloadSubtitle(subtitleURL: subtitleURL, assetID: newAsset.id.uuidString)
+        } else {
+            // No subtitle URL, so we can consider the download complete
+            DispatchQueue.main.async {
+                // Force a UI update for the episode cell
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("downloadStatusChanged"),
+                    object: nil
+                )
+                
+                // If this is an episode, also post a progress update to force UI refresh
+                if let episodeNumber = download.metadata?.episode {
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("downloadProgressUpdated"),
+                        object: nil,
+                        userInfo: [
+                            "episodeNumber": episodeNumber,
+                            "progress": 1.0
+                        ]
+                    )
+                }
+                
+                // Show success notification
+                DropManager.shared.success("Download complete: \(newAsset.name)")
+            }
         }
         
         // Clean up the download task
         cleanupDownloadTask(assetDownloadTask)
         
         print("Download completed and moved to persistent storage: \(newAsset.name)")
-        
-        // Notify the user of successful download
-        DispatchQueue.main.async {
-            DropManager.shared.success("Download complete: \(newAsset.name)")
-        }
     }
     
     /// Moves a downloaded file to Application Support directory to preserve it across app updates
@@ -982,12 +1020,18 @@ struct JSActiveDownload: Identifiable, Equatable {
     let type: DownloadType
     var metadata: AssetMetadata?
     var title: String?
-    var imageURL: URL?  // Added property to store image URL
-    var subtitleURL: URL?  // Added property to store subtitle URL
+    var imageURL: URL?
+    var subtitleURL: URL?
     
     // Implement Equatable
     static func == (lhs: JSActiveDownload, rhs: JSActiveDownload) -> Bool {
-        return lhs.id == rhs.id
+        return lhs.id == rhs.id &&
+               lhs.originalURL == rhs.originalURL &&
+               lhs.progress == rhs.progress &&
+               lhs.type == rhs.type &&
+               lhs.title == rhs.title &&
+               lhs.imageURL == rhs.imageURL &&
+               lhs.subtitleURL == rhs.subtitleURL
     }
     
     init(
@@ -1014,7 +1058,7 @@ struct JSActiveDownload: Identifiable, Equatable {
 }
 
 /// Represents the download status of an episode
-enum EpisodeDownloadStatus {
+enum EpisodeDownloadStatus: Equatable {
     /// Episode is not downloaded and not being downloaded
     case notDownloaded
     /// Episode is currently being downloaded
@@ -1029,6 +1073,19 @@ enum EpisodeDownloadStatus {
             return false
         case .downloading, .downloaded:
             return true
+        }
+    }
+    
+    static func == (lhs: EpisodeDownloadStatus, rhs: EpisodeDownloadStatus) -> Bool {
+        switch (lhs, rhs) {
+        case (.notDownloaded, .notDownloaded):
+            return true
+        case (.downloading(let lhsDownload), .downloading(let rhsDownload)):
+            return lhsDownload.id == rhsDownload.id
+        case (.downloaded(let lhsAsset), .downloaded(let rhsAsset)):
+            return lhsAsset.id == rhsAsset.id
+        default:
+            return false
         }
     }
 } 

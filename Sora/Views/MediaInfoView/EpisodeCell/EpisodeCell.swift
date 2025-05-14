@@ -42,6 +42,8 @@ struct EpisodeCell: View {
     @State private var downloadRefreshTrigger: Bool = false
     @State private var lastUpdateTime: Date = Date()
     @State private var activeDownloadTask: AVAssetDownloadTask? = nil
+    @State private var lastStatusCheck: Date = Date()
+    @State private var lastLoggedStatus: EpisodeDownloadStatus?
     
     @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
@@ -78,88 +80,140 @@ struct EpisodeCell: View {
     
     var body: some View {
         HStack {
-            ZStack {
-                KFImage(URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl))
-                    .setProcessor(DownsamplingImageProcessor(size: CGSize(width: 100, height: 56)))
-                    .memoryCacheExpiration(.seconds(300)) // 5 minutes
-                    .cacheOriginalImage()
-                    .cacheMemoryOnly(!KingfisherCacheManager.shared.isCachingEnabled)
-                    .fade(duration: 0.25)
-                    .onSuccess { _ in
-                        if !loadedFromCache {
-                            Logger.shared.log("Loaded episode \(episodeID + 1) image from network", type: "Debug")
-                        }
-                    }
-                    .onFailure { error in
-                        Logger.shared.log("Failed to load episode image: \(error)", type: "Error")
-                    }
-                    .resizable()
-                    .aspectRatio(16/9, contentMode: .fill)
-                    .frame(width: 100, height: 56)
-                    .cornerRadius(8)
-                
-                if isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                }
-            }
-            
-            VStack(alignment: .leading) {
-                Text("Episode \(episodeID + 1)")
-                    .font(.system(size: 15))
-                if !episodeTitle.isEmpty {
-                    Text(episodeTitle)
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
-                }
-            }
-            
+            episodeThumbnail
+            episodeInfo
             Spacer()
-            
-            // Download Button or Status Indicator
-            Group {
-                switch downloadStatus {
-                case .notDownloaded:
-                    // Show download button
-                    Button(action: {
-                        showDownloadConfirmation = true
-                    }) {
-                        Image(systemName: "arrow.down.circle")
-                            .foregroundColor(.blue)
-                            .font(.title3)
-                    }
-                    .padding(.horizontal, 8)
-                    
-                case .downloading(_):
-                    // Show download progress
-                    HStack(spacing: 4) {
-                        let clampedProgress = min(max(downloadProgress, 0.0), 1.0)
-                        Text("\(Int(clampedProgress * 100))%")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        ProgressView(value: clampedProgress)
-                            .progressViewStyle(LinearProgressViewStyle())
-                            .frame(width: 40)
-                    }
-                    .padding(.horizontal, 8)
-                    .id("progress_\(Int(downloadProgress * 100))_\(lastUpdateTime.timeIntervalSince1970)")
-                    
-                case .downloaded:
-                    // Show downloaded indicator
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                        .font(.title3)
-                        .padding(.horizontal, 8)
-                }
-            }
-            
+            downloadStatusView
             CircularProgressBar(progress: currentProgress)
                 .frame(width: 40, height: 40)
         }
         .contentShape(Rectangle())
         .contextMenu {
-            // Only show download option if not already downloaded or downloading
+            contextMenuContent
+        }
+        .onAppear {
+            updateProgress()
+            fetchEpisodeDetails()
+            updateDownloadStatus()
+            observeDownloadProgress()
+        }
+        .onDisappear {
+            activeDownloadTask = nil
+        }
+        .onChange(of: progress) { _ in
+            updateProgress()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadStatusChanged"))) { _ in
+            updateDownloadStatus()
+            updateProgress()
+        }
+        .onTapGesture {
+            let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
+            onTap(imageUrl)
+        }
+        .alert("Download Episode", isPresented: $showDownloadConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Download") {
+                downloadEpisode()
+            }
+        } message: {
+            Text("Do you want to download Episode \(episodeID + 1)\(episodeTitle.isEmpty ? "" : ": \(episodeTitle)")?")
+        }
+        .id("\(episode)_\(downloadRefreshTrigger)_\(Int(downloadProgress * 100))")
+    }
+    
+    // MARK: - View Components
+    
+    private var episodeThumbnail: some View {
+        ZStack {
+            KFImage(URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl))
+                .setProcessor(DownsamplingImageProcessor(size: CGSize(width: 100, height: 56)))
+                .memoryCacheExpiration(.seconds(300))
+                .cacheOriginalImage()
+                .cacheMemoryOnly(!KingfisherCacheManager.shared.isCachingEnabled)
+                .fade(duration: 0.25)
+                .onSuccess { _ in
+                    if !loadedFromCache {
+                        Logger.shared.log("Loaded episode \(episodeID + 1) image from network", type: "Debug")
+                    }
+                }
+                .onFailure { error in
+                    Logger.shared.log("Failed to load episode image: \(error)", type: "Error")
+                }
+                .resizable()
+                .aspectRatio(16/9, contentMode: .fill)
+                .frame(width: 100, height: 56)
+                .cornerRadius(8)
+            
+            if isLoading {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+            }
+        }
+    }
+    
+    private var episodeInfo: some View {
+        VStack(alignment: .leading) {
+            Text("Episode \(episodeID + 1)")
+                .font(.system(size: 15))
+            if !episodeTitle.isEmpty {
+                Text(episodeTitle)
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+    
+    private var downloadStatusView: some View {
+        Group {
+            switch downloadStatus {
+            case .notDownloaded:
+                downloadButton
+            case .downloading(_):
+                downloadProgressView
+            case .downloaded:
+                downloadedIndicator
+            }
+        }
+    }
+    
+    private var downloadButton: some View {
+        Button(action: {
+            showDownloadConfirmation = true
+        }) {
+            Image(systemName: "arrow.down.circle")
+                .foregroundColor(.blue)
+                .font(.title3)
+        }
+        .padding(.horizontal, 8)
+    }
+    
+    private var downloadProgressView: some View {
+        HStack(spacing: 4) {
+            let clampedProgress = min(max(downloadProgress, 0.0), 1.0)
+            Text("\(Int(clampedProgress * 100))%")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            ProgressView(value: clampedProgress)
+                .progressViewStyle(LinearProgressViewStyle())
+                .frame(width: 40)
+        }
+        .padding(.horizontal, 8)
+        .id("progress_\(Int(downloadProgress * 100))_\(lastUpdateTime.timeIntervalSince1970)")
+    }
+    
+    private var downloadedIndicator: some View {
+        Image(systemName: "checkmark.circle.fill")
+            .foregroundColor(.green)
+            .font(.title3)
+            .padding(.horizontal, 8)
+            .transition(.opacity)
+            .animation(.easeInOut, value: downloadProgress)
+    }
+    
+    private var contextMenuContent: some View {
+        Group {
             if case .notDownloaded = downloadStatus {
                 Button(action: {
                     showDownloadConfirmation = true
@@ -186,96 +240,98 @@ struct EpisodeCell: View {
                 }
             }
         }
-        .onAppear {
-            updateProgress()
-            fetchEpisodeDetails()
-            updateDownloadStatus()
-            observeDownloadProgress() // Start observing download progress
-        }
-        .onDisappear {
-            // Clean up any active timers
-            activeDownloadTask = nil
-        }
-        .onChange(of: progress) { _ in
-            updateProgress()
-        }
-        // Add notification center observer for download state changes
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadStatusChanged"))) { _ in
-            updateDownloadStatus()
-            // Also update viewing progress when download status changes
-            updateProgress()
-        }
-        .onTapGesture {
-            let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
-            onTap(imageUrl)
-        }
-        .alert("Download Episode", isPresented: $showDownloadConfirmation) {
-            Button("Cancel", role: .cancel) {}
-            Button("Download") {
-                downloadEpisode()
-            }
-        } message: {
-            Text("Do you want to download Episode \(episodeID + 1)\(episodeTitle.isEmpty ? "" : ": \(episodeTitle)")?")
-        }
-        // Add an ID modifier tied to the refresh trigger to force UI updates
-        .id("\(episode)_\(downloadRefreshTrigger)_\(Int(downloadProgress * 100))")
     }
     
     private func updateDownloadStatus() {
+        // Debounce status checks - only check every 0.5 seconds
+        let now = Date()
+        guard now.timeIntervalSince(lastStatusCheck) >= 0.5 else {
+            return
+        }
+        lastStatusCheck = now
+        
         let previousStatus = downloadStatus
         downloadStatus = jsController.isEpisodeDownloadedOrInProgress(
             showTitle: parentTitle,
             episodeNumber: episodeID + 1
         )
         
-        // Update download progress when status changes
-        if case .downloading(let activeDownload) = downloadStatus {
-            // Store the active download task for direct progress observation
-            activeDownloadTask = activeDownload.task
+        // Only log if the status has actually changed
+        if lastLoggedStatus != downloadStatus {
+            lastLoggedStatus = downloadStatus
             
-            // Update our local download progress state
-            let newProgress = activeDownload.progress
-            let clampedProgress = min(max(newProgress, 0.0), 1.0)
-            
-            // Check if the progress has actually changed to avoid unnecessary UI updates
-            if case .downloading(let prevDownload) = previousStatus, prevDownload.progress == newProgress {
-                // No progress change, do nothing
-            } else {
-                // Progress has changed, update state and force refresh
-                downloadProgress = clampedProgress
-                lastUpdateTime = Date() // Update timestamp
-                downloadRefreshTrigger.toggle()
+            // Update download progress when status changes
+            if case .downloading(let activeDownload) = downloadStatus {
+                // Store the active download task for direct progress observation
+                activeDownloadTask = activeDownload.task
                 
-                // If progress is complete, force state to .downloaded
-                if clampedProgress >= 1.0 {
-                    // Try to get the downloaded asset
-                    if let asset = jsController.savedAssets.first(where: { asset in
-                        asset.type == .episode &&
-                        asset.metadata?.showTitle?.caseInsensitiveCompare(parentTitle) == .orderedSame &&
-                        asset.metadata?.episode == episodeID + 1
-                    }) {
-                        downloadStatus = .downloaded(asset)
-                        downloadProgress = 1.0
-                        downloadRefreshTrigger.toggle()
+                // Update our local download progress state
+                let newProgress = activeDownload.progress
+                let clampedProgress = min(max(newProgress, 0.0), 1.0)
+                
+                // Check if the progress has actually changed to avoid unnecessary UI updates
+                if case .downloading(let prevDownload) = previousStatus, prevDownload.progress == newProgress {
+                    // No progress change, do nothing
+                } else {
+                    // Progress has changed, update state and force refresh
+                    downloadProgress = clampedProgress
+                    lastUpdateTime = Date() // Update timestamp
+                    downloadRefreshTrigger.toggle()
+                    
+                    // If progress is complete, force state to .downloaded
+                    if clampedProgress >= 1.0 {
+                        // Try to get the downloaded asset
+                        if let asset = jsController.savedAssets.first(where: { asset in
+                            asset.type == .episode &&
+                            asset.metadata?.showTitle?.caseInsensitiveCompare(parentTitle) == .orderedSame &&
+                            asset.metadata?.episode == episodeID + 1
+                        }) {
+                            // Update on main thread to ensure UI updates
+                            DispatchQueue.main.async {
+                                self.downloadStatus = .downloaded(asset)
+                                self.downloadProgress = 1.0
+                                self.downloadRefreshTrigger.toggle()
+                                
+                                // Force a UI update
+                                NotificationCenter.default.post(
+                                    name: NSNotification.Name("downloadStatusChanged"),
+                                    object: nil
+                                )
+                            }
+                        }
+                    }
+                    // Log for debugging
+                    print("Episode \(episodeID + 1) progress updated: \(Int(clampedProgress * 100))%")
+                }
+            } else if case .downloaded(let asset) = downloadStatus {
+                // If we have a downloaded asset, ensure we show the checkmark
+                DispatchQueue.main.async {
+                    self.downloadProgress = 1.0
+                    self.downloadRefreshTrigger.toggle()
+                    
+                    // Log the download state for debugging
+                    print("Episode \(self.episodeID + 1) is downloaded")
+                    if let subtitleURL = asset.subtitleURL {
+                        print("Has subtitle URL: \(subtitleURL)")
+                    } else {
+                        print("No subtitle URL - video only")
                     }
                 }
-                // Log for debugging
-                print("Episode \(episodeID + 1) progress updated: \(Int(clampedProgress * 100))%")
-            }
-        } else {
-            // Reset download progress if no longer downloading
-            if downloadProgress != 0.0 {
-                downloadProgress = 0.0
-                lastUpdateTime = Date() // Update timestamp
-                downloadRefreshTrigger.toggle()
-            }
-            
-            // Clear the active download task
-            activeDownloadTask = nil
-            
-            // Also toggle refresh trigger when status changes to not downloading
-            if case .downloading = previousStatus {
-                downloadRefreshTrigger.toggle()
+            } else {
+                // Reset download progress if no longer downloading
+                if downloadProgress != 0.0 {
+                    downloadProgress = 0.0
+                    lastUpdateTime = Date() // Update timestamp
+                    downloadRefreshTrigger.toggle()
+                }
+                
+                // Clear the active download task
+                activeDownloadTask = nil
+                
+                // Also toggle refresh trigger when status changes to not downloading
+                if case .downloading = previousStatus {
+                    downloadRefreshTrigger.toggle()
+                }
             }
         }
     }
@@ -299,6 +355,14 @@ struct EpisodeCell: View {
                 self.downloadProgress = progress
                 self.lastUpdateTime = Date()
                 self.downloadRefreshTrigger.toggle()
+                
+                // If progress is 100%, ensure we show the downloaded state
+                if progress >= 1.0 {
+                    // Force an immediate status update
+                    DispatchQueue.main.async {
+                        self.updateDownloadStatus()
+                    }
+                }
             }
         }
     }

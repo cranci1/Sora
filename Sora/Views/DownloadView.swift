@@ -331,6 +331,8 @@ struct DownloadGroupView: View {
     let onDelete: (DownloadedAsset) -> Void
     let onPlay: (DownloadedAsset) -> Void
     let onToggleExpand: () -> Void
+    @State private var showDeleteAllAlert = false
+    @EnvironmentObject var jsController: JSController
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -381,6 +383,23 @@ struct DownloadGroupView: View {
                 .cornerRadius(10)
             }
             .buttonStyle(PlainButtonStyle())
+            .contextMenu {
+                Button(action: { onToggleExpand() }) {
+                    Label(isExpanded ? "Collapse" : "Expand", systemImage: isExpanded ? "chevron.up" : "chevron.down")
+                }
+                
+                Button(role: .destructive, action: { showDeleteAllAlert = true }) {
+                    Label("Delete All Episodes", systemImage: "trash")
+                }
+            }
+            .alert("Delete All Episodes", isPresented: $showDeleteAllAlert) {
+                Button("Cancel", role: .cancel) {}
+                Button("Delete All", role: .destructive) {
+                    deleteAllAssets()
+                }
+            } message: {
+                Text("Are you sure you want to delete all \(group.assetCount) episodes in '\(group.title)'?")
+            }
             
             // Group content (episodes or files) when expanded
             if isExpanded {
@@ -415,6 +434,16 @@ struct DownloadGroupView: View {
         formatter.allowedUnits = [.useKB, .useMB, .useGB]
         formatter.countStyle = .file
         return formatter.string(fromByteCount: size)
+    }
+    
+    private func deleteAllAssets() {
+        // Delete all assets in this group
+        for asset in group.assets {
+            jsController.deleteAsset(asset)
+        }
+        
+        // Post notification to refresh the UI
+        NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
     }
 }
 
@@ -618,6 +647,7 @@ struct DownloadedMediaDetailView: View {
     @State private var isPlaying = false
     @State private var currentAsset: DownloadedAsset?
     @State private var showDeleteAlert = false
+    @State private var showDeleteAllAlert = false
     @State private var assetToDelete: DownloadedAsset?
     
     var body: some View {
@@ -667,31 +697,51 @@ struct DownloadedMediaDetailView: View {
                 
                 // Episode list
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Episodes")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .padding(.horizontal)
+                    HStack {
+                        Text("Episodes")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            showDeleteAllAlert = true
+                        }) {
+                            Label("Delete All", systemImage: "trash")
+                                .foregroundColor(.red)
+                                .font(.subheadline)
+                        }
+                    }
+                    .padding(.horizontal)
                     
                     let assets = group.isAnime ? group.organizedEpisodes() : group.assets
                     
-                    ForEach(assets) { asset in
-                        DownloadedEpisodeRow(asset: asset)
-                            .padding(.horizontal)
-                            .background(Color(UIColor.secondarySystemBackground))
-                            .cornerRadius(10)
-                            .padding(.horizontal)
-                            .contextMenu {
-                                Button(action: { playAsset(asset) }) {
-                                    Label("Play", systemImage: "play.fill")
+                    if assets.isEmpty {
+                        Text("No episodes available")
+                            .foregroundColor(.gray)
+                            .italic()
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    } else {
+                        ForEach(assets) { asset in
+                            DownloadedEpisodeRow(asset: asset)
+                                .padding(.horizontal)
+                                .background(Color(UIColor.secondarySystemBackground))
+                                .cornerRadius(10)
+                                .padding(.horizontal)
+                                .contextMenu {
+                                    Button(action: { playAsset(asset) }) {
+                                        Label("Play", systemImage: "play.fill")
+                                    }
+                                    
+                                    Button(role: .destructive, action: { confirmDelete(asset) }) {
+                                        Label("Delete", systemImage: "trash")
+                                    }
                                 }
-                                
-                                Button(role: .destructive, action: { confirmDelete(asset) }) {
-                                    Label("Delete", systemImage: "trash")
+                                .onTapGesture {
+                                    playAsset(asset)
                                 }
-                            }
-                            .onTapGesture {
-                                playAsset(asset)
-                            }
+                        }
                     }
                 }
             }
@@ -712,6 +762,14 @@ struct DownloadedMediaDetailView: View {
             } else {
                 Text("Are you sure you want to delete this download?")
             }
+        }
+        .alert("Delete All Episodes", isPresented: $showDeleteAllAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete All", role: .destructive) {
+                deleteAllAssets()
+            }
+        } message: {
+            Text("Are you sure you want to delete all episodes in '\(group.title)'?")
         }
     }
     
@@ -809,18 +867,20 @@ struct DownloadedMediaDetailView: View {
     private func deleteAsset(_ asset: DownloadedAsset) {
         jsController.deleteAsset(asset)
         
-        // If we've deleted all episodes in this group, go back
-        let remainingAssets = jsController.savedAssets.filter { 
-            if asset.type == .episode {
-                return $0.metadata?.showTitle == group.title && $0.id != asset.id
-            } else {
-                return $0.name == group.title && $0.id != asset.id
-            }
+        // DO NOT dismiss the view when all assets are deleted
+        // Let the user navigate back manually
+    }
+    
+    private func deleteAllAssets() {
+        // Delete all assets in this group
+        for asset in group.assets {
+            jsController.deleteAsset(asset)
         }
         
-        if remainingAssets.isEmpty {
-            dismiss()
-        }
+        // Post notification to refresh the UI
+        NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+        
+        // DO NOT dismiss the view - let the user navigate back manually
     }
 }
 

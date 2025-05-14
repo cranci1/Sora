@@ -45,6 +45,8 @@ extension JSController {
         print("Download function setup completed")
     }
     
+    // MARK: - Download Queue Management
+    
     /// Initiates a download for the specified URL with the given headers
     /// - Parameters:
     ///   - url: The URL to download
@@ -55,89 +57,23 @@ extension JSController {
     ///   - showTitle: Optional show title for the episode (anime title)
     ///   - season: Optional season number for the episode
     ///   - episode: Optional episode number for the episode
-    ///   - subtitleURL: Optional URL for the subtitle file to download
-    ///   - completionHandler: Called when download is initiated or fails
-    func startDownload(url: URL, headers: [String: String], title: String? = nil, 
-                     imageURL: URL? = nil, isEpisode: Bool = false, 
-                     showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
-                     subtitleURL: URL? = nil,
-                     completionHandler: ((Bool, String) -> Void)? = nil) {
+    ///   - subtitleURL: Optional subtitle URL to download after video
+    ///   - completionHandler: Optional callback for download status
+    func startDownload(
+        url: URL,
+        headers: [String: String] = [:],
+        title: String? = nil,
+        imageURL: URL? = nil,
+        isEpisode: Bool = false,
+        showTitle: String? = nil,
+        season: Int? = nil,
+        episode: Int? = nil,
+        subtitleURL: URL? = nil,
+        completionHandler: ((Bool, String) -> Void)? = nil
+    ) {
+        // Create an asset with custom HTTP header fields for authorization
+        let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
         
-        // For episodes, first check if already downloaded by metadata (more reliable)
-        if isEpisode && showTitle != nil && episode != nil {
-            let episodeStatus = isEpisodeDownloadedOrInProgress(
-                showTitle: showTitle!,
-                episodeNumber: episode!,
-                season: season ?? 1
-            )
-            
-            if episodeStatus.isDownloadedOrInProgress {
-                // Episode is already downloaded or being downloaded based on metadata
-                let message: String
-                if case .downloaded = episodeStatus {
-                    message = "This episode has already been downloaded"
-                } else {
-                    message = "This episode is already being downloaded"
-                }
-                print("Episode already handled: \(message)")
-                completionHandler?(false, message)
-                return
-            }
-        }
-        
-        // Fallback to URL check for non-episodes or if metadata is incomplete
-        if savedAssets.contains(where: { $0.originalURL == url }) {
-            print("Asset already downloaded: \(url.absoluteString)")
-            completionHandler?(false, "This content has already been downloaded")
-            return
-        }
-        
-        // Check if already downloading by URL
-        if activeDownloads.contains(where: { $0.originalURL == url }) {
-            print("Asset already being downloaded: \(url.absoluteString)")
-            completionHandler?(false, "This content is already being downloaded")
-            return
-        }
-        
-        print("==== DOWNLOAD ATTEMPT ====")
-        print("URL: \(url.absoluteString)")
-        print("Headers: \(headers)")
-        print("Title: \(title ?? "Unknown")")
-        print("Image URL: \(imageURL?.absoluteString ?? "None")")
-        print("Is Episode: \(isEpisode)")
-        if isEpisode {
-            print("Anime Title: \(showTitle ?? "Unknown")")
-            print("Season: \(season ?? 0)")
-            print("Episode: \(episode ?? 0)")
-        }
-        if let subtitleURL = subtitleURL {
-            print("Subtitle URL: \(subtitleURL.absoluteString)")
-        }
-        
-        // Extract domain for simplicity in debugging
-        let domain = url.host ?? "unknown"
-        print("Domain: \(domain)")
-        
-        // Create a URLRequest first (this is what CustomPlayer does)
-        var request = URLRequest(url: url)
-        
-        // Add all headers precisely as received
-        for (key, value) in headers {
-            request.addValue(value, forHTTPHeaderField: key)
-        }
-        
-        // Get the headers from the request - this is key for AVURLAsset
-        let requestHeaders = request.allHTTPHeaderFields ?? [:]
-        print("Final request headers: \(requestHeaders)")
-        
-        // Create the asset with the EXACT same pattern as CustomPlayer
-        let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": requestHeaders])
-        
-        // Log advanced debug information
-        print("AVURLAsset created with URL: \(url.absoluteString)")
-        print("AVURLAsset options: [\"AVURLAssetHTTPHeaderFieldsKey\": \(requestHeaders)]")
-        
-        // Generate a title for the download if not provided
         let downloadTitle = title ?? url.lastPathComponent
         
         // Ensure we have a proper anime title for episodes
@@ -156,45 +92,212 @@ extension JSController {
             episode: episode
         )
         
-        // Create the download task with minimal options
-        guard let task = downloadURLSession?.makeAssetDownloadTask(
-            asset: asset,
-            assetTitle: downloadTitle,
-            assetArtworkData: nil,
-            options: nil  // Remove unnecessary options that might interfere
-        ) else {
-            print("Failed to create download task")
-            completionHandler?(false, "Failed to create download task")
-            return
-        }
+        // Create the download ID now so we can use it for notifications
+        let downloadID = UUID()
         
-        print("Download task created successfully")
-        
-        // Create an ActiveDownload and add it to the list
+        // Create a download object with queued status
         let download = JSActiveDownload(
-            id: UUID(),
+            id: downloadID,
             originalURL: url,
             progress: 0,
-            task: task,
+            task: nil,  // Task will be created when the download starts
+            queueStatus: .queued,
             type: downloadType,
             metadata: assetMetadata,
             title: downloadTitle,
             imageURL: imageURL,
-            subtitleURL: subtitleURL // Store subtitle URL in the active download
+            subtitleURL: subtitleURL,
+            asset: asset,
+            headers: headers
         )
         
+        // Add to the download queue
+        downloadQueue.append(download)
+        
+        // Immediately notify users about queued download
+        DispatchQueue.main.async {
+            // Post notification for UI updates to show queued status
+            NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+            
+            // If this is an episode, also post a progress update to force UI refresh with queued status
+            if let episodeNumber = download.metadata?.episode {
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("downloadProgressUpdated"),
+                    object: nil,
+                    userInfo: [
+                        "episodeNumber": episodeNumber,
+                        "progress": 0.0,
+                        "status": "queued"
+                    ]
+                )
+            }
+            
+            // Show immediate notification about queued download
+            DropManager.shared.info("Download queued: \(downloadTitle)")
+        }
+        
+        // Inform caller of success
+        completionHandler?(true, "Download queued")
+        
+        // Process the queue if we're not already doing so
+        if !isProcessingQueue {
+            processDownloadQueue()
+        }
+    }
+    
+    /// Process the download queue and start downloads as slots are available
+    private func processDownloadQueue() {
+        // Set flag to prevent multiple concurrent processing
+        isProcessingQueue = true
+        
+        // Calculate how many more downloads we can start
+        let activeCount = activeDownloads.count
+        let slotsAvailable = max(0, maxConcurrentDownloads - activeCount)
+        
+        if slotsAvailable > 0 && !downloadQueue.isEmpty {
+            // Get the next batch of downloads to start (up to available slots)
+            let nextBatch = Array(downloadQueue.prefix(slotsAvailable))
+            
+            // Remove these from the queue
+            downloadQueue.removeFirst(min(slotsAvailable, downloadQueue.count))
+            
+            // Start each download
+            for queuedDownload in nextBatch {
+                startQueuedDownload(queuedDownload)
+            }
+        }
+        
+        // If we still have queued downloads, schedule another check
+        if !downloadQueue.isEmpty {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                self?.processDownloadQueue()
+            }
+        } else {
+            // No more queued downloads
+            isProcessingQueue = false
+        }
+    }
+    
+    /// Start a previously queued download
+    private func startQueuedDownload(_ queuedDownload: JSActiveDownload) {
+        guard let asset = queuedDownload.asset else {
+            print("Missing asset for queued download")
+            return
+        }
+        
+        // Create the download task
+        guard let task = downloadURLSession?.makeAssetDownloadTask(
+            asset: asset,
+            assetTitle: queuedDownload.title ?? queuedDownload.originalURL.lastPathComponent,
+            assetArtworkData: nil,
+            options: nil
+        ) else {
+            print("Failed to create download task for queued download")
+            return
+        }
+        
+        // Create a new download object with the task
+        let download = JSActiveDownload(
+            id: queuedDownload.id,
+            originalURL: queuedDownload.originalURL,
+            progress: 0,
+            task: task,
+            queueStatus: .downloading,
+            type: queuedDownload.type,
+            metadata: queuedDownload.metadata,
+            title: queuedDownload.title,
+            imageURL: queuedDownload.imageURL,
+            subtitleURL: queuedDownload.subtitleURL
+        )
+        
+        // Add to active downloads
         activeDownloads.append(download)
         activeDownloadMap[task] = download.id
         
         // Start the download
         task.resume()
-        print("Download task resumed")
-        
-        // Inform caller of success
-        completionHandler?(true, "Download started")
+        print("Queued download started: \(download.title ?? download.originalURL.lastPathComponent)")
         
         // Save the download state
         saveDownloadState()
+        
+        // Update UI to show download has started
+        DispatchQueue.main.async {
+            // Post notification for UI updates
+            NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+            
+            // If this is an episode, also post a progress update to force UI refresh
+            if let episodeNumber = download.metadata?.episode {
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("downloadProgressUpdated"),
+                    object: nil,
+                    userInfo: [
+                        "episodeNumber": episodeNumber,
+                        "progress": 0.0,
+                        "status": "downloading"
+                    ]
+                )
+            }
+            
+            // Show notification
+            DropManager.shared.info("Download started: \(download.title ?? download.originalURL.lastPathComponent)")
+        }
+    }
+    
+    /// Clean up a download task when it's completed or failed
+    private func cleanupDownloadTask(_ task: URLSessionTask) {
+        guard let downloadID = activeDownloadMap[task] else { return }
+        
+        activeDownloads.removeAll { $0.id == downloadID }
+        activeDownloadMap.removeValue(forKey: task)
+        saveDownloadState()
+        
+        print("Cleaned up download task")
+        
+        // Start processing the queue again if we have pending downloads
+        if !downloadQueue.isEmpty && !isProcessingQueue {
+            processDownloadQueue()
+        }
+    }
+    
+    /// Update download progress
+    func updateDownloadProgress(task: AVAssetDownloadTask, progress: Double) {
+        guard let downloadID = activeDownloadMap[task] else { return }
+        
+        // Clamp progress between 0 and 1
+        let finalProgress = min(max(progress, 0.0), 1.0)
+        
+        // Update the UI immediately instead of with a delay
+        DispatchQueue.main.async { [weak self] in
+            guard let strongSelf = self else { return }
+            
+            // Find the index again inside the main thread to avoid race conditions
+            guard let downloadIndex = strongSelf.activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
+                return
+            }
+            
+            // Only update if the index is still valid
+            if downloadIndex < strongSelf.activeDownloads.count {
+                let download = strongSelf.activeDownloads[downloadIndex]
+                strongSelf.activeDownloads[downloadIndex].progress = finalProgress
+                
+                // Post both notifications for UI updates
+                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+                
+                // Post the new progress notification with episode number if it's an episode
+                if let episodeNumber = download.metadata?.episode {
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("downloadProgressUpdated"),
+                        object: nil,
+                        userInfo: [
+                            "episodeNumber": episodeNumber,
+                            "progress": finalProgress,
+                            "status": "downloading"
+                        ]
+                    )
+                }
+            }
+        }
     }
     
     /// Downloads a subtitle file for a video asset
@@ -612,17 +715,6 @@ extension JSController {
         }
     }
     
-    /// Clean up a download task when it's completed or failed
-    private func cleanupDownloadTask(_ task: URLSessionTask) {
-        guard let downloadID = activeDownloadMap[task] else { return }
-        
-        activeDownloads.removeAll { $0.id == downloadID }
-        activeDownloadMap.removeValue(forKey: task)
-        saveDownloadState()
-        
-        print("Cleaned up download task")
-    }
-    
     /// Returns the directory for persistent downloads
     private func getPersistentDownloadDirectory() -> URL? {
         let fileManager = FileManager.default
@@ -740,6 +832,23 @@ extension JSController {
         // Not downloaded or being downloaded
         return .notDownloaded
     }
+    
+    /// Cancel a queued download that hasn't started yet
+    func cancelQueuedDownload(_ downloadID: UUID) {
+        // Remove from the download queue if it exists there
+        if let index = downloadQueue.firstIndex(where: { $0.id == downloadID }) {
+            let downloadTitle = downloadQueue[index].title ?? downloadQueue[index].originalURL.lastPathComponent
+            downloadQueue.remove(at: index)
+            
+            // Show notification
+            DropManager.shared.info("Download cancelled: \(downloadTitle)")
+            
+            // Notify observers
+            NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+            
+            print("Cancelled queued download: \(downloadTitle)")
+        }
+    }
 }
 
 // MARK: - AVAssetDownloadDelegate
@@ -795,7 +904,8 @@ extension JSController: AVAssetDownloadDelegate {
                         object: nil,
                         userInfo: [
                             "episodeNumber": episodeNumber,
-                            "progress": 1.0
+                            "progress": 1.0,
+                            "status": "completed"
                         ]
                     )
                 }
@@ -904,65 +1014,39 @@ extension JSController: AVAssetDownloadDelegate {
         cleanupDownloadTask(task)
     }
     
-    /// Called periodically as the download progresses
+    /// Update progress of download task
     func urlSession(_ session: URLSession,
-                   assetDownloadTask: AVAssetDownloadTask,
-                   didLoad timeRange: CMTimeRange,
-                   totalTimeRangesLoaded loadedTimeRanges: [NSValue],
-                   timeRangeExpectedToLoad: CMTimeRange) {
+                    assetDownloadTask: AVAssetDownloadTask,
+                    didLoad timeRange: CMTimeRange,
+                    totalTimeRangesLoaded loadedTimeRanges: [NSValue],
+                    timeRangeExpectedToLoad: CMTimeRange) {
         
-        // Safely get the download ID and calculate progress
-        guard let downloadID = activeDownloadMap[assetDownloadTask] else { 
-            return 
+        // Do a quick check to see if task is still registered
+        guard let downloadID = activeDownloadMap[assetDownloadTask] else {
+            print("Received progress for unknown download task")
+            return
         }
         
-        // Calculate progress
-        var percentComplete = 0.0
+        // Calculate download progress
+        var totalProgress: Double = 0
         
-        for rangeValue in loadedTimeRanges {
-            let range = rangeValue.timeRangeValue
-            let duration = CMTimeGetSeconds(range.duration)
-            percentComplete += duration
-        }
-        
-        let totalDuration = CMTimeGetSeconds(timeRangeExpectedToLoad.duration)
-        if totalDuration > 0 {
-            percentComplete = percentComplete / totalDuration
-        }
-        
-        // Capture the progress value to use in the async block
-        let finalProgress = percentComplete
-        
-        // Update the progress on the main thread with additional safety checks
-        DispatchQueue.main.async { [weak self] in
-            guard let strongSelf = self else { return }
+        // Calculate the total progress by summing all loaded time ranges and dividing by expected time range
+        for value in loadedTimeRanges {
+            let loadedTimeRange = value.timeRangeValue
+            let duration = loadedTimeRange.duration.seconds
+            let expectedDuration = timeRangeExpectedToLoad.duration.seconds
             
-            // Find the index again inside the main thread to avoid race conditions
-            guard let downloadIndex = strongSelf.activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
-                return
-            }
-            
-            // Only update if the index is still valid
-            if downloadIndex < strongSelf.activeDownloads.count {
-                let download = strongSelf.activeDownloads[downloadIndex]
-                strongSelf.activeDownloads[downloadIndex].progress = finalProgress
-                
-                // Post both notifications for UI updates
-                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-                
-                // Post the new progress notification with episode number if it's an episode
-                if let episodeNumber = download.metadata?.episode {
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("downloadProgressUpdated"),
-                        object: nil,
-                        userInfo: [
-                            "episodeNumber": episodeNumber,
-                            "progress": finalProgress
-                        ]
-                    )
-                }
+            // Only add if the expected duration is valid (greater than 0)
+            if expectedDuration > 0 {
+                totalProgress += (duration / expectedDuration)
             }
         }
+        
+        // Clamp total progress between 0 and 1
+        let finalProgress = min(max(totalProgress, 0.0), 1.0)
+        
+        // Update the download object with the new progress
+        updateDownloadProgress(task: assetDownloadTask, progress: finalProgress)
     }
 }
 
@@ -1031,12 +1115,15 @@ struct JSActiveDownload: Identifiable, Equatable {
     let id: UUID
     let originalURL: URL
     var progress: Double
-    let task: AVAssetDownloadTask
+    let task: AVAssetDownloadTask?
     let type: DownloadType
     var metadata: AssetMetadata?
     var title: String?
     var imageURL: URL?
     var subtitleURL: URL?
+    var queueStatus: DownloadQueueStatus
+    var asset: AVURLAsset?
+    var headers: [String: String]
     
     // Implement Equatable
     static func == (lhs: JSActiveDownload, rhs: JSActiveDownload) -> Bool {
@@ -1046,19 +1133,23 @@ struct JSActiveDownload: Identifiable, Equatable {
                lhs.type == rhs.type &&
                lhs.title == rhs.title &&
                lhs.imageURL == rhs.imageURL &&
-               lhs.subtitleURL == rhs.subtitleURL
+               lhs.subtitleURL == rhs.subtitleURL &&
+               lhs.queueStatus == rhs.queueStatus
     }
     
     init(
         id: UUID = UUID(),
         originalURL: URL,
         progress: Double = 0,
-        task: AVAssetDownloadTask,
+        task: AVAssetDownloadTask? = nil,
+        queueStatus: DownloadQueueStatus = .queued,
         type: DownloadType = .movie,
         metadata: AssetMetadata? = nil,
         title: String? = nil,
-        imageURL: URL? = nil,  // Added parameter
-        subtitleURL: URL? = nil  // Added parameter
+        imageURL: URL? = nil,
+        subtitleURL: URL? = nil,
+        asset: AVURLAsset? = nil,
+        headers: [String: String] = [:]
     ) {
         self.id = id
         self.originalURL = originalURL
@@ -1067,8 +1158,11 @@ struct JSActiveDownload: Identifiable, Equatable {
         self.type = type
         self.metadata = metadata
         self.title = title
-        self.imageURL = imageURL  // Set the image URL
-        self.subtitleURL = subtitleURL  // Set the subtitle URL
+        self.imageURL = imageURL
+        self.subtitleURL = subtitleURL
+        self.queueStatus = queueStatus
+        self.asset = asset
+        self.headers = headers
     }
 }
 
@@ -1103,4 +1197,12 @@ enum EpisodeDownloadStatus: Equatable {
             return false
         }
     }
+}
+
+/// Represents the download queue status of a download
+enum DownloadQueueStatus: Equatable {
+    /// Download is queued and not started
+    case queued
+    /// Download is currently being processed
+    case downloading
 } 

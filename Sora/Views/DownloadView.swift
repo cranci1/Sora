@@ -456,7 +456,7 @@ struct ActiveDownloadRow: View {
     init(download: JSActiveDownload) {
         self.download = download
         // Initialize the state from the current task state
-        _taskState = State(initialValue: download.task.state)
+        _taskState = State(initialValue: download.task?.state ?? .suspended)
         _currentProgress = State(initialValue: download.progress)
     }
     
@@ -489,25 +489,37 @@ struct ActiveDownloadRow: View {
                 
                 // Enhanced progress view
                 VStack(alignment: .leading, spacing: 2) {
-                    ProgressView(value: currentProgress)
-                        .progressViewStyle(LinearProgressViewStyle())
-                        .tint(currentProgress == 1.0 ? .green : .blue)
+                    if download.queueStatus == .queued {
+                        ProgressView()
+                            .progressViewStyle(LinearProgressViewStyle())
+                            .tint(.orange)
+                    } else {
+                        ProgressView(value: currentProgress)
+                            .progressViewStyle(LinearProgressViewStyle())
+                            .tint(currentProgress == 1.0 ? .green : .blue)
+                    }
                     
                     HStack {
-                        Text("\(Int(currentProgress * 100))%")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        if taskState == .running {
-                            Text("Downloading")
-                                .font(.caption)
-                                .foregroundColor(.blue)
-                        } else if taskState == .suspended {
-                            Text("Paused")
+                        if download.queueStatus == .queued {
+                            Text("Queued")
                                 .font(.caption)
                                 .foregroundColor(.orange)
+                        } else {
+                            Text("\(Int(currentProgress * 100))%")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            Spacer()
+                            
+                            if taskState == .running {
+                                Text("Downloading")
+                                    .font(.caption)
+                                    .foregroundColor(.blue)
+                            } else if taskState == .suspended {
+                                Text("Paused")
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                            }
                         }
                     }
                 }
@@ -517,31 +529,45 @@ struct ActiveDownloadRow: View {
             Spacer()
             
             // Download controls with state tracking
-            Button(action: {
-                if taskState == .running {
-                    download.task.suspend()
-                    taskState = .suspended
-                } else if taskState == .suspended {
-                    download.task.resume()
-                    taskState = .running
+            if download.queueStatus == .queued {
+                // Only show cancel button for queued downloads
+                Button(action: {
+                    // Cancel the queued download
+                    JSController.shared.cancelQueuedDownload(download.id)
+                    // Post notification for UI updates across the app
+                    NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.red)
+                        .font(.title2)
                 }
-                // Post notification for UI updates across the app
-                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-            }) {
-                Image(systemName: taskState == .running ? "pause.circle.fill" : "play.circle.fill")
-                    .foregroundColor(taskState == .running ? .orange : .blue)
-                    .font(.title2)
-            }
-            
-            Button(action: {
-                download.task.cancel()
-                taskState = .canceling
-                // Post notification for UI updates across the app
-                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-            }) {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.red)
-                    .font(.title2)
+            } else {
+                Button(action: {
+                    if taskState == .running {
+                        download.task?.suspend()
+                        taskState = .suspended
+                    } else if taskState == .suspended {
+                        download.task?.resume()
+                        taskState = .running
+                    }
+                    // Post notification for UI updates across the app
+                    NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+                }) {
+                    Image(systemName: taskState == .running ? "pause.circle.fill" : "play.circle.fill")
+                        .foregroundColor(taskState == .running ? .orange : .blue)
+                        .font(.title2)
+                }
+                
+                Button(action: {
+                    download.task?.cancel()
+                    taskState = .canceling
+                    // Post notification for UI updates across the app
+                    NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.red)
+                        .font(.title2)
+                }
             }
         }
         .onAppear {
@@ -555,7 +581,9 @@ struct ActiveDownloadRow: View {
     
     private func updateDownloadState() {
         // Update task state from the actual download task
-        self.taskState = download.task.state
+        if let task = download.task {
+            self.taskState = task.state
+        }
         
         // Update progress from the actual download
         self.currentProgress = download.progress

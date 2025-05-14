@@ -27,6 +27,11 @@ class JSController: NSObject, ObservableObject {
     // Tracking map for download tasks
     var activeDownloadMap: [URLSessionTask: UUID] = [:]
     
+    // Download queue management
+    var downloadQueue: [JSActiveDownload] = []
+    var isProcessingQueue: Bool = false
+    let maxConcurrentDownloads = 3 // Maximum number of concurrent downloads
+    
     // Download session
     var downloadURLSession: AVAssetDownloadURLSession?
     

@@ -207,8 +207,12 @@ struct EpisodeCell: View {
             switch downloadStatus {
             case .notDownloaded:
                 downloadButton
-            case .downloading(_):
-                downloadProgressView
+            case .downloading(let activeDownload):
+                if activeDownload.queueStatus == .queued {
+                    queuedIndicator
+                } else {
+                    downloadProgressView
+                }
             case .downloaded:
                 downloadedIndicator
             }
@@ -248,6 +252,19 @@ struct EpisodeCell: View {
             .padding(.horizontal, 8)
             .transition(.opacity)
             .animation(.easeInOut, value: downloadProgress)
+    }
+    
+    private var queuedIndicator: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "clock.arrow.circlepath")
+                .foregroundColor(.orange)
+                .font(.caption)
+            
+            Text("Queued")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 8)
     }
     
     private var contextMenuContent: some View {
@@ -383,22 +400,36 @@ struct EpisodeCell: View {
         ) { notification in
             guard let userInfo = notification.userInfo,
                   let episodeNumber = userInfo["episodeNumber"] as? Int,
-                  let progress = userInfo["progress"] as? Double,
                   episodeNumber == self.episodeID + 1 else {
                 return
             }
             
-            // Only update if the progress has changed significantly
-            if abs(progress - self.downloadProgress) > 0.001 {
-                self.downloadProgress = progress
-                self.lastUpdateTime = Date()
-                self.downloadRefreshTrigger.toggle()
+            // Check if there's a status update
+            if let status = userInfo["status"] as? String {
+                // Force a status update regardless of progress change
+                DispatchQueue.main.async {
+                    self.updateDownloadStatus()
+                }
                 
-                // If progress is 100%, ensure we show the downloaded state
-                if progress >= 1.0 {
-                    // Force an immediate status update
-                    DispatchQueue.main.async {
-                        self.updateDownloadStatus()
+                // For queued status, we don't need to update progress
+                if status == "queued" {
+                    return
+                }
+            }
+            
+            if let progress = userInfo["progress"] as? Double {
+                // Only update if the progress has changed significantly
+                if abs(progress - self.downloadProgress) > 0.001 {
+                    self.downloadProgress = progress
+                    self.lastUpdateTime = Date()
+                    self.downloadRefreshTrigger.toggle()
+                    
+                    // If progress is 100%, ensure we show the downloaded state
+                    if progress >= 1.0 {
+                        // Force an immediate status update
+                        DispatchQueue.main.async {
+                            self.updateDownloadStatus()
+                        }
                     }
                 }
             }

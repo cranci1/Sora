@@ -495,6 +495,11 @@ extension JSController {
             let countBefore = savedAssets.count
             savedAssets.removeAll { assetsToRemove.contains($0.id) }
             print("Removed \(countBefore - savedAssets.count) missing assets from the library")
+            
+            // Notify observers of the change
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+            }
         }
         
         // Save the updated asset information if changes were made
@@ -584,6 +589,11 @@ extension JSController {
             savedAssets.removeAll { $0.id == asset.id }
             saveAssets()
             print("Removed asset from library: \(asset.name)")
+            
+            // Notify observers that the download status has changed
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+            }
         } catch {
             print("Error deleting asset: \(error.localizedDescription)")
         }
@@ -595,6 +605,11 @@ extension JSController {
         savedAssets.removeAll { $0.id == asset.id }
         saveAssets()
         print("Removed asset from library (file preserved): \(asset.name)")
+        
+        // Notify observers that the download status has changed
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+        }
     }
     
     /// Clean up a download task when it's completed or failed

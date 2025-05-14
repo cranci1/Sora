@@ -11,7 +11,7 @@ import Drops
 // No need to import DownloadQualityPreference as it's in the same module
 
 struct SettingsViewDownloads: View {
-    @ObservedObject private var jsController = JSController()
+    @EnvironmentObject private var jsController: JSController
     @AppStorage(DownloadQualityPreference.userDefaultsKey) 
     private var downloadQuality = DownloadQualityPreference.defaultPreference.rawValue
     @AppStorage("allowCellularDownloads") private var allowCellularDownloads: Bool = true
@@ -147,6 +147,18 @@ struct SettingsViewDownloads: View {
         // Reset calculated values
         totalStorageSize = 0
         existingDownloadCount = 0
+        
+        // Post a notification so all views can update
+        NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+        
+        // Show confirmation message
+        DispatchQueue.main.async {
+            if preservePersistentDownloads {
+                DropManager.shared.success("Library cleared successfully")
+            } else {
+                DropManager.shared.success("All downloads deleted successfully")
+            }
+        }
     }
     
     private func formatFileSize(_ size: Int64) -> String {

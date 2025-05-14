@@ -20,6 +20,7 @@ struct DownloadView: View {
     @State private var sortOption: SortOption = .newest
     @State private var currentAsset: DownloadedAsset?
     @State private var selectedTab = 0
+    @State private var viewRefreshTrigger = false
     
     // MARK: - Sort Options
     enum SortOption: String, CaseIterable, Identifiable {
@@ -78,8 +79,28 @@ struct DownloadView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("Are you sure you want to delete this download?")
+                if let asset = assetToDelete {
+                    Text("Are you sure you want to delete '\(asset.episodeDisplayName)'?")
+                } else {
+                    Text("Are you sure you want to delete this download?")
+                }
             }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadStatusChanged"))) { _ in
+                // Force UI refresh when download status changes (especially for mass deletions)
+                // This will ensure the view updates when all downloads are cleared
+                
+                // Force view refresh by clearing any cached file sizes
+                DownloadedAsset.clearFileSizeCache()
+                DownloadGroup.clearFileSizeCache()
+                
+                // Reset any expanded groups that might no longer exist
+                expandedGroups.removeAll()
+                
+                // Force the view to refresh with state change
+                viewRefreshTrigger.toggle()
+            }
+            // Force redraw of the view when refresh trigger changes
+            .id(viewRefreshTrigger)
         }
     }
     

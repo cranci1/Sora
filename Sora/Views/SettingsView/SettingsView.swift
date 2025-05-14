@@ -18,7 +18,7 @@ struct SettingsView: View {
                     NavigationLink(destination: SettingsViewPlayer()) {
                         Text("Media Player")
                     }
-                    NavigationLink(destination: SettingsViewDownloads()) {
+                    NavigationLink(destination: SettingsViewDownloads().environmentObject(JSController.shared)) {
                         Text("Downloads")
                     }
                     NavigationLink(destination: SettingsViewModule()) {

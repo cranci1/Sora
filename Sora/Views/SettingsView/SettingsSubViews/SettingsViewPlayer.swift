@@ -19,16 +19,27 @@ struct SettingsViewPlayer: View {
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
     
-    private let mediaPlayers = ["Default", "VLC", "OutPlayer", "Infuse", "nPlayer", "SenPlayer", "Sora"]
+    private let mediaPlayers = ["Default", "Sora", "VLC", "OutPlayer", "Infuse", "nPlayer", "SenPlayer", "IINA"]
     
     var body: some View {
         Form {
-            Section(header: Text("Media Player"), footer: Text("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.")) {
-                HStack {
-                    Text("Media Player")
-                    Spacer()
-                    Menu(externalPlayer) {
-                        ForEach(mediaPlayers, id: \.self) { player in
+        Section(header: Text("Media Player"), footer: Text("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.")) {
+            HStack {
+                Text("Media Player")
+                Spacer()
+                Menu(externalPlayer) {
+                    Menu("In-App Players") {
+                        ForEach(mediaPlayers.prefix(2), id: \.self) { player in
+                            Button(action: {
+                                externalPlayer = player
+                            }) {
+                                Text(player)
+                            }
+                        }
+                    }
+                    
+                    Menu("External Players") {
+                        ForEach(mediaPlayers.dropFirst(2), id: \.self) { player in
                             Button(action: {
                                 externalPlayer = player
                             }) {
@@ -37,6 +48,7 @@ struct SettingsViewPlayer: View {
                         }
                     }
                 }
+            }
                 
                 Toggle("Force Landscape", isOn: $isAlwaysLandscape)
                     .tint(.accentColor)

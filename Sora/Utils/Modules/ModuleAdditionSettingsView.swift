@@ -131,7 +131,7 @@ struct ModuleAdditionSettingsView: View {
                     self.presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Cancel")
-                        .foregroundColor(.accentColor)
+                        .foregroundColor((Color.accentColor))
                         .padding(.top, 10)
                 }
             }

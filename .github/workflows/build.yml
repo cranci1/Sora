@@ -1,10 +1,10 @@
-name: Build and Release IPA
+name: Build and Release
 on:
   push:
     branches:
       - dev
 jobs:
-  build:
+  build-ios:
     name: Build IPA
     runs-on: macOS-latest
     steps:
@@ -26,4 +26,32 @@ jobs:
         with:
           name: Sulfur-IPA
           path: build/Sulfur.ipa
+          compression-level: 0
+
+  build-mac:
+    name: Build Mac Catalyst
+    runs-on: macOS-latest
+    steps:
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run macbuild.sh
+        run: |
+          chmod +x macbuild.sh
+          ./macbuild.sh
+          
+      - name: Create DMG
+        run: |
+          hdiutil create -volname "Sulfur" -srcfolder build/Sulfur.app -ov -format UDZO build/Sulfur.dmg
+          
+      - name: Upload Mac artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sulfur-Mac
+          path: build/Sulfur.dmg
           compression-level: 0

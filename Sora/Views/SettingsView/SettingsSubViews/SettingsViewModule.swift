@@ -193,7 +193,7 @@ struct SettingsViewModule: View {
                 self.displayModuleView(url: pasteboardString)
             }))
             
-            clipboardAlert.addAction(UIAlertAction(title: "Enter Manually", style: .cancel, handler: { _ in
+            clipboardAlert.addAction(UIAlertAction(title: "Enter Manually", style: .default, handler: { _ in
                 self.showManualUrlAlert()
             }))
             

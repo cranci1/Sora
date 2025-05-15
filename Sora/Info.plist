@@ -21,6 +21,7 @@
 	</array>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
+		<string>iina</string>
 		<string>outplayer</string>
 		<string>infuse</string>
 		<string>vlc</string>

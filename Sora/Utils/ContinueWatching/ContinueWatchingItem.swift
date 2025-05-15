@@ -18,4 +18,5 @@ struct ContinueWatchingItem: Codable, Identifiable {
     let subtitles: String?
     let aniListID: Int?
     let module: ScrapingModule
+    let headers: [String:String]?
 }

@@ -36,6 +36,9 @@ struct SettingsView: View {
                     NavigationLink(destination: SettingsViewLogger()) {
                         Text("Logs")
                     }
+                    NavigationLink(destination: SettingsViewPerformance()) {
+                        Text("Performance")
+                    }
                 }
                 
                 Section(header: Text("Info")) {

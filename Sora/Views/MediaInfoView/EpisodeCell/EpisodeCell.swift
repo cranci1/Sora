@@ -56,6 +56,18 @@ struct EpisodeCell: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     
+    // Computed property to create a string representation of download status
+    private var downloadStatusString: String {
+        switch downloadStatus {
+        case .notDownloaded:
+            return "notDownloaded"
+        case .downloading(let download):
+            return "downloading_\(download.id)_\(Int(download.progress * 100))"
+        case .downloaded(let asset):
+            return "downloaded_\(asset.id)"
+        }
+    }
+    
     init(episodeIndex: Int, episode: String, episodeID: Int, progress: Double,
          itemID: Int, totalEpisodes: Int? = nil, defaultBannerImage: String = "",
          module: ScrapingModule, parentTitle: String, 
@@ -97,10 +109,17 @@ struct EpisodeCell: View {
             contextMenuContent
         }
         .onAppear {
+            // Stagger operations for better scroll performance
             updateProgress()
-            fetchEpisodeDetails()
+            
+            // Always check download status when cell appears
             updateDownloadStatus()
-            observeDownloadProgress()
+            
+            // Slightly delay loading episode details to prioritize smooth scrolling
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                fetchEpisodeDetails()
+                observeDownloadProgress()
+            }
             
             // Prefetch next episodes when this one becomes visible
             if let totalEpisodes = totalEpisodes, episodeID + 1 < totalEpisodes {
@@ -124,6 +143,7 @@ struct EpisodeCell: View {
             updateProgress()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadStatusChanged"))) { _ in
+            // Always update download status for critical notifications
             updateDownloadStatus()
             updateProgress()
         }
@@ -139,7 +159,7 @@ struct EpisodeCell: View {
         } message: {
             Text("Do you want to download Episode \(episodeID + 1)\(episodeTitle.isEmpty ? "" : ": \(episodeTitle)")?")
         }
-        .id("\(episode)_\(downloadRefreshTrigger)_\(Int(downloadProgress * 100))")
+        .id("\(episode)_\(downloadRefreshTrigger)_\(downloadStatusString)")
     }
     
     // MARK: - View Components
@@ -150,9 +170,9 @@ struct EpisodeCell: View {
                 KFImage.optimizedEpisodeThumbnail(url: url)
                     // Convert back to the regular KFImage since the extension isn't available yet
                     .setProcessor(DownsamplingImageProcessor(size: CGSize(width: 100, height: 56)))
-                    .memoryCacheExpiration(.seconds(300))
+                    .memoryCacheExpiration(.seconds(600)) // Increase cache duration to reduce loading
                     .cacheOriginalImage()
-                    .fade(duration: 0.25)
+                    .fade(duration: 0.1) // Shorter fade for better performance
                     .onFailure { error in
                         Logger.shared.log("Failed to load episode image: \(error)", type: "Error")
                     }
@@ -162,19 +182,7 @@ struct EpisodeCell: View {
                     .frame(width: 100, height: 56)
                     .cornerRadius(8)
                     .onAppear {
-                        if !episodeImageUrl.isEmpty {
-                            // Commented out prefetching until ImagePrefetchManager is ready
-                            // if let totalEpisodes = totalEpisodes, episodeID + 1 < totalEpisodes {
-                            //     // Try to prefetch the next episode image
-                            //     EpisodeMetadataManager.shared.fetchMetadata(
-                            //         anilistId: itemID, 
-                            //         episodeNumber: episodeID + 2) { result in
-                            //             if case .success(let metadata) = result {
-                            //                 ImagePrefetchManager.shared.prefetchImage(metadata.imageUrl)
-                            //             }
-                            //         }
-                            // }
-                        }
+                        // Image loading logic if needed
                     }
             } else {
                 Rectangle()
@@ -242,7 +250,8 @@ struct EpisodeCell: View {
                 .frame(width: 40)
         }
         .padding(.horizontal, 8)
-        .id("progress_\(Int(downloadProgress * 100))_\(lastUpdateTime.timeIntervalSince1970)")
+        // Use a stable ID based on rounded progress to reduce updates
+        .id("progress_\(Int(downloadProgress * 5) * 20)")
     }
     
     private var downloadedIndicator: some View {
@@ -250,8 +259,10 @@ struct EpisodeCell: View {
             .foregroundColor(.green)
             .font(.title3)
             .padding(.horizontal, 8)
-            .transition(.opacity)
-            .animation(.easeInOut, value: downloadProgress)
+            // Add animation to stand out more
+            .scaleEffect(1.1)
+            // Use more straightforward animation
+            .animation(.default, value: downloadStatusString)
     }
     
     private var queuedIndicator: some View {
@@ -298,22 +309,25 @@ struct EpisodeCell: View {
     }
     
     private func updateDownloadStatus() {
-        // Debounce status checks - only check every 0.5 seconds
-        let now = Date()
-        guard now.timeIntervalSince(lastStatusCheck) >= 0.5 else {
-            return
-        }
-        lastStatusCheck = now
+        // Update the last status check time
+        lastStatusCheck = Date()
         
+        // Get the previous status before updating
         let previousStatus = downloadStatus
+        
+        // Check the current download status with JSController
         downloadStatus = jsController.isEpisodeDownloadedOrInProgress(
             showTitle: parentTitle,
             episodeNumber: episodeID + 1
         )
         
-        // Only log if the status has actually changed
-        if lastLoggedStatus != downloadStatus {
+        // Update UI for any status change or force update if requested
+        let statusChanged = previousStatus != downloadStatus
+        if statusChanged {
             lastLoggedStatus = downloadStatus
+            
+            // Ensure UI updates with the new status by toggling refresh trigger
+            downloadRefreshTrigger.toggle()
             
             // Update download progress when status changes
             if case .downloading(let activeDownload) = downloadStatus {
@@ -324,69 +338,37 @@ struct EpisodeCell: View {
                 let newProgress = activeDownload.progress
                 let clampedProgress = min(max(newProgress, 0.0), 1.0)
                 
-                // Check if the progress has actually changed to avoid unnecessary UI updates
-                if case .downloading(let prevDownload) = previousStatus, prevDownload.progress == newProgress {
-                    // No progress change, do nothing
-                } else {
-                    // Progress has changed, update state and force refresh
-                    downloadProgress = clampedProgress
-                    lastUpdateTime = Date() // Update timestamp
-                    downloadRefreshTrigger.toggle()
-                    
-                    // If progress is complete, force state to .downloaded
-                    if clampedProgress >= 1.0 {
-                        // Try to get the downloaded asset
-                        if let asset = jsController.savedAssets.first(where: { asset in
-                            asset.type == .episode &&
-                            asset.metadata?.showTitle?.caseInsensitiveCompare(parentTitle) == .orderedSame &&
-                            asset.metadata?.episode == episodeID + 1
-                        }) {
-                            // Update on main thread to ensure UI updates
-                            DispatchQueue.main.async {
-                                self.downloadStatus = .downloaded(asset)
-                                self.downloadProgress = 1.0
-                                self.downloadRefreshTrigger.toggle()
-                                
-                                // Force a UI update
-                                NotificationCenter.default.post(
-                                    name: NSNotification.Name("downloadStatusChanged"),
-                                    object: nil
-                                )
-                            }
+                // Progress has changed, update state
+                downloadProgress = clampedProgress
+                lastUpdateTime = Date() // Update timestamp
+                
+                // If progress is complete, force state to .downloaded
+                if clampedProgress >= 1.0 {
+                    // Try to get the downloaded asset
+                    if let asset = jsController.savedAssets.first(where: { asset in
+                        asset.type == .episode &&
+                        asset.metadata?.showTitle?.caseInsensitiveCompare(parentTitle) == .orderedSame &&
+                        asset.metadata?.episode == episodeID + 1
+                    }) {
+                        // Update on main thread to ensure UI updates
+                        DispatchQueue.main.async {
+                            self.downloadStatus = .downloaded(asset)
+                            self.downloadProgress = 1.0
+                            self.downloadRefreshTrigger.toggle()
                         }
-                    }
-                    // Log for debugging
-                    print("Episode \(episodeID + 1) progress updated: \(Int(clampedProgress * 100))%")
-                }
-            } else if case .downloaded(let asset) = downloadStatus {
-                // If we have a downloaded asset, ensure we show the checkmark
-                DispatchQueue.main.async {
-                    self.downloadProgress = 1.0
-                    self.downloadRefreshTrigger.toggle()
-                    
-                    // Log the download state for debugging
-                    print("Episode \(self.episodeID + 1) is downloaded")
-                    if let subtitleURL = asset.subtitleURL {
-                        print("Has subtitle URL: \(subtitleURL)")
                     } else {
-                        print("No subtitle URL - video only")
                     }
                 }
+            } else if case .downloaded = downloadStatus {
+                // If we have a downloaded asset, ensure we show the checkmark
+                downloadProgress = 1.0
             } else {
                 // Reset download progress if no longer downloading
-                if downloadProgress != 0.0 {
-                    downloadProgress = 0.0
-                    lastUpdateTime = Date() // Update timestamp
-                    downloadRefreshTrigger.toggle()
-                }
+                downloadProgress = 0.0
+                lastUpdateTime = Date() // Update timestamp
                 
                 // Clear the active download task
                 activeDownloadTask = nil
-                
-                // Also toggle refresh trigger when status changes to not downloading
-                if case .downloading = previousStatus {
-                    downloadRefreshTrigger.toggle()
-                }
             }
         }
     }
@@ -406,10 +388,16 @@ struct EpisodeCell: View {
             
             // Check if there's a status update
             if let status = userInfo["status"] as? String {
-                // Force a status update regardless of progress change
-                DispatchQueue.main.async {
-                    self.updateDownloadStatus()
+                // Special case for completed downloads - always update immediately
+                if status == "completed" {
+                    self.downloadProgress = 1.0
+                    self.updateDownloadStatus() // Force check for downloaded status
+                    self.downloadRefreshTrigger.toggle()
+                    return
                 }
+                
+                // For normal status updates
+                self.updateDownloadStatus()
                 
                 // For queued status, we don't need to update progress
                 if status == "queued" {
@@ -418,18 +406,22 @@ struct EpisodeCell: View {
             }
             
             if let progress = userInfo["progress"] as? Double {
-                // Only update if the progress has changed significantly
-                if abs(progress - self.downloadProgress) > 0.001 {
+                // Balance between responsiveness and performance:
+                // - Update faster at start and end of download (20% and when complete)
+                // - Update less frequently in the middle
+                let shouldUpdateMore = (progress < 0.2 || progress > 0.95)
+                let threshold = shouldUpdateMore ? 0.03 : 0.05 // 3% or 5% change
+                
+                if abs(progress - self.downloadProgress) > threshold {
                     self.downloadProgress = progress
                     self.lastUpdateTime = Date()
+                    
+                    // Only toggle on significant changes to avoid excessive view rebuilds
                     self.downloadRefreshTrigger.toggle()
                     
                     // If progress is 100%, ensure we show the downloaded state
                     if progress >= 1.0 {
-                        // Force an immediate status update
-                        DispatchQueue.main.async {
-                            self.updateDownloadStatus()
-                        }
+                        self.updateDownloadStatus()
                     }
                 }
             }

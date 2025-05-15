@@ -72,373 +72,17 @@ struct MediaInfoView: View {
     }
     
     var body: some View {
+        bodyContent
+    }
+    
+    @ViewBuilder
+    private var bodyContent: some View {
         Group {
             if isLoading {
                 ProgressView()
                     .padding()
             } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        HStack(alignment: .top, spacing: 10) {
-                            KFImage(URL(string: imageUrl))
-                                .placeholder {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color.gray.opacity(0.3))
-                                        .frame(width: 150, height: 225)
-                                        .shimmering()
-                                }
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 150, height: 225)
-                                .clipped()
-                                .cornerRadius(10)
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(title)
-                                    .font(.system(size: 17))
-                                    .fontWeight(.bold)
-                                    .onLongPressGesture {
-                                        UIPasteboard.general.string = title
-                                        DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
-                                    }
-                                
-                                if !aliases.isEmpty && aliases != title && aliases != "N/A" && aliases != "No Data" {
-                                    Text(aliases)
-                                        .font(.system(size: 13))
-                                        .foregroundColor(.secondary)
-                                }
-                                
-                                Spacer()
-                                
-                                if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
-                                    HStack(alignment: .center, spacing: 12) {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "calendar")
-                                                .resizable()
-                                                .frame(width: 15, height: 15)
-                                                .foregroundColor(.secondary)
-                                            
-                                            Text(airdate)
-                                                .font(.system(size: 12))
-                                                .foregroundColor(.secondary)
-                                        }
-                                        .padding(4)
-                                    }
-                                }
-                                
-                                HStack(alignment: .center, spacing: 12) {
-                                    Button(action: {
-                                        openSafariViewController(with: href)
-                                    }) {
-                                        HStack(spacing: 4) {
-                                            Text(module.metadata.sourceName)
-                                                .font(.system(size: 13))
-                                                .foregroundColor(.primary)
-                                            
-                                            Image(systemName: "safari")
-                                                .resizable()
-                                                .frame(width: 20, height: 20)
-                                                .foregroundColor(.primary)
-                                        }
-                                        .padding(4)
-                                        .background(Capsule().fill(Color.accentColor.opacity(0.4)))
-                                    }
-                                    
-                                    Menu {
-                                        Button(action: {
-                                            showCustomIDAlert()
-                                        }) {
-                                            Label("Set Custom AniList ID", systemImage: "number")
-                                        }
-                                        
-                                        if let customID = customAniListID {
-                                            Button(action: {
-                                                customAniListID = nil
-                                                itemID = nil
-                                                fetchItemID(byTitle: cleanTitle(title)) { result in
-                                                    switch result {
-                                                    case .success(let id):
-                                                        itemID = id
-                                                    case .failure(let error):
-                                                        Logger.shared.log("Failed to fetch AniList ID: \(error)")
-                                                    }
-                                                }
-                                            }) {
-                                                Label("Reset AniList ID", systemImage: "arrow.clockwise")
-                                            }
-                                        }
-                                        
-                                        if let id = itemID ?? customAniListID {
-                                            Button(action: {
-                                                if let url = URL(string: "https://anilist.co/anime/\(id)") {
-                                                    openSafariViewController(with: url.absoluteString)
-                                                }
-                                            }) {
-                                                Label("Open in AniList", systemImage: "link")
-                                            }
-                                        }
-                                        
-                                        Divider()
-                                        
-                                        Button(action: {
-                                            Logger.shared.log("Debug Info:\nTitle: \(title)\nHref: \(href)\nModule: \(module.metadata.sourceName)\nAniList ID: \(itemID ?? -1)\nCustom ID: \(customAniListID ?? -1)", type: "Debug")
-                                            DropManager.shared.showDrop(title: "Debug Info Logged", subtitle: "", duration: 1.0, icon: UIImage(systemName: "terminal"))
-                                        }) {
-                                            Label("Log Debug Info", systemImage: "terminal")
-                                        }
-                                    } label: {
-                                        Image(systemName: "ellipsis.circle")
-                                            .resizable()
-                                            .frame(width: 20, height: 20)
-                                            .foregroundColor(.primary)
-                                    }
-                                }
-                            }
-                        }
-                        
-                        if !synopsis.isEmpty {
-                            VStack(alignment: .leading, spacing: 2) {
-                                HStack(alignment: .center) {
-                                    Text("Synopsis")
-                                        .font(.system(size: 18))
-                                        .fontWeight(.bold)
-                                    
-                                    Spacer()
-                                    
-                                    Button(action: {
-                                        showFullSynopsis.toggle()
-                                    }) {
-                                        Text(showFullSynopsis ? "Less" : "More")
-                                            .font(.system(size: 14))
-                                    }
-                                }
-                                
-                                Text(synopsis)
-                                    .lineLimit(showFullSynopsis ? nil : 4)
-                                    .font(.system(size: 14))
-                            }
-                        }
-                        
-                        HStack {
-                            Button(action: {
-                                playFirstUnwatchedEpisode()
-                            }) {
-                                HStack {
-                                    Image(systemName: "play.fill")
-                                        .foregroundColor(.primary)
-                                    Text(startWatchingText)
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                }
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color.accentColor)
-                                .cornerRadius(10)
-                            }
-                            .disabled(isFetchingEpisode)
-                            .id(buttonRefreshTrigger)
-                            
-                            Button(action: {
-                                libraryManager.toggleBookmark(
-                                    title: title,
-                                    imageUrl: imageUrl,
-                                    href: href,
-                                    moduleId: module.id.uuidString,
-                                    moduleName: module.metadata.sourceName
-                                )
-                            }) {
-                                Image(systemName: libraryManager.isBookmarked(href: href, moduleName: module.metadata.sourceName) ? "bookmark.fill" : "bookmark")
-                                    .resizable()
-                                    .frame(width: 20, height: 27)
-                                    .foregroundColor(Color.accentColor)
-                            }
-                        }
-                        
-                        if !episodeLinks.isEmpty {
-                            VStack(alignment: .leading, spacing: 10) {
-                                HStack {
-                                    Text("Episodes")
-                                        .font(.system(size: 18))
-                                        .fontWeight(.bold)
-                                    
-                                    Spacer()
-                                    
-                                    if !isGroupedBySeasons, episodeLinks.count > episodeChunkSize {
-                                        Menu {
-                                            ForEach(generateRanges(), id: \.self) { range in
-                                                Button(action: { selectedRange = range }) {
-                                                    Text("\(range.lowerBound + 1)-\(range.upperBound)")
-                                                }
-                                            }
-                                        } label: {
-                                            Text("\(selectedRange.lowerBound + 1)-\(selectedRange.upperBound)")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(.accentColor)
-                                        }
-                                    } else if isGroupedBySeasons {
-                                        let seasons = groupedEpisodes()
-                                        if seasons.count > 1 {
-                                            Menu {
-                                                ForEach(0..<seasons.count, id: \.self) { index in
-                                                    Button(action: { selectedSeason = index }) {
-                                                        Text("Season \(index + 1)")
-                                                    }
-                                                }
-                                            } label: {
-                                                Text("Season \(selectedSeason + 1)")
-                                                    .font(.system(size: 14))
-                                                    .foregroundColor(.accentColor)
-                                            }
-                                        }
-                                    }
-                                    if isGroupedBySeasons {
-                                        let seasons = groupedEpisodes()
-                                        if !seasons.isEmpty, selectedSeason < seasons.count {
-                                            ForEach(seasons[selectedSeason]) { ep in
-                                                let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
-                                                let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
-                                                let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
-                                                
-                                                EpisodeCell(
-                                                    episodeIndex: selectedSeason,
-                                                    episode: ep.href,
-                                                    episodeID: ep.number - 1,
-                                                    progress: progress,
-                                                    itemID: itemID ?? 0,
-                                                    totalEpisodes: episodeLinks.count,
-                                                    defaultBannerImage: selectedAppearance == .light || (selectedAppearance == .system && colorScheme == .light) ?
-                                                        "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner1.png" :
-                                                        "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner2.png",
-                                                    module: module,
-                                                    parentTitle: title,
-                                                    onTap: { imageUrl in
-                                                        if !isFetchingEpisode {
-                                                            selectedEpisodeNumber = ep.number
-                                                            selectedEpisodeImage = imageUrl
-                                                            fetchStream(href: ep.href)
-                                                            AnalyticsManager.shared.sendEvent(
-                                                                event: "watch",
-                                                                additionalData: ["title": title, "episode": ep.number]
-                                                            )
-                                                        }
-                                                    },
-                                                    onMarkAllPrevious: {
-                                                        let userDefaults = UserDefaults.standard
-                                                        var updates = [String: Double]()
-                                                        
-                                                        for ep2 in seasons[selectedSeason] where ep2.number < ep.number {
-                                                            let href = ep2.href
-                                                            updates["lastPlayedTime_\(href)"] = 99999999.0
-                                                            updates["totalTime_\(href)"] = 99999999.0
-                                                        }
-                                                        
-                                                        for (key, value) in updates {
-                                                            userDefaults.set(value, forKey: key)
-                                                        }
-                                                        
-                                                        userDefaults.synchronize()
-                                                        
-                                                        refreshTrigger.toggle()
-                                                        Logger.shared.log("Marked episodes watched within season \(selectedSeason + 1) of \"\(title)\".", type: "General")
-                                                    }
-                                                )
-                                                .id(refreshTrigger)
-                                                .disabled(isFetchingEpisode)
-                                            }
-                                        } else {
-                                            Text("No episodes available")
-                                        }
-                                    } else {
-                                        ForEach(episodeLinks.indices.filter { selectedRange.contains($0) }, id: \.self) { i in
-                                            let ep = episodeLinks[i]
-                                            let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
-                                            let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
-                                            let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
-                                            
-                                            EpisodeCell(
-                                                episodeIndex: i,
-                                                episode: ep.href,
-                                                episodeID: ep.number - 1,
-                                                progress: progress,
-                                                itemID: itemID ?? 0,
-                                                onTap: { imageUrl in
-                                                    if !isFetchingEpisode {
-                                                        selectedEpisodeNumber = ep.number
-                                                        selectedEpisodeImage = imageUrl
-                                                        fetchStream(href: ep.href)
-                                                        AnalyticsManager.shared.sendEvent(
-                                                            event: "watch",
-                                                            additionalData: ["title": title, "episode": ep.number]
-                                                        )
-                                                    }
-                                                },
-                                                onMarkAllPrevious: {
-                                                    let userDefaults = UserDefaults.standard
-                                                    var updates = [String: Double]()
-                                                    
-                                                    for idx in 0..<i {
-                                                        if idx < episodeLinks.count {
-                                                            let href = episodeLinks[idx].href
-                                                            updates["lastPlayedTime_\(href)"] = 1000.0
-                                                            updates["totalTime_\(href)"] = 1000.0
-                                                        }
-                                                    }
-                                                    
-                                                    for (key, value) in updates {
-                                                        userDefaults.set(value, forKey: key)
-                                                    }
-                                                    
-                                                    refreshTrigger.toggle()
-                                                    Logger.shared.log("Marked \(ep.number - 1) episodes watched within series \"\(title)\".", type: "General")
-                                                }
-                                            )
-                                                .id(refreshTrigger)
-                                                .disabled(isFetchingEpisode)
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("Episodes")
-                                    .font(.system(size: 18))
-                                    .fontWeight(.bold)
-                            }
-                            VStack(spacing: 8) {
-                                if isRefetching {
-                                    ProgressView()
-                                        .padding()
-                                } else {
-                                    Image(systemName: "exclamationmark.triangle")
-                                        .font(.largeTitle)
-                                        .foregroundColor(.secondary)
-                                    HStack(spacing: 2) {
-                                        Text("No episodes Found:")
-                                            .foregroundColor(.secondary)
-                                        Button(action: {
-                                            isRefetching = true
-                                            fetchDetails()
-                                        }) {
-                                            Text("Retry")
-                                                .foregroundColor(.accentColor)
-                                        }
-                                    }
-                                }
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .padding()
-                    .navigationBarTitleDisplayMode(.inline)
-                    .navigationBarTitle("")
-                    .navigationViewStyle(StackNavigationViewStyle())
-                }
-                .onDisappear {
-                    activeFetchID = nil
-                    isFetchingEpisode = false
-                    showStreamLoadingView = false
-                }
+                mainScrollView
             }
         }
         .onAppear {
@@ -487,28 +131,485 @@ struct MediaInfoView: View {
         }
     }
     
+    @ViewBuilder
+    private var mainScrollView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                mediaHeaderSection
+                
+                if !synopsis.isEmpty {
+                    synopsisSection
+                }
+                
+                playAndBookmarkSection
+                
+                if !episodeLinks.isEmpty {
+                    episodesSection
+                } else {
+                    noEpisodesSection
+                }
+            }
+            .padding()
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitle("")
+            .navigationViewStyle(StackNavigationViewStyle())
+        }
+        .onDisappear {
+            activeFetchID = nil
+            isFetchingEpisode = false
+            showStreamLoadingView = false
+        }
+    }
+    
+    @ViewBuilder
+    private var mediaHeaderSection: some View {
+        HStack(alignment: .top, spacing: 10) {
+            KFImage(URL(string: imageUrl))
+                .placeholder {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 150, height: 225)
+                        .shimmering()
+                }
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 150, height: 225)
+                .clipped()
+                .cornerRadius(10)
+            
+            mediaInfoSection
+        }
+    }
+    
+    @ViewBuilder
+    private var mediaInfoSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: 17))
+                .fontWeight(.bold)
+                .onLongPressGesture {
+                    UIPasteboard.general.string = title
+                    DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+                }
+            
+            if !aliases.isEmpty && aliases != title && aliases != "N/A" && aliases != "No Data" {
+                Text(aliases)
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
+                HStack(alignment: .center, spacing: 12) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar")
+                            .resizable()
+                            .frame(width: 15, height: 15)
+                            .foregroundColor(.secondary)
+                        
+                        Text(airdate)
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(4)
+                }
+            }
+            
+            HStack(alignment: .center, spacing: 12) {
+                sourceButton
+                
+                menuButton
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var sourceButton: some View {
+        Button(action: {
+            openSafariViewController(with: href)
+        }) {
+            HStack(spacing: 4) {
+                Text(module.metadata.sourceName)
+                    .font(.system(size: 13))
+                    .foregroundColor(.primary)
+                
+                Image(systemName: "safari")
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                    .foregroundColor(.primary)
+            }
+            .padding(4)
+            .background(Capsule().fill(Color.accentColor.opacity(0.4)))
+        }
+    }
+    
+    @ViewBuilder
+    private var menuButton: some View {
+        Menu {
+            Button(action: {
+                showCustomIDAlert()
+            }) {
+                Label("Set Custom AniList ID", systemImage: "number")
+            }
+            
+            if let customID = customAniListID {
+                Button(action: {
+                    customAniListID = nil
+                    itemID = nil
+                    fetchItemID(byTitle: cleanTitle(title)) { result in
+                        switch result {
+                        case .success(let id):
+                            itemID = id
+                        case .failure(let error):
+                            Logger.shared.log("Failed to fetch AniList ID: \(error)")
+                        }
+                    }
+                }) {
+                    Label("Reset AniList ID", systemImage: "arrow.clockwise")
+                }
+            }
+            
+            if let id = itemID ?? customAniListID {
+                Button(action: {
+                    if let url = URL(string: "https://anilist.co/anime/\(id)") {
+                        openSafariViewController(with: url.absoluteString)
+                    }
+                }) {
+                    Label("Open in AniList", systemImage: "link")
+                }
+            }
+            
+            Divider()
+            
+            Button(action: {
+                Logger.shared.log("Debug Info:\nTitle: \(title)\nHref: \(href)\nModule: \(module.metadata.sourceName)\nAniList ID: \(itemID ?? -1)\nCustom ID: \(customAniListID ?? -1)", type: "Debug")
+                DropManager.shared.showDrop(title: "Debug Info Logged", subtitle: "", duration: 1.0, icon: UIImage(systemName: "terminal"))
+            }) {
+                Label("Log Debug Info", systemImage: "terminal")
+            }
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .resizable()
+                .frame(width: 20, height: 20)
+                .foregroundColor(.primary)
+        }
+    }
+    
+    @ViewBuilder
+    private var synopsisSection: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .center) {
+                Text("Synopsis")
+                    .font(.system(size: 18))
+                    .fontWeight(.bold)
+                
+                Spacer()
+                
+                Button(action: {
+                    showFullSynopsis.toggle()
+                }) {
+                    Text(showFullSynopsis ? "Less" : "More")
+                        .font(.system(size: 14))
+                }
+            }
+            
+            Text(synopsis)
+                .lineLimit(showFullSynopsis ? nil : 4)
+                .font(.system(size: 14))
+        }
+    }
+    
+    @ViewBuilder
+    private var playAndBookmarkSection: some View {
+        HStack {
+            Button(action: {
+                playFirstUnwatchedEpisode()
+            }) {
+                HStack {
+                    Image(systemName: "play.fill")
+                        .foregroundColor(.primary)
+                    Text(startWatchingText)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.accentColor)
+                .cornerRadius(10)
+            }
+            .disabled(isFetchingEpisode)
+            .id(buttonRefreshTrigger)
+            
+            Button(action: {
+                libraryManager.toggleBookmark(
+                    title: title,
+                    imageUrl: imageUrl,
+                    href: href,
+                    moduleId: module.id.uuidString,
+                    moduleName: module.metadata.sourceName
+                )
+            }) {
+                Image(systemName: libraryManager.isBookmarked(href: href, moduleName: module.metadata.sourceName) ? "bookmark.fill" : "bookmark")
+                    .resizable()
+                    .frame(width: 20, height: 27)
+                    .foregroundColor(Color.accentColor)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var episodesSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Episodes")
+                    .font(.system(size: 18))
+                    .fontWeight(.bold)
+                
+                Spacer()
+                
+                episodeNavigationSection
+            }
+            
+            episodeListSection
+        }
+    }
+    
+    @ViewBuilder
+    private var episodeNavigationSection: some View {
+        Group {
+            if !isGroupedBySeasons, episodeLinks.count > episodeChunkSize {
+                Menu {
+                    ForEach(generateRanges(), id: \.self) { range in
+                        Button(action: { selectedRange = range }) {
+                            Text("\(range.lowerBound + 1)-\(range.upperBound)")
+                        }
+                    }
+                } label: {
+                    Text("\(selectedRange.lowerBound + 1)-\(selectedRange.upperBound)")
+                        .font(.system(size: 14))
+                        .foregroundColor(.accentColor)
+                }
+            } else if isGroupedBySeasons {
+                let seasons = groupedEpisodes()
+                if seasons.count > 1 {
+                    Menu {
+                        ForEach(0..<seasons.count, id: \.self) { index in
+                            Button(action: { selectedSeason = index }) {
+                                Text("Season \(index + 1)")
+                            }
+                        }
+                    } label: {
+                        Text("Season \(selectedSeason + 1)")
+                            .font(.system(size: 14))
+                            .foregroundColor(.accentColor)
+                    }
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var episodeListSection: some View {
+        Group {
+            if isGroupedBySeasons {
+                seasonsEpisodeList
+            } else {
+                flatEpisodeList
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var seasonsEpisodeList: some View {
+        let seasons = groupedEpisodes()
+        if !seasons.isEmpty, selectedSeason < seasons.count {
+            ForEach(seasons[selectedSeason]) { ep in
+                let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+                let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+                let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
+                
+                let defaultBannerImageValue = getBannerImageBasedOnAppearance()
+                
+                EpisodeCell(
+                    episodeIndex: selectedSeason,
+                    episode: ep.href,
+                    episodeID: ep.number - 1,
+                    progress: progress,
+                    itemID: itemID ?? 0,
+                    totalEpisodes: episodeLinks.count,
+                    defaultBannerImage: defaultBannerImageValue,
+                    module: module,
+                    parentTitle: title,
+                    onTap: { imageUrl in
+                        episodeTapAction(ep: ep, imageUrl: imageUrl)
+                    },
+                    onMarkAllPrevious: {
+                        markAllPreviousEpisodesAsWatched(ep: ep, inSeason: true)
+                    }
+                )
+                .id(refreshTrigger)
+                .disabled(isFetchingEpisode)
+            }
+        } else {
+            Text("No episodes available")
+        }
+    }
+    
+    private func getBannerImageBasedOnAppearance() -> String {
+        let isLightMode = selectedAppearance == .light || (selectedAppearance == .system && colorScheme == .light)
+        return isLightMode
+            ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner1.png"
+            : "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner2.png"
+    }
+    
+    private func episodeTapAction(ep: EpisodeLink, imageUrl: String) {
+        if !isFetchingEpisode {
+            selectedEpisodeNumber = ep.number
+            selectedEpisodeImage = imageUrl
+            fetchStream(href: ep.href)
+            AnalyticsManager.shared.sendEvent(
+                event: "watch",
+                additionalData: ["title": title, "episode": ep.number]
+            )
+        }
+    }
+    
+    private func markAllPreviousEpisodesAsWatched(ep: EpisodeLink, inSeason: Bool) {
+        let userDefaults = UserDefaults.standard
+        var updates = [String: Double]()
+        
+        if inSeason {
+            let seasons = groupedEpisodes()
+            for ep2 in seasons[selectedSeason] where ep2.number < ep.number {
+                let href = ep2.href
+                updates["lastPlayedTime_\(href)"] = 99999999.0
+                updates["totalTime_\(href)"] = 99999999.0
+            }
+            
+            for (key, value) in updates {
+                userDefaults.set(value, forKey: key)
+            }
+            
+            userDefaults.synchronize()
+            refreshTrigger.toggle()
+            Logger.shared.log("Marked episodes watched within season \(selectedSeason + 1) of \"\(title)\".", type: "General")
+        } else {
+            // Handle non-season case if needed
+        }
+    }
+    
+    @ViewBuilder
+    private var flatEpisodeList: some View {
+        ForEach(episodeLinks.indices.filter { selectedRange.contains($0) }, id: \.self) { i in
+            let ep = episodeLinks[i]
+            let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+            let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+            let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
+            
+            EpisodeCell(
+                episodeIndex: i,
+                episode: ep.href,
+                episodeID: ep.number - 1,
+                progress: progress,
+                itemID: itemID ?? 0,
+                module: module,
+                parentTitle: title,
+                onTap: { imageUrl in
+                    episodeTapAction(ep: ep, imageUrl: imageUrl)
+                },
+                onMarkAllPrevious: {
+                    markAllPreviousEpisodesInFlatList(ep: ep, index: i)
+                }
+            )
+            .id(refreshTrigger)
+            .disabled(isFetchingEpisode)
+        }
+    }
+    
+    private func markAllPreviousEpisodesInFlatList(ep: EpisodeLink, index: Int) {
+        let userDefaults = UserDefaults.standard
+        var updates = [String: Double]()
+        
+        for idx in 0..<index {
+            if idx < episodeLinks.count {
+                let href = episodeLinks[idx].href
+                updates["lastPlayedTime_\(href)"] = 1000.0
+                updates["totalTime_\(href)"] = 1000.0
+            }
+        }
+        
+        for (key, value) in updates {
+            userDefaults.set(value, forKey: key)
+        }
+        
+        refreshTrigger.toggle()
+        Logger.shared.log("Marked \(ep.number - 1) episodes watched within series \"\(title)\".", type: "General")
+    }
+    
+    @ViewBuilder
+    private var noEpisodesSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Episodes")
+                .font(.system(size: 18))
+                .fontWeight(.bold)
+        }
+        VStack(spacing: 8) {
+            if isRefetching {
+                ProgressView()
+                    .padding()
+            } else {
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.largeTitle)
+                    .foregroundColor(.secondary)
+                HStack(spacing: 2) {
+                    Text("No episodes Found:")
+                        .foregroundColor(.secondary)
+                    Button(action: {
+                        isRefetching = true
+                        fetchDetails()
+                    }) {
+                        Text("Retry")
+                            .foregroundColor(.accentColor)
+                    }
+                }
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+    }
+    
     private var startWatchingText: String {
-        let (finished, unfinished) = finishedAndUnfinishedIndices()
+        let indices = finishedAndUnfinishedIndices()
+        let finished = indices.finished
+        let unfinished = indices.unfinished
         
         if let finishedIndex = finished, finishedIndex < episodeLinks.count - 1 {
             let nextEp = episodeLinks[finishedIndex + 1]
             return "Start Watching Episode \(nextEp.number)"
-        } else if let unfinishedIndex = unfinished {
-            return "Continue Watching Episode \(episodeLinks[unfinishedIndex].number)"
+        } 
+        
+        if let unfinishedIndex = unfinished {
+            let currentEp = episodeLinks[unfinishedIndex]
+            return "Continue Watching Episode \(currentEp.number)"
         }
         
         return "Start Watching"
     }
     
     private func playFirstUnwatchedEpisode() {
-        let (finished, unfinished) = finishedAndUnfinishedIndices()
+        let indices = finishedAndUnfinishedIndices()
+        let finished = indices.finished
+        let unfinished = indices.unfinished
         
         if let finishedIndex = finished, finishedIndex < episodeLinks.count - 1 {
             let nextEp = episodeLinks[finishedIndex + 1]
             selectedEpisodeNumber = nextEp.number
             fetchStream(href: nextEp.href)
             return
-        } else if let unfinishedIndex = unfinished {
+        } 
+        
+        if let unfinishedIndex = unfinished {
             let ep = episodeLinks[unfinishedIndex]
             selectedEpisodeNumber = ep.number
             fetchStream(href: ep.href)

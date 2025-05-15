@@ -519,7 +519,7 @@ struct EpisodeCell: View {
     }
     
     // Handle result from sequential download attempts
-    private func handleSequentialDownloadResult(_ result: (streams: [String]?, subtitles: [String]?), downloadID: UUID, methodIndex: Int, softsub: Bool) {
+    private func handleSequentialDownloadResult(_ result: (streams: [String]?, subtitles: [String]?, sources: [[String:Any]]?), downloadID: UUID, methodIndex: Int, softsub: Bool) {
         // Skip if we're no longer downloading
         if !isDownloading {
             return
@@ -544,6 +544,20 @@ struct EpisodeCell: View {
             }
             
             startActualDownload(url: url, streamUrl: streams[0], downloadID: downloadID, subtitleURL: subtitleURL)
+        } else if let sources = result.sources, !sources.isEmpty, 
+                  let streamUrl = sources[0]["streamUrl"] as? String, 
+                  let url = URL(string: streamUrl) {
+            
+            print("[Download] Method #\(methodIndex+1) returned valid stream URL with headers: \(streamUrl)")
+            
+            // Get subtitle URL if available
+            let subtitleURLString = sources[0]["subtitle"] as? String
+            let subtitleURL = subtitleURLString.flatMap { URL(string: $0) }
+            if let subtitleURL = subtitleURL {
+                print("[Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+            }
+            
+            startActualDownload(url: url, streamUrl: streamUrl, downloadID: downloadID, subtitleURL: subtitleURL)
         } else {
             // No valid streams from this method, try the next one
             print("[Download] Method #\(methodIndex+1) did not return valid streams, trying next method")

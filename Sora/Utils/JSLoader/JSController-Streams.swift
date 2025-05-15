@@ -85,15 +85,18 @@ extension JSController {
                 if resultString == "[object Promise]" {
                     Logger.shared.log("Received Promise object instead of resolved value, waiting for proper resolution", type: "Stream")
                     // Skip this result - other methods will provide the resolved URL
-                    DispatchQueue.main.async { completion((nil, nil)) }
+                    let workItem = DispatchWorkItem { completion((nil, nil, nil)) }
+                    DispatchQueue.main.async(execute: workItem)
                     return
                 }
                 
                 Logger.shared.log("Starting stream from: \(resultString)", type: "Stream")
-                DispatchQueue.main.async { completion(([resultString], nil,nil)) }
+                let workItem = DispatchWorkItem { completion(([resultString], nil, nil)) }
+                DispatchQueue.main.async(execute: workItem)
             } else {
                 Logger.shared.log("Failed to extract stream URL", type: "Error")
-                DispatchQueue.main.async { completion((nil, nil,nil)) }
+                let workItem = DispatchWorkItem { completion((nil, nil, nil)) }
+                DispatchQueue.main.async(execute: workItem)
             }
         }.resume()
     }

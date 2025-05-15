@@ -254,7 +254,8 @@ struct DownloadView: View {
                 onWatchNext: {},
                 subtitlesURL: localSubtitleURL.absoluteString,
                 aniListID: 0,
-                episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? ""
+                episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
+                headers: nil
             )
             
             customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen
@@ -855,7 +856,8 @@ struct DownloadedMediaDetailView: View {
                 onWatchNext: {},
                 subtitlesURL: localSubtitleURL.absoluteString,
                 aniListID: 0,
-                episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? ""
+                episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
+                headers: nil
             )
             
             customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen

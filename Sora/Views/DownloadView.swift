@@ -217,6 +217,16 @@ struct DownloadView: View {
         
         currentAsset = asset
         
+        // Determine the streamType based on the file extension
+        let streamType: String
+        if asset.localURL.pathExtension.lowercased() == "mp4" {
+            streamType = "mp4"
+        } else if asset.localURL.absoluteString.contains(".movpkg") {
+            streamType = "hls"
+        } else {
+            streamType = "hls" // Default to HLS if we can't determine
+        }
+        
         // Check if we have a subtitle file for this asset
         if let localSubtitleURL = asset.localSubtitleURL {
             // Use the custom player which supports subtitles
@@ -227,7 +237,7 @@ struct DownloadView: View {
                 version: "",
                 language: "",
                 baseUrl: "",
-                streamType: "",
+                streamType: streamType, // Use the determined streamType
                 quality: "",
                 searchBaseUrl: "",
                 scriptUrl: "",
@@ -266,22 +276,72 @@ struct DownloadView: View {
                 rootViewController.present(customPlayer, animated: true)
             }
         } else {
-            // No subtitle file available, use standard player
-            // Create an AVPlayerItem from the local URL
-            let playerItem = AVPlayerItem(url: asset.localURL)
+            // No subtitle file available, use standard player with appropriate streamType
+            let dummyMetadata = ModuleMetadata(
+                sourceName: "",
+                author: ModuleMetadata.Author(name: "", icon: ""),
+                iconUrl: "",
+                version: "",
+                language: "",
+                baseUrl: "",
+                streamType: streamType, // Use the determined streamType
+                quality: "",
+                searchBaseUrl: "",
+                scriptUrl: "",
+                asyncJS: nil,
+                streamAsyncJS: nil,
+                softsub: nil,
+                multiStream: nil,
+                multiSubs: nil,
+                type: nil
+            )
             
-            // Configure the player
-            let player = AVPlayer(playerItem: playerItem)
+            let dummyModule = ScrapingModule(
+                metadata: dummyMetadata,
+                localPath: "",
+                metadataUrl: ""
+            )
             
-            // Create the controller
-            let playerController = AVPlayerViewController()
-            playerController.player = player
-            
-            // Present the player
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let rootViewController = windowScene.windows.first?.rootViewController {
-                rootViewController.present(playerController, animated: true) {
-                    player.play()
+            // Check if we're playing an MP4 file - if so, use the system player for direct playback
+            if streamType == "mp4" {
+                // Create an AVPlayerItem from the local URL
+                let playerItem = AVPlayerItem(url: asset.localURL)
+                
+                // Configure the player
+                let player = AVPlayer(playerItem: playerItem)
+                
+                // Create the controller
+                let playerController = AVPlayerViewController()
+                playerController.player = player
+                
+                // Present the player
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let rootViewController = windowScene.windows.first?.rootViewController {
+                    rootViewController.present(playerController, animated: true) {
+                        player.play()
+                    }
+                }
+            } else {
+                // For HLS, use the custom player
+                let customPlayer = CustomMediaPlayerViewController(
+                    module: dummyModule,
+                    urlString: asset.localURL.absoluteString,
+                    fullUrl: asset.originalURL.absoluteString,
+                    title: asset.name,
+                    episodeNumber: asset.metadata?.episode ?? 0,
+                    onWatchNext: {},
+                    subtitlesURL: nil,
+                    aniListID: 0,
+                    episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
+                    headers: nil
+                )
+                
+                customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                
+                // Present the custom player
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let rootViewController = windowScene.windows.first?.rootViewController {
+                    rootViewController.present(customPlayer, animated: true)
                 }
             }
         }
@@ -819,6 +879,16 @@ struct DownloadedMediaDetailView: View {
         
         currentAsset = asset
         
+        // Determine the streamType based on the file extension
+        let streamType: String
+        if asset.localURL.pathExtension.lowercased() == "mp4" {
+            streamType = "mp4"
+        } else if asset.localURL.absoluteString.contains(".movpkg") {
+            streamType = "hls"
+        } else {
+            streamType = "hls" // Default to HLS if we can't determine
+        }
+        
         // Check if we have a subtitle file for this asset
         if let localSubtitleURL = asset.localSubtitleURL {
             // Use the custom player which supports subtitles
@@ -829,7 +899,7 @@ struct DownloadedMediaDetailView: View {
                 version: "",
                 language: "",
                 baseUrl: "",
-                streamType: "",
+                streamType: streamType, // Use the determined streamType
                 quality: "",
                 searchBaseUrl: "",
                 scriptUrl: "",
@@ -868,22 +938,72 @@ struct DownloadedMediaDetailView: View {
                 rootViewController.present(customPlayer, animated: true)
             }
         } else {
-            // No subtitle file available, use standard player
-            // Create an AVPlayerItem from the local URL
-            let playerItem = AVPlayerItem(url: asset.localURL)
+            // No subtitle file available, use standard player with appropriate streamType
+            let dummyMetadata = ModuleMetadata(
+                sourceName: "",
+                author: ModuleMetadata.Author(name: "", icon: ""),
+                iconUrl: "",
+                version: "",
+                language: "",
+                baseUrl: "",
+                streamType: streamType, // Use the determined streamType
+                quality: "",
+                searchBaseUrl: "",
+                scriptUrl: "",
+                asyncJS: nil,
+                streamAsyncJS: nil,
+                softsub: nil,
+                multiStream: nil,
+                multiSubs: nil,
+                type: nil
+            )
             
-            // Configure the player
-            let player = AVPlayer(playerItem: playerItem)
+            let dummyModule = ScrapingModule(
+                metadata: dummyMetadata,
+                localPath: "",
+                metadataUrl: ""
+            )
             
-            // Create the controller
-            let playerController = AVPlayerViewController()
-            playerController.player = player
-            
-            // Present the player
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let rootViewController = windowScene.windows.first?.rootViewController {
-                rootViewController.present(playerController, animated: true) {
-                    player.play()
+            // Check if we're playing an MP4 file - if so, use the system player for direct playback
+            if streamType == "mp4" {
+                // Create an AVPlayerItem from the local URL
+                let playerItem = AVPlayerItem(url: asset.localURL)
+                
+                // Configure the player
+                let player = AVPlayer(playerItem: playerItem)
+                
+                // Create the controller
+                let playerController = AVPlayerViewController()
+                playerController.player = player
+                
+                // Present the player
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let rootViewController = windowScene.windows.first?.rootViewController {
+                    rootViewController.present(playerController, animated: true) {
+                        player.play()
+                    }
+                }
+            } else {
+                // For HLS, use the custom player
+                let customPlayer = CustomMediaPlayerViewController(
+                    module: dummyModule,
+                    urlString: asset.localURL.absoluteString,
+                    fullUrl: asset.originalURL.absoluteString,
+                    title: asset.name,
+                    episodeNumber: asset.metadata?.episode ?? 0,
+                    onWatchNext: {},
+                    subtitlesURL: nil,
+                    aniListID: 0,
+                    episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
+                    headers: nil
+                )
+                
+                customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                
+                // Present the custom player
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let rootViewController = windowScene.windows.first?.rootViewController {
+                    rootViewController.present(customPlayer, animated: true)
                 }
             }
         }

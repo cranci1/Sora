@@ -58,6 +58,7 @@ extension JSController {
     ///   - season: Optional season number for the episode
     ///   - episode: Optional episode number for the episode
     ///   - subtitleURL: Optional subtitle URL to download after video
+    ///   - module: Optional module to determine streamType
     ///   - completionHandler: Optional callback for download status
     func startDownload(
         url: URL,
@@ -69,8 +70,29 @@ extension JSController {
         season: Int? = nil,
         episode: Int? = nil,
         subtitleURL: URL? = nil,
+        module: ScrapingModule? = nil,
         completionHandler: ((Bool, String) -> Void)? = nil
     ) {
+        // If a module is provided, use the stream type aware download
+        if let module = module {
+            // Use the stream type aware download method
+            downloadWithStreamTypeSupport(
+                url: url,
+                headers: headers,
+                title: title,
+                imageURL: imageURL,
+                module: module,
+                isEpisode: isEpisode,
+                showTitle: showTitle,
+                season: season,
+                episode: episode,
+                subtitleURL: subtitleURL,
+                completionHandler: completionHandler
+            )
+            return
+        }
+        
+        // Legacy path for downloads without a module - use AVAssetDownloadURLSession
         // Create an asset with custom HTTP header fields for authorization
         let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
         
@@ -300,11 +322,11 @@ extension JSController {
         }
     }
     
-    /// Downloads a subtitle file for a video asset
+    /// Downloads a subtitle file and associates it with an asset
     /// - Parameters:
     ///   - subtitleURL: The URL of the subtitle file to download
     ///   - assetID: The ID of the asset this subtitle is associated with
-    private func downloadSubtitle(subtitleURL: URL, assetID: String) {
+    func downloadSubtitle(subtitleURL: URL, assetID: String) {
         print("Downloading subtitle from: \(subtitleURL.absoluteString) for asset ID: \(assetID)")
         
         let session = URLSession.shared
@@ -651,7 +673,7 @@ extension JSController {
     }
     
     /// Save assets to UserDefaults
-    private func saveAssets() {
+    func saveAssets() {
         do {
             let data = try JSONEncoder().encode(savedAssets)
             UserDefaults.standard.set(data, forKey: "downloadedAssets")
@@ -716,7 +738,7 @@ extension JSController {
     }
     
     /// Returns the directory for persistent downloads
-    private func getPersistentDownloadDirectory() -> URL? {
+    func getPersistentDownloadDirectory() -> URL? {
         let fileManager = FileManager.default
         
         // Get Application Support directory
@@ -1205,4 +1227,6 @@ enum DownloadQueueStatus: Equatable {
     case queued
     /// Download is currently being processed
     case downloading
+    /// Download has been completed
+    case completed
 } 

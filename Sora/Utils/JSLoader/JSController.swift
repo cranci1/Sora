@@ -35,6 +35,12 @@ class JSController: NSObject, ObservableObject {
     // Download session
     var downloadURLSession: AVAssetDownloadURLSession?
     
+    // For MP4 download progress tracking
+    var mp4ProgressObservations: [UUID: NSKeyValueObservation]?
+    
+    // For storing custom URLSessions used for MP4 downloads
+    var mp4CustomSessions: [UUID: URLSession]?
+    
     override init() {
         self.context = JSContext()
         super.init()

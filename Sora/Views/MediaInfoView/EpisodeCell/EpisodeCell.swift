@@ -607,8 +607,8 @@ struct EpisodeCell: View {
         // Extract show title from the parent view
         let animeTitle = parentTitle.isEmpty ? "Unknown Anime" : parentTitle
         
-        // Use jsController to handle the download with comprehensive headers and metadata
-        jsController.startDownload(
+        // Use jsController to handle the download with M3U8 support and quality selection
+        jsController.downloadWithM3U8Support(
             url: url,
             headers: headers,
             title: fullEpisodeTitle,

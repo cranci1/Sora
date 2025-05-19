@@ -817,7 +817,8 @@ struct MediaInfoView: View {
                     subtitlesURL: subtitles,
                     aniListID: itemID ?? 0,
                     episodeImageUrl: selectedEpisodeImage,
-                    headers: headers ?? nil
+                    headers: headers ?? nil,
+                    isSingleEpisode: episodeLinks.count == 1
                 )
                 customMediaPlayer.modalPresentationStyle = .fullScreen
                 Logger.shared.log("Opening custom media player with url: \(url)")

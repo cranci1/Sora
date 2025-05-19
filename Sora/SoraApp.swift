@@ -40,6 +40,7 @@ struct SoraApp: App {
     @StateObject private var moduleManager = ModuleManager()
     @StateObject private var librarykManager = LibraryManager()
     @StateObject private var downloadManager = DownloadManager()
+    @StateObject private var jsController = JSController.shared
     
     init() {
         // Initialize caching systems
@@ -66,6 +67,7 @@ struct SoraApp: App {
                 .environmentObject(settings)
                 .environmentObject(librarykManager)
                 .environmentObject(downloadManager)
+                .environmentObject(jsController)
                 .accentColor(settings.accentColor)
                 .onAppear {
                     settings.updateAppearance()

@@ -15,17 +15,13 @@ struct ContentView: View {
                     Label("Library", systemImage: "books.vertical")
                 }
             DownloadView()
+                .environmentObject(JSController.shared)
                 .tabItem {
                     Label("Downloads", systemImage: "arrow.down.app.fill")
                 }
             SearchView()
                 .tabItem {
                     Label("Search", systemImage: "magnifyingglass")
-                }
-            DownloadView()
-                .environmentObject(JSController.shared)
-                .tabItem {
-                    Label("Downloads", systemImage: "arrow.down.circle")
                 }
             SettingsView()
                 .tabItem {

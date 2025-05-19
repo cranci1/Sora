@@ -5,9 +5,11 @@
 //  Created by Francesco on 29/04/25.
 //
 
+import SwiftUI
 import AVKit
 import Kingfisher
 import UIKit
+import Combine
 
 struct DownloadView: View {
     @EnvironmentObject var jsController: JSController

@@ -15,7 +15,6 @@ struct ContentView: View {
                     Label("Library", systemImage: "books.vertical")
                 }
             DownloadView()
-                .environmentObject(JSController.shared)
                 .tabItem {
                     Label("Downloads", systemImage: "arrow.down.app.fill")
                 }

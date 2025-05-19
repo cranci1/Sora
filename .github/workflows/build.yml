@@ -2,7 +2,7 @@ name: Build and Release
 on:
   push:
     branches:
-      - dev
+      - '*'
 jobs:
   build-ios:
     name: Build IPA

@@ -27,12 +27,6 @@ class ImagePrefetchManager {
     private var prefetchedURLs = Set<URL>()
     private let prefetchQueue = DispatchQueue(label: "com.sora.imagePrefetch", qos: .utility)
     
-    // Performance monitoring properties
-    private var startTimes = [String: Date]()
-    private var loadCounts = [String: Int]()
-    private var cacheHits = 0
-    private var cacheMisses = 0
-    
     init() {
         // Set up KingfisherManager for optimal image loading
         ImageCache.default.memoryStorage.config.totalCostLimit = 300 * 1024 * 1024 // 300MB
@@ -51,11 +45,6 @@ class ImagePrefetchManager {
             
             guard !urlObjects.isEmpty else { return }
             
-            Logger.shared.log("Prefetching \(urlObjects.count) images", type: "Debug")
-            
-            // Track performance for each image
-            urls.forEach { self.trackLoadStart(url: $0) }
-            
             // Create a new prefetcher with the URLs and start it
             let newPrefetcher = ImagePrefetcher(
                 urls: urlObjects,
@@ -69,10 +58,6 @@ class ImagePrefetchManager {
             
             // Track prefetched URLs
             urlObjects.forEach { self.prefetchedURLs.insert($0) }
-            
-            // Track metrics manually since we can't use a completion handler
-            urls.forEach { _ in self.trackCacheHit() }
-            urls.forEach { self.trackLoadEnd(url: $0) }
         }
     }
     
@@ -85,9 +70,6 @@ class ImagePrefetchManager {
         
         prefetchQueue.async { [weak self] in
             guard let self = self else { return }
-            
-            // Track performance
-            self.trackLoadStart(url: url)
             
             // Create a new prefetcher with the URL and start it
             let newPrefetcher = ImagePrefetcher(
@@ -102,10 +84,6 @@ class ImagePrefetchManager {
             
             // Track prefetched URL
             self.prefetchedURLs.insert(urlObject)
-            
-            // Track metrics manually
-            self.trackCacheHit()
-            self.trackLoadEnd(url: url)
         }
     }
     
@@ -131,39 +109,6 @@ class ImagePrefetchManager {
     /// Clear prefetch queue and stop any ongoing prefetch operations
     func cancelPrefetching() {
         prefetcher.stop()
-    }
-    
-    // MARK: - Performance Tracking
-    
-    private func trackLoadStart(url: String) {
-        startTimes[url] = Date()
-        loadCounts[url] = (loadCounts[url] ?? 0) + 1
-        
-        // Log network request
-        Logger.shared.log("Started loading image: \(url)", type: "Debug")
-    }
-    
-    private func trackLoadEnd(url: String) {
-        guard let startTime = startTimes[url] else { return }
-        let elapsed = Date().timeIntervalSince(startTime)
-        
-        // Log completion
-        Logger.shared.log("Finished loading image in \(String(format: "%.3f", elapsed))s: \(url)", type: "Debug")
-        
-        // Clean up
-        startTimes.removeValue(forKey: url)
-    }
-    
-    private func trackCacheHit() {
-        cacheHits += 1
-        // Log cache hit
-        Logger.shared.log("Image cache hit, total hits: \(cacheHits)", type: "Debug")
-    }
-    
-    private func trackCacheMiss() {
-        cacheMisses += 1
-        // Log cache miss
-        Logger.shared.log("Image cache miss, total misses: \(cacheMisses)", type: "Debug")
     }
 }
 

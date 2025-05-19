@@ -441,12 +441,8 @@ struct EpisodeCell: View {
             isDownloading = true
             let downloadID = UUID()
             
-            DropManager.shared.showDrop(
-                title: "Preparing Download",
-                subtitle: "Episode \(episodeID + 1)",
-                duration: 0.5,
-                icon: UIImage(systemName: "arrow.down.circle")
-            )
+            // Use the new consolidated download notification
+            DropManager.shared.downloadStarted(episodeNumber: episodeID + 1)
             
             Task {
                 do {
@@ -631,8 +627,6 @@ struct EpisodeCell: View {
             subtitleURL: subtitleURL,
             completionHandler: { success, message in
                 if success {
-                    DropManager.shared.success("Download started for Episode \(self.episodeID + 1)")
-                    
                     // Log the download for analytics
                     Logger.shared.log("Started download for Episode \(self.episodeID + 1): \(self.episode)", type: "Download")
                     AnalyticsManager.shared.sendEvent(
@@ -695,8 +689,6 @@ struct EpisodeCell: View {
                     self.episodeImageUrl = metadata.imageUrl
                     self.isLoading = false
                     self.loadedFromCache = true
-                    
-                    Logger.shared.log("Loaded episode \(self.episodeID + 1) metadata from cache", type: "Debug")
                 }
                 return
             }

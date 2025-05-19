@@ -52,19 +52,9 @@ extension JSController {
         
         // Determine which download method to use based on streamType
         if streamType == "mp4" || streamType == "direct" || url.absoluteString.contains(".mp4") {
-            print("Using MP4 download method")
-            downloadMP4(
-                url: url,
-                headers: headers,
-                title: title,
-                imageURL: imageURL,
-                isEpisode: isEpisode,
-                showTitle: showTitle,
-                season: season,
-                episode: episode,
-                subtitleURL: subtitleURL,
-                completionHandler: completionHandler
-            )
+            print("MP4 URL detected - downloading not supported")
+            completionHandler?(false, "MP4 direct downloads are not supported. Please use HLS streams for downloading.")
+            return
         } else if streamType == "hls" || streamType == "m3u8" || url.absoluteString.contains(".m3u8") {
             print("Using HLS download method")
             downloadWithM3U8Support(

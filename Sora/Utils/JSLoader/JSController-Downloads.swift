@@ -153,9 +153,6 @@ extension JSController {
                     ]
                 )
             }
-            
-            // Show immediate notification about queued download
-            DropManager.shared.info("Download queued: \(downloadTitle)")
         }
         
         // Inform caller of success
@@ -260,9 +257,6 @@ extension JSController {
                     ]
                 )
             }
-            
-            // Show notification
-            DropManager.shared.info("Download started: \(download.title ?? download.originalURL.lastPathComponent)")
         }
     }
     
@@ -931,9 +925,6 @@ extension JSController: AVAssetDownloadDelegate {
                         ]
                     )
                 }
-                
-                // Show success notification
-                DropManager.shared.success("Download complete: \(newAsset.name)")
             }
         }
         

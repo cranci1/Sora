@@ -46,26 +46,7 @@ struct SettingsViewPerformance: View {
             }
             
             if performanceMonitor.isEnabled {
-                Section(header: Text("Current Metrics")) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        MetricRow(title: "Network Requests", value: "\(performanceMonitor.networkRequestCount)")
-                        
-                        MetricRow(title: "Cache Hits", value: "\(performanceMonitor.cacheHitCount)")
-                        
-                        MetricRow(title: "Cache Misses", value: "\(performanceMonitor.cacheMissCount)")
-                        
-                        MetricRow(title: "Cache Hit Rate", value: "\(Int(performanceMonitor.cacheHitRate * 100))%")
-                        
-                        MetricRow(title: "Avg Load Time", value: "\(String(format: "%.2f", performanceMonitor.averageLoadTime))s")
-                        
-                        MetricRow(title: "Memory Usage", value: "\(String(format: "%.1f MB", Double(performanceMonitor.memoryUsage) / (1024 * 1024)))")
-                        
-                        MetricRow(title: "Disk Cache", value: "\(String(format: "%.1f MB", Double(performanceMonitor.diskUsage) / (1024 * 1024)))")
-                    }
-                    .padding(.vertical, 8)
-                }
-                
-                Section(header: Text("About Performance Monitoring"), footer: Text("Performance metrics are reset when the app is restarted. Enabling this feature may slightly impact battery life but helps with troubleshooting.")) {
+                Section(header: Text("About Performance Monitoring"), footer: Text("Performance monitoring helps track app resource usage and identify potential issues with network requests, cache efficiency, and memory management.")) {
                     Text("Performance monitoring helps track app resource usage and identify potential issues with network requests, cache efficiency, and memory management.")
                         .font(.footnote)
                         .foregroundColor(.secondary)

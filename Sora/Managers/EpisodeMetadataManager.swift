@@ -61,35 +61,26 @@ class EpisodeMetadataManager: ObservableObject {
     func fetchMetadata(anilistId: Int, episodeNumber: Int, completion: @escaping (Result<EpisodeMetadataInfo, Error>) -> Void) {
         let cacheKey = "anilist_\(anilistId)_episode_\(episodeNumber)"
         
-        // Start tracking request
-        trackFetchStart(anilistId: anilistId, episodeNumber: episodeNumber)
-        
         // Check if we already have this metadata
         if let existingStatus = metadataCache[cacheKey] {
             switch existingStatus {
             case .fetched(let metadata):
                 // Return cached data immediately
-                Logger.shared.log("Returning cached metadata for episode \(episodeNumber)", type: "Debug")
-                trackCacheHit()
-                trackFetchEnd(anilistId: anilistId, episodeNumber: episodeNumber)
                 completion(.success(metadata))
                 return
                 
             case .fetching:
                 // Already fetching, will be notified via publisher
-                Logger.shared.log("Request for episode \(episodeNumber) already in progress", type: "Debug")
                 // Set up a listener for when this request completes
                 waitForRequest(cacheKey: cacheKey, completion: completion)
                 return
                 
             case .failed:
                 // Previous attempt failed, try again
-                trackCacheMiss()
                 break
                 
             case .notRequested:
                 // Should not happen but continue to fetch
-                trackCacheMiss()
                 break
             }
         }
@@ -110,16 +101,9 @@ class EpisodeMetadataManager: ObservableObject {
                 self.metadataCache[cacheKey] = .fetched(metadataInfo)
             }
             
-            trackCacheHit()
-            trackFetchEnd(anilistId: anilistId, episodeNumber: episodeNumber)
-            
-            Logger.shared.log("Loaded episode \(episodeNumber) metadata from persistent cache", type: "Debug")
             completion(.success(metadataInfo))
             return
         }
-        
-        // Track cache miss since we need to fetch from network
-        trackCacheMiss()
         
         // Need to fetch from network
         DispatchQueue.main.async {
@@ -206,7 +190,6 @@ class EpisodeMetadataManager: ObservableObject {
             DispatchQueue.main.async {
                 self.metadataCache[cacheKey] = .failed(error)
             }
-            trackFetchEnd(anilistId: anilistId, episodeNumber: episodeNumber)
             completion(.failure(error))
             return
         }
@@ -359,7 +342,6 @@ class EpisodeMetadataManager: ObservableObject {
                     if !shouldRetry {
                         // Update cache with error
                         self.metadataCache[cacheKey] = .failed(error)
-                        self.trackFetchEnd(anilistId: anilistId, episodeNumber: episodeNumber)
                         completion(.failure(error))
                         // Remove from active requests
                         self.activeRequests.removeValue(forKey: cacheKey)
@@ -368,7 +350,6 @@ class EpisodeMetadataManager: ObservableObject {
             }, receiveValue: { [weak self] metadataInfo in
                 // Update cache with result
                 self?.metadataCache[cacheKey] = .fetched(metadataInfo)
-                self?.trackFetchEnd(anilistId: anilistId, episodeNumber: episodeNumber)
                 completion(.success(metadataInfo))
                 
                 // Remove from active requests

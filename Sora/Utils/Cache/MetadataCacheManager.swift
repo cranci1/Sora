@@ -132,7 +132,6 @@ class MetadataCacheManager {
     /// - Returns: The cached metadata if available and not expired, nil otherwise
     func getMetadata(forKey key: String) -> Data? {
         guard isCachingEnabled else {
-            cacheMisses += 1
             return nil
         }
         
@@ -140,8 +139,6 @@ class MetadataCacheManager {
         
         // Try memory cache first
         if let cachedData = memoryCache.object(forKey: keyString) as Data? {
-            cacheHits += 1
-            Logger.shared.log("Metadata memory cache hit for key: \(key)", type: "Debug")
             return cachedData
         }
         
@@ -159,13 +156,10 @@ class MetadataCacheManager {
                         // Store in memory cache for faster access next time
                         memoryCache.setObject(data as NSData, forKey: keyString)
                         
-                        cacheHits += 1
-                        Logger.shared.log("Metadata disk cache hit for key: \(key)", type: "Debug")
                         return data
                     } else {
                         // File is expired, remove it
                         try fileManager.removeItem(at: fileURL)
-                        Logger.shared.log("Removed expired metadata for key: \(key)", type: "Debug")
                     }
                 }
             } catch {
@@ -173,8 +167,6 @@ class MetadataCacheManager {
             }
         }
         
-        cacheMisses += 1
-        Logger.shared.log("Metadata cache miss for key: \(key)", type: "Debug")
         return nil
     }
     

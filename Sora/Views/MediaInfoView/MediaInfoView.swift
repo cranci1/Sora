@@ -371,8 +371,8 @@ struct MediaInfoView: View {
                                                     for idx in 0..<i {
                                                         if idx < episodeLinks.count {
                                                             let href = episodeLinks[idx].href
-                                                            updates.setValue(1000.0, forKey: "lastPlayedTime_\(href)")
-                                                            updates.setValue(1000.0, forKey: "totalTime_\(href)")
+                                                            updates.setValue(99999.9, forKey: "lastPlayedTime_\(href)")
+                                                            updates.setValue(99999.9, forKey: "totalTime_\(href)")
                                                         }
                                                     }
                                                     
@@ -386,7 +386,6 @@ struct MediaInfoView: View {
                                                 }
                                             }
                                         )
-                                            .id(refreshTrigger)
                                             .disabled(isFetchingEpisode)
                                     }
                                 }

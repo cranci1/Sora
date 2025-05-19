@@ -24,24 +24,42 @@ class ContinueWatchingManager {
             remove(item: item)
             return
         }
-        
+
         var items = fetchItems()
-        if let index = items.firstIndex(where: { $0.streamUrl == item.streamUrl && $0.episodeNumber == item.episodeNumber }) {
-            items[index] = item
-        } else {
-            items.append(item)
+
+        items.removeAll { existing in
+            existing.fullUrl == item.fullUrl &&
+            existing.episodeNumber == item.episodeNumber &&
+            existing.module.metadata.sourceName == item.module.metadata.sourceName
         }
+
+        items.append(item)
+
         if let data = try? JSONEncoder().encode(items) {
             UserDefaults.standard.set(data, forKey: storageKey)
         }
     }
     
     func fetchItems() -> [ContinueWatchingItem] {
-        if let data = UserDefaults.standard.data(forKey: storageKey),
-           let items = try? JSONDecoder().decode([ContinueWatchingItem].self, from: data) {
-            return items
+        guard
+            let data = UserDefaults.standard.data(forKey: storageKey),
+            let raw = try? JSONDecoder().decode([ContinueWatchingItem].self, from: data)
+        else {
+            return []
         }
-        return []
+
+        var seen = Set<String>()
+        let unique = raw.reversed().filter { item in
+            let key = "\(item.fullUrl)|\(item.module.metadata.sourceName)|\(item.episodeNumber)"
+            if seen.contains(key) {
+                return false
+            } else {
+                seen.insert(key)
+                return true
+            }
+        }.reversed()
+
+        return Array(unique)
     }
     
     func remove(item: ContinueWatchingItem) {

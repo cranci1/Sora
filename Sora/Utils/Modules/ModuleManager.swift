@@ -10,6 +10,7 @@ import Foundation
 @MainActor
 class ModuleManager: ObservableObject {
     @Published var modules: [ScrapingModule] = []
+    @Published var selectedModuleChanged = false
     
     private let fileManager = FileManager.default
     private let modulesFileName = "modules.json"
@@ -181,6 +182,7 @@ class ModuleManager: ObservableObject {
         DispatchQueue.main.async {
             self.modules.append(module)
             self.saveModules()
+            self.selectedModuleChanged = true
             Logger.shared.log("Added module: \(module.metadata.sourceName)")
         }
         

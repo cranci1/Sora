@@ -305,6 +305,10 @@ struct EpisodeCell: View {
                     Label("Mark All Previous Watched", systemImage: "checkmark.circle.fill")
                 }
             }
+            
+            Button(action: downloadEpisode) {
+                Label("Download Episode", systemImage: "arrow.down.circle")
+            }
         }
     }
     

@@ -325,9 +325,9 @@
 		133D7C882D2BE2640075467E /* Modules */ = {
 			isa = PBXGroup;
 			children = (
-				1EF5C3A82DB988D70032BF07 /* CommunityLib.swift */,
 				13D99CF62D4E73C300250A86 /* ModuleAdditionSettingsView.swift */,
 				139935652D468C450065CEFF /* ModuleManager.swift */,
+				1EF5C3A82DB988D70032BF07 /* CommunityLib.swift */,
 				133D7C892D2BE2640075467E /* Modules.swift */,
 			);
 			path = Modules;
@@ -827,7 +827,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Debug;
 		};
@@ -868,7 +868,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Release;
 		};

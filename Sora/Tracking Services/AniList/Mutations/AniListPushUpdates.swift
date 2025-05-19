@@ -118,16 +118,15 @@ class AniListMutation {
             "variables": variables
         ]
         guard let jsonData = try? JSONSerialization.data(withJSONObject: requestBody, options: []) else {
-            completion(.failure(NSError(domain: "", code: -1,
-                userInfo: [NSLocalizedDescriptionKey: "Failed to serialize GraphQL request"])))
+            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to serialize GraphQL request"])))
             return
         }
-
+        
         var request = URLRequest(url: apiURL)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
-
+        
         URLSession.shared.dataTask(with: request) { data, resp, error in
             if let e = error {
                 return completion(.failure(e))
@@ -135,9 +134,8 @@ class AniListMutation {
             guard let data = data,
                   let json = try? JSONDecoder().decode(AniListMediaResponse.self, from: data),
                   let mal = json.data.Media?.idMal else {
-                return completion(.failure(NSError(domain: "", code: -1,
-                    userInfo: [NSLocalizedDescriptionKey: "Failed to decode AniList response or idMal missing"])))
-            }
+                      return completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to decode AniList response or idMal missing"])))
+                  }
             completion(.success(mal))
         }.resume()
     }

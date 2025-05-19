@@ -17,4 +17,9 @@ extension URL {
         }
         return params
     }
+    
+    static func isValidHLSURL(string: String) -> Bool {
+        guard let url = URL(string: string), url.pathExtension == "m3u8" else { return false }
+        return true
+    }
 }

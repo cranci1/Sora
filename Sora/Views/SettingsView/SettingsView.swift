@@ -95,7 +95,7 @@ struct SettingsView: View {
                         }
                     }
                 }
-                Section(footer: Text("Running Sora 0.2.2 - cranci1")) {}
+                Section(footer: Text("Running Sora 0.3.0 - cranci1")) {}
             }
             .navigationTitle("Settings")
         }

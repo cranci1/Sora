@@ -8,7 +8,6 @@
 import Foundation
 import UIKit
 
-// MARK: - Analytics Response Model
 struct AnalyticsResponse: Codable {
     let status: String
     let message: String
@@ -18,23 +17,19 @@ struct AnalyticsResponse: Codable {
 
 @MainActor
 class AnalyticsManager {
-    
     static let shared = AnalyticsManager()
     private let analyticsURL = URL(string: "http://151.106.3.14:47474/analytics")!
     private let moduleManager = ModuleManager()
     
     private init() {}
     
-    // MARK: - Send Analytics Data
     func sendEvent(event: String, additionalData: [String: Any] = [:]) {
         
         let defaults = UserDefaults.standard
         
-        // Ensure the key is set with a default value if missing
         if defaults.object(forKey: "analyticsEnabled") == nil {
             defaults.setValue(false, forKey: "analyticsEnabled")
         }
-        
         
         let analyticsEnabled = UserDefaults.standard.bool(forKey: "analyticsEnabled")
         
@@ -48,10 +43,8 @@ class AnalyticsManager {
             return
         }
         
-        // Prepare analytics data
         var safeAdditionalData = additionalData
-
-        // Check and convert NSError if present
+        
         if let errorValue = additionalData["error"] as? NSError {
             safeAdditionalData["error"] = errorValue.localizedDescription
         }
@@ -68,7 +61,6 @@ class AnalyticsManager {
         sendRequest(with: analyticsData)
     }
     
-    // MARK: - Private Request Method
     private func sendRequest(with data: [String: Any]) {
         var request = URLRequest(url: analyticsURL)
         request.httpMethod = "POST"
@@ -105,18 +97,14 @@ class AnalyticsManager {
         }.resume()
     }
     
-    // MARK: - Get App Version
     private func getAppVersion() -> String {
         return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown_version"
     }
     
-    // MARK: - Get Device Model
     private func getDeviceModel() -> String {
         return UIDevice.modelName
     }
     
-    
-    // MARK: - Get Selected Module
     private func getSelectedModule() -> ScrapingModule? {
         guard let selectedModuleId = UserDefaults.standard.string(forKey: "selectedModuleId") else { return nil }
         return moduleManager.modules.first { $0.id.uuidString == selectedModuleId }

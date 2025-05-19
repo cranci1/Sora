@@ -36,7 +36,6 @@ extension JSController {
                 if let data = resultString.data(using: .utf8) {
                     do {
                         if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                            print("JSON DATA IS \(json) 2")
                             var streamUrls: [String]? = nil
                             var subtitleUrls: [String]? = nil
                             var streamUrlsAndHeaders : [[String:Any]]? = nil
@@ -128,7 +127,6 @@ extension JSController {
                let data = jsonString.data(using: .utf8) {
                 do {
                     if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                        print("JSON object is \(json) 1")
                         var streamUrls: [String]? = nil
                         var subtitleUrls: [String]? = nil
                         var streamUrlsAndHeaders : [[String:Any]]? = nil
@@ -246,7 +244,6 @@ extension JSController {
                        let data = jsonString.data(using: .utf8) {
                         do {
                             if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                                print("JSON object is \(json) 3 ")
                                 var streamUrls: [String]? = nil
                                 var subtitleUrls: [String]? = nil
                                 var streamUrlsAndHeaders : [[String:Any]]? = nil

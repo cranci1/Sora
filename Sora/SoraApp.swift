@@ -39,7 +39,8 @@ struct SoraApp: App {
     @StateObject private var settings = Settings()
     @StateObject private var moduleManager = ModuleManager()
     @StateObject private var librarykManager = LibraryManager()
-
+    @StateObject private var downloadManager = DownloadManager()
+    
     init() {
         // Initialize caching systems
         _ = MetadataCacheManager.shared
@@ -57,13 +58,14 @@ struct SoraApp: App {
             }
         }
     }
-
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(moduleManager)
                 .environmentObject(settings)
                 .environmentObject(librarykManager)
+                .environmentObject(downloadManager)
                 .accentColor(settings.accentColor)
                 .onAppear {
                     settings.updateAppearance()
@@ -82,7 +84,7 @@ struct SoraApp: App {
                 }
         }
     }
-
+    
     private func handleURL(_ url: URL) {
         guard url.scheme == "sora", let host = url.host else { return }
         switch host {
@@ -92,24 +94,13 @@ struct SoraApp: App {
                 
                 UserDefaults.standard.set(libraryURL, forKey: "lastCommunityURL")
                 UserDefaults.standard.set(true, forKey: "didReceiveDefaultPageLink")
-
-                let communityView = CommunityLibraryView()
-                                    .environmentObject(moduleManager)
-                let hostingController = UIHostingController(rootView: communityView)
-                DispatchQueue.main.async {
-                    if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                       let window = scene.windows.first,
-                       let root = window.rootViewController {
-                        root.present(hostingController, animated: true) {
-                            DropManager.shared.showDrop(
-                                title: "Module Library Added",
-                                subtitle: "You can browse the community library in settings.",
-                                duration: 2,
-                                icon: UIImage(systemName: "books.vertical.circle.fill")
-                            )
-                        }
-                    }
-                }
+                
+                DropManager.shared.showDrop(
+                    title: "Module Library Added",
+                    subtitle: "You can browse the community library in settings.",
+                    duration: 2,
+                    icon: UIImage(systemName: "books.vertical.circle.fill")
+                )
             }
             
         case "module":
@@ -120,11 +111,10 @@ struct SoraApp: App {
             else {
                 return
             }
-
-            let addModuleView = ModuleAdditionSettingsView(moduleUrl: moduleURL)
-                .environmentObject(moduleManager)
+            
+            let addModuleView = ModuleAdditionSettingsView(moduleUrl: moduleURL).environmentObject(moduleManager)
             let hostingController = UIHostingController(rootView: addModuleView)
-
+            
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first {
                 window.rootViewController?.present(hostingController, animated: true)
@@ -134,19 +124,19 @@ struct SoraApp: App {
                     type: "Error"
                 )
             }
-
+            
         default:
             break
         }
     }
-
+    
     static func handleRedirect(url: URL) {
         guard let params = url.queryParameters,
               let code = params["code"] else {
-            Logger.shared.log("Failed to extract authorization code")
-            return
-        }
-
+                  Logger.shared.log("Failed to extract authorization code")
+                  return
+              }
+        
         switch url.host {
         case "anilist":
             AniListToken.exchangeAuthorizationCodeForToken(code: code) { success in
@@ -156,7 +146,7 @@ struct SoraApp: App {
                     Logger.shared.log("AniList token exchange failed", type: "Error")
                 }
             }
-
+            
         case "trakt":
             TraktToken.exchangeAuthorizationCodeForToken(code: code) { success in
                 if success {
@@ -165,7 +155,7 @@ struct SoraApp: App {
                     Logger.shared.log("Trakt token exchange failed", type: "Error")
                 }
             }
-
+            
         default:
             Logger.shared.log("Unknown authentication service", type: "Error")
         }

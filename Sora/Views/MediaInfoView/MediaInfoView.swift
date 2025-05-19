@@ -61,7 +61,6 @@ struct MediaInfoView: View {
     @State private var activeFetchID: UUID? = nil
     @Environment(\.dismiss) private var dismiss
     
-    @State private var orientationChanged: Bool = false
     @State private var showLoadingAlert: Bool = false
     
     @Environment(\.colorScheme) private var colorScheme
@@ -119,13 +118,11 @@ struct MediaInfoView: View {
                     }
                 }
                 
+                selectedRange = 0..<episodeChunkSize
+                
                 hasFetched = true
                 AnalyticsManager.shared.sendEvent(event: "search", additionalData: ["title": title])
             }
-            selectedRange = 0..<episodeChunkSize
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-            orientationChanged.toggle()
         }
         .alert("Loading Stream", isPresented: $showLoadingAlert) {
             Button("Cancel", role: .cancel) {
@@ -821,7 +818,6 @@ struct MediaInfoView: View {
                     } else {
                         jsController.fetchStreamUrl(episodeUrl: href, softsub: module.metadata.softsub == true, module: module, completion: completion)
                     }
-
                 } catch {
                     self.handleStreamFailure(error: error)
                     DispatchQueue.main.async {
@@ -892,7 +888,7 @@ struct MediaInfoView: View {
                     headers = streams[index]["headers"] as? [String:String] ?? [:]
                     index += 1
                 }
-
+                
                 
                 alert.addAction(UIAlertAction(title: title, style: .default) { _ in
                     self.playStream(url: streamUrl, fullURL: fullURL, subtitles: subtitles,headers: headers)

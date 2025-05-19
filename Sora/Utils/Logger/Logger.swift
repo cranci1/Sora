@@ -21,6 +21,8 @@ class Logger {
     private let logFileURL: URL
     private let logFilterViewModel = LogFilterViewModel.shared
     
+    private let maxFileSize = 1024 * 512
+    
     private init() {
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         logFileURL = documentDirectory.appendingPathComponent("logs.txt")
@@ -64,10 +66,33 @@ class Logger {
         
         if let data = logString.data(using: .utf8) {
             if FileManager.default.fileExists(atPath: logFileURL.path) {
-                if let handle = try? FileHandle(forWritingTo: logFileURL) {
-                    handle.seekToEndOfFile()
-                    handle.write(data)
-                    handle.closeFile()
+                do {
+                    let attributes = try FileManager.default.attributesOfItem(atPath: logFileURL.path)
+                    let fileSize = attributes[.size] as? UInt64 ?? 0
+                    
+                    if fileSize + UInt64(data.count) > maxFileSize {
+                        guard var content = try? String(contentsOf: logFileURL, encoding: .utf8) else { return }
+                        
+                        while (content.data(using: .utf8)?.count ?? 0) + data.count > maxFileSize {
+                            if let rangeOfFirstLine = content.range(of: "\n---\n") {
+                                content.removeSubrange(content.startIndex...rangeOfFirstLine.upperBound)
+                            } else {
+                                content = ""
+                                break
+                            }
+                        }
+                        
+                        content += logString
+                        try? content.data(using: .utf8)?.write(to: logFileURL)
+                    } else {
+                        if let handle = try? FileHandle(forWritingTo: logFileURL) {
+                            handle.seekToEndOfFile()
+                            handle.write(data)
+                            handle.closeFile()
+                        }
+                    }
+                } catch {
+                    print("Error managing log file: \(error)")
                 }
             } else {
                 try? data.write(to: logFileURL)

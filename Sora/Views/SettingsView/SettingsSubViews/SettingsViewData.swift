@@ -15,6 +15,8 @@ struct SettingsViewData: View {
     @State private var isCalculatingSize: Bool = false
     @State private var cacheSize: Int64 = 0
     @State private var documentsSize: Int64 = 0
+    @State private var movPkgSize: Int64 = 0
+    @State private var showRemoveMovPkgAlert = false
     
     // State bindings for cache settings
     @State private var isMetadataCachingEnabled: Bool = true
@@ -94,6 +96,18 @@ struct SettingsViewData: View {
                         .foregroundColor(.secondary)
                 }
                 
+                HStack {
+                    Button(action: {
+                        showRemoveMovPkgAlert = true
+                    }) {
+                        Text("Remove Downloads")
+                    }
+                    Spacer()
+                    Text("\(formatSize(movPkgSize))")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                
                 Button(action: {
                     showEraseAppDataAlert = true
                 }) {
@@ -110,6 +124,36 @@ struct SettingsViewData: View {
             isMemoryOnlyMode = MetadataCacheManager.shared.isMemoryOnlyMode
             calculateCacheSize()
             updateSizes()
+        }
+        .alert(isPresented: $showEraseAppDataAlert) {
+            Alert(
+                title: Text("Erase App Data"),
+                message: Text("Are you sure you want to erase all app data? This action cannot be undone."),
+                primaryButton: .destructive(Text("Erase")) {
+                    eraseAppData()
+                },
+                secondaryButton: .cancel()
+            )
+        }
+        .alert(isPresented: $showRemoveDocumentsAlert) {
+            Alert(
+                title: Text("Remove Documents"),
+                message: Text("Are you sure you want to remove all files in the Documents folder? This will remove all modules."),
+                primaryButton: .destructive(Text("Remove")) {
+                    removeAllFilesInDocuments()
+                },
+                secondaryButton: .cancel()
+            )
+        }
+        .alert(isPresented: $showRemoveMovPkgAlert) {
+            Alert(
+                title: Text("Remove Downloads"),
+                message: Text("Are you sure you want to remove all Downloads?"),
+                primaryButton: .destructive(Text("Remove")) {
+                    removeMovPkgFiles()
+                },
+                secondaryButton: .cancel()
+            )
         }
     }
     
@@ -196,6 +240,24 @@ struct SettingsViewData: View {
         }
     }
     
+    func removeMovPkgFiles() {
+        let fileManager = FileManager.default
+        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+            do {
+                let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
+                for fileURL in fileURLs {
+                    if fileURL.pathExtension == "movpkg" {
+                        try fileManager.removeItem(at: fileURL)
+                    }
+                }
+                Logger.shared.log("All Downloads files removed", type: "General")
+                updateSizes()
+            } catch {
+                Logger.shared.log("Error removing Downloads files: \(error)", type: "Error")
+            }
+        }
+    }
+    
     private func calculateDirectorySize(for url: URL) -> Int64 {
         let fileManager = FileManager.default
         var totalSize: Int64 = 0
@@ -231,6 +293,24 @@ struct SettingsViewData: View {
         
         if let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             documentsSize = calculateDirectorySize(for: documentsURL)
+            movPkgSize = calculateMovPkgSize(in: documentsURL)
         }
+    }
+    
+    private func calculateMovPkgSize(in url: URL) -> Int64 {
+        let fileManager = FileManager.default
+        var totalSize: Int64 = 0
+        
+        do {
+            let contents = try fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: [.fileSizeKey])
+            for url in contents where url.pathExtension == "movpkg" {
+                let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey])
+                totalSize += Int64(resourceValues.fileSize ?? 0)
+            }
+        } catch {
+            Logger.shared.log("Error calculating MovPkg size: \(error)", type: "Error")
+        }
+        
+        return totalSize
     }
 }

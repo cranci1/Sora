@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Kingfisher
 
 struct ContentView: View {
     var body: some View {
@@ -14,6 +13,10 @@ struct ContentView: View {
             LibraryView()
                 .tabItem {
                     Label("Library", systemImage: "books.vertical")
+                }
+            DownloadView()
+                .tabItem {
+                    Label("Downloads", systemImage: "arrow.down.app.fill")
                 }
             SearchView()
                 .tabItem {

@@ -102,9 +102,9 @@ struct LibraryView: View {
                             ForEach(libraryManager.bookmarks) { item in
                                 if let module = moduleManager.modules.first(where: { $0.id.uuidString == item.moduleId }) {
                                     Button(action: {
-                                                    selectedBookmark = item
-                                                    isDetailActive = true
-                                                    }) {
+                                        selectedBookmark = item
+                                        isDetailActive = true
+                                    }) {
                                         VStack(alignment: .leading) {
                                             ZStack {
                                                 KFImage(URL(string: item.imageUrl))
@@ -148,21 +148,21 @@ struct LibraryView: View {
                         }
                         .padding(.horizontal, 20)
                         NavigationLink(
-                                            destination: Group {
-                                                if let bookmark = selectedBookmark,
-                                                   let module = moduleManager.modules.first(where: { $0.id.uuidString == bookmark.moduleId }) {
-                                                    MediaInfoView(title: bookmark.title,
-                                                                  imageUrl: bookmark.imageUrl,
-                                                                  href: bookmark.href,
-                                                                  module: module)
-                                                } else {
-                                                    Text("No Data Available")
-                                                }
-                                            },
-                                            isActive: $isDetailActive
-                                        ) {
-                                            EmptyView()
-                                        }
+                            destination: Group {
+                                if let bookmark = selectedBookmark,
+                                   let module = moduleManager.modules.first(where: { $0.id.uuidString == bookmark.moduleId }) {
+                                    MediaInfoView(title: bookmark.title,
+                                                  imageUrl: bookmark.imageUrl,
+                                                  href: bookmark.href,
+                                                  module: module)
+                                } else {
+                                    Text("No Data Available")
+                                }
+                            },
+                            isActive: $isDetailActive
+                        ) {
+                            EmptyView()
+                        }
                         .onAppear {
                             updateOrientation()
                         }
@@ -360,7 +360,6 @@ struct ContinueWatchingCell: View {
         
         if totalTime > 0 {
             let ratio = lastPlayedTime / totalTime
-            // Clamp ratio between 0 and 1:
             currentProgress = max(0, min(ratio, 1))
         } else {
             currentProgress = max(0, min(item.progress, 1))

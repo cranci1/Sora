@@ -617,7 +617,7 @@ struct MediaInfoView: View {
                     if streams.count > 1 {
                         self.showStreamSelectionAlert(streams: streams, fullURL: href, subtitles: result.subtitles?.first)
                     } else {
-                        self.playStream(url: streams[0]["streamUrl"] as? String ?? "", fullURL: href, subtitles: streams[0]["subtitle"] as? String ?? "", headers: streams[0]["headers"] as! [String : String])
+                        self.playStream(url: streams[0]["streamUrl"] as? String ?? "", fullURL: href, subtitles: result.subtitles?.first, headers: streams[0]["headers"] as! [String : String])
                     }
                 }
                 else if let streams = result.streams, !streams.isEmpty {

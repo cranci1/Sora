@@ -11,6 +11,9 @@ extension JSContext {
     func setupConsoleLogging() {
         let consoleObject = JSValue(newObjectIn: self)
         
+        let appInfoBridge = AppInfo()
+        consoleObject?.setObject(appInfoBridge, forKeyedSubscript: "AppInfo" as NSString)
+        
         let consoleLogFunction: @convention(block) (String) -> Void = { message in
             Logger.shared.log(message, type: "Debug")
         }

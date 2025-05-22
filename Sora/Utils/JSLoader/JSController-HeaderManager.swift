@@ -2,7 +2,7 @@
 //  JSController-HeaderManager.swift
 //  Sora
 //
-//  Created by Francesco on 30/04/25.
+//  Created by doomsboygaming on 5/22/25
 //
 
 import Foundation

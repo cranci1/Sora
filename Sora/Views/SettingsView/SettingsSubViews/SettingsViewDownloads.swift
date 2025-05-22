@@ -2,7 +2,7 @@
 //  SettingsViewDownloads.swift
 //  Sora
 //
-//  Created by Francesco on 29/04/25.
+//  Created by doomsboygaming on 5/22/25
 //
 
 import SwiftUI

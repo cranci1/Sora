@@ -2,7 +2,7 @@
 //  EpisodeMetadata.swift
 //  Sora
 //
-//  Created by Claude on behalf of the user
+//  Created by doomsboygaming on 5/22/25
 //
 
 import Foundation

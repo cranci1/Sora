@@ -2,7 +2,7 @@
 //  DownloadView.swift
 //  Sora
 //
-//  Rebuilt for stability and performance
+//  Created by doomsboygaming on 5/22/25
 //
 
 import SwiftUI

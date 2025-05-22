@@ -2,7 +2,7 @@
 //  ImagePrefetchManager.swift
 //  Sora
 //
-//  Created by AI Assistant on 18/12/24.
+//  Created by doomsboygaming on 5/22/25
 //
 
 import Foundation

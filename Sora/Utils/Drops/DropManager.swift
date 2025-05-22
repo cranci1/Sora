@@ -13,9 +13,6 @@ class DropManager {
     
     private var notificationQueue: [(title: String, subtitle: String, duration: TimeInterval, icon: UIImage?)] = []
     private var isProcessingQueue = false
-    private var lastNotificationTime: Date?
-    private var pendingDownloads: Int = 0
-    private var notificationTimer: Timer?
     
     private init() {}
     
@@ -72,34 +69,20 @@ class DropManager {
         showDrop(title: "Info", subtitle: message, duration: duration, icon: icon)
     }
     
-    // New method for handling download notifications
+    // Method for handling download notifications with accurate status determination
     func downloadStarted(episodeNumber: Int) {
-        pendingDownloads += 1
+        // Use the JSController method to accurately determine if download will start immediately
+        let willStartImmediately = JSController.shared.willDownloadStartImmediately()
         
-        // Cancel any existing timer
-        notificationTimer?.invalidate()
+        let message = willStartImmediately 
+            ? "Episode \(episodeNumber) download started"
+            : "Episode \(episodeNumber) queued"
         
-        // Create a new timer that will show the notification after a short delay
-        notificationTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [weak self] _ in
-            guard let self = self else { return }
-            
-            // Check if we've hit the max concurrent downloads limit
-            let activeDownloads = JSController.shared.activeDownloads.count
-            let isQueued = activeDownloads >= JSController.shared.maxConcurrentDownloads
-            
-            let message = isQueued 
-                ? "Episode \(episodeNumber) queued"
-                : "Episode \(episodeNumber) download started"
-            
-            self.showDrop(
-                title: isQueued ? "Download Queued" : "Download Started",
-                subtitle: message,
-                duration: 1.5,
-                icon: UIImage(systemName: isQueued ? "clock.arrow.circlepath" : "arrow.down.circle.fill")
-            )
-            
-            // Reset pending downloads after showing notification
-            self.pendingDownloads = 0
-        }
+        showDrop(
+            title: willStartImmediately ? "Download Started" : "Download Queued",
+            subtitle: message,
+            duration: 1.5,
+            icon: UIImage(systemName: willStartImmediately ? "arrow.down.circle.fill" : "clock.arrow.circlepath")
+        )
     }
 }

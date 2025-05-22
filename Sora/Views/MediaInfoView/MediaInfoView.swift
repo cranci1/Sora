@@ -87,17 +87,6 @@ struct MediaInfoView: View {
         .onAppear {
             buttonRefreshTrigger.toggle()
             
-            // Only post a notification if we haven't posted one recently
-            let now = Date()
-            if let lastNotificationTime = UserDefaults.standard.object(forKey: "lastDownloadStatusNotificationTime") as? Date,
-               now.timeIntervalSince(lastNotificationTime) < 1.0 {
-                // Skip posting if it's been less than 1 second
-            } else {
-                // Post notification and store the time
-                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-                UserDefaults.standard.set(now, forKey: "lastDownloadStatusNotificationTime")
-            }
-            
             if !hasFetched {
                 DropManager.shared.showDrop(title: "Fetching Data", subtitle: "Please wait while fetching.", duration: 0.5, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
                 fetchDetails()
@@ -167,21 +156,9 @@ struct MediaInfoView: View {
             isFetchingEpisode = false
             showStreamLoadingView = false
         }
-        // Force UI refresh when view appears
+        // Minimal refresh when view appears
         .onAppear {
-            // Force a download status refresh when returning to this view
             refreshTrigger.toggle()
-            
-            // Only post a notification if we haven't posted one recently
-            let now = Date()
-            if let lastNotificationTime = UserDefaults.standard.object(forKey: "lastDownloadStatusNotificationTime") as? Date,
-               now.timeIntervalSince(lastNotificationTime) < 1.0 {
-                // Skip posting if it's been less than 1 second
-            } else {
-                // Post notification and store the time
-                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-                UserDefaults.standard.set(now, forKey: "lastDownloadStatusNotificationTime")
-            }
         }
     }
     
@@ -722,19 +699,9 @@ struct MediaInfoView: View {
                             self.isLoading = false
                             self.isRefetching = false
                             
-                            // Post a single notification with a slight delay to allow UI to settle
+                            // Simple refresh trigger after loading
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                // Only post if we haven't posted recently
-                                let now = Date()
-                                if let lastNotificationTime = UserDefaults.standard.object(forKey: "lastDownloadStatusNotificationTime") as? Date,
-                                   now.timeIntervalSince(lastNotificationTime) < 1.0 {
-                                    // Skip posting if it's been less than 1 second
-                                } else {
-                                    // Post notification and store the time
-                                    NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-                                    UserDefaults.standard.set(now, forKey: "lastDownloadStatusNotificationTime")
-                                    self.refreshTrigger.toggle()
-                                }
+                                self.refreshTrigger.toggle()
                             }
                         }
                     } else {
@@ -748,19 +715,9 @@ struct MediaInfoView: View {
                             self.isLoading = false
                             self.isRefetching = false
                             
-                            // Post a single notification with a slight delay to allow UI to settle
+                            // Simple refresh trigger after loading
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                // Only post if we haven't posted recently
-                                let now = Date()
-                                if let lastNotificationTime = UserDefaults.standard.object(forKey: "lastDownloadStatusNotificationTime") as? Date,
-                                   now.timeIntervalSince(lastNotificationTime) < 1.0 {
-                                    // Skip posting if it's been less than 1 second
-                                } else {
-                                    // Post notification and store the time
-                                    NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-                                    UserDefaults.standard.set(now, forKey: "lastDownloadStatusNotificationTime")
-                                    self.refreshTrigger.toggle()
-                                }
+                                self.refreshTrigger.toggle()
                             }
                         }
                     }

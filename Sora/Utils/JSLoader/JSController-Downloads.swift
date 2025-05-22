@@ -283,34 +283,35 @@ extension JSController {
         // Clamp progress between 0 and 1
         let finalProgress = min(max(progress, 0.0), 1.0)
         
-        // Update the UI immediately instead of with a delay
-        DispatchQueue.main.async { [weak self] in
-            guard let strongSelf = self else { return }
-            
-            // Find the index again inside the main thread to avoid race conditions
-            guard let downloadIndex = strongSelf.activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
-                return
-            }
-            
-            // Only update if the index is still valid
-            if downloadIndex < strongSelf.activeDownloads.count {
-                let download = strongSelf.activeDownloads[downloadIndex]
-                strongSelf.activeDownloads[downloadIndex].progress = finalProgress
+        // Find and update the download progress without frequent UI updates
+        if let downloadIndex = activeDownloads.firstIndex(where: { $0.id == downloadID }) {
+            activeDownloads[downloadIndex].progress = finalProgress
+        }
+        
+        // Only send notifications for significant milestones to reduce UI jitter
+        // Send notification only when download completes (reaches 100%)
+        if finalProgress >= 1.0 {
+            DispatchQueue.main.async { [weak self] in
+                guard let strongSelf = self else { return }
                 
-                // Post both notifications for UI updates
-                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-                
-                // Post the new progress notification with episode number if it's an episode
-                if let episodeNumber = download.metadata?.episode {
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("downloadProgressUpdated"),
-                        object: nil,
-                        userInfo: [
-                            "episodeNumber": episodeNumber,
-                            "progress": finalProgress,
-                            "status": "downloading"
-                        ]
-                    )
+                if let downloadIndex = strongSelf.activeDownloads.firstIndex(where: { $0.id == downloadID }) {
+                    let download = strongSelf.activeDownloads[downloadIndex]
+                    
+                    // Post completion notification
+                    NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+                    
+                    // Post the completion notification with episode number if it's an episode
+                    if let episodeNumber = download.metadata?.episode {
+                        NotificationCenter.default.post(
+                            name: NSNotification.Name("downloadProgressUpdated"),
+                            object: nil,
+                            userInfo: [
+                                "episodeNumber": episodeNumber,
+                                "progress": 1.0,
+                                "status": "completed"
+                            ]
+                        )
+                    }
                 }
             }
         }
@@ -796,6 +797,14 @@ extension JSController {
         return fileExists
     }
     
+    /// Determines if a new download will start immediately or be queued
+    /// - Returns: true if the download will start immediately, false if it will be queued
+    func willDownloadStartImmediately() -> Bool {
+        let activeCount = activeDownloads.count
+        let slotsAvailable = max(0, maxConcurrentDownloads - activeCount)
+        return slotsAvailable > 0
+    }
+    
     /// Checks if an episode is already downloaded or currently being downloaded
     /// - Parameters:
     ///   - showTitle: The title of the show (anime title)
@@ -826,8 +835,27 @@ extension JSController {
             }
         }
         
-        // Then check if it's currently being downloaded
+        // Then check if it's currently being downloaded (actively downloading)
         for download in activeDownloads {
+            // Skip if not an episode or show title doesn't match
+            if download.type != .episode { continue }
+            guard let metadata = download.metadata, 
+                  let assetShowTitle = metadata.showTitle, 
+                  assetShowTitle.caseInsensitiveCompare(showTitle) == .orderedSame else { 
+                continue 
+            }
+            
+            // Check episode number
+            let assetEpisode = metadata.episode ?? 0
+            let assetSeason = metadata.season ?? 1
+            
+            if assetEpisode == episodeNumber && assetSeason == season {
+                return .downloading(download)
+            }
+        }
+        
+        // Finally check if it's queued for download
+        for download in downloadQueue {
             // Skip if not an episode or show title doesn't match
             if download.type != .episode { continue }
             guard let metadata = download.metadata, 

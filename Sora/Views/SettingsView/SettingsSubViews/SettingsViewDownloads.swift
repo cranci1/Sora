@@ -148,8 +148,8 @@ struct SettingsViewDownloads: View {
         totalStorageSize = 0
         existingDownloadCount = 0
         
-        // Post a notification so all views can update
-        NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+        // Post a notification so all views can update - use libraryChange since assets were deleted
+        NotificationCenter.default.post(name: NSNotification.Name("downloadLibraryChanged"), object: nil)
         
         // Show confirmation message
         DispatchQueue.main.async {

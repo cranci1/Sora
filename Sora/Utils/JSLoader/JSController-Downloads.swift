@@ -8,6 +8,17 @@
 import Foundation
 import AVKit
 import AVFoundation
+import SwiftUI
+
+/// Enumeration of different download notification types to enable selective UI updates
+enum DownloadNotificationType: String {
+    case progress = "downloadProgressChanged"           // Progress updates during download (no cache clearing needed)
+    case statusChange = "downloadStatusChanged"         // Download started/queued/cancelled (no cache clearing needed)
+    case completed = "downloadCompleted"                // Download finished (cache clearing needed)
+    case deleted = "downloadDeleted"                    // Asset deleted (cache clearing needed)
+    case libraryChange = "downloadLibraryChanged"       // Library updated (cache clearing needed)
+    case cleanup = "downloadCleanup"                    // Cleanup operations (cache clearing needed)
+}
 
 // Extension for download functionality
 extension JSController {
@@ -16,6 +27,20 @@ extension JSController {
     
     // Class-level property to track asset validation
     private static var hasValidatedAssets = false
+    
+    // MARK: - Progress Update Debouncing
+    
+    /// Tracks the last time a progress notification was sent for each download
+    private static var lastProgressUpdateTime: [UUID: Date] = [:]
+    
+    /// Minimum time interval between progress notifications (in seconds)
+    private static let progressUpdateInterval: TimeInterval = 0.5 // Max 2 updates per second
+    
+    /// Pending progress updates to batch and send
+    private static var pendingProgressUpdates: [UUID: (progress: Double, episodeNumber: Int?)] = [:]
+    
+    /// Timer for batched progress updates
+    private static var progressUpdateTimer: Timer?
     
     func initializeDownloadSession() {
         // Create a unique identifier for the background session
@@ -45,6 +70,17 @@ extension JSController {
         print("Download function setup completed")
     }
     
+    /// Helper function to post download notifications with proper naming
+    private func postDownloadNotification(_ type: DownloadNotificationType, userInfo: [String: Any]? = nil) {
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(
+                name: NSNotification.Name(type.rawValue),
+                object: nil,
+                userInfo: userInfo
+            )
+        }
+    }
+    
     // MARK: - Download Queue Management
     
     /// Initiates a download for the specified URL with the given headers
@@ -70,6 +106,7 @@ extension JSController {
         season: Int? = nil,
         episode: Int? = nil,
         subtitleURL: URL? = nil,
+        showPosterURL: URL? = nil,
         module: ScrapingModule? = nil,
         completionHandler: ((Bool, String) -> Void)? = nil
     ) {
@@ -87,6 +124,7 @@ extension JSController {
                 season: season,
                 episode: episode,
                 subtitleURL: subtitleURL,
+                showPosterURL: showPosterURL,
                 completionHandler: completionHandler
             )
             return
@@ -106,12 +144,13 @@ extension JSController {
         let assetMetadata = AssetMetadata(
             title: downloadTitle,
             overview: nil,
-            posterURL: imageURL,
+            posterURL: imageURL, // Episode thumbnail
             backdropURL: imageURL,
             releaseDate: nil,
             showTitle: animeTitle,
             season: season,
-            episode: episode
+            episode: episode,
+            showPosterURL: showPosterURL // Main show poster
         )
         
         // Create the download ID now so we can use it for notifications
@@ -137,22 +176,15 @@ extension JSController {
         downloadQueue.append(download)
         
         // Immediately notify users about queued download
-        DispatchQueue.main.async {
-            // Post notification for UI updates to show queued status
-            NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-            
-            // If this is an episode, also post a progress update to force UI refresh with queued status
-            if let episodeNumber = download.metadata?.episode {
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("downloadProgressUpdated"),
-                    object: nil,
-                    userInfo: [
-                        "episodeNumber": episodeNumber,
-                        "progress": 0.0,
-                        "status": "queued"
-                    ]
-                )
-            }
+        postDownloadNotification(.statusChange)
+        
+        // If this is an episode, also post a progress update to force UI refresh with queued status
+        if let episodeNumber = download.metadata?.episode {
+            postDownloadNotification(.progress, userInfo: [
+                "episodeNumber": episodeNumber,
+                "progress": 0.0,
+                "status": "queued"
+            ])
         }
         
         // Inform caller of success
@@ -241,22 +273,15 @@ extension JSController {
         saveDownloadState()
         
         // Update UI to show download has started
-        DispatchQueue.main.async {
-            // Post notification for UI updates
-            NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-            
-            // If this is an episode, also post a progress update to force UI refresh
-            if let episodeNumber = download.metadata?.episode {
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("downloadProgressUpdated"),
-                    object: nil,
-                    userInfo: [
-                        "episodeNumber": episodeNumber,
-                        "progress": 0.0,
-                        "status": "downloading"
-                    ]
-                )
-            }
+        postDownloadNotification(.statusChange)
+        
+        // If this is an episode, also post a progress update to force UI refresh
+        if let episodeNumber = download.metadata?.episode {
+            postDownloadNotification(.progress, userInfo: [
+                "episodeNumber": episodeNumber,
+                "progress": 0.0,
+                "status": "downloading"
+            ])
         }
     }
     
@@ -283,35 +308,33 @@ extension JSController {
         // Clamp progress between 0 and 1
         let finalProgress = min(max(progress, 0.0), 1.0)
         
-        // Find and update the download progress without frequent UI updates
+        // Find and update the download progress
         if let downloadIndex = activeDownloads.firstIndex(where: { $0.id == downloadID }) {
+            let download = activeDownloads[downloadIndex]
+            let previousProgress = download.progress
             activeDownloads[downloadIndex].progress = finalProgress
-        }
-        
-        // Only send notifications for significant milestones to reduce UI jitter
-        // Send notification only when download completes (reaches 100%)
-        if finalProgress >= 1.0 {
-            DispatchQueue.main.async { [weak self] in
-                guard let strongSelf = self else { return }
+            
+            // Send notifications for progress updates to ensure smooth real-time updates
+            // Send notification if:
+            // 1. Progress increased by at least 0.5% (0.005) for very smooth updates
+            // 2. Download completed (reached 100%)
+            // 3. This is the first progress update (from 0)
+            // 4. It's been a significant change (covers edge cases)
+            let progressDifference = finalProgress - previousProgress
+            let shouldUpdate = progressDifference >= 0.005 || finalProgress >= 1.0 || previousProgress == 0.0
+            
+            if shouldUpdate {
+                // Post progress update notification (no cache clearing needed for progress updates)
+                postDownloadNotification(.progress)
                 
-                if let downloadIndex = strongSelf.activeDownloads.firstIndex(where: { $0.id == downloadID }) {
-                    let download = strongSelf.activeDownloads[downloadIndex]
-                    
-                    // Post completion notification
-                    NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-                    
-                    // Post the completion notification with episode number if it's an episode
-                    if let episodeNumber = download.metadata?.episode {
-                        NotificationCenter.default.post(
-                            name: NSNotification.Name("downloadProgressUpdated"),
-                            object: nil,
-                            userInfo: [
-                                "episodeNumber": episodeNumber,
-                                "progress": 1.0,
-                                "status": "completed"
-                            ]
-                        )
-                    }
+                // Also post detailed progress update with episode number if it's an episode
+                if let episodeNumber = download.metadata?.episode {
+                    let status = finalProgress >= 1.0 ? "completed" : "downloading"
+                    postDownloadNotification(.progress, userInfo: [
+                        "episodeNumber": episodeNumber,
+                        "progress": finalProgress,
+                        "status": status
+                    ])
                 }
             }
         }
@@ -616,10 +639,8 @@ extension JSController {
             savedAssets.removeAll { assetsToRemove.contains($0.id) }
             print("Removed \(countBefore - savedAssets.count) missing assets from the library")
             
-            // Notify observers of the change
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-            }
+            // Notify observers of the change (library cleanup requires cache clearing)
+            postDownloadNotification(.cleanup)
         }
         
         // Save the updated asset information if changes were made
@@ -710,10 +731,8 @@ extension JSController {
             saveAssets()
             print("Removed asset from library: \(asset.name)")
             
-            // Notify observers that the download status has changed
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-            }
+            // Notify observers that an asset was deleted (cache clearing needed)
+            postDownloadNotification(.deleted)
         } catch {
             print("Error deleting asset: \(error.localizedDescription)")
         }
@@ -726,10 +745,8 @@ extension JSController {
         saveAssets()
         print("Removed asset from library (file preserved): \(asset.name)")
         
-        // Notify observers that the download status has changed
-        DispatchQueue.main.async {
-            NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-        }
+        // Notify observers that the library changed (cache clearing needed)
+        postDownloadNotification(.libraryChange)
     }
     
     /// Returns the directory for persistent downloads
@@ -887,8 +904,8 @@ extension JSController {
             // Show notification
             DropManager.shared.info("Download cancelled: \(downloadTitle)")
             
-            // Notify observers
-            NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+            // Notify observers of status change (no cache clearing needed for cancellation)
+            postDownloadNotification(.statusChange)
             
             print("Cancelled queued download: \(downloadTitle)")
         }
@@ -934,25 +951,16 @@ extension JSController: AVAssetDownloadDelegate {
             downloadSubtitle(subtitleURL: subtitleURL, assetID: newAsset.id.uuidString)
         } else {
             // No subtitle URL, so we can consider the download complete
-            DispatchQueue.main.async {
-                // Force a UI update for the episode cell
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("downloadStatusChanged"),
-                    object: nil
-                )
-                
-                // If this is an episode, also post a progress update to force UI refresh
-                if let episodeNumber = download.metadata?.episode {
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("downloadProgressUpdated"),
-                        object: nil,
-                        userInfo: [
-                            "episodeNumber": episodeNumber,
-                            "progress": 1.0,
-                            "status": "completed"
-                        ]
-                    )
-                }
+            // Notify that download completed (cache clearing needed for new file)
+            postDownloadNotification(.completed)
+            
+            // If this is an episode, also post a progress update to force UI refresh
+            if let episodeNumber = download.metadata?.episode {
+                postDownloadNotification(.progress, userInfo: [
+                    "episodeNumber": episodeNumber,
+                    "progress": 1.0,
+                    "status": "completed"
+                ])
             }
         }
         

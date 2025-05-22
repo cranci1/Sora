@@ -35,6 +35,7 @@ extension JSController {
         season: Int? = nil, 
         episode: Int? = nil,
         subtitleURL: URL? = nil,
+        showPosterURL: URL? = nil,
         completionHandler: ((Bool, String) -> Void)? = nil
     ) {
         print("---- STREAM TYPE DOWNLOAD PROCESS STARTED ----")
@@ -67,6 +68,7 @@ extension JSController {
                 season: season,
                 episode: episode,
                 subtitleURL: subtitleURL,
+                showPosterURL: showPosterURL,
                 completionHandler: completionHandler
             )
         } else {
@@ -82,6 +84,7 @@ extension JSController {
                 season: season,
                 episode: episode,
                 subtitleURL: subtitleURL,
+                showPosterURL: showPosterURL,
                 completionHandler: completionHandler
             )
         }

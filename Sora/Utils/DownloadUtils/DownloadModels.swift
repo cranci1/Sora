@@ -86,11 +86,81 @@ struct DownloadedAsset: Identifiable, Codable, Equatable {
         let subtitlePathString = localSubtitleURL?.path ?? ""
         let cacheKey = localURL.path + ":" + subtitlePathString
         
-        // Check the static cache
+        // Check the static cache first
         if let size = DownloadedAsset.fileSizeCache[cacheKey] {
             return size
         }
         
+        // Check if this asset is currently being downloaded (avoid expensive calculations during active downloads)
+        if isCurrentlyBeingDownloaded() {
+            // Return cached size if available, otherwise return 0 and schedule background calculation
+            if let lastKnownSize = DownloadedAsset.lastKnownSizes[cacheKey] {
+                // Schedule a background update for when download completes
+                scheduleBackgroundSizeCalculation(cacheKey: cacheKey)
+                return lastKnownSize
+            } else {
+                // Return 0 for actively downloading files that we haven't calculated yet
+                return 0
+            }
+        }
+        
+        // For non-active downloads, calculate the size normally
+        let calculatedSize = calculateFileSizeInternal()
+        
+        // Store in both caches
+        DownloadedAsset.fileSizeCache[cacheKey] = calculatedSize
+        DownloadedAsset.lastKnownSizes[cacheKey] = calculatedSize
+        
+        return calculatedSize
+    }
+    
+    /// Check if this asset is currently being downloaded
+    public func isCurrentlyBeingDownloaded() -> Bool {
+        // Access JSController to check active downloads
+        let activeDownloads = JSController.shared.activeDownloads
+        
+        // Check if any active download matches this asset's path
+        for download in activeDownloads {
+            // Compare based on the file name or title
+            if let downloadTitle = download.title, downloadTitle == name {
+                return true
+            }
+            
+            // Also compare based on URL path if titles don't match
+            if download.originalURL.lastPathComponent.contains(name) || 
+               name.contains(download.originalURL.lastPathComponent) {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    /// Schedule a background calculation for when the download completes
+    private func scheduleBackgroundSizeCalculation(cacheKey: String) {
+        DispatchQueue.global(qos: .background).async {
+            // Check if download is still active before calculating
+            if !self.isCurrentlyBeingDownloaded() {
+                let size = self.calculateFileSizeInternal()
+                
+                DispatchQueue.main.async {
+                    // Update caches on main thread
+                    DownloadedAsset.fileSizeCache[cacheKey] = size
+                    DownloadedAsset.lastKnownSizes[cacheKey] = size
+                    
+                    // Post a notification that file size has been updated
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("fileSizeUpdated"),
+                        object: nil,
+                        userInfo: ["assetId": self.id.uuidString]
+                    )
+                }
+            }
+        }
+    }
+    
+    /// Internal method to calculate file size (separated for reuse)
+    public func calculateFileSizeInternal() -> Int64 {
         var totalSize: Int64 = 0
         let fileManager = FileManager.default
         
@@ -141,8 +211,6 @@ struct DownloadedAsset: Identifiable, Codable, Equatable {
             }
         }
         
-        // Store in static cache
-        DownloadedAsset.fileSizeCache[cacheKey] = totalSize
         return totalSize
     }
     
@@ -179,9 +247,13 @@ struct DownloadedAsset: Identifiable, Codable, Equatable {
     /// Global file size cache for performance
     private static var fileSizeCache: [String: Int64] = [:]
     
+    /// Global last known sizes cache for performance
+    private static var lastKnownSizes: [String: Int64] = [:]
+    
     /// Clears the global file size cache
     static func clearFileSizeCache() {
         fileSizeCache.removeAll()
+        lastKnownSizes.removeAll()
     }
     
     /// Returns true if the main video file exists
@@ -204,16 +276,8 @@ struct DownloadedAsset: Identifiable, Codable, Equatable {
     var episodeDisplayName: String {
         guard type == .episode else { return name }
         
-        var display = name
-        
-        // Add season and episode prefix if available
-        if let season = metadata?.season, let episode = metadata?.episode {
-            display = "S\(season)E\(episode): \(name)"
-        } else if let episode = metadata?.episode {
-            display = "Episode \(episode): \(name)"
-        }
-        
-        return display
+        // Return the name directly since titles typically already contain episode information
+        return name
     }
     
     /// Returns order priority for episodes within a show (by season and episode)
@@ -303,16 +367,8 @@ struct ActiveDownload: Identifiable, Equatable {
     var episodeDisplayName: String {
         guard type == .episode else { return metadata?.title ?? originalURL.lastPathComponent }
         
-        var display = metadata?.title ?? originalURL.lastPathComponent
-        
-        // Add season and episode prefix if available
-        if let season = metadata?.season, let episode = metadata?.episode {
-            display = "S\(season)E\(episode): \(display)"
-        } else if let episode = metadata?.episode {
-            display = "Episode \(episode): \(display)"
-        }
-        
-        return display
+        // Return the title directly since titles typically already contain episode information
+        return metadata?.title ?? originalURL.lastPathComponent
     }
     
     init(
@@ -343,6 +399,7 @@ struct AssetMetadata: Codable {
     let showTitle: String?
     let season: Int?
     let episode: Int?
+    let showPosterURL: URL? // Main show poster URL (distinct from episode-specific images)
     
     init(
         title: String,
@@ -352,7 +409,8 @@ struct AssetMetadata: Codable {
         releaseDate: String? = nil,
         showTitle: String? = nil,
         season: Int? = nil,
-        episode: Int? = nil
+        episode: Int? = nil,
+        showPosterURL: URL? = nil
     ) {
         self.title = title
         self.overview = overview
@@ -362,6 +420,7 @@ struct AssetMetadata: Codable {
         self.showTitle = showTitle
         self.season = season
         self.episode = episode
+        self.showPosterURL = showPosterURL
     }
 }
 
@@ -381,6 +440,9 @@ struct DownloadGroup: Identifiable {
     
     // Static file size cache
     private static var fileSizeCache: [String: Int64] = [:]
+    
+    // Static last known group sizes cache for performance during active downloads
+    private static var lastKnownGroupSizes: [String: Int64] = [:]
     
     var assetCount: Int {
         return assets.count
@@ -402,14 +464,63 @@ struct DownloadGroup: Identifiable {
             return cachedSize
         }
         
-        // Calculate total size from all assets
+        // Check if any assets in this group are currently being downloaded
+        let hasActiveDownloads = assets.contains { asset in
+            return asset.isCurrentlyBeingDownloaded()
+        }
+        
+        if hasActiveDownloads {
+            // If any downloads are active, return last known size or schedule background calculation
+            if let lastKnownSize = DownloadGroup.lastKnownGroupSizes[key] {
+                // Schedule a background update for when downloads complete
+                scheduleBackgroundGroupSizeCalculation(cacheKey: key)
+                return lastKnownSize
+            } else {
+                // Return 0 for groups with active downloads that we haven't calculated yet
+                return 0
+            }
+        }
+        
+        // For groups without active downloads, calculate the size normally
         let total = assets.reduce(0) { runningTotal, asset in
             return runningTotal + asset.fileSize
         }
         
-        // Store in static cache
+        // Store in both caches
         DownloadGroup.fileSizeCache[key] = total
+        DownloadGroup.lastKnownGroupSizes[key] = total
+        
         return total
+    }
+    
+    /// Schedule a background calculation for when downloads complete
+    private func scheduleBackgroundGroupSizeCalculation(cacheKey: String) {
+        DispatchQueue.global(qos: .background).async {
+            // Check if any assets are still being downloaded
+            let stillHasActiveDownloads = self.assets.contains { asset in
+                return asset.isCurrentlyBeingDownloaded()
+            }
+            
+            if !stillHasActiveDownloads {
+                // Calculate total size
+                let total = self.assets.reduce(0) { runningTotal, asset in
+                    return runningTotal + asset.calculateFileSizeInternal()
+                }
+                
+                DispatchQueue.main.async {
+                    // Update caches on main thread
+                    DownloadGroup.fileSizeCache[cacheKey] = total
+                    DownloadGroup.lastKnownGroupSizes[cacheKey] = total
+                    
+                    // Post a notification that group size has been updated
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("groupSizeUpdated"),
+                        object: nil,
+                        userInfo: ["groupId": self.id.uuidString]
+                    )
+                }
+            }
+        }
     }
     
     /// Returns the count of assets that actually exist on disk
@@ -425,6 +536,7 @@ struct DownloadGroup: Identifiable {
     /// Clear the file size cache for all groups
     static func clearFileSizeCache() {
         fileSizeCache.removeAll()
+        lastKnownGroupSizes.removeAll()
     }
     
     // For anime/TV shows, organize episodes by season then episode number
@@ -468,8 +580,28 @@ extension Array where Element == DownloadedAsset {
             let isShow = assets.contains { $0.type == .episode }
             let type: DownloadType = isShow ? .episode : .movie
             
-            // Find poster URL (use first asset with a poster)
-            let posterURL = assets.compactMap { $0.metadata?.posterURL }.first
+            // Find poster URL - prioritize show-level posters over episode-specific ones
+            let posterURL: URL? = {
+                // First priority: Use dedicated showPosterURL if available
+                if let showPosterURL = assets.compactMap({ $0.metadata?.showPosterURL }).first {
+                    return showPosterURL
+                }
+                
+                // Second priority: For anime/TV shows, look for consistent poster URLs that appear across multiple episodes
+                // These are more likely to be show posters rather than episode-specific images
+                if isShow && assets.count > 1 {
+                    let posterURLs = assets.compactMap { $0.metadata?.posterURL }
+                    let urlCounts = Dictionary(grouping: posterURLs, by: { $0 })
+                    
+                    // Find the most common poster URL (likely the show poster)
+                    if let mostCommonPoster = urlCounts.max(by: { $0.value.count < $1.value.count })?.key {
+                        return mostCommonPoster
+                    }
+                }
+                
+                // Fallback to first available poster
+                return assets.compactMap { $0.metadata?.posterURL }.first
+            }()
             
             return DownloadGroup(
                 title: title,

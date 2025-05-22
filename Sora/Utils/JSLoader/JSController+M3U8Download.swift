@@ -28,7 +28,7 @@ extension JSController {
     func downloadWithM3U8Support(url: URL, headers: [String: String], title: String? = nil, 
                                 imageURL: URL? = nil, isEpisode: Bool = false, 
                                 showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
-                                subtitleURL: URL? = nil,
+                                subtitleURL: URL? = nil, showPosterURL: URL? = nil,
                                 completionHandler: ((Bool, String) -> Void)? = nil) {
         // Use headers passed in from caller rather than generating our own baseUrl
         // Receiving code should already be setting module.metadata.baseUrl
@@ -66,6 +66,7 @@ extension JSController {
                             season: season,
                             episode: episode,
                             subtitleURL: subtitleURL,
+                            showPosterURL: showPosterURL,
                             completionHandler: completionHandler
                         )
                         return
@@ -97,6 +98,7 @@ extension JSController {
                             season: season,
                             episode: episode,
                             subtitleURL: subtitleURL,
+                            showPosterURL: showPosterURL,
                             completionHandler: completionHandler
                         )
                     } else {
@@ -113,6 +115,7 @@ extension JSController {
                             season: season,
                             episode: episode,
                             subtitleURL: subtitleURL,
+                            showPosterURL: showPosterURL,
                             completionHandler: completionHandler
                         )
                     }
@@ -133,6 +136,7 @@ extension JSController {
                 season: season,
                 episode: episode,
                 subtitleURL: subtitleURL,
+                showPosterURL: showPosterURL,
                 completionHandler: completionHandler
             )
         }
@@ -360,7 +364,7 @@ extension JSController {
     private func downloadWithOriginalMethod(url: URL, headers: [String: String], title: String? = nil, 
                                            imageURL: URL? = nil, isEpisode: Bool = false, 
                                            showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
-                                           subtitleURL: URL? = nil,
+                                           subtitleURL: URL? = nil, showPosterURL: URL? = nil,
                                            completionHandler: ((Bool, String) -> Void)? = nil) {
         // Call the existing download method
         self.startDownload(
@@ -373,6 +377,7 @@ extension JSController {
             season: season,
             episode: episode,
             subtitleURL: subtitleURL,
+            showPosterURL: showPosterURL,
             completionHandler: completionHandler
         )
     }

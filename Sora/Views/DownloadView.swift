@@ -1,29 +1,22 @@
 //
 //  DownloadView.swift
-//  Sulfur
+//  Sora
 //
-//  Created by Francesco on 29/04/25.
+//  Rebuilt for stability and performance
 //
 
 import SwiftUI
 import AVKit
 import Kingfisher
-import UIKit
-import Combine
 
 struct DownloadView: View {
     @EnvironmentObject var jsController: JSController
     @State private var searchText = ""
-    @State private var expandedGroups = Set<UUID>()
-    @State private var isDeleteModeActive = false
+    @State private var selectedTab = 0
+    @State private var sortOption: SortOption = .newest
     @State private var showDeleteAlert = false
     @State private var assetToDelete: DownloadedAsset?
-    @State private var sortOption: SortOption = .newest
-    @State private var currentAsset: DownloadedAsset?
-    @State private var selectedTab = 0
-    @State private var viewRefreshTrigger = false
     
-    // MARK: - Sort Options
     enum SortOption: String, CaseIterable, Identifiable {
         case newest = "Newest"
         case oldest = "Oldest"
@@ -34,29 +27,21 @@ struct DownloadView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                // Tab selector for Active/Downloaded
+            VStack(spacing: 0) {
+                // Tab selector
                 Picker("Download Status", selection: $selectedTab) {
                     Text("Active").tag(0)
                     Text("Downloaded").tag(1)
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding(.horizontal)
+                .padding(.top, 8)
                 
+                // Content
                 if selectedTab == 0 {
-                    // ACTIVE DOWNLOADS
-                    if jsController.activeDownloads.isEmpty {
-                        emptyActiveDownloadsView
+                    activeDownloadsView
                     } else {
-                        activeDownloadsList
-                    }
-                } else {
-                    // DOWNLOADED CONTENT
-                    if jsController.savedAssets.isEmpty {
-                        emptyDownloadsView
-                    } else {
-                        downloadedContentList
-                    }
+                    downloadedContentView
                 }
             }
             .navigationTitle("Downloads")
@@ -82,74 +67,53 @@ struct DownloadView: View {
             } message: {
                 if let asset = assetToDelete {
                     Text("Are you sure you want to delete '\(asset.episodeDisplayName)'?")
-                } else {
-                    Text("Are you sure you want to delete this download?")
                 }
             }
-            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadStatusChanged"))) { _ in
-                // Force UI refresh when download status changes (especially for mass deletions)
-                // This will ensure the view updates when all downloads are cleared
-                
-                // Force view refresh by clearing any cached file sizes
-                DownloadedAsset.clearFileSizeCache()
-                DownloadGroup.clearFileSizeCache()
-                
-                // Reset any expanded groups that might no longer exist
-                expandedGroups.removeAll()
-                
-                // Force the view to refresh with state change
-                viewRefreshTrigger.toggle()
+                }
             }
-            // Force redraw of the view when refresh trigger changes
-            .id(viewRefreshTrigger)
-        }
-    }
     
-    // MARK: - Active Downloads List
-    private var activeDownloadsList: some View {
+    // MARK: - Active Downloads View
+    private var activeDownloadsView: some View {
+        Group {
+            if jsController.activeDownloads.isEmpty {
+                emptyActiveDownloadsView
+            } else {
         ScrollView {
             LazyVStack(spacing: 12) {
-                // Group active downloads by anime title
-                ForEach(groupActiveDownloads().keys.sorted(), id: \.self) { title in
-                    if let downloads = groupActiveDownloads()[title] {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(title)
-                                .font(.headline)
-                                .padding(.horizontal)
-                            
-                            ForEach(downloads) { download in
-                                ActiveDownloadRow(download: download)
-                                    .padding(.horizontal)
-                                    .background(Color(UIColor.secondarySystemBackground))
-                                    .cornerRadius(8)
+                        ForEach(jsController.activeDownloads) { download in
+                            ActiveDownloadCard(download: download)
                                     .padding(.horizontal)
                             }
                         }
-                        .padding(.vertical, 8)
-                    }
+                    .padding(.vertical)
                 }
             }
-            .padding(.vertical)
         }
     }
     
-    // MARK: - Downloaded Content List
-    private var downloadedContentList: some View {
+    // MARK: - Downloaded Content View
+    private var downloadedContentView: some View {
+        Group {
+            if filteredAndSortedAssets.isEmpty {
+                emptyDownloadsView
+            } else {
         ScrollView {
-            LazyVStack(spacing: 16) {
-                let groups = filterAndGroupAssets()
-                
-                ForEach(groups) { group in
-                    DownloadGroupView(
+                    LazyVStack(spacing: 12) {
+                        ForEach(groupedAssets, id: \.title) { group in
+                            DownloadGroupCard(
                         group: group, 
-                        isExpanded: expandedGroups.contains(group.id),
-                        onDelete: confirmDelete,
-                        onPlay: playAsset,
-                        onToggleExpand: { toggleGroup(group.id) }
-                    )
+                                onDelete: { asset in
+                                    assetToDelete = asset
+                                    showDeleteAlert = true
+                                },
+                                onPlay: playAsset
+                            )
+                            .padding(.horizontal)
                 }
             }
-            .padding()
+                    .padding(.vertical)
+                }
+            }
         }
     }
     
@@ -194,90 +158,48 @@ struct DownloadView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
-    // MARK: - Helper Methods
-    private func confirmDelete(_ asset: DownloadedAsset) {
-        assetToDelete = asset
-        showDeleteAlert = true
-    }
-    
-    private func toggleGroup(_ id: UUID) {
-        if expandedGroups.contains(id) {
-            expandedGroups.remove(id)
-        } else {
-            expandedGroups.insert(id)
-        }
-    }
-    
-    private func playAsset(_ asset: DownloadedAsset) {
-        // Verify that the asset file exists before attempting to play
-        if !jsController.verifyAssetFileExists(asset) {
-            // File doesn't exist and couldn't be found in alternate locations
-            // (error is already displayed by verifyAssetFileExists)
-            return
-        }
-        
-        currentAsset = asset
-        
-        // Determine the streamType based on the file extension
-        let streamType: String
-        if asset.localURL.pathExtension.lowercased() == "mp4" {
-            streamType = "mp4"
-        } else if asset.localURL.absoluteString.contains(".movpkg") {
-            streamType = "hls"
-        } else {
-            streamType = "hls" // Default to HLS if we can't determine
-        }
-        
-        // Check if we have a subtitle file for this asset
-        if let localSubtitleURL = asset.localSubtitleURL {
-            // Use the custom player which supports subtitles
-            let dummyMetadata = ModuleMetadata(
-                sourceName: "",
-                author: ModuleMetadata.Author(name: "", icon: ""),
-                iconUrl: "",
-                version: "",
-                language: "",
-                baseUrl: "",
-                streamType: streamType, // Use the determined streamType
-                quality: "",
-                searchBaseUrl: "",
-                scriptUrl: "",
-                asyncJS: nil,
-                streamAsyncJS: nil,
-                softsub: nil,
-                multiStream: nil,
-                multiSubs: nil,
-                type: nil
-            )
-            
-            let dummyModule = ScrapingModule(
-                metadata: dummyMetadata,
-                localPath: "",
-                metadataUrl: ""
-            )
-            
-            let customPlayer = CustomMediaPlayerViewController(
-                module: dummyModule,
-                urlString: asset.localURL.absoluteString,
-                fullUrl: asset.originalURL.absoluteString,
-                title: asset.name,
-                episodeNumber: asset.metadata?.episode ?? 0,
-                onWatchNext: {},
-                subtitlesURL: localSubtitleURL.absoluteString,
-                aniListID: 0,
-                episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
-                headers: nil
-            )
-            
-            customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-            
-            // Present the custom player
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let rootViewController = windowScene.windows.first?.rootViewController {
-                rootViewController.present(customPlayer, animated: true)
+    // MARK: - Data Processing
+    private var filteredAndSortedAssets: [DownloadedAsset] {
+        let filtered = searchText.isEmpty 
+            ? jsController.savedAssets
+            : jsController.savedAssets.filter { asset in
+                asset.name.localizedCaseInsensitiveContains(searchText) ||
+                (asset.metadata?.showTitle?.localizedCaseInsensitiveContains(searchText) ?? false)
             }
-        } else {
-            // No subtitle file available, use standard player with appropriate streamType
+        
+        switch sortOption {
+        case .newest:
+            return filtered.sorted { $0.downloadDate > $1.downloadDate }
+        case .oldest:
+            return filtered.sorted { $0.downloadDate < $1.downloadDate }
+        case .title:
+            return filtered.sorted { $0.name < $1.name }
+        }
+    }
+    
+    private var groupedAssets: [SimpleDownloadGroup] {
+        let grouped = Dictionary(grouping: filteredAndSortedAssets) { asset in
+            asset.metadata?.showTitle ?? asset.name
+        }
+        
+        return grouped.map { title, assets in
+            SimpleDownloadGroup(
+                title: title,
+                assets: assets,
+                posterURL: assets.first?.metadata?.posterURL
+            )
+        }.sorted { $0.title < $1.title }
+    }
+    
+    // MARK: - Actions
+    private func playAsset(_ asset: DownloadedAsset) {
+        // Verify file exists
+        guard jsController.verifyAssetFileExists(asset) else { return }
+        
+        // Determine stream type
+        let streamType = asset.localURL.pathExtension.lowercased() == "mp4" ? "mp4" : "hls"
+        
+        // Create dummy metadata for player
             let dummyMetadata = ModuleMetadata(
                 sourceName: "",
                 author: ModuleMetadata.Author(name: "", icon: ""),
@@ -285,7 +207,7 @@ struct DownloadView: View {
                 version: "",
                 language: "",
                 baseUrl: "",
-                streamType: streamType, // Use the determined streamType
+            streamType: streamType,
                 quality: "",
                 searchBaseUrl: "",
                 scriptUrl: "",
@@ -303,19 +225,14 @@ struct DownloadView: View {
                 metadataUrl: ""
             )
             
-            // Check if we're playing an MP4 file - if so, use the system player for direct playback
+        // Present player
             if streamType == "mp4" {
-                // Create an AVPlayerItem from the local URL
+            // Use system player for MP4
                 let playerItem = AVPlayerItem(url: asset.localURL)
-                
-                // Configure the player
                 let player = AVPlayer(playerItem: playerItem)
-                
-                // Create the controller
                 let playerController = AVPlayerViewController()
                 playerController.player = player
                 
-                // Present the player
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootViewController = windowScene.windows.first?.rootViewController {
                     rootViewController.present(playerController, animated: true) {
@@ -323,7 +240,7 @@ struct DownloadView: View {
                     }
                 }
             } else {
-                // For HLS, use the custom player
+            // Use custom player for HLS
                 let customPlayer = CustomMediaPlayerViewController(
                     module: dummyModule,
                     urlString: asset.localURL.absoluteString,
@@ -331,7 +248,7 @@ struct DownloadView: View {
                     title: asset.name,
                     episodeNumber: asset.metadata?.episode ?? 0,
                     onWatchNext: {},
-                    subtitlesURL: nil,
+                subtitlesURL: asset.localSubtitleURL?.absoluteString,
                     aniListID: 0,
                     episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
                     headers: nil
@@ -339,7 +256,6 @@ struct DownloadView: View {
                 
                 customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen
                 
-                // Present the custom player
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootViewController = windowScene.windows.first?.rootViewController {
                     rootViewController.present(customPlayer, animated: true)
@@ -348,209 +264,59 @@ struct DownloadView: View {
         }
     }
     
-    // MARK: - Data Organization
-    private func filterAndGroupAssets() -> [DownloadGroup] {
-        let filteredAssets = searchText.isEmpty
-            ? jsController.savedAssets
-            : jsController.savedAssets.filter { 
-                $0.name.localizedCaseInsensitiveContains(searchText) ||
-                ($0.metadata?.showTitle?.localizedCaseInsensitiveContains(searchText) ?? false)
-            }
-        
-        let sortedAssets: [DownloadedAsset]
-        switch sortOption {
-        case .newest:
-            sortedAssets = filteredAssets.sorted { $0.downloadDate > $1.downloadDate }
-        case .oldest:
-            sortedAssets = filteredAssets.sorted { $0.downloadDate < $1.downloadDate }
-        case .title:
-            sortedAssets = filteredAssets.sorted { $0.name < $1.name }
-        }
-        
-        return sortedAssets.groupedByTitle()
-    }
+// MARK: - Supporting Types
+struct SimpleDownloadGroup {
+    let title: String
+    let assets: [DownloadedAsset]
+    let posterURL: URL?
     
-    private func groupActiveDownloads() -> [String: [JSActiveDownload]] {
-        // Group JSActiveDownload objects by anime title from metadata
-        let groupedDict = Dictionary(grouping: jsController.activeDownloads) { download in
-            // Prioritize showTitle from metadata for episodes
-            if let metadata = download.metadata, 
-               let showTitle = metadata.showTitle, 
-               !showTitle.isEmpty {
-                return showTitle
-            }
-            // Fallback to title or URL
-            return download.title ?? download.originalURL.lastPathComponent
-        }
-        return groupedDict
+    var assetCount: Int { assets.count }
+    var totalFileSize: Int64 {
+        // Simple summation without complex caching to avoid navigation issues
+        assets.reduce(0) { $0 + $1.fileSize }
     }
 }
 
-// MARK: - DownloadGroupView
-struct DownloadGroupView: View {
-    let group: DownloadGroup
-    let isExpanded: Bool
-    let onDelete: (DownloadedAsset) -> Void
-    let onPlay: (DownloadedAsset) -> Void
-    let onToggleExpand: () -> Void
-    @State private var showDeleteAllAlert = false
-    @EnvironmentObject var jsController: JSController
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Group header with navigation
-            NavigationLink(destination: DownloadedMediaDetailView(group: group)) {
-                HStack {
-                    if let posterURL = group.posterURL {
-                        KFImage(posterURL)
-                            .placeholder {
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                            }
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 50, height: 75)
-                            .cornerRadius(6)
-                    } else {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(width: 50, height: 75)
-                            .cornerRadius(6)
-                    }
-                    
-                    VStack(alignment: .leading) {
-                        Text(group.title)
-                            .font(.headline)
-                        
-                        HStack {
-                            Text("\(group.assetCount) \(group.isAnime ? "Episodes" : "Files")")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Text("•")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                
-                            Text(formatFileSize(group.totalFileSize))
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    
-                    Spacer()
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 6)
-                .background(Color(UIColor.secondarySystemBackground))
-                .cornerRadius(10)
-            }
-            .buttonStyle(PlainButtonStyle())
-            .contextMenu {
-                Button(action: { onToggleExpand() }) {
-                    Label(isExpanded ? "Collapse" : "Expand", systemImage: isExpanded ? "chevron.up" : "chevron.down")
-                }
-                
-                Button(role: .destructive, action: { showDeleteAllAlert = true }) {
-                    Label("Delete All Episodes", systemImage: "trash")
-                }
-            }
-            .alert("Delete All Episodes", isPresented: $showDeleteAllAlert) {
-                Button("Cancel", role: .cancel) {}
-                Button("Delete All", role: .destructive) {
-                    deleteAllAssets()
-                }
-            } message: {
-                Text("Are you sure you want to delete all \(group.assetCount) episodes in '\(group.title)'?")
-            }
-            
-            // Group content (episodes or files) when expanded
-            if isExpanded {
-                VStack(spacing: 4) {
-                    let assets = group.isAnime ? group.organizedEpisodes() : group.assets
-                    
-                    ForEach(assets) { asset in
-                        DownloadedAssetRow(asset: asset)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(UIColor.tertiarySystemBackground))
-                            .cornerRadius(8)
-                            .contextMenu {
-                                Button(role: .destructive, action: { onDelete(asset) }) {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                            }
-                            .onTapGesture {
-                                onPlay(asset)
-                            }
-                    }
-                }
-                .padding(.leading, 12)
-                .transition(.opacity)
-            }
-        }
-        .animation(.easeInOut(duration: 0.2), value: isExpanded)
-    }
-    
-    private func formatFileSize(_ size: Int64) -> String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useKB, .useMB, .useGB]
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: size)
-    }
-    
-    private func deleteAllAssets() {
-        // Delete all assets in this group
-        for asset in group.assets {
-            jsController.deleteAsset(asset)
-        }
-        
-        // Post notification to refresh the UI
-        NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-    }
-}
-
-// MARK: - ActiveDownloadRow
-struct ActiveDownloadRow: View {
+// MARK: - ActiveDownloadCard
+struct ActiveDownloadCard: View {
     let download: JSActiveDownload
-    @State private var taskState: URLSessionTask.State
     @State private var currentProgress: Double
+    @State private var taskState: URLSessionTask.State
     
     init(download: JSActiveDownload) {
         self.download = download
-        // Initialize the state from the current task state
-        _taskState = State(initialValue: download.task?.state ?? .suspended)
         _currentProgress = State(initialValue: download.progress)
+        _taskState = State(initialValue: download.task?.state ?? .suspended)
     }
     
     var body: some View {
-        HStack {
-            // Use the imageURL from the download if available
+        HStack(spacing: 12) {
+            // Thumbnail
             if let imageURL = download.imageURL {
                 KFImage(imageURL)
                     .placeholder {
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
-                            .frame(width: 60, height: 60)
                     }
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 60, height: 60)
-                    .cornerRadius(6)
+                    .cornerRadius(8)
             } else {
-                // Fallback to placeholder
                 Rectangle()
                     .fill(Color.gray.opacity(0.3))
                     .frame(width: 60, height: 60)
-                    .cornerRadius(6)
+                    .cornerRadius(8)
             }
             
-            VStack(alignment: .leading, spacing: 4) {
+            // Content
+            VStack(alignment: .leading, spacing: 6) {
                 Text(download.title ?? download.originalURL.lastPathComponent)
                     .font(.headline)
                     .lineLimit(1)
                 
-                // Enhanced progress view
-                VStack(alignment: .leading, spacing: 2) {
+                // Progress
+                VStack(alignment: .leading, spacing: 4) {
                     if download.queueStatus == .queued {
                         ProgressView()
                             .progressViewStyle(LinearProgressViewStyle())
@@ -558,7 +324,7 @@ struct ActiveDownloadRow: View {
                     } else {
                         ProgressView(value: currentProgress)
                             .progressViewStyle(LinearProgressViewStyle())
-                            .tint(currentProgress == 1.0 ? .green : .blue)
+                            .tint(currentProgress >= 1.0 ? .green : .blue)
                     }
                     
                     HStack {
@@ -570,6 +336,7 @@ struct ActiveDownloadRow: View {
                             Text("\(Int(currentProgress * 100))%")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
+                        }
                             
                             Spacer()
                             
@@ -585,138 +352,124 @@ struct ActiveDownloadRow: View {
                         }
                     }
                 }
-            }
-            .padding(.leading, 4)
             
             Spacer()
             
-            // Download controls with state tracking
+            // Controls
+            HStack(spacing: 8) {
             if download.queueStatus == .queued {
-                // Only show cancel button for queued downloads
-                Button(action: {
-                    // Cancel the queued download
-                    JSController.shared.cancelQueuedDownload(download.id)
-                    // Post notification for UI updates across the app
-                    NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-                }) {
+                    Button(action: cancelDownload) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.red)
                         .font(.title2)
                 }
             } else {
-                Button(action: {
-                    if taskState == .running {
-                        download.task?.suspend()
-                        taskState = .suspended
-                    } else if taskState == .suspended {
-                        download.task?.resume()
-                        taskState = .running
-                    }
-                    // Post notification for UI updates across the app
-                    NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-                }) {
+                    Button(action: toggleDownload) {
                     Image(systemName: taskState == .running ? "pause.circle.fill" : "play.circle.fill")
                         .foregroundColor(taskState == .running ? .orange : .blue)
                         .font(.title2)
                 }
                 
-                Button(action: {
-                    download.task?.cancel()
-                    taskState = .canceling
-                    // Post notification for UI updates across the app
-                    NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-                }) {
+                    Button(action: cancelDownload) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.red)
                         .font(.title2)
                 }
             }
         }
-        .onAppear {
-            // Update state when view appears
-            updateDownloadState()
         }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadStatusChanged"))) { _ in
-            updateDownloadState()
+        .padding()
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(12)
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadProgressChanged"))) { _ in
+            updateProgress()
         }
     }
     
-    private func updateDownloadState() {
-        // Update task state from the actual download task
-        if let task = download.task {
-            self.taskState = task.state
+    private func updateProgress() {
+        if let currentDownload = JSController.shared.activeDownloads.first(where: { $0.id == download.id }) {
+            withAnimation(.easeInOut(duration: 0.1)) {
+                currentProgress = currentDownload.progress
+            }
+            if let task = currentDownload.task {
+                taskState = task.state
+            }
         }
-        
-        // Update progress from the actual download
-        self.currentProgress = download.progress
+    }
+    
+    private func toggleDownload() {
+        if taskState == .running {
+            download.task?.suspend()
+            taskState = .suspended
+        } else if taskState == .suspended {
+            download.task?.resume()
+            taskState = .running
+        }
+    }
+    
+    private func cancelDownload() {
+        if download.queueStatus == .queued {
+            JSController.shared.cancelQueuedDownload(download.id)
+        } else {
+            download.task?.cancel()
+        }
     }
 }
 
-// MARK: - DownloadedAssetRow
-struct DownloadedAssetRow: View {
-    let asset: DownloadedAsset
+// MARK: - DownloadGroupCard
+struct DownloadGroupCard: View {
+    let group: SimpleDownloadGroup
+    let onDelete: (DownloadedAsset) -> Void
+    let onPlay: (DownloadedAsset) -> Void
     
     var body: some View {
-        HStack(spacing: 8) {
-            // Use image from asset metadata if available, otherwise use placeholder
-            if let backdropURL = asset.metadata?.backdropURL {
-                KFImage(backdropURL)
-                    .placeholder {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                    }
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 60, height: 40)
-                    .cornerRadius(4)
+        NavigationLink(destination: ShowEpisodesView(group: group, onDelete: onDelete, onPlay: onPlay)) {
+            HStack(spacing: 12) {
+                // Poster
+                if let posterURL = group.posterURL {
+                    KFImage(posterURL)
+                        .placeholder {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                        }
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 50, height: 75)
+                        .cornerRadius(6)
             } else {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 60, height: 40)
-                    .cornerRadius(4)
-            }
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(asset.episodeDisplayName)
-                    .font(.subheadline)
-                    .lineLimit(1)
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 50, height: 75)
+                        .cornerRadius(6)
+                }
                 
-                HStack(spacing: 4) {
-                    Text(asset.downloadDate.formatted(date: .abbreviated, time: .omitted))
-                        .font(.caption)
+                // Info
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(group.title)
+                        .font(.headline)
+                        .lineLimit(2)
+                    
+                    Text("\(group.assetCount) Episodes")
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                     
-                    // Show file size
-                    Text("•")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text(formatFileSize(asset.fileSize))
+                    Text(formatFileSize(group.totalFileSize))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-            }
-            
-            Spacer()
-            
-            // Show subtitle indicator if subtitles are available
-            if asset.localSubtitleURL != nil {
-                Image(systemName: "captions.bubble")
-                    .foregroundColor(.blue)
+                
+                Spacer()
+                
+                // Navigation chevron
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.secondary)
                     .font(.caption)
             }
-            
-            // Show warning if file doesn't exist
-            if !asset.fileExists {
-                Image(systemName: "exclamationmark.triangle")
-                    .foregroundColor(.orange)
-                    .font(.caption)
-            }
-            
-            Image(systemName: "play.circle.fill")
-                .foregroundColor(asset.fileExists ? .blue : .gray)
-                .font(.title3)
+            .padding()
+            .background(Color(UIColor.secondarySystemBackground))
+            .cornerRadius(12)
         }
+        .buttonStyle(PlainButtonStyle())
     }
     
     private func formatFileSize(_ size: Int64) -> String {
@@ -727,24 +480,100 @@ struct DownloadedAssetRow: View {
     }
 }
 
-// MARK: - DownloadedMediaDetailView
-struct DownloadedMediaDetailView: View {
-    let group: DownloadGroup
-    @StateObject private var jsController = JSController.shared
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
+// MARK: - EpisodeRow
+struct EpisodeRow: View {
+    let asset: DownloadedAsset
+    let onDelete: () -> Void
+    let onPlay: () -> Void
     
-    @State private var isPlaying = false
-    @State private var currentAsset: DownloadedAsset?
+    var body: some View {
+        HStack(spacing: 12) {
+            // Thumbnail
+            if let backdropURL = asset.metadata?.backdropURL {
+                KFImage(backdropURL)
+                    .placeholder {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                    }
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 60, height: 40)
+                    .cornerRadius(6)
+            } else {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 60, height: 40)
+                    .cornerRadius(6)
+            }
+            
+            // Info
+            VStack(alignment: .leading, spacing: 2) {
+                Text(asset.episodeDisplayName)
+                    .font(.subheadline)
+                    .lineLimit(1)
+                
+                HStack(spacing: 4) {
+                    Text(asset.downloadDate.formatted(date: .abbreviated, time: .omitted))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+            if asset.localSubtitleURL != nil {
+                Image(systemName: "captions.bubble")
+                    .foregroundColor(.blue)
+                    .font(.caption)
+            }
+            
+            if !asset.fileExists {
+                Image(systemName: "exclamationmark.triangle")
+                    .foregroundColor(.orange)
+                    .font(.caption)
+                    }
+                }
+            }
+            
+            Spacer()
+            
+            // Play button
+            Button(action: onPlay) {
+            Image(systemName: "play.circle.fill")
+                .foregroundColor(asset.fileExists ? .blue : .gray)
+                .font(.title3)
+        }
+            .disabled(!asset.fileExists)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color(UIColor.tertiarySystemBackground))
+        .cornerRadius(8)
+        .contextMenu {
+            Button(action: onPlay) {
+                Label("Play", systemImage: "play.fill")
+            }
+            .disabled(!asset.fileExists)
+            
+            Button(role: .destructive, action: onDelete) {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
+}
+
+// MARK: - ShowEpisodesView
+struct ShowEpisodesView: View {
+    let group: SimpleDownloadGroup
+    let onDelete: (DownloadedAsset) -> Void
+    let onPlay: (DownloadedAsset) -> Void
     @State private var showDeleteAlert = false
     @State private var showDeleteAllAlert = false
     @State private var assetToDelete: DownloadedAsset?
+    @EnvironmentObject var jsController: JSController
     
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Header with poster image
+                // Header with poster and info
                 HStack(alignment: .top, spacing: 16) {
+                    // Larger poster image
                     if let posterURL = group.posterURL {
                         KFImage(posterURL)
                             .placeholder {
@@ -753,31 +582,29 @@ struct DownloadedMediaDetailView: View {
                             }
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: 130, height: 195)
+                            .frame(width: 120, height: 180)
                             .cornerRadius(10)
                     } else {
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
-                            .frame(width: 130, height: 195)
+                            .frame(width: 120, height: 180)
                             .cornerRadius(10)
                     }
                     
+                    // Show info
                     VStack(alignment: .leading, spacing: 8) {
                         Text(group.title)
                             .font(.title2)
                             .fontWeight(.bold)
-                            .lineLimit(2)
+                            .lineLimit(3)
                         
-                        Text("\(group.assetCount) \(group.isAnime ? "Episodes" : "Files")")
+                        Text("\(group.assetCount) Episodes")
                             .font(.headline)
                             .foregroundColor(.secondary)
                         
-                        // Total file size
-                        if group.totalFileSize > 0 {
                             Text(formatFileSize(group.totalFileSize))
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
-                        }
                         
                         Spacer()
                     }
@@ -785,7 +612,7 @@ struct DownloadedMediaDetailView: View {
                 }
                 .padding(.horizontal)
                 
-                // Episode list
+                // Episodes section
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
                         Text("Episodes")
@@ -804,32 +631,37 @@ struct DownloadedMediaDetailView: View {
                     }
                     .padding(.horizontal)
                     
-                    let assets = group.isAnime ? group.organizedEpisodes() : group.assets
-                    
-                    if assets.isEmpty {
+                    // Episodes list
+                    if group.assets.isEmpty {
                         Text("No episodes available")
                             .foregroundColor(.gray)
                             .italic()
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .center)
                     } else {
-                        ForEach(assets) { asset in
-                            DownloadedEpisodeRow(asset: asset)
+                        LazyVStack(spacing: 8) {
+                            ForEach(group.assets) { asset in
+                                DetailedEpisodeRow(asset: asset)
                                 .padding(.horizontal)
                                 .background(Color(UIColor.secondarySystemBackground))
                                 .cornerRadius(10)
                                 .padding(.horizontal)
                                 .contextMenu {
-                                    Button(action: { playAsset(asset) }) {
+                                        Button(action: { onPlay(asset) }) {
                                         Label("Play", systemImage: "play.fill")
                                     }
+                                        .disabled(!asset.fileExists)
                                     
-                                    Button(role: .destructive, action: { confirmDelete(asset) }) {
+                                        Button(role: .destructive, action: { 
+                                            assetToDelete = asset
+                                            showDeleteAlert = true
+                                        }) {
                                         Label("Delete", systemImage: "trash")
                                     }
                                 }
                                 .onTapGesture {
-                                    playAsset(asset)
+                                        onPlay(asset)
+                                    }
                                 }
                         }
                     }
@@ -837,20 +669,18 @@ struct DownloadedMediaDetailView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("Downloaded Episodes")
+        .navigationTitle("Episodes")
         .navigationBarTitleDisplayMode(.inline)
-        .alert("Delete Download", isPresented: $showDeleteAlert) {
+        .alert("Delete Episode", isPresented: $showDeleteAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
                 if let asset = assetToDelete {
-                    deleteAsset(asset)
+                    onDelete(asset)
                 }
             }
         } message: {
             if let asset = assetToDelete {
                 Text("Are you sure you want to delete '\(asset.episodeDisplayName)'?")
-            } else {
-                Text("Are you sure you want to delete this download?")
             }
         }
         .alert("Delete All Episodes", isPresented: $showDeleteAllAlert) {
@@ -859,7 +689,7 @@ struct DownloadedMediaDetailView: View {
                 deleteAllAssets()
             }
         } message: {
-            Text("Are you sure you want to delete all episodes in '\(group.title)'?")
+            Text("Are you sure you want to delete all \(group.assetCount) episodes in '\(group.title)'?")
         }
     }
     
@@ -870,177 +700,20 @@ struct DownloadedMediaDetailView: View {
         return formatter.string(fromByteCount: size)
     }
     
-    private func playAsset(_ asset: DownloadedAsset) {
-        // Verify that the asset file exists before attempting to play
-        if !jsController.verifyAssetFileExists(asset) {
-            // File doesn't exist and couldn't be found in alternate locations
-            // (error is already displayed by verifyAssetFileExists)
-            return
-        }
-        
-        currentAsset = asset
-        
-        // Determine the streamType based on the file extension
-        let streamType: String
-        if asset.localURL.pathExtension.lowercased() == "mp4" {
-            streamType = "mp4"
-        } else if asset.localURL.absoluteString.contains(".movpkg") {
-            streamType = "hls"
-        } else {
-            streamType = "hls" // Default to HLS if we can't determine
-        }
-        
-        // Check if we have a subtitle file for this asset
-        if let localSubtitleURL = asset.localSubtitleURL {
-            // Use the custom player which supports subtitles
-            let dummyMetadata = ModuleMetadata(
-                sourceName: "",
-                author: ModuleMetadata.Author(name: "", icon: ""),
-                iconUrl: "",
-                version: "",
-                language: "",
-                baseUrl: "",
-                streamType: streamType, // Use the determined streamType
-                quality: "",
-                searchBaseUrl: "",
-                scriptUrl: "",
-                asyncJS: nil,
-                streamAsyncJS: nil,
-                softsub: nil,
-                multiStream: nil,
-                multiSubs: nil,
-                type: nil
-            )
-            
-            let dummyModule = ScrapingModule(
-                metadata: dummyMetadata,
-                localPath: "",
-                metadataUrl: ""
-            )
-            
-            let customPlayer = CustomMediaPlayerViewController(
-                module: dummyModule,
-                urlString: asset.localURL.absoluteString,
-                fullUrl: asset.originalURL.absoluteString,
-                title: asset.name,
-                episodeNumber: asset.metadata?.episode ?? 0,
-                onWatchNext: {},
-                subtitlesURL: localSubtitleURL.absoluteString,
-                aniListID: 0,
-                episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
-                headers: nil
-            )
-            
-            customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-            
-            // Present the custom player
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let rootViewController = windowScene.windows.first?.rootViewController {
-                rootViewController.present(customPlayer, animated: true)
-            }
-        } else {
-            // No subtitle file available, use standard player with appropriate streamType
-            let dummyMetadata = ModuleMetadata(
-                sourceName: "",
-                author: ModuleMetadata.Author(name: "", icon: ""),
-                iconUrl: "",
-                version: "",
-                language: "",
-                baseUrl: "",
-                streamType: streamType, // Use the determined streamType
-                quality: "",
-                searchBaseUrl: "",
-                scriptUrl: "",
-                asyncJS: nil,
-                streamAsyncJS: nil,
-                softsub: nil,
-                multiStream: nil,
-                multiSubs: nil,
-                type: nil
-            )
-            
-            let dummyModule = ScrapingModule(
-                metadata: dummyMetadata,
-                localPath: "",
-                metadataUrl: ""
-            )
-            
-            // Check if we're playing an MP4 file - if so, use the system player for direct playback
-            if streamType == "mp4" {
-                // Create an AVPlayerItem from the local URL
-                let playerItem = AVPlayerItem(url: asset.localURL)
-                
-                // Configure the player
-                let player = AVPlayer(playerItem: playerItem)
-                
-                // Create the controller
-                let playerController = AVPlayerViewController()
-                playerController.player = player
-                
-                // Present the player
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let rootViewController = windowScene.windows.first?.rootViewController {
-                    rootViewController.present(playerController, animated: true) {
-                        player.play()
-                    }
-                }
-            } else {
-                // For HLS, use the custom player
-                let customPlayer = CustomMediaPlayerViewController(
-                    module: dummyModule,
-                    urlString: asset.localURL.absoluteString,
-                    fullUrl: asset.originalURL.absoluteString,
-                    title: asset.name,
-                    episodeNumber: asset.metadata?.episode ?? 0,
-                    onWatchNext: {},
-                    subtitlesURL: nil,
-                    aniListID: 0,
-                    episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
-                    headers: nil
-                )
-                
-                customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                
-                // Present the custom player
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let rootViewController = windowScene.windows.first?.rootViewController {
-                    rootViewController.present(customPlayer, animated: true)
-                }
-            }
-        }
-    }
-    
-    private func confirmDelete(_ asset: DownloadedAsset) {
-        assetToDelete = asset
-        showDeleteAlert = true
-    }
-    
-    private func deleteAsset(_ asset: DownloadedAsset) {
-        jsController.deleteAsset(asset)
-        
-        // DO NOT dismiss the view when all assets are deleted
-        // Let the user navigate back manually
-    }
-    
     private func deleteAllAssets() {
-        // Delete all assets in this group
         for asset in group.assets {
             jsController.deleteAsset(asset)
         }
-        
-        // Post notification to refresh the UI
-        NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-        
-        // DO NOT dismiss the view - let the user navigate back manually
     }
 }
 
-struct DownloadedEpisodeRow: View {
+// MARK: - DetailedEpisodeRow
+struct DetailedEpisodeRow: View {
     let asset: DownloadedAsset
     
     var body: some View {
         HStack(spacing: 12) {
-            // Use image from asset metadata if available, otherwise use placeholder
+            // Episode thumbnail
             if let backdropURL = asset.metadata?.backdropURL ?? asset.metadata?.posterURL {
                 KFImage(backdropURL)
                     .placeholder {
@@ -1049,21 +722,21 @@ struct DownloadedEpisodeRow: View {
                     }
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: 120, height: 68)
+                    .frame(width: 100, height: 60)
                     .cornerRadius(8)
             } else {
                 Rectangle()
                     .fill(Color.gray.opacity(0.3))
-                    .frame(width: 120, height: 68)
+                    .frame(width: 100, height: 60)
                     .cornerRadius(8)
             }
             
+            // Episode info
             VStack(alignment: .leading, spacing: 4) {
                 Text(asset.episodeDisplayName)
                     .font(.headline)
-                    .lineLimit(1)
+                    .lineLimit(2)
                 
-                // Always show file size (will be zero if file doesn't exist)
                 Text(formatFileSize(asset.fileSize))
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -1073,14 +746,12 @@ struct DownloadedEpisodeRow: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
-                    // Display subtitle indicator if subtitles are available
                     if asset.localSubtitleURL != nil {
                         Image(systemName: "captions.bubble")
                             .foregroundColor(.blue)
                             .font(.caption)
                     }
                     
-                    // Show warning if file doesn't exist
                     if !asset.fileExists {
                         Image(systemName: "exclamationmark.triangle")
                             .foregroundColor(.orange)
@@ -1091,6 +762,7 @@ struct DownloadedEpisodeRow: View {
             
             Spacer()
             
+            // Play button
             Image(systemName: "play.circle.fill")
                 .foregroundColor(asset.fileExists ? .blue : .gray)
                 .font(.title2)
@@ -1105,3 +777,4 @@ struct DownloadedEpisodeRow: View {
         return formatter.string(fromByteCount: size)
     }
 }
+

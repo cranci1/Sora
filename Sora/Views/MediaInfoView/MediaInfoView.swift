@@ -156,10 +156,7 @@ struct MediaInfoView: View {
             isFetchingEpisode = false
             showStreamLoadingView = false
         }
-        // Minimal refresh when view appears
-        .onAppear {
-            refreshTrigger.toggle()
-        }
+
     }
     
     @ViewBuilder
@@ -340,7 +337,6 @@ struct MediaInfoView: View {
                 .cornerRadius(10)
             }
             .disabled(isFetchingEpisode)
-            .id(buttonRefreshTrigger)
             
             Button(action: {
                 libraryManager.toggleBookmark(
@@ -432,9 +428,6 @@ struct MediaInfoView: View {
                 
                 let defaultBannerImageValue = getBannerImageBasedOnAppearance()
                 
-                // Create a stable unique identifier that forces refresh on trigger changes
-                let downloadCellID = "\(ep.href)_\(refreshTrigger)_ep\(ep.number)"
-                
                 EpisodeCell(
                     episodeIndex: selectedSeason,
                     episode: ep.href,
@@ -445,6 +438,7 @@ struct MediaInfoView: View {
                     defaultBannerImage: defaultBannerImageValue,
                     module: module,
                     parentTitle: title,
+                    showPosterURL: imageUrl,
                     onTap: { imageUrl in
                         episodeTapAction(ep: ep, imageUrl: imageUrl)
                     },
@@ -452,7 +446,6 @@ struct MediaInfoView: View {
                         markAllPreviousEpisodesAsWatched(ep: ep, inSeason: true)
                     }
                 )
-                .id(downloadCellID)
                 .disabled(isFetchingEpisode)
             }
         } else {
@@ -496,7 +489,6 @@ struct MediaInfoView: View {
             }
             
             userDefaults.synchronize()
-            refreshTrigger.toggle()
             Logger.shared.log("Marked episodes watched within season \(selectedSeason + 1) of \"\(title)\".", type: "General")
         } else {
             // Handle non-season case if needed
@@ -511,9 +503,6 @@ struct MediaInfoView: View {
             let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
             let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
             
-            // Create a stable unique identifier that forces refresh on trigger changes
-            let downloadCellID = "\(ep.href)_\(refreshTrigger)_ep\(ep.number)"
-            
             EpisodeCell(
                 episodeIndex: i,
                 episode: ep.href,
@@ -522,6 +511,7 @@ struct MediaInfoView: View {
                 itemID: itemID ?? 0,
                 module: module,
                 parentTitle: title,
+                showPosterURL: imageUrl,
                 onTap: { imageUrl in
                     episodeTapAction(ep: ep, imageUrl: imageUrl)
                 },
@@ -529,7 +519,6 @@ struct MediaInfoView: View {
                     markAllPreviousEpisodesInFlatList(ep: ep, index: i)
                 }
             )
-            .id(downloadCellID)
             .disabled(isFetchingEpisode)
         }
     }
@@ -550,7 +539,6 @@ struct MediaInfoView: View {
             userDefaults.set(value, forKey: key)
         }
         
-        refreshTrigger.toggle()
         Logger.shared.log("Marked \(ep.number - 1) episodes watched within series \"\(title)\".", type: "General")
     }
     
@@ -698,11 +686,6 @@ struct MediaInfoView: View {
                             self.episodeLinks = episodes
                             self.isLoading = false
                             self.isRefetching = false
-                            
-                            // Simple refresh trigger after loading
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                self.refreshTrigger.toggle()
-                            }
                         }
                     } else {
                         jsController.fetchDetails(url: href) { items, episodes in
@@ -714,11 +697,6 @@ struct MediaInfoView: View {
                             self.episodeLinks = episodes
                             self.isLoading = false
                             self.isRefetching = false
-                            
-                            // Simple refresh trigger after loading
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                self.refreshTrigger.toggle()
-                            }
                         }
                     }
                 } catch {

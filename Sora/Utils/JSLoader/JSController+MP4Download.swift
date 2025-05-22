@@ -46,7 +46,8 @@ extension JSController {
                 posterURL: imageURL,
                 showTitle: showTitle,
                 season: season,
-                episode: episode
+                episode: episode,
+                showPosterURL: imageURL // Use the correct show poster URL
             )
         }
         
@@ -176,8 +177,8 @@ extension JSController {
                         self.downloadSubtitle(subtitleURL: subtitleURL, assetID: downloadedAsset.id.uuidString)
                     }
                     
-                    // Notify observers
-                    NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+                    // Notify observers - use downloadCompleted since the download finished
+                    NotificationCenter.default.post(name: NSNotification.Name("downloadCompleted"), object: nil)
                     
                     completionHandler?(true, "Download completed successfully")
                     

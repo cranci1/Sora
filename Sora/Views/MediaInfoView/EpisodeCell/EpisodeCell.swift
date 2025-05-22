@@ -25,6 +25,7 @@ struct EpisodeCell: View {
     var defaultBannerImage: String
     var module: ScrapingModule
     var parentTitle: String
+    var showPosterURL: String? // Add show poster URL for downloads
     
     var onTap: (String) -> Void
     var onMarkAllPrevious: () -> Void
@@ -70,7 +71,7 @@ struct EpisodeCell: View {
     
     init(episodeIndex: Int, episode: String, episodeID: Int, progress: Double,
          itemID: Int, totalEpisodes: Int? = nil, defaultBannerImage: String = "",
-         module: ScrapingModule, parentTitle: String, 
+         module: ScrapingModule, parentTitle: String, showPosterURL: String? = nil,
          onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void) {
         self.episodeIndex = episodeIndex
         self.episode = episode
@@ -91,6 +92,7 @@ struct EpisodeCell: View {
         
         self.module = module
         self.parentTitle = parentTitle
+        self.showPosterURL = showPosterURL
         self.onTap = onTap
         self.onMarkAllPrevious = onMarkAllPrevious
     }
@@ -141,12 +143,18 @@ struct EpisodeCell: View {
         .onChange(of: progress) { _ in
             updateProgress()
         }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadStatusChanged"))) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadProgressChanged"))) { _ in
             // Update download status less frequently to reduce jitter
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 updateDownloadStatus()
                 updateProgress()
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadStatusChanged"))) { _ in
+            updateDownloadStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadCompleted"))) { _ in
+            updateDownloadStatus()
         }
         .onTapGesture {
             let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
@@ -160,7 +168,6 @@ struct EpisodeCell: View {
         } message: {
             Text("Do you want to download Episode \(episodeID + 1)\(episodeTitle.isEmpty ? "" : ": \(episodeTitle)")?")
         }
-        .id("\(episode)_\(downloadRefreshTrigger)_\(downloadStatusString)")
     }
     
     // MARK: - View Components
@@ -255,10 +262,6 @@ struct EpisodeCell: View {
                 .onDisappear {
                     downloadAnimationScale = 1.0
                 }
-            
-            Text("Downloading")
-                .font(.caption)
-                .foregroundColor(.secondary)
         }
         .padding(.horizontal, 8)
     }
@@ -332,7 +335,6 @@ struct EpisodeCell: View {
         // Only update if status actually changed to reduce unnecessary UI updates
         if downloadStatus != newStatus {
             downloadStatus = newStatus
-            downloadRefreshTrigger.toggle()
         }
     }
     
@@ -508,9 +510,9 @@ struct EpisodeCell: View {
         
         print("Download headers: \(headers)")
         
-        // Get the image URL for the episode
-        let episodeImg = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
-        let imageURL = URL(string: episodeImg)
+        // Use episode thumbnail for the individual episode, show poster for grouping
+        let episodeThumbnailURL = URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl)
+        let showPosterImageURL = URL(string: showPosterURL ?? defaultBannerImage)
         
         // Get the episode title and information
         let episodeName = episodeTitle.isEmpty ? "Episode \(episodeID + 1)" : episodeTitle
@@ -524,13 +526,14 @@ struct EpisodeCell: View {
             url: url,
             headers: headers,
             title: fullEpisodeTitle,
-            imageURL: imageURL,
+            imageURL: episodeThumbnailURL,
             module: module,
             isEpisode: true,
             showTitle: animeTitle,
             season: 1, // Default to season 1 if not known
             episode: episodeID + 1,
             subtitleURL: subtitleURL,
+            showPosterURL: showPosterImageURL,
             completionHandler: { success, message in
                 if success {
                     // Log the download for analytics

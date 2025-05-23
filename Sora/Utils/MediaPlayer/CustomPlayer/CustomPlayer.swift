@@ -174,7 +174,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var volumeSliderHostingView: UIView?
     private var subtitleDelay: Double = 0.0
     var currentPlaybackSpeed: Float = 1.0
-    private let isSingleEpisode: Bool
     
     init(module: ScrapingModule,
          urlString: String,
@@ -184,10 +183,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
          onWatchNext: @escaping () -> Void,
          subtitlesURL: String?,
          aniListID: Int,
-         episodeImageUrl: String,
-         headers: [String:String]?,
-         isSingleEpisode: Bool = false   // <<< new
-    ) {
+         episodeImageUrl: String,headers:[String:String]?) {
         
         self.module = module
         self.streamURL = urlString
@@ -199,7 +195,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         self.subtitlesURL = subtitlesURL
         self.aniListID = aniListID
         self.headers = headers
-        self.isSingleEpisode = isSingleEpisode
         
         super.init(nibName: nil, bundle: nil)
         
@@ -820,9 +815,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     func setupMarqueeLabel() {
         marqueeLabel = MarqueeLabel()
-        marqueeLabel.text = isSingleEpisode
-            ? titleText
-            : "\(titleText) • Ep \(episodeNumber)"
+        marqueeLabel.text = "\(titleText) • Ep \(episodeNumber)"
         marqueeLabel.type = .continuous
         marqueeLabel.textColor = .white
         marqueeLabel.font = UIFont.systemFont(ofSize: 14, weight: .heavy)

@@ -64,6 +64,7 @@ struct MediaInfoView: View {
     @State private var showLoadingAlert: Bool = false
     
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     
     // MARK: - Multi-Download State Management (Task MD-1)
@@ -75,6 +76,26 @@ struct MediaInfoView: View {
     
     private var isGroupedBySeasons: Bool {
         return groupedEpisodes().count > 1
+    }
+    
+    // MARK: - Responsive Layout Properties
+    private var isCompactLayout: Bool {
+        return verticalSizeClass == .compact
+    }
+    
+    private var useIconOnlyButtons: Bool {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            return false // iPad has more space
+        }
+        return verticalSizeClass == .regular // Portrait mode on iPhone
+    }
+    
+    private var multiselectButtonSpacing: CGFloat {
+        return isCompactLayout ? 16 : 12
+    }
+    
+    private var multiselectPadding: CGFloat {
+        return isCompactLayout ? 20 : 16
     }
     
     var body: some View {
@@ -394,80 +415,211 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var multiSelectControls: some View {
-        HStack(spacing: 8) {
-            if isMultiSelectMode {
-                // Clear All button
-                Button("Clear All") {
-                    selectedEpisodes.removeAll()
+        if isMultiSelectMode {
+            // Responsive multiselect toolbar
+            if useIconOnlyButtons {
+                // Compact layout for portrait mode
+                HStack(spacing: multiselectButtonSpacing) {
+                    // Secondary actions menu
+                    Menu {
+                        Button(action: {
+                            selectedEpisodes.removeAll()
+                        }) {
+                            Label("Clear All", systemImage: "clear")
+                        }
+                        
+                        Button(action: {
+                            showRangeInput = true
+                        }) {
+                            Label("Range Select", systemImage: "list.bullet.rectangle")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(.primary)
+                            .frame(width: 36, height: 36)
+                            .background(Color(UIColor.tertiarySystemFill))
+                            .clipShape(Circle())
+                    }
+                    
+                    Spacer()
+                    
+                    // Select All button (icon only)
+                    Button(action: {
+                        selectAllVisibleEpisodes()
+                    }) {
+                        Image(systemName: "checkmark.circle")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(.primary)
+                            .frame(width: 36, height: 36)
+                            .background(Color(UIColor.tertiarySystemFill))
+                            .clipShape(Circle())
+                    }
+                    
+                    // Done button
+                    Button(action: {
+                        isMultiSelectMode = false
+                        selectedEpisodes.removeAll()
+                    }) {
+                        Text("Done")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.accentColor)
+                            .cornerRadius(18)
+                    }
                 }
-                .font(.system(size: 14))
-                .foregroundColor(.orange)
-                
-                // Select All button
-                Button("Select All") {
-                    selectAllVisibleEpisodes()
-                }
-                .font(.system(size: 14))
-                .foregroundColor(.blue)
-                
-                // Range button
-                Button("Range") {
-                    showRangeInput = true
-                }
-                .font(.system(size: 14))
-                .foregroundColor(.green)
-                
-                // Done button
-                Button("Done") {
-                    isMultiSelectMode = false
-                    selectedEpisodes.removeAll()
-                }
-                .font(.system(size: 14))
-                .foregroundColor(.accentColor)
+                .padding(.horizontal, multiselectPadding)
+                .padding(.vertical, 8)
             } else {
-                // Select button to enter multi-select mode
-                Button("Select") {
-                    isMultiSelectMode = true
+                // Expanded layout for landscape mode or iPad
+                HStack(spacing: multiselectButtonSpacing) {
+                    // Clear All button
+                    Button(action: {
+                        selectedEpisodes.removeAll()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "clear")
+                            Text("Clear")
+                        }
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color(UIColor.tertiarySystemFill))
+                        .cornerRadius(8)
+                    }
+                    
+                    // Range button
+                    Button(action: {
+                        showRangeInput = true
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "list.bullet.rectangle")
+                            Text("Range")
+                        }
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color(UIColor.tertiarySystemFill))
+                        .cornerRadius(8)
+                    }
+                    
+                    Spacer()
+                    
+                    // Select All button
+                    Button(action: {
+                        selectAllVisibleEpisodes()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.circle")
+                            Text("Select All")
+                        }
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color(UIColor.tertiarySystemFill))
+                        .cornerRadius(8)
+                    }
+                    
+                    // Done button
+                    Button(action: {
+                        isMultiSelectMode = false
+                        selectedEpisodes.removeAll()
+                    }) {
+                        Text("Done")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.accentColor)
+                            .cornerRadius(8)
+                    }
                 }
-                .font(.system(size: 14))
-                .foregroundColor(.accentColor)
+                .padding(.horizontal, multiselectPadding)
+                .padding(.vertical, 10)
+                .background(Color(UIColor.secondarySystemBackground).opacity(0.6))
+                .cornerRadius(12)
             }
+        } else {
+            // Select button to enter multi-select mode
+            HStack {
+                Spacer()
+                Button(action: {
+                    isMultiSelectMode = true
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark.circle")
+                        Text("Select Episodes")
+                    }
+                }
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(.accentColor)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color.accentColor.opacity(0.1))
+                .cornerRadius(8)
+            }
+            .padding(.horizontal, 16)
         }
     }
     
     @ViewBuilder
     private var multiSelectActionBar: some View {
-        HStack {
-            Text("\(selectedEpisodes.count) episode\(selectedEpisodes.count == 1 ? "" : "s") selected")
-                .font(.system(size: 14))
-                .foregroundColor(.secondary)
+        VStack(spacing: 0) {
+            // Divider
+            Rectangle()
+                .fill(Color(UIColor.separator))
+                .frame(height: 0.5)
             
-            Spacer()
-            
-            if isBulkDownloading {
-                HStack {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                    Text(bulkDownloadProgress)
-                        .font(.system(size: 12))
-                        .foregroundColor(.secondary)
+            HStack(spacing: 12) {
+                // Selection count
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.accentColor)
+                    Text("\(selectedEpisodes.count) selected")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(.primary)
                 }
-            } else {
-                Button("Download Selected") {
-                    startBulkDownload()
+                
+                Spacer()
+                
+                if isBulkDownloading {
+                    // Progress indicator
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text(bulkDownloadProgress)
+                            .font(.system(size: 13))
+                            .foregroundColor(.secondary)
+                    }
+                } else {
+                    // Download button
+                    Button(action: {
+                        startBulkDownload()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "arrow.down.circle.fill")
+                            Text("Download")
+                        }
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Color.accentColor)
+                        .cornerRadius(8)
+                    }
+                    .disabled(selectedEpisodes.isEmpty)
+                    .opacity(selectedEpisodes.isEmpty ? 0.6 : 1.0)
                 }
-                .font(.system(size: 14))
-                .foregroundColor(.white)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(Color.accentColor)
-                .cornerRadius(8)
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(Color(UIColor.secondarySystemBackground))
-        .cornerRadius(10)
+        .background(Color(UIColor.systemBackground))
     }
     
     @ViewBuilder

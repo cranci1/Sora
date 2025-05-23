@@ -66,6 +66,13 @@ struct MediaInfoView: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     
+    // MARK: - Multi-Download State Management (Task MD-1)
+    @State private var isMultiSelectMode: Bool = false
+    @State private var selectedEpisodes: Set<Int> = []
+    @State private var showRangeInput: Bool = false
+    @State private var isBulkDownloading: Bool = false
+    @State private var bulkDownloadProgress: String = ""
+    
     private var isGroupedBySeasons: Bool {
         return groupedEpisodes().count > 1
     }
@@ -126,6 +133,19 @@ struct MediaInfoView: View {
                     .padding(.top, 8)
             }
         }
+        .onDisappear {
+            activeFetchID = nil
+            isFetchingEpisode = false
+            showStreamLoadingView = false
+        }
+        .sheet(isPresented: $showRangeInput) {
+            RangeSelectionSheet(
+                totalEpisodes: episodeLinks.count,
+                onSelectionComplete: { startEpisode, endEpisode in
+                    selectEpisodeRange(start: startEpisode, end: endEpisode)
+                }
+            )
+        }
     }
     
     @ViewBuilder
@@ -151,12 +171,6 @@ struct MediaInfoView: View {
             .navigationBarTitle("")
             .navigationViewStyle(StackNavigationViewStyle())
         }
-        .onDisappear {
-            activeFetchID = nil
-            isFetchingEpisode = false
-            showStreamLoadingView = false
-        }
-
     }
     
     @ViewBuilder
@@ -365,11 +379,95 @@ struct MediaInfoView: View {
                 
                 Spacer()
                 
+                multiSelectControls
                 episodeNavigationSection
+            }
+            
+            // Multi-select action bar
+            if isMultiSelectMode && !selectedEpisodes.isEmpty {
+                multiSelectActionBar
             }
             
             episodeListSection
         }
+    }
+    
+    @ViewBuilder
+    private var multiSelectControls: some View {
+        HStack(spacing: 8) {
+            if isMultiSelectMode {
+                // Clear All button
+                Button("Clear All") {
+                    selectedEpisodes.removeAll()
+                }
+                .font(.system(size: 14))
+                .foregroundColor(.orange)
+                
+                // Select All button
+                Button("Select All") {
+                    selectAllVisibleEpisodes()
+                }
+                .font(.system(size: 14))
+                .foregroundColor(.blue)
+                
+                // Range button
+                Button("Range") {
+                    showRangeInput = true
+                }
+                .font(.system(size: 14))
+                .foregroundColor(.green)
+                
+                // Done button
+                Button("Done") {
+                    isMultiSelectMode = false
+                    selectedEpisodes.removeAll()
+                }
+                .font(.system(size: 14))
+                .foregroundColor(.accentColor)
+            } else {
+                // Select button to enter multi-select mode
+                Button("Select") {
+                    isMultiSelectMode = true
+                }
+                .font(.system(size: 14))
+                .foregroundColor(.accentColor)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var multiSelectActionBar: some View {
+        HStack {
+            Text("\(selectedEpisodes.count) episode\(selectedEpisodes.count == 1 ? "" : "s") selected")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+            
+            Spacer()
+            
+            if isBulkDownloading {
+                HStack {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text(bulkDownloadProgress)
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                }
+            } else {
+                Button("Download Selected") {
+                    startBulkDownload()
+                }
+                .font(.system(size: 14))
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.accentColor)
+                .cornerRadius(8)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(10)
     }
     
     @ViewBuilder
@@ -439,6 +537,15 @@ struct MediaInfoView: View {
                     module: module,
                     parentTitle: title,
                     showPosterURL: imageUrl,
+                    isMultiSelectMode: isMultiSelectMode,
+                    isSelected: selectedEpisodes.contains(ep.number),
+                    onSelectionChanged: { isSelected in
+                        if isSelected {
+                            selectedEpisodes.insert(ep.number)
+                        } else {
+                            selectedEpisodes.remove(ep.number)
+                        }
+                    },
                     onTap: { imageUrl in
                         episodeTapAction(ep: ep, imageUrl: imageUrl)
                     },
@@ -512,6 +619,15 @@ struct MediaInfoView: View {
                 module: module,
                 parentTitle: title,
                 showPosterURL: imageUrl,
+                isMultiSelectMode: isMultiSelectMode,
+                isSelected: selectedEpisodes.contains(ep.number),
+                onSelectionChanged: { isSelected in
+                    if isSelected {
+                        selectedEpisodes.insert(ep.number)
+                    } else {
+                        selectedEpisodes.remove(ep.number)
+                    }
+                },
                 onTap: { imageUrl in
                     episodeTapAction(ep: ep, imageUrl: imageUrl)
                 },
@@ -1052,5 +1168,575 @@ struct MediaInfoView: View {
            let rootVC = window.rootViewController {
             findTopViewController.findViewController(rootVC).present(alert, animated: true)
         }
+    }
+    
+    // MARK: - Multi-Download Helper Functions (Task MD-1 & MD-4)
+    
+    private func selectEpisodeRange(start: Int, end: Int) {
+        selectedEpisodes.removeAll()
+        for episodeNumber in start...end {
+            selectedEpisodes.insert(episodeNumber)
+        }
+        showRangeInput = false
+    }
+    
+    private func selectAllVisibleEpisodes() {
+        if isGroupedBySeasons {
+            let seasons = groupedEpisodes()
+            if !seasons.isEmpty, selectedSeason < seasons.count {
+                for episode in seasons[selectedSeason] {
+                    selectedEpisodes.insert(episode.number)
+                }
+            }
+        } else {
+            for i in episodeLinks.indices.filter({ selectedRange.contains($0) }) {
+                selectedEpisodes.insert(episodeLinks[i].number)
+            }
+        }
+    }
+    
+    private func startBulkDownload() {
+        guard !selectedEpisodes.isEmpty else { return }
+        
+        isBulkDownloading = true
+        bulkDownloadProgress = "Starting downloads..."
+        
+        // Convert selected episode numbers to EpisodeLink objects
+        let episodesToDownload = episodeLinks.filter { selectedEpisodes.contains($0.number) }
+        
+        // Start bulk download process
+        Task {
+            await processBulkDownload(episodes: episodesToDownload)
+        }
+    }
+    
+    @MainActor
+    private func processBulkDownload(episodes: [EpisodeLink]) async {
+        let totalCount = episodes.count
+        var completedCount = 0
+        var successCount = 0
+        
+        for (index, episode) in episodes.enumerated() {
+            bulkDownloadProgress = "Downloading episode \(episode.number) (\(index + 1)/\(totalCount))"
+            
+            // Check if episode is already downloaded or queued
+            let downloadStatus = jsController.isEpisodeDownloadedOrInProgress(
+                showTitle: title,
+                episodeNumber: episode.number,
+                season: 1
+            )
+            
+            switch downloadStatus {
+            case .downloaded:
+                Logger.shared.log("Episode \(episode.number) already downloaded, skipping", type: "Info")
+            case .downloading:
+                Logger.shared.log("Episode \(episode.number) already downloading, skipping", type: "Info")
+            case .notDownloaded:
+                // Start download for this episode
+                let downloadSuccess = await downloadSingleEpisode(episode: episode)
+                if downloadSuccess {
+                    successCount += 1
+                }
+            }
+            
+            completedCount += 1
+            
+            // Small delay between downloads to avoid overwhelming the system
+            try? await Task.sleep(nanoseconds: 500_000_000) // 500 milliseconds = 500,000,000 nanoseconds
+        }
+        
+        // Update UI and provide feedback
+        isBulkDownloading = false
+        bulkDownloadProgress = ""
+        isMultiSelectMode = false
+        selectedEpisodes.removeAll()
+        
+        // Show completion notification
+        DropManager.shared.showDrop(
+            title: "Bulk Download Complete",
+            subtitle: "\(successCount)/\(totalCount) episodes queued for download",
+            duration: 2.0,
+            icon: UIImage(systemName: successCount == totalCount ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+        )
+    }
+    
+    private func downloadSingleEpisode(episode: EpisodeLink) async -> Bool {
+        return await withCheckedContinuation { continuation in
+            Task {
+                do {
+                    let jsContent = try moduleManager.getModuleContent(module)
+                    jsController.loadScript(jsContent)
+                    
+                    // Use the same comprehensive stream fetching approach as manual downloads
+                    self.tryNextDownloadMethodForBulk(
+                        episode: episode,
+                        methodIndex: 0,
+                        softsub: module.metadata.softsub == true,
+                        continuation: continuation
+                    )
+                } catch {
+                    Logger.shared.log("Error downloading episode \(episode.number): \(error)", type: "Error")
+                    continuation.resume(returning: false)
+                }
+            }
+        }
+    }
+    
+    // Replicate the same multi-method approach used in EpisodeCell for bulk downloads
+    private func tryNextDownloadMethodForBulk(
+        episode: EpisodeLink,
+        methodIndex: Int,
+        softsub: Bool,
+        continuation: CheckedContinuation<Bool, Never>
+    ) {
+        print("[Bulk Download] Trying download method #\(methodIndex+1) for Episode \(episode.number)")
+        
+        switch methodIndex {
+        case 0:
+            // First try fetchStreamUrlJS if asyncJS is true
+            if module.metadata.asyncJS == true {
+                jsController.fetchStreamUrlJS(episodeUrl: episode.href, softsub: softsub, module: module) { result in
+                    self.handleBulkDownloadResult(result, episode: episode, methodIndex: methodIndex, softsub: softsub, continuation: continuation)
+                }
+            } else {
+                // Skip to next method if not applicable
+                tryNextDownloadMethodForBulk(episode: episode, methodIndex: methodIndex + 1, softsub: softsub, continuation: continuation)
+            }
+            
+        case 1:
+            // Then try fetchStreamUrlJSSecond if streamAsyncJS is true
+            if module.metadata.streamAsyncJS == true {
+                jsController.fetchStreamUrlJSSecond(episodeUrl: episode.href, softsub: softsub, module: module) { result in
+                    self.handleBulkDownloadResult(result, episode: episode, methodIndex: methodIndex, softsub: softsub, continuation: continuation)
+                }
+            } else {
+                // Skip to next method if not applicable
+                tryNextDownloadMethodForBulk(episode: episode, methodIndex: methodIndex + 1, softsub: softsub, continuation: continuation)
+            }
+            
+        case 2:
+            // Finally try fetchStreamUrl (most reliable method)
+            jsController.fetchStreamUrl(episodeUrl: episode.href, softsub: softsub, module: module) { result in
+                self.handleBulkDownloadResult(result, episode: episode, methodIndex: methodIndex, softsub: softsub, continuation: continuation)
+            }
+            
+        default:
+            // We've tried all methods and none worked
+            Logger.shared.log("Failed to find a valid stream for bulk download after trying all methods", type: "Error")
+            continuation.resume(returning: false)
+        }
+    }
+    
+    // Handle result from sequential download attempts (same logic as EpisodeCell)
+    private func handleBulkDownloadResult(
+        _ result: (streams: [String]?, subtitles: [String]?, sources: [[String:Any]]?),
+        episode: EpisodeLink,
+        methodIndex: Int,
+        softsub: Bool,
+        continuation: CheckedContinuation<Bool, Never>
+    ) {
+        // Check if we have valid streams
+        if let streams = result.streams, !streams.isEmpty, let url = URL(string: streams[0]) {
+            // Check if it's a Promise object
+            if streams[0] == "[object Promise]" {
+                print("[Bulk Download] Method #\(methodIndex+1) returned a Promise object, trying next method")
+                tryNextDownloadMethodForBulk(episode: episode, methodIndex: methodIndex + 1, softsub: softsub, continuation: continuation)
+                return
+            }
+            
+            // We found a valid stream URL, proceed with download
+            print("[Bulk Download] Method #\(methodIndex+1) returned valid stream URL: \(streams[0])")
+            
+            // Get subtitle URL if available
+            let subtitleURL = result.subtitles?.first.flatMap { URL(string: $0) }
+            if let subtitleURL = subtitleURL {
+                print("[Bulk Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+            }
+            
+            startEpisodeDownloadWithProcessedStream(episode: episode, url: url, streamUrl: streams[0], subtitleURL: subtitleURL)
+            continuation.resume(returning: true)
+            
+        } else if let sources = result.sources, !sources.isEmpty, 
+                  let streamUrl = sources[0]["streamUrl"] as? String, 
+                  let url = URL(string: streamUrl) {
+            
+            print("[Bulk Download] Method #\(methodIndex+1) returned valid stream URL with headers: \(streamUrl)")
+            
+            // Get subtitle URL if available
+            let subtitleURLString = sources[0]["subtitle"] as? String
+            let subtitleURL = subtitleURLString.flatMap { URL(string: $0) }
+            if let subtitleURL = subtitleURL {
+                print("[Bulk Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+            }
+            
+            startEpisodeDownloadWithProcessedStream(episode: episode, url: url, streamUrl: streamUrl, subtitleURL: subtitleURL)
+            continuation.resume(returning: true)
+            
+        } else {
+            // No valid streams from this method, try the next one
+            print("[Bulk Download] Method #\(methodIndex+1) did not return valid streams, trying next method")
+            tryNextDownloadMethodForBulk(episode: episode, methodIndex: methodIndex + 1, softsub: softsub, continuation: continuation)
+        }
+    }
+    
+    // Start download with processed stream URL and proper headers (same logic as EpisodeCell)
+    private func startEpisodeDownloadWithProcessedStream(
+        episode: EpisodeLink, 
+        url: URL, 
+        streamUrl: String, 
+        subtitleURL: URL? = nil
+    ) {
+        // Generate comprehensive headers using the same logic as EpisodeCell
+        var headers: [String: String] = [:]
+        
+        // Always use the module's baseUrl for Origin and Referer
+        if !module.metadata.baseUrl.isEmpty && !module.metadata.baseUrl.contains("undefined") {
+            print("Using module baseUrl: \(module.metadata.baseUrl)")
+            
+            // Create comprehensive headers prioritizing the module's baseUrl
+            headers = [
+                "Origin": module.metadata.baseUrl,
+                "Referer": module.metadata.baseUrl,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                "Accept": "*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-origin"
+            ]
+        } else {
+            // Fallback to using the stream URL's domain if module.baseUrl isn't available
+            if let scheme = url.scheme, let host = url.host {
+                let baseUrl = scheme + "://" + host
+                
+                headers = [
+                    "Origin": baseUrl,
+                    "Referer": baseUrl,
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                    "Accept": "*/*",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-origin"
+                ]
+            } else {
+                // Missing URL components - use minimal headers
+                headers = [
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+                ]
+                Logger.shared.log("Warning: Missing URL scheme/host for episode \(episode.number), using minimal headers", type: "Warning")
+            }
+        }
+        
+        print("Bulk download headers: \(headers)")
+        
+        // Fetch episode metadata first (same as EpisodeCell does)
+        fetchEpisodeMetadataForDownload(episode: episode) { metadata in
+            let episodeTitle = metadata?.title["en"] ?? metadata?.title.values.first ?? ""
+            let episodeImageUrl = metadata?.imageUrl ?? ""
+            
+            // Create episode title using same logic as EpisodeCell
+            let episodeName = episodeTitle.isEmpty ? "Episode \(episode.number)" : episodeTitle
+            let fullEpisodeTitle = "Episode \(episode.number): \(episodeName)"
+            
+            // Use episode-specific thumbnail if available, otherwise use default banner
+            let episodeThumbnailURL: URL?
+            if !episodeImageUrl.isEmpty {
+                episodeThumbnailURL = URL(string: episodeImageUrl)
+            } else {
+                episodeThumbnailURL = URL(string: self.getBannerImageBasedOnAppearance())
+            }
+            
+            let showPosterImageURL = URL(string: self.imageUrl)
+            
+            print("[Bulk Download] Using episode metadata - Title: '\(fullEpisodeTitle)', Image: '\(episodeImageUrl.isEmpty ? "default banner" : episodeImageUrl)'")
+            
+            self.jsController.downloadWithStreamTypeSupport(
+                url: url,
+                headers: headers,
+                title: fullEpisodeTitle,
+                imageURL: episodeThumbnailURL,
+                module: self.module,
+                isEpisode: true,
+                showTitle: self.title,
+                season: 1,
+                episode: episode.number,
+                subtitleURL: subtitleURL,
+                showPosterURL: showPosterImageURL,
+                completionHandler: { success, message in
+                    if success {
+                        Logger.shared.log("Queued download for Episode \(episode.number) with metadata", type: "Download")
+                    } else {
+                        Logger.shared.log("Failed to queue download for Episode \(episode.number): \(message)", type: "Error")
+                    }
+                }
+            )
+        }
+    }
+    
+    // Fetch episode metadata for downloads (same logic as EpisodeCell.fetchEpisodeDetails)
+    private func fetchEpisodeMetadataForDownload(episode: EpisodeLink, completion: @escaping (EpisodeMetadataInfo?) -> Void) {
+        // Check if we have an itemID for metadata fetching
+        guard let anilistId = itemID else {
+            Logger.shared.log("No AniList ID available for episode metadata", type: "Warning")
+            completion(nil)
+            return
+        }
+        
+        // Check if metadata caching is enabled and try cache first
+        if MetadataCacheManager.shared.isCachingEnabled {
+            let cacheKey = "anilist_\(anilistId)_episode_\(episode.number)"
+            
+            if let cachedData = MetadataCacheManager.shared.getMetadata(forKey: cacheKey),
+               let metadata = EpisodeMetadata.fromData(cachedData) {
+                
+                print("[Bulk Download] Using cached metadata for episode \(episode.number)")
+                let metadataInfo = EpisodeMetadataInfo(
+                    title: metadata.title,
+                    imageUrl: metadata.imageUrl,
+                    anilistId: metadata.anilistId,
+                    episodeNumber: metadata.episodeNumber
+                )
+                completion(metadataInfo)
+                return
+            }
+        }
+        
+        // Cache miss or caching disabled, fetch from network
+        fetchEpisodeMetadataFromNetwork(anilistId: anilistId, episodeNumber: episode.number, completion: completion)
+    }
+    
+    // Fetch episode metadata from ani.zip API (same logic as EpisodeCell.fetchAnimeEpisodeDetails)
+    private func fetchEpisodeMetadataFromNetwork(anilistId: Int, episodeNumber: Int, completion: @escaping (EpisodeMetadataInfo?) -> Void) {
+        guard let url = URL(string: "https://api.ani.zip/mappings?anilist_id=\(anilistId)") else {
+            Logger.shared.log("Invalid URL for anilistId: \(anilistId)", type: "Error")
+            completion(nil)
+            return
+        }
+        
+        print("[Bulk Download] Fetching metadata for episode \(episodeNumber) from network")
+        
+        URLSession.custom.dataTask(with: url) { data, response, error in
+            if let error = error {
+                Logger.shared.log("Failed to fetch episode metadata: \(error)", type: "Error")
+                completion(nil)
+                return
+            }
+            
+            guard let data = data else {
+                Logger.shared.log("No data received for episode metadata", type: "Error")
+                completion(nil)
+                return
+            }
+            
+            do {
+                let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
+                guard let json = jsonObject as? [String: Any] else {
+                    Logger.shared.log("Invalid JSON format for episode metadata", type: "Error")
+                    completion(nil)
+                    return
+                }
+                
+                // Check if episodes object exists
+                guard let episodes = json["episodes"] as? [String: Any] else {
+                    Logger.shared.log("Missing 'episodes' object in metadata response", type: "Error")
+                    completion(nil)
+                    return
+                }
+                
+                // Check if this specific episode exists in the response
+                let episodeKey = "\(episodeNumber)"
+                guard let episodeDetails = episodes[episodeKey] as? [String: Any] else {
+                    Logger.shared.log("Episode \(episodeKey) not found in metadata response", type: "Warning")
+                    completion(nil)
+                    return
+                }
+                
+                // Extract available fields
+                var title: [String: String] = [:]
+                var image: String = ""
+                
+                if let titleData = episodeDetails["title"] as? [String: String], !titleData.isEmpty {
+                    title = titleData
+                } else {
+                    // Use default title if none available
+                    title = ["en": "Episode \(episodeNumber)"]
+                }
+                
+                if let imageUrl = episodeDetails["image"] as? String, !imageUrl.isEmpty {
+                    image = imageUrl
+                }
+                // If no image, leave empty and let the caller use default banner
+                
+                // Cache whatever metadata we have if caching is enabled
+                if MetadataCacheManager.shared.isCachingEnabled {
+                    let metadata = EpisodeMetadata(
+                        title: title,
+                        imageUrl: image,
+                        anilistId: anilistId,
+                        episodeNumber: episodeNumber
+                    )
+                    
+                    let cacheKey = "anilist_\(anilistId)_episode_\(episodeNumber)"
+                    if let metadataData = metadata.toData() {
+                        MetadataCacheManager.shared.storeMetadata(
+                            metadataData,
+                            forKey: cacheKey
+                        )
+                    }
+                }
+                
+                // Create metadata info object
+                let metadataInfo = EpisodeMetadataInfo(
+                    title: title,
+                    imageUrl: image,
+                    anilistId: anilistId,
+                    episodeNumber: episodeNumber
+                )
+                
+                print("[Bulk Download] Fetched metadata for episode \(episodeNumber): title='\(title["en"] ?? "N/A")', hasImage=\(!image.isEmpty)")
+                completion(metadataInfo)
+                
+            } catch {
+                Logger.shared.log("JSON parsing error for episode metadata: \(error.localizedDescription)", type: "Error")
+                completion(nil)
+            }
+        }.resume()
+    }
+}
+
+// MARK: - Range Selection Sheet (Task MD-5)
+struct RangeSelectionSheet: View {
+    let totalEpisodes: Int
+    let onSelectionComplete: (Int, Int) -> Void
+    
+    @State private var startEpisode: String = "1"
+    @State private var endEpisode: String = ""
+    @State private var showError: Bool = false
+    @State private var errorMessage: String = ""
+    
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Text("Select Episode Range")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.top)
+                
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text("From Episode:")
+                            .frame(width: 100, alignment: .leading)
+                        TextField("1", text: $startEpisode)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.numberPad)
+                    }
+                    
+                    HStack {
+                        Text("To Episode:")
+                            .frame(width: 100, alignment: .leading)
+                        TextField("\(totalEpisodes)", text: $endEpisode)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.numberPad)
+                    }
+                }
+                .padding(.horizontal)
+                
+                if !startEpisode.isEmpty && !endEpisode.isEmpty {
+                    let preview = generatePreviewText()
+                    if !preview.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Preview:")
+                                .font(.headline)
+                            Text(preview)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding()
+                                .background(Color(UIColor.secondarySystemBackground))
+                                .cornerRadius(8)
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+                
+                Spacer()
+                
+                HStack(spacing: 16) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .foregroundColor(.secondary)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color(UIColor.secondarySystemBackground))
+                    .cornerRadius(10)
+                    
+                    Button("Select") {
+                        validateAndSelect()
+                    }
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.accentColor)
+                    .cornerRadius(10)
+                    .disabled(!isValidRange())
+                }
+                .padding(.horizontal)
+                .padding(.bottom)
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitle("Episode Range")
+            .navigationBarItems(trailing: Button("Done") { dismiss() })
+        }
+        .onAppear {
+            endEpisode = "\(totalEpisodes)"
+        }
+        .alert("Invalid Range", isPresented: $showError) {
+            Button("OK") { }
+        } message: {
+            Text(errorMessage)
+        }
+    }
+    
+    private func isValidRange() -> Bool {
+        guard let start = Int(startEpisode),
+              let end = Int(endEpisode) else { return false }
+        
+        return start >= 1 && end <= totalEpisodes && start <= end
+    }
+    
+    private func generatePreviewText() -> String {
+        guard let start = Int(startEpisode),
+              let end = Int(endEpisode),
+              isValidRange() else { return "" }
+        
+        let count = end - start + 1
+        return "Will select \(count) episode\(count == 1 ? "" : "s"): Episodes \(start)-\(end)"
+    }
+    
+    private func validateAndSelect() {
+        guard let start = Int(startEpisode),
+              let end = Int(endEpisode) else {
+            errorMessage = "Please enter valid episode numbers"
+            showError = true
+            return
+        }
+        
+        guard start >= 1 && end <= totalEpisodes else {
+            errorMessage = "Episode numbers must be between 1 and \(totalEpisodes)"
+            showError = true
+            return
+        }
+        
+        guard start <= end else {
+            errorMessage = "Start episode must be less than or equal to end episode"
+            showError = true
+            return
+        }
+        
+        onSelectionComplete(start, end)
+        dismiss()
     }
 }

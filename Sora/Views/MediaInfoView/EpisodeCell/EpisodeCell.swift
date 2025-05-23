@@ -27,6 +27,11 @@ struct EpisodeCell: View {
     var parentTitle: String
     var showPosterURL: String? // Add show poster URL for downloads
     
+    // Multi-select support (Task MD-3)
+    var isMultiSelectMode: Bool = false
+    var isSelected: Bool = false
+    var onSelectionChanged: ((Bool) -> Void)?
+    
     var onTap: (String) -> Void
     var onMarkAllPrevious: () -> Void
     
@@ -72,6 +77,8 @@ struct EpisodeCell: View {
     init(episodeIndex: Int, episode: String, episodeID: Int, progress: Double,
          itemID: Int, totalEpisodes: Int? = nil, defaultBannerImage: String = "",
          module: ScrapingModule, parentTitle: String, showPosterURL: String? = nil,
+         isMultiSelectMode: Bool = false, isSelected: Bool = false,
+         onSelectionChanged: ((Bool) -> Void)? = nil,
          onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void) {
         self.episodeIndex = episodeIndex
         self.episode = episode
@@ -93,12 +100,27 @@ struct EpisodeCell: View {
         self.module = module
         self.parentTitle = parentTitle
         self.showPosterURL = showPosterURL
+        self.isMultiSelectMode = isMultiSelectMode
+        self.isSelected = isSelected
+        self.onSelectionChanged = onSelectionChanged
         self.onTap = onTap
         self.onMarkAllPrevious = onMarkAllPrevious
     }
     
     var body: some View {
         HStack {
+            // Multi-select checkbox (Task MD-3)
+            if isMultiSelectMode {
+                Button(action: {
+                    onSelectionChanged?(!isSelected)
+                }) {
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .foregroundColor(isSelected ? .accentColor : .secondary)
+                        .font(.title3)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            
             episodeThumbnail
             episodeInfo
             Spacer()
@@ -107,6 +129,8 @@ struct EpisodeCell: View {
                 .frame(width: 40, height: 40)
         }
         .contentShape(Rectangle())
+        .background(isMultiSelectMode && isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
+        .cornerRadius(8)
         .contextMenu {
             contextMenuContent
         }
@@ -157,8 +181,12 @@ struct EpisodeCell: View {
             updateDownloadStatus()
         }
         .onTapGesture {
-            let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
-            onTap(imageUrl)
+            if isMultiSelectMode {
+                onSelectionChanged?(!isSelected)
+            } else {
+                let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
+                onTap(imageUrl)
+            }
         }
         .alert("Download Episode", isPresented: $showDownloadConfirmation) {
             Button("Cancel", role: .cancel) {}
@@ -337,8 +365,6 @@ struct EpisodeCell: View {
             downloadStatus = newStatus
         }
     }
-    
-
     
     private func downloadEpisode() {
         // Check the current download status

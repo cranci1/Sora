@@ -169,7 +169,8 @@ extension JSController {
             imageURL: imageURL,
             subtitleURL: subtitleURL,
             asset: asset,
-            headers: headers
+            headers: headers,
+            module: module  // Pass the module to store it for queue processing
         )
         
         // Add to the download queue
@@ -243,6 +244,39 @@ extension JSController {
     
     /// Start a previously queued download
     private func startQueuedDownload(_ queuedDownload: JSActiveDownload) {
+        print("Starting queued download: \(queuedDownload.title ?? queuedDownload.originalURL.lastPathComponent)")
+        
+        // If we have a module, use the same method as manual downloads (this fixes the bug!)
+        if let module = queuedDownload.module {
+            print("Using downloadWithStreamTypeSupport for queued download (same as manual downloads)")
+            
+            // Use the exact same method that manual downloads use
+            downloadWithStreamTypeSupport(
+                url: queuedDownload.originalURL,
+                headers: queuedDownload.headers,
+                title: queuedDownload.title,
+                imageURL: queuedDownload.imageURL,
+                module: module,
+                isEpisode: queuedDownload.type == .episode,
+                showTitle: queuedDownload.metadata?.showTitle,
+                season: queuedDownload.metadata?.season,
+                episode: queuedDownload.metadata?.episode,
+                subtitleURL: queuedDownload.subtitleURL,
+                showPosterURL: queuedDownload.metadata?.showPosterURL,
+                completionHandler: { success, message in
+                    if success {
+                        print("Queued download started successfully via downloadWithStreamTypeSupport")
+                    } else {
+                        print("Queued download failed: \(message)")
+                    }
+                }
+            )
+            return
+        }
+        
+        // Legacy fallback for downloads without module (should rarely be used now)
+        print("Using legacy download method for queued download (no module available)")
+        
         guard let asset = queuedDownload.asset else {
             print("Missing asset for queued download")
             return
@@ -270,7 +304,10 @@ extension JSController {
             metadata: queuedDownload.metadata,
             title: queuedDownload.title,
             imageURL: queuedDownload.imageURL,
-            subtitleURL: queuedDownload.subtitleURL
+            subtitleURL: queuedDownload.subtitleURL,
+            asset: asset,
+            headers: queuedDownload.headers,
+            module: queuedDownload.module
         )
         
         // Add to active downloads
@@ -652,15 +689,18 @@ extension JSController {
         
         // Check each asset and update its location if needed
         for (index, asset) in savedAssets.enumerated() {
-            // Check if the file exists at the stored path
+            var needsUpdate = false
+            var updatedAsset = asset
+            
+            // Check if the video file exists at the stored path
             if !fileManager.fileExists(atPath: asset.localURL.path) {
                 print("Asset file not found at saved path: \(asset.localURL.path)")
                 
                 // Try to find the file in the persistent directory
                 if let persistentURL = findAssetInPersistentStorage(assetName: asset.name) {
-                    // Update the asset with the new URL
+                    // Update the asset with the new video URL
                     print("Found asset in persistent storage: \(persistentURL.path)")
-                    savedAssets[index] = DownloadedAsset(
+                    updatedAsset = DownloadedAsset(
                         id: asset.id,
                         name: asset.name,
                         downloadDate: asset.downloadDate,
@@ -671,13 +711,60 @@ extension JSController {
                         subtitleURL: asset.subtitleURL,
                         localSubtitleURL: asset.localSubtitleURL
                     )
-                    updatedAssets = true
+                    needsUpdate = true
                 } else {
-                    // If we can't find the file, mark it for removal
+                    // If we can't find the video file, mark it for removal
                     print("Asset not found in persistent storage. Marking for removal: \(asset.name)")
                     assetsToRemove.append(asset.id)
                     updatedAssets = true
+                    continue // Skip subtitle validation for assets being removed
                 }
+            }
+            
+            // Check if the subtitle file exists (if one is expected)
+            if let localSubtitleURL = updatedAsset.localSubtitleURL {
+                if !fileManager.fileExists(atPath: localSubtitleURL.path) {
+                    print("Subtitle file not found at saved path: \(localSubtitleURL.path)")
+                    
+                    // Try to find the subtitle file in the persistent directory
+                    if let foundSubtitleURL = findSubtitleInPersistentStorage(assetID: updatedAsset.id.uuidString) {
+                        print("Found subtitle file in persistent storage: \(foundSubtitleURL.path)")
+                        updatedAsset = DownloadedAsset(
+                            id: updatedAsset.id,
+                            name: updatedAsset.name,
+                            downloadDate: updatedAsset.downloadDate,
+                            originalURL: updatedAsset.originalURL,
+                            localURL: updatedAsset.localURL,
+                            type: updatedAsset.type,
+                            metadata: updatedAsset.metadata,
+                            subtitleURL: updatedAsset.subtitleURL,
+                            localSubtitleURL: foundSubtitleURL
+                        )
+                        needsUpdate = true
+                    } else {
+                        // Subtitle file is missing - remove the subtitle reference but keep the video
+                        print("Subtitle file not found in persistent storage for asset: \(updatedAsset.name)")
+                        updatedAsset = DownloadedAsset(
+                            id: updatedAsset.id,
+                            name: updatedAsset.name,
+                            downloadDate: updatedAsset.downloadDate,
+                            originalURL: updatedAsset.originalURL,
+                            localURL: updatedAsset.localURL,
+                            type: updatedAsset.type,
+                            metadata: updatedAsset.metadata,
+                            subtitleURL: updatedAsset.subtitleURL,
+                            localSubtitleURL: nil // Remove the invalid subtitle path
+                        )
+                        needsUpdate = true
+                    }
+                }
+            }
+            
+            // Update the asset if any changes were made
+            if needsUpdate {
+                savedAssets[index] = updatedAsset
+                updatedAssets = true
+                print("Updated asset paths for: \(updatedAsset.name)")
             }
         }
         
@@ -694,6 +781,7 @@ extension JSController {
         // Save the updated asset information if changes were made
         if updatedAssets {
             saveAssets()
+            print("Asset validation complete. Updated \(updatedAssets ? "some" : "no") asset paths.")
         }
     }
     
@@ -736,6 +824,55 @@ extension JSController {
         return nil
     }
     
+    /// Attempts to find a subtitle file in the persistent storage directory
+    /// - Parameter assetID: The ID of the asset to find subtitles for
+    /// - Returns: URL to the found subtitle file or nil if not found
+    private func findSubtitleInPersistentStorage(assetID: String) -> URL? {
+        let fileManager = FileManager.default
+        
+        // Get Application Support directory
+        guard let appSupportDir = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            print("Cannot access Application Support directory for subtitle search")
+            return nil
+        }
+        
+        // Path to our downloads directory
+        let downloadDir = appSupportDir.appendingPathComponent("SoraDownloads", isDirectory: true)
+        
+        // Check if directory exists
+        guard fileManager.fileExists(atPath: downloadDir.path) else {
+            print("Download directory does not exist for subtitle search")
+            return nil
+        }
+        
+        do {
+            // Get all files in the directory
+            let files = try fileManager.contentsOfDirectory(at: downloadDir, includingPropertiesForKeys: nil)
+            
+            // Common subtitle file extensions
+            let subtitleExtensions = ["vtt", "srt", "webvtt"]
+            
+            // Try to find a subtitle file that matches the asset ID pattern
+            for file in files {
+                let filename = file.lastPathComponent
+                let fileExtension = file.pathExtension.lowercased()
+                
+                // Check if this is a subtitle file with the correct naming pattern
+                if subtitleExtensions.contains(fileExtension) &&
+                   filename.hasPrefix("subtitle-\(assetID).") {
+                    print("Found subtitle file for asset \(assetID): \(filename)")
+                    return file
+                }
+            }
+            
+            print("No subtitle file found for asset ID: \(assetID)")
+        } catch {
+            print("Error searching for subtitle in persistent storage: \(error.localizedDescription)")
+        }
+        
+        return nil
+    }
+    
     /// Save assets to UserDefaults
     func saveAssets() {
         do {
@@ -766,7 +903,7 @@ extension JSController {
     /// Delete an asset
     func deleteAsset(_ asset: DownloadedAsset) {
         do {
-            // Check if file exists before attempting to delete
+            // Check if video file exists before attempting to delete
             if FileManager.default.fileExists(atPath: asset.localURL.path) {
                 try FileManager.default.removeItem(at: asset.localURL)
                 print("Deleted asset file: \(asset.localURL.path)")
@@ -774,7 +911,16 @@ extension JSController {
                 print("Asset file not found at path: \(asset.localURL.path)")
             }
             
-            // Remove from saved assets regardless of whether file was found
+            // Also delete subtitle file if it exists
+            if let subtitleURL = asset.localSubtitleURL,
+               FileManager.default.fileExists(atPath: subtitleURL.path) {
+                try FileManager.default.removeItem(at: subtitleURL)
+                print("Deleted subtitle file: \(subtitleURL.path)")
+            } else if asset.localSubtitleURL != nil {
+                print("Subtitle file not found at saved path, but reference existed")
+            }
+            
+            // Remove from saved assets regardless of whether files were found
             savedAssets.removeAll { $0.id == asset.id }
             saveAssets()
             print("Removed asset from library: \(asset.name)")
@@ -1320,6 +1466,7 @@ struct JSActiveDownload: Identifiable, Equatable {
     var queueStatus: DownloadQueueStatus
     var asset: AVURLAsset?
     var headers: [String: String]
+    var module: ScrapingModule?  // Add module property to store ScrapingModule
     
     // Implement Equatable
     static func == (lhs: JSActiveDownload, rhs: JSActiveDownload) -> Bool {
@@ -1345,7 +1492,8 @@ struct JSActiveDownload: Identifiable, Equatable {
         imageURL: URL? = nil,
         subtitleURL: URL? = nil,
         asset: AVURLAsset? = nil,
-        headers: [String: String] = [:]
+        headers: [String: String] = [:],
+        module: ScrapingModule? = nil  // Add module parameter to initializer
     ) {
         self.id = id
         self.originalURL = originalURL
@@ -1359,6 +1507,7 @@ struct JSActiveDownload: Identifiable, Equatable {
         self.queueStatus = queueStatus
         self.asset = asset
         self.headers = headers
+        self.module = module  // Store the module
     }
 }
 

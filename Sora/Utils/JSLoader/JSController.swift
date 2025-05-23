@@ -28,9 +28,14 @@ class JSController: NSObject, ObservableObject {
     var activeDownloadMap: [URLSessionTask: UUID] = [:]
     
     // Download queue management
-    var downloadQueue: [JSActiveDownload] = []
+    @Published var downloadQueue: [JSActiveDownload] = []
     var isProcessingQueue: Bool = false
-    let maxConcurrentDownloads = 3 // Maximum number of concurrent downloads
+    var maxConcurrentDownloads: Int {
+        UserDefaults.standard.object(forKey: "maxConcurrentDownloads") as? Int ?? 3
+    }
+    
+    // Track downloads that have been cancelled to prevent completion processing
+    var cancelledDownloadIDs: Set<UUID> = []
     
     // Download session
     var downloadURLSession: AVAssetDownloadURLSession?
@@ -69,6 +74,32 @@ class JSController: NSObject, ObservableObject {
         context.evaluateScript(script)
         if let exception = context.exception {
             Logger.shared.log("Error loading script: \(exception)", type: "Error")
+        }
+    }
+    
+    // MARK: - Download Settings
+    
+    /// Updates the maximum number of concurrent downloads and processes the queue if new slots are available
+    func updateMaxConcurrentDownloads(_ newLimit: Int) {
+        print("Updating max concurrent downloads from \(maxConcurrentDownloads) to \(newLimit)")
+        
+        // The maxConcurrentDownloads computed property will automatically use the new UserDefaults value
+        // If the new limit is higher and we have queued downloads, process the queue
+        if !downloadQueue.isEmpty && !isProcessingQueue {
+            print("Processing download queue due to increased concurrent limit. Queue has \(downloadQueue.count) items.")
+            
+            // Force UI update before processing queue
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.objectWillChange.send()
+                
+                // Process the queue with a slight delay to ensure UI is ready
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    self?.processDownloadQueue()
+                }
+            }
+        } else {
+            print("No queued downloads to process or queue is already being processed")
         }
     }
     

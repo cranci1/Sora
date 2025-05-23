@@ -197,7 +197,7 @@ extension JSController {
     }
     
     /// Process the download queue and start downloads as slots are available
-    private func processDownloadQueue() {
+    func processDownloadQueue() {
         // Set flag to prevent multiple concurrent processing
         isProcessingQueue = true
         
@@ -212,9 +212,21 @@ extension JSController {
             // Remove these from the queue
             downloadQueue.removeFirst(min(slotsAvailable, downloadQueue.count))
             
-            // Start each download
-            for queuedDownload in nextBatch {
-                startQueuedDownload(queuedDownload)
+            // Force UI update for queue changes first
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                // Trigger @Published update for downloadQueue changes
+                self.objectWillChange.send()
+                
+                // Post notification for queue status change
+                self.postDownloadNotification(.statusChange)
+            }
+            
+            // Start each download with a small delay to ensure UI updates properly
+            for (index, queuedDownload) in nextBatch.enumerated() {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) { [weak self] in
+                    self?.startQueuedDownload(queuedDownload)
+                }
             }
         }
         
@@ -272,16 +284,42 @@ extension JSController {
         // Save the download state
         saveDownloadState()
         
-        // Update UI to show download has started
-        postDownloadNotification(.statusChange)
-        
-        // If this is an episode, also post a progress update to force UI refresh
-        if let episodeNumber = download.metadata?.episode {
-            postDownloadNotification(.progress, userInfo: [
-                "episodeNumber": episodeNumber,
-                "progress": 0.0,
-                "status": "downloading"
-            ])
+        // Force comprehensive UI updates on main thread
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Trigger @Published property updates
+            self.objectWillChange.send()
+            
+            // Post general status change notification
+            self.postDownloadNotification(.statusChange)
+            
+            // If this is an episode, post detailed progress update with downloading status
+            if let episodeNumber = download.metadata?.episode {
+                self.postDownloadNotification(.progress, userInfo: [
+                    "episodeNumber": episodeNumber,
+                    "progress": 0.0,
+                    "status": "downloading"
+                ])
+                
+                // Also post a specific status change notification for this episode
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("episodeStatusChanged"),
+                    object: nil,
+                    userInfo: [
+                        "episodeNumber": episodeNumber,
+                        "showTitle": download.metadata?.showTitle ?? "",
+                        "status": "downloading",
+                        "downloadId": download.id.uuidString
+                    ]
+                )
+            }
+            
+            // Additional UI refresh notification
+            NotificationCenter.default.post(
+                name: NSNotification.Name("forceUIRefresh"),
+                object: nil
+            )
         }
     }
     
@@ -291,6 +329,10 @@ extension JSController {
         
         activeDownloads.removeAll { $0.id == downloadID }
         activeDownloadMap.removeValue(forKey: task)
+        
+        // Clean up cancelled download tracking
+        cancelledDownloadIDs.remove(downloadID)
+        
         saveDownloadState()
         
         print("Cleaned up download task")
@@ -346,6 +388,12 @@ extension JSController {
     ///   - assetID: The ID of the asset this subtitle is associated with
     func downloadSubtitle(subtitleURL: URL, assetID: String) {
         print("Downloading subtitle from: \(subtitleURL.absoluteString) for asset ID: \(assetID)")
+        
+        // Check if this asset belongs to a cancelled download - if so, don't download subtitle
+        if let assetUUID = UUID(uuidString: assetID), cancelledDownloadIDs.contains(assetUUID) {
+            print("Skipping subtitle download for cancelled download: \(assetID)")
+            return
+        }
         
         let session = URLSession.shared
         var request = URLRequest(url: subtitleURL)
@@ -910,6 +958,26 @@ extension JSController {
             print("Cancelled queued download: \(downloadTitle)")
         }
     }
+    
+    /// Cancel an active download that is currently in progress
+    func cancelActiveDownload(_ downloadID: UUID) {
+        // First, immediately mark this download as cancelled to prevent any completion processing
+        cancelledDownloadIDs.insert(downloadID)
+        
+        // Find the active download and cancel its task
+        if let activeDownload = activeDownloads.first(where: { $0.id == downloadID }),
+           let task = activeDownload.task {
+            let downloadTitle = activeDownload.title ?? activeDownload.originalURL.lastPathComponent
+            
+            // Cancel the actual download task
+            task.cancel()
+            
+            // Show notification
+            DropManager.shared.info("Download cancelled: \(downloadTitle)")
+            
+            print("Cancelled active download: \(downloadTitle)")
+        }
+    }
 }
 
 // MARK: - AVAssetDownloadDelegate
@@ -920,6 +988,14 @@ extension JSController: AVAssetDownloadDelegate {
         guard let downloadID = activeDownloadMap[assetDownloadTask],
               let downloadIndex = activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
             print("Download task finished but couldn't find associated download")
+            return
+        }
+        
+        // Check if this download was cancelled - if so, don't process completion
+        if cancelledDownloadIDs.contains(downloadID) {
+            print("Ignoring completion for cancelled download: \(downloadID)")
+            // Delete any temporary files that may have been created
+            try? FileManager.default.removeItem(at: location)
             return
         }
         
@@ -1033,7 +1109,12 @@ extension JSController: AVAssetDownloadDelegate {
             if let urlError = error as? URLError {
                 print("URLError code: \(urlError.code.rawValue)")
                 
-                if urlError.code == .notConnectedToInternet || urlError.code == .networkConnectionLost {
+                // Handle cancellation specifically
+                if urlError.code == .cancelled {
+                    print("Download was cancelled by user")
+                    handleDownloadCancellation(task)
+                    return
+                } else if urlError.code == .notConnectedToInternet || urlError.code == .networkConnectionLost {
                     print("Network error: \(urlError.localizedDescription)")
                     
                     DispatchQueue.main.async {
@@ -1061,6 +1142,72 @@ extension JSController: AVAssetDownloadDelegate {
         }
         
         cleanupDownloadTask(task)
+    }
+    
+    /// Handle download cancellation - clean up without treating as completion
+    private func handleDownloadCancellation(_ task: URLSessionTask) {
+        guard let downloadID = activeDownloadMap[task] else {
+            print("Cancelled download task not found in active downloads")
+            cleanupDownloadTask(task)
+            return
+        }
+        
+        // Mark this download as cancelled to prevent completion processing
+        cancelledDownloadIDs.insert(downloadID)
+        
+        // Find the download object to get its title
+        let downloadTitle = activeDownloads.first { $0.id == downloadID }?.title ?? "Unknown"
+        
+        // Check if there's a partially downloaded file that needs to be deleted
+        if let assetDownloadTask = task as? AVAssetDownloadTask {
+            // For AVAssetDownloadTask, we need to check if any partial files were created
+            // and delete them to prevent them from being considered completed downloads
+            deletePartiallyDownloadedAsset(downloadID: downloadID)
+        }
+        
+        // Show user notification
+        DropManager.shared.info("Download cancelled: \(downloadTitle)")
+        
+        // Clean up the download task (this removes it from activeDownloads and activeDownloadMap)
+        cleanupDownloadTask(task)
+        
+        // Notify observers of cancellation (no cache clearing needed)
+        postDownloadNotification(.statusChange)
+        
+        print("Successfully handled cancellation for: \(downloadTitle)")
+    }
+    
+    /// Delete any partially downloaded assets for a cancelled download
+    private func deletePartiallyDownloadedAsset(downloadID: UUID) {
+        // Check if the asset was already saved to our permanent collection
+        // and remove it if it was (this prevents cancelled downloads from appearing as completed)
+        if let savedAssetIndex = savedAssets.firstIndex(where: { savedAsset in
+            // We can't directly match by download ID since savedAssets don't store it,
+            // so we'll match by checking if this asset was just added (within last few seconds)
+            // and if the download was in progress
+            let wasRecentlyAdded = Date().timeIntervalSince(savedAsset.downloadDate) < 30 // Within 30 seconds
+            return wasRecentlyAdded
+        }) {
+            let assetToDelete = savedAssets[savedAssetIndex]
+            print("Removing cancelled download from saved assets: \(assetToDelete.name)")
+            
+            // Delete the actual file if it exists
+            if FileManager.default.fileExists(atPath: assetToDelete.localURL.path) {
+                do {
+                    try FileManager.default.removeItem(at: assetToDelete.localURL)
+                    print("Deleted partially downloaded file: \(assetToDelete.localURL.path)")
+                } catch {
+                    print("Error deleting partially downloaded file: \(error.localizedDescription)")
+                }
+            }
+            
+            // Remove from saved assets
+            savedAssets.remove(at: savedAssetIndex)
+            saveAssets()
+            
+            // Notify observers that an asset was deleted
+            postDownloadNotification(.deleted)
+        }
     }
     
     /// Update progress of download task

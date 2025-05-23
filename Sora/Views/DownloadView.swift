@@ -75,16 +75,23 @@ struct DownloadView: View {
     // MARK: - Active Downloads View
     private var activeDownloadsView: some View {
         Group {
-            if jsController.activeDownloads.isEmpty {
+            if jsController.activeDownloads.isEmpty && jsController.downloadQueue.isEmpty {
                 emptyActiveDownloadsView
             } else {
-        ScrollView {
-            LazyVStack(spacing: 12) {
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        // Show queued downloads first
+                        ForEach(jsController.downloadQueue) { download in
+                            ActiveDownloadCard(download: download)
+                                .padding(.horizontal)
+                        }
+                        
+                        // Then show active downloads
                         ForEach(jsController.activeDownloads) { download in
                             ActiveDownloadCard(download: download)
-                                    .padding(.horizontal)
-                            }
+                                .padding(.horizontal)
                         }
+                    }
                     .padding(.vertical)
                 }
             }
@@ -411,7 +418,7 @@ struct ActiveDownloadCard: View {
         if download.queueStatus == .queued {
             JSController.shared.cancelQueuedDownload(download.id)
         } else {
-            download.task?.cancel()
+            JSController.shared.cancelActiveDownload(download.id)
         }
     }
 }

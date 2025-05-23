@@ -15,6 +15,7 @@ struct SettingsViewDownloads: View {
     @AppStorage(DownloadQualityPreference.userDefaultsKey) 
     private var downloadQuality = DownloadQualityPreference.defaultPreference.rawValue
     @AppStorage("allowCellularDownloads") private var allowCellularDownloads: Bool = true
+    @AppStorage("maxConcurrentDownloads") private var maxConcurrentDownloads: Int = 3
     @State private var showClearConfirmation = false
     @State private var totalStorageSize: Int64 = 0
     @State private var existingDownloadCount: Int = 0
@@ -22,7 +23,7 @@ struct SettingsViewDownloads: View {
     
     var body: some View {
         Form {
-            Section(header: Text("Download Settings")) {
+            Section(header: Text("Download Settings"), footer: Text("Max concurrent downloads controls how many episodes can download simultaneously. Higher values may use more bandwidth and device resources.")) {
                 Picker("Quality", selection: $downloadQuality) {
                     ForEach(DownloadQualityPreference.allCases, id: \.rawValue) { option in
                         Text(option.rawValue)
@@ -31,6 +32,16 @@ struct SettingsViewDownloads: View {
                 }
                 .onChange(of: downloadQuality) { newValue in
                     print("Download quality preference changed to: \(newValue)")
+                }
+                
+                HStack {
+                    Text("Max Concurrent Downloads")
+                    Spacer()
+                    Stepper("\(maxConcurrentDownloads)", value: $maxConcurrentDownloads, in: 1...10)
+                        .onChange(of: maxConcurrentDownloads) { newValue in
+                            // Update JSController when the setting changes
+                            jsController.updateMaxConcurrentDownloads(newValue)
+                        }
                 }
                 
                 Toggle("Allow Cellular Downloads", isOn: $allowCellularDownloads)
@@ -103,6 +114,8 @@ struct SettingsViewDownloads: View {
         .navigationTitle("Downloads")
         .onAppear {
             calculateTotalStorage()
+            // Sync the max concurrent downloads setting with JSController
+            jsController.updateMaxConcurrentDownloads(maxConcurrentDownloads)
         }
     }
     

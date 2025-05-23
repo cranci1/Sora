@@ -29,6 +29,7 @@ class LogFilterViewModel: ObservableObject {
         ("Stream", "Streaming and video playback.", true),
         ("Error", "Errors and critical issues.", true),
         ("Debug", "Debugging and troubleshooting.", false),
+        ("Download", "HLS video downloading.", true),
         ("HTMLStrings", "", false)
     ]
     

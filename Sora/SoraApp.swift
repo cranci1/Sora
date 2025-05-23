@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 @main
 struct SoraApp: App {
@@ -13,8 +14,12 @@ struct SoraApp: App {
     @StateObject private var moduleManager = ModuleManager()
     @StateObject private var librarykManager = LibraryManager()
     @StateObject private var downloadManager = DownloadManager()
+    @StateObject private var jsController = JSController.shared
     
     init() {
+        _ = MetadataCacheManager.shared
+        _ = KingfisherCacheManager.shared
+        
         if let userAccentColor = UserDefaults.standard.color(forKey: "accentColor") {
             UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).tintColor = userAccentColor
         }
@@ -35,6 +40,7 @@ struct SoraApp: App {
                 .environmentObject(settings)
                 .environmentObject(librarykManager)
                 .environmentObject(downloadManager)
+                .environmentObject(jsController)
                 .accentColor(settings.accentColor)
                 .onAppear {
                     settings.updateAppearance()

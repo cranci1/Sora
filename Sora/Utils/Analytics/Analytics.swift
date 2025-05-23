@@ -15,6 +15,7 @@ struct AnalyticsResponse: Codable {
     let timestamp: String?
 }
 
+@MainActor
 class AnalyticsManager {
     static let shared = AnalyticsManager()
     private let analyticsURL = URL(string: "http://151.106.3.14:47474/analytics")!

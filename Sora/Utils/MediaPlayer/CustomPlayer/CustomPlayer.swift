@@ -1139,24 +1139,23 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     private func setupLockButton() {
-      // copy dim-button styling
-      let cfg = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
-      lockButton = UIButton(type: .system)
-      lockButton.setImage(
-        UIImage(systemName: "lock.open.fill", withConfiguration: cfg),
-        for: .normal
-      )
-      lockButton.tintColor = .white
-      lockButton.layer.shadowColor   = UIColor.black.cgColor
-      lockButton.layer.shadowOffset  = CGSize(width: 0, height: 2)
-      lockButton.layer.shadowOpacity = 0.6
-      lockButton.layer.shadowRadius  = 4
-      lockButton.layer.masksToBounds = false
-
-      lockButton.addTarget(self, action: #selector(lockTapped), for: .touchUpInside)
-
-      view.addSubview(lockButton)
-      lockButton.translatesAutoresizingMaskIntoConstraints = false
+        let cfg = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
+        lockButton = UIButton(type: .system)
+        lockButton.setImage(
+            UIImage(systemName: "lock.open.fill", withConfiguration: cfg),
+            for: .normal
+        )
+        lockButton.tintColor = .white
+        lockButton.layer.shadowColor   = UIColor.black.cgColor
+        lockButton.layer.shadowOffset  = CGSize(width: 0, height: 2)
+        lockButton.layer.shadowOpacity = 0.6
+        lockButton.layer.shadowRadius  = 4
+        lockButton.layer.masksToBounds = false
+        
+        lockButton.addTarget(self, action: #selector(lockTapped), for: .touchUpInside)
+        
+        view.addSubview(lockButton)
+        lockButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             lockButton.topAnchor.constraint(equalTo: volumeSliderHostingView!.bottomAnchor, constant: 60),
             lockButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor),
@@ -1531,34 +1530,33 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             updateSkipButtonsVisibility()
             return
         }
-
+        
         if isDimmed {
-                // show the dim button
-                dimButton.isHidden = false
-                dimButton.alpha = 1.0
-                dimButtonTimer?.invalidate()
-                dimButtonTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
-                    UIView.animate(withDuration: 0.3) {
-                        self?.dimButton.alpha = 0
-                    }
+            dimButton.isHidden = false
+            dimButton.alpha = 1.0
+            dimButtonTimer?.invalidate()
+            dimButtonTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
+                UIView.animate(withDuration: 0.3) {
+                    self?.dimButton.alpha = 0
                 }
-
-                updateSkipButtonsVisibility()
-                return
             }
-
+            
+            updateSkipButtonsVisibility()
+            return
+        }
+        
         isControlsVisible.toggle()
-           UIView.animate(withDuration: 0.2) {
-               let alpha: CGFloat = self.isControlsVisible ? 1.0 : 0.0
-               self.controlsContainerView.alpha = alpha
-               self.skip85Button.alpha = alpha
-               self.lockButton.alpha = alpha // Fade lock button with controls
-               self.subtitleBottomToSafeAreaConstraint?.isActive = !self.isControlsVisible
-               self.subtitleBottomToSliderConstraint?.isActive = self.isControlsVisible
-               self.view.layoutIfNeeded()
-           }
-           updateSkipButtonsVisibility()
-       }
+        UIView.animate(withDuration: 0.2) {
+            let alpha: CGFloat = self.isControlsVisible ? 1.0 : 0.0
+            self.controlsContainerView.alpha = alpha
+            self.skip85Button.alpha = alpha
+            self.lockButton.alpha = alpha
+            self.subtitleBottomToSafeAreaConstraint?.isActive = !self.isControlsVisible
+            self.subtitleBottomToSliderConstraint?.isActive = self.isControlsVisible
+            self.view.layoutIfNeeded()
+        }
+        updateSkipButtonsVisibility()
+    }
     
     @objc func seekBackwardLongPress(_ gesture: UILongPressGestureRecognizer) {
         if gesture.state == .began {
@@ -1645,10 +1643,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     @objc private func lockTapped() {
         controlsLocked.toggle()
-
+        
         isControlsVisible = !controlsLocked
         lockButtonTimer?.invalidate()
-
+        
         if controlsLocked {
             UIView.animate(withDuration: 0.25) {
                 self.controlsContainerView.alpha = 0
@@ -1658,13 +1656,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self.skipOutroButton.alpha = 0
                 self.skip85Button.alpha    = 0
                 self.lockButton.alpha = 0
-
+                
                 self.subtitleBottomToSafeAreaConstraint?.isActive = true
                 self.subtitleBottomToSliderConstraint?.isActive    = false
-
+                
                 self.view.layoutIfNeeded()
             }
-
+            
             lockButton.setImage(UIImage(systemName: "lock.fill"), for: .normal)
             
         } else {
@@ -1672,13 +1670,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self.controlsContainerView.alpha = 1
                 self.dimButton.alpha             = 1
                 for v in self.controlsToHide { v.alpha = 1 }
-
+                
                 self.subtitleBottomToSafeAreaConstraint?.isActive = false
                 self.subtitleBottomToSliderConstraint?.isActive    = true
-
+                
                 self.view.layoutIfNeeded()
             }
-
+            
             lockButton.setImage(UIImage(systemName: "lock.open.fill"), for: .normal)
             updateSkipButtonsVisibility()
         }
@@ -1733,14 +1731,14 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             for v in self.controlsToHide { v.alpha = self.isDimmed ? 0 : 1 }
             self.dimButton.alpha  = self.isDimmed ? 0 : 1
             self.lockButton.alpha = self.isDimmed ? 0 : 1
-
+            
             // switch subtitle constraints just like toggleControls()
             self.subtitleBottomToSafeAreaConstraint?.isActive = !self.isControlsVisible
             self.subtitleBottomToSliderConstraint?.isActive    =  self.isControlsVisible
-
+            
             self.view.layoutIfNeeded()
         }
-
+        
         // slide the dim-icon over
         dimButtonToSlider.isActive = !isDimmed
         dimButtonToRight.isActive  =  isDimmed

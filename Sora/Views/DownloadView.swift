@@ -469,12 +469,9 @@ struct DownloadGroupCard: View {
                 
                 // Navigation chevron
                 Image(systemName: "chevron.right")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.gray)
                     .font(.caption)
             }
-            .padding()
-            .background(Color(UIColor.secondarySystemBackground))
-            .cornerRadius(12)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -575,6 +572,36 @@ struct ShowEpisodesView: View {
     @State private var assetToDelete: DownloadedAsset?
     @EnvironmentObject var jsController: JSController
     
+    // Episode sorting state
+    @State private var episodeSortOption: EpisodeSortOption = .downloadDate
+    
+    // Episode sort options enum
+    enum EpisodeSortOption: String, CaseIterable, Identifiable {
+        case downloadDate = "Download Date"
+        case episodeOrder = "Episode Order"
+        
+        var id: String { self.rawValue }
+        
+        var systemImage: String {
+            switch self {
+            case .downloadDate:
+                return "clock.arrow.circlepath"
+            case .episodeOrder:
+                return "list.number"
+            }
+        }
+    }
+    
+    // Computed property for sorted episodes
+    private var sortedEpisodes: [DownloadedAsset] {
+        switch episodeSortOption {
+        case .downloadDate:
+            return group.assets.sorted { $0.downloadDate > $1.downloadDate }
+        case .episodeOrder:
+            return group.assets.sorted { $0.episodeOrderPriority < $1.episodeOrderPriority }
+        }
+    }
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -628,6 +655,29 @@ struct ShowEpisodesView: View {
                         
                         Spacer()
                         
+                        // Sort toggle menu
+                        Menu {
+                            ForEach(EpisodeSortOption.allCases) { option in
+                                Button(action: {
+                                    episodeSortOption = option
+                                }) {
+                                    HStack {
+                                        Text(option.rawValue)
+                                        if episodeSortOption == option {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: episodeSortOption.systemImage)
+                                Text("Sort")
+                            }
+                            .font(.subheadline)
+                            .foregroundColor(.blue)
+                        }
+                        
                         Button(action: {
                             showDeleteAllAlert = true
                         }) {
@@ -647,7 +697,7 @@ struct ShowEpisodesView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                     } else {
                         LazyVStack(spacing: 8) {
-                            ForEach(group.assets) { asset in
+                            ForEach(sortedEpisodes) { asset in
                                 DetailedEpisodeRow(asset: asset)
                                 .padding(.horizontal)
                                 .background(Color(UIColor.secondarySystemBackground))

@@ -241,6 +241,19 @@ struct FullWidthContinueWatchingCell: View {
                                     }
                                 }
                                 .padding(10)
+                                .background(
+                                    LinearGradient(
+                                        colors: [
+                                            .black.opacity(0.7),
+                                            .black.opacity(0.0)
+                                        ],
+                                        startPoint: .bottom,
+                                        endPoint: .top
+                                    )
+                                    .clipped()
+                                    .cornerRadius(10, corners: [.bottomLeft, .bottomRight])
+                                    .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
+                                )
                             },
                             alignment: .bottom
                         )

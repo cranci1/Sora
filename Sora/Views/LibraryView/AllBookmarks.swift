@@ -125,6 +125,7 @@ struct BookmarksDetailView: View {
                 }
                 .padding(.top)
                 .padding()
+                .scrollViewBottomPadding()
             }
         }
         .navigationBarBackButtonHidden(true)

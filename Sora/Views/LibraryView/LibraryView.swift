@@ -10,37 +10,26 @@ import Kingfisher
 import UIKit
 
 struct LibraryView: View {
-    @EnvironmentObject private
-    var libraryManager: LibraryManager
-    @EnvironmentObject private
-    var moduleManager: ModuleManager
+    @EnvironmentObject private var libraryManager: LibraryManager
+    @EnvironmentObject private var moduleManager: ModuleManager
 
-    @AppStorage("mediaColumnsPortrait") private
-    var mediaColumnsPortrait: Int = 2
-    @AppStorage("mediaColumnsLandscape") private
-    var mediaColumnsLandscape: Int = 4
+    @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
+    @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
 
     @Environment(\.verticalSizeClass) var verticalSizeClass
 
-    @State private
-    var selectedBookmark: LibraryItem ? = nil
-    @State private
-    var isDetailActive: Bool = false
+    @State private var selectedBookmark: LibraryItem? = nil
+    @State private var isDetailActive: Bool = false
 
-    @State private
-    var continueWatchingItems: [ContinueWatchingItem] = []
-    @State private
-    var isLandscape: Bool = UIDevice.current.orientation.isLandscape
-    @State private
-    var selectedTab: Int = 0
+    @State private var continueWatchingItems: [ContinueWatchingItem] = []
+    @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
+    @State private var selectedTab: Int = 0
 
-    private
-    let columns = [
+    private let columns = [
         GridItem(.adaptive(minimum: 150), spacing: 12)
     ]
 
-    private
-    var columnsCount: Int {
+    private var columnsCount: Int {
         if UIDevice.current.userInterfaceIdiom == .pad {
             let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
             return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
@@ -49,16 +38,11 @@ struct LibraryView: View {
         }
     }
 
-    private
-    var cellWidth: CGFloat {
+    private var cellWidth: CGFloat {
         let keyWindow = UIApplication.shared.connectedScenes
-            .compactMap {
-                ($0 as ? UIWindowScene) ? .windows.first(where: {
-                    $0.isKeyWindow
-                })
-            }
+            .compactMap { ($0 as? UIWindowScene)?.windows.first(where: { $0.isKeyWindow }) }
             .first
-        let safeAreaInsets = keyWindow ? .safeAreaInsets ? ? .zero
+        let safeAreaInsets = keyWindow?.safeAreaInsets ?? .zero
         let safeWidth = UIScreen.main.bounds.width - safeAreaInsets.left - safeAreaInsets.right
         let totalSpacing: CGFloat = 16 * CGFloat(columnsCount + 1)
         let availableWidth = safeWidth - totalSpacing
@@ -173,6 +157,7 @@ struct LibraryView: View {
                         }
                         .padding(.bottom, 20)
                 }
+                .scrollViewBottomPadding()
                 .onAppear {
                     fetchContinueWatching()
                 }
@@ -209,7 +194,7 @@ struct LibraryView: View {
         }
     }
 
-    private func determineColumns() - > Int {
+    private func determineColumns() -> Int {
         if UIDevice.current.userInterfaceIdiom == .pad {
             return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
         } else {
@@ -221,8 +206,8 @@ struct LibraryView: View {
 struct ContinueWatchingSection: View {
     @Binding
     var items: [ContinueWatchingItem]
-    var markAsWatched: (ContinueWatchingItem) - > Void
-    var removeItem: (ContinueWatchingItem) - > Void
+    var markAsWatched: (ContinueWatchingItem) -> Void
+    var removeItem: (ContinueWatchingItem) -> Void
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -243,8 +228,8 @@ struct ContinueWatchingSection: View {
 
 struct ContinueWatchingCell: View {
     let item: ContinueWatchingItem
-    var markAsWatched: () - > Void
-    var removeItem: () - > Void
+    var markAsWatched: () -> Void
+    var removeItem: () -> Void
 
     @State private
     var currentProgress: Double = 0.0
@@ -258,12 +243,12 @@ struct ContinueWatchingCell: View {
                     videoPlayerViewController.episodeImageUrl = item.imageUrl
                     videoPlayerViewController.episodeNumber = item.episodeNumber
                     videoPlayerViewController.mediaTitle = item.mediaTitle
-                    videoPlayerViewController.subtitles = item.subtitles ? ? ""
-                    videoPlayerViewController.aniListID = item.aniListID ? ? 0
+                    videoPlayerViewController.subtitles = item.subtitles ?? ""
+                    videoPlayerViewController.aniListID = item.aniListID ?? 0
                     videoPlayerViewController.modalPresentationStyle = .fullScreen
 
-                    if let windowScene = UIApplication.shared.connectedScenes.first as ? UIWindowScene,
-                        let rootVC = windowScene.windows.first ? .rootViewController {
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                        let rootVC = windowScene.windows.first?.rootViewController {
                             findTopViewController.findViewController(rootVC).present(videoPlayerViewController, animated: true, completion: nil)
                         }
                 } else {
@@ -275,14 +260,14 @@ struct ContinueWatchingCell: View {
                         episodeNumber: item.episodeNumber,
                         onWatchNext: {},
                         subtitlesURL: item.subtitles,
-                        aniListID: item.aniListID ? ? 0,
-                        episodeImageUrl : item.imageUrl,
-                        headers : item.headers ? ? nil
+                        aniListID: item.aniListID ?? 0,
+                        episodeImageUrl: item.imageUrl,
+                        headers: item.headers ?? nil
                     )
                     customMediaPlayer.modalPresentationStyle = .fullScreen
 
-                    if let windowScene = UIApplication.shared.connectedScenes.first as ? UIWindowScene,
-                        let rootVC = windowScene.windows.first ? .rootViewController {
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                        let rootVC = windowScene.windows.first?.rootViewController {
                             findTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
                         }
                 }
@@ -410,7 +395,7 @@ struct RoundedCorner: Shape {
     var radius: CGFloat = .infinity
     var corners: UIRectCorner = .allCorners
 
-    func path( in rect: CGRect) - > Path {
+    func path( in rect: CGRect) -> Path {
         let path = UIBezierPath(
             roundedRect: rect,
             byRoundingCorners: corners,
@@ -421,11 +406,11 @@ struct RoundedCorner: Shape {
 }
 
 extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) - > some View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
         clipShape(RoundedCorner(radius: radius, corners: corners))
     }
 
-    func gradientOutline() - > some View {
+    func gradientOutline() -> some View {
         self.background(
             RoundedRectangle(cornerRadius: 15)
             .stroke(
@@ -444,15 +429,11 @@ extension View {
 }
 
 struct BookmarksSection: View {
-    @EnvironmentObject private
-    var libraryManager: LibraryManager
-    @EnvironmentObject private
-    var moduleManager: ModuleManager
+    @EnvironmentObject private var libraryManager: LibraryManager
+    @EnvironmentObject private var moduleManager: ModuleManager
 
-    @Binding
-    var selectedBookmark: LibraryItem ?
-        @Binding
-    var isDetailActive: Bool
+    @Binding var selectedBookmark: LibraryItem?
+    @Binding var isDetailActive: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -486,15 +467,11 @@ struct EmptyBookmarksView: View {
 }
 
 struct BookmarksGridView: View {
-    @EnvironmentObject private
-    var libraryManager: LibraryManager
-    @EnvironmentObject private
-    var moduleManager: ModuleManager
+    @EnvironmentObject private var libraryManager: LibraryManager
+    @EnvironmentObject private var moduleManager: ModuleManager
 
-    @Binding
-    var selectedBookmark: LibraryItem ?
-        @Binding
-    var isDetailActive: Bool
+    @Binding var selectedBookmark: LibraryItem?
+    @Binding var isDetailActive: Bool
 
     private
     var recentBookmarks: [LibraryItem] {
@@ -519,16 +496,12 @@ struct BookmarksGridView: View {
 }
 
 struct BookmarkItemView: View {
-    @EnvironmentObject private
-    var libraryManager: LibraryManager
-    @EnvironmentObject private
-    var moduleManager: ModuleManager
+    @EnvironmentObject private var libraryManager: LibraryManager
+    @EnvironmentObject private var moduleManager: ModuleManager
 
     let item: LibraryItem
-    @Binding
-    var selectedBookmark: LibraryItem ?
-        @Binding
-    var isDetailActive: Bool
+    @Binding var selectedBookmark: LibraryItem?
+    @Binding var isDetailActive: Bool
 
     var body: some View {
         if let module = moduleManager.modules.first(where: {

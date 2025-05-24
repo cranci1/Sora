@@ -121,6 +121,7 @@ struct AllWatchingView: View {
                 }
                 .padding(.top)
                 .padding()
+                .scrollViewBottomPadding()
             }
         }
         .navigationBarBackButtonHidden(true)

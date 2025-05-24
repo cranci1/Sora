@@ -192,7 +192,7 @@ struct TabBar: View {
                 Image(systemName: tab.icon + (selectedTab == index ? ".fill" : ""))
                     .frame(width: 28, height: 28)
                     .matchedGeometryEffect(id: tab.icon, in: animation)
-                    .foregroundStyle(selectedTab == index ? .white : .gray)
+                    .foregroundStyle(selectedTab == index ? .black : .gray)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 10)
                     .frame(maxWidth: .infinity)
@@ -202,7 +202,7 @@ struct TabBar: View {
                     Image(systemName: tab.icon + (selectedTab == index ? ".fill" : ""))
                         .frame(width: 36, height: 18)
                         .matchedGeometryEffect(id: tab.icon, in: animation)
-                        .foregroundStyle(selectedTab == index ? .white : .gray)
+                        .foregroundStyle(selectedTab == index ? .black : .gray)
                     
                     Text(tab.title)
                         .font(.caption)
@@ -219,13 +219,7 @@ struct TabBar: View {
         .background(
             selectedTab == index ?
             Capsule()
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [Color.black, Color(hex: "#151515")]),
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+                .fill(.white)
                 .shadow(color: .black.opacity(0.2), radius: 6)
                 .matchedGeometryEffect(id: "background_capsule", in: animation)
             : nil

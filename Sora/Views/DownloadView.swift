@@ -88,6 +88,7 @@ struct DownloadView: View {
                         }
                     }
                     .padding(.vertical)
+                    .scrollViewBottomPadding()
                 }
             }
         }
@@ -113,6 +114,7 @@ struct DownloadView: View {
                         }
                     }
                     .padding(.vertical)
+                    .scrollViewBottomPadding()
                 }
             }
         }

@@ -10,94 +10,193 @@ import SwiftUI
 struct SettingsView: View {
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Main")) {
-                    NavigationLink(destination: SettingsViewGeneral()) {
-                        Text("General Preferences")
+            ScrollView {
+                VStack(spacing: 24) {
+                    Text("Settings")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("MAIN")
+                            .font(.footnote)
+                            .foregroundStyle(.gray)
+                            .padding(.horizontal, 20)
+                        
+                        VStack(spacing: 0) {
+                            NavigationLink(destination: SettingsViewGeneral()) {
+                                SettingsRow(icon: "gearshape", title: "General Preferences")
+                            }
+                            
+                            Divider()
+                                .padding(.horizontal, 16)
+                            
+                            NavigationLink(destination: SettingsViewPlayer()) {
+                                SettingsRow(icon: "play.circle", title: "Video Player")
+                            }
+                            
+                            Divider()
+                                .padding(.horizontal, 16)
+                            
+                            NavigationLink(destination: SettingsViewModule()) {
+                                SettingsRow(icon: "cube", title: "Modules")
+                            }
+                            
+                            Divider()
+                                .padding(.horizontal, 16)
+                            
+                            NavigationLink(destination: SettingsViewTrackers()) {
+                                SettingsRow(icon: "square.stack.3d.up", title: "Trackers")
+                            }
+                        }
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .strokeBorder(
+                                    LinearGradient(
+                                        gradient: Gradient(stops: [
+                                            .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                            .init(color: Color.accentColor.opacity(0), location: 1)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ),
+                                    lineWidth: 0.5
+                                )
+                        )
+                        .padding(.horizontal, 20)
                     }
-                    NavigationLink(destination: SettingsViewPlayer()) {
-                        Text("Media Player")
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("DATA/LOGS")
+                            .font(.footnote)
+                            .foregroundStyle(.gray)
+                            .padding(.horizontal, 20)
+                        
+                        VStack(spacing: 0) {
+                            NavigationLink(destination: SettingsViewData()) {
+                                SettingsRow(icon: "folder", title: "Data")
+                            }
+                            
+                            Divider()
+                                .padding(.horizontal, 16)
+                            
+                            NavigationLink(destination: SettingsViewLogger()) {
+                                SettingsRow(icon: "doc.text", title: "Logs")
+                            }
+                        }
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .strokeBorder(
+                                    LinearGradient(
+                                        gradient: Gradient(stops: [
+                                            .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                            .init(color: Color.accentColor.opacity(0), location: 1)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ),
+                                    lineWidth: 0.5
+                                )
+                        )
+                        .padding(.horizontal, 20)
                     }
-                    NavigationLink(destination: SettingsViewDownloads().environmentObject(JSController.shared)) {
-                        Text("Downloads")
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("INFOS")
+                            .font(.footnote)
+                            .foregroundStyle(.gray)
+                            .padding(.horizontal, 20)
+                        
+                        VStack(spacing: 0) {
+                            Link(destination: URL(string: "https://github.com/cranci1/Sora")!) {
+                                SettingsRow(icon: "chevron.left.forwardslash.chevron.right", title: "Sora GitHub Repository", isExternal: true, textColor: .gray)
+                            }
+                            
+                            Divider()
+                                .padding(.horizontal, 16)
+                            
+                            Link(destination: URL(string: "https://discord.gg/x7hppDWFDZ")!) {
+                                SettingsRow(icon: "bubble.left.and.bubble.right", title: "Join the Discord", isExternal: true, textColor: .gray)
+                            }
+                            
+                            Divider()
+                                .padding(.horizontal, 16)
+                            
+                            Link(destination: URL(string: "https://github.com/cranci1/Sora/issues")!) {
+                                SettingsRow(icon: "exclamationmark.circle", title: "Report an Issue", isExternal: true, textColor: .gray)
+                            }
+                            
+                            Divider()
+                                .padding(.horizontal, 16)
+                            
+                            Link(destination: URL(string: "https://github.com/cranci1/Sora/blob/dev/LICENSE")!) {
+                                SettingsRow(icon: "doc.text", title: "License (GPLv3.0)", isExternal: true, textColor: .gray)
+                            }
+                        }
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .strokeBorder(
+                                    LinearGradient(
+                                        gradient: Gradient(stops: [
+                                            .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                            .init(color: Color.accentColor.opacity(0), location: 1)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ),
+                                    lineWidth: 0.5
+                                )
+                        )
+                        .padding(.horizontal, 20)
                     }
-                    NavigationLink(destination: SettingsViewModule()) {
-                        Text("Modules")
-                    }
-                    NavigationLink(destination: SettingsViewTrackers()) {
-                        Text("Trackers")
-                    }
+                    
+                    Text("Running Sora 0.3.0 - cranci1")
+                        .font(.footnote)
+                        .foregroundStyle(.gray)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 8)
                 }
-                
-                Section(header: Text("Info")) {
-                    NavigationLink(destination: SettingsViewData()) {
-                        Text("Data")
-                    }
-                    NavigationLink(destination: SettingsViewLogger()) {
-                        Text("Logs")
-                    }
-                }
-                
-                Section(header: Text("Info")) {
-                    Button(action: {
-                        if let url = URL(string: "https://github.com/cranci1/Sora") {
-                            UIApplication.shared.open(url)
-                        }
-                    }) {
-                        HStack {
-                            Text("Sora github repo")
-                                .foregroundColor(.primary)
-                            Spacer()
-                            Image(systemName: "safari")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    Button(action: {
-                        if let url = URL(string: "https://discord.gg/x7hppDWFDZ") {
-                            UIApplication.shared.open(url)
-                        }
-                    }) {
-                        HStack {
-                            Text("Join the Discord")
-                                .foregroundColor(.primary)
-                            Spacer()
-                            Image(systemName: "safari")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    Button(action: {
-                        if let url = URL(string: "https://github.com/cranci1/Sora/issues") {
-                            UIApplication.shared.open(url)
-                        }
-                    }) {
-                        HStack {
-                            Text("Report an issue")
-                                .foregroundColor(.primary)
-                            Spacer()
-                            Image(systemName: "safari")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    Button(action: {
-                        if let url = URL(string: "https://github.com/cranci1/Sora/blob/dev/LICENSE") {
-                            UIApplication.shared.open(url)
-                        }
-                    }) {
-                        HStack {
-                            Text("Licensed under GPLv3.0")
-                                .foregroundColor(.primary)
-                            Spacer()
-                            Image(systemName: "safari")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                Section(footer: Text("Running Sora 0.3.0 - cranci1")) {}
+                .scrollViewBottomPadding()
+                .padding(.bottom, 20)
             }
-            .navigationTitle("Settings")
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .dynamicAccentColor()
+        .navigationBarHidden(true)
+    }
+}
+
+struct SettingsRow: View {
+    let icon: String
+    let title: String
+    var isExternal: Bool = false
+    var textColor: Color = .primary
+    
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .frame(width: 24, height: 24)
+                .foregroundStyle(textColor)
+            
+            Text(title)
+                .foregroundStyle(textColor)
+            
+            Spacer()
+            
+            Image(systemName: isExternal ? "arrow.up.forward" : "chevron.right")
+                .foregroundStyle(.gray)
+                .font(.footnote)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
     }
 }
 

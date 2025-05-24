@@ -6,25 +6,81 @@
 //
 
 import SwiftUI
+import Kingfisher
+
+fileprivate struct SettingsSection<Content: View>: View {
+    let title: String
+    let footer: String?
+    let content: Content
+    
+    init(title: String, footer: String? = nil, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.footer = footer
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title.uppercased())
+                .font(.footnote)
+                .foregroundStyle(.gray)
+                .padding(.horizontal, 20)
+            
+            VStack(spacing: 0) {
+                content
+            }
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+            .padding(.horizontal, 20)
+            
+            if let footer = footer {
+                Text(footer)
+                    .font(.footnote)
+                    .foregroundStyle(.gray)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+            }
+        }
+        .scrollViewBottomPadding()
+    }
+}
 
 struct SettingsViewLogger: View {
     @State private var logs: String = ""
     @StateObject private var filterViewModel = LogFilterViewModel.shared
     
     var body: some View {
-        VStack {
-            ScrollView {
-                Text(logs)
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
-                    .textSelection(.enabled)
+        ScrollView {
+            VStack(spacing: 24) {
+                SettingsSection(title: "Logs") {
+                    Text(logs)
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .textSelection(.enabled)
+                }
             }
-            .navigationTitle("Logs")
-            .onAppear {
-                logs = Logger.shared.getLogs()
-            }
+            .padding(.vertical, 20)
+        }
+        .navigationTitle("Logs")
+        .onAppear {
+            logs = Logger.shared.getLogs()
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

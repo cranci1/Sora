@@ -7,6 +7,96 @@
 
 import SwiftUI
 
+fileprivate struct SettingsSection<Content: View>: View {
+    let title: String
+    let footer: String?
+    let content: Content
+    
+    init(title: String, footer: String? = nil, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.footer = footer
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title.uppercased())
+                .font(.footnote)
+                .foregroundStyle(.gray)
+                .padding(.horizontal, 20)
+            
+            VStack(spacing: 0) {
+                content
+            }
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+            .padding(.horizontal, 20)
+            
+            if let footer = footer {
+                Text(footer)
+                    .font(.footnote)
+                    .foregroundStyle(.gray)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+            }
+        }
+    }
+}
+
+fileprivate struct SettingsToggleRow: View {
+    let icon: String
+    let title: String
+    @Binding var isOn: Bool
+    var showDivider: Bool = true
+    
+    init(icon: String, title: String, isOn: Binding<Bool>, showDivider: Bool = true) {
+        self.icon = icon
+        self.title = title
+        self._isOn = isOn
+        self.showDivider = showDivider
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Image(systemName: icon)
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(.primary)
+                
+                Text(title)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
+                Toggle("", isOn: $isOn)
+                    .labelsHidden()
+                    .tint(.accentColor)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            
+            if showDivider {
+                Divider()
+                    .padding(.horizontal, 16)
+            }
+        }
+    }
+}
+
 struct SettingsViewData: View {
     @State private var showEraseAppDataAlert = false
     @State private var showRemoveDocumentsAlert = false
@@ -18,107 +108,185 @@ struct SettingsViewData: View {
     @State private var movPkgSize: Int64 = 0
     @State private var showRemoveMovPkgAlert = false
     
-    // State bindings for cache settings
     @State private var isMetadataCachingEnabled: Bool = true
     @State private var isImageCachingEnabled: Bool = true
     @State private var isMemoryOnlyMode: Bool = false
     
     var body: some View {
-        Form {
-            // New section for cache settings
-            Section(header: Text("Cache Settings"), footer: Text("Caching helps reduce network usage and load content faster. You can disable it to save storage space.")) {
-                Toggle("Enable Metadata Caching", isOn: $isMetadataCachingEnabled)
+        ScrollView {
+            VStack(spacing: 24) {
+                SettingsSection(
+                    title: "Cache Settings",
+                    footer: "Caching helps reduce network usage and load content faster. You can disable it to save storage space."
+                ) {
+                    SettingsToggleRow(
+                        icon: "doc.text",
+                        title: "Enable Metadata Caching",
+                        isOn: $isMetadataCachingEnabled
+                    )
                     .onChange(of: isMetadataCachingEnabled) { newValue in
                         MetadataCacheManager.shared.isCachingEnabled = newValue
                         if !newValue {
                             calculateCacheSize()
                         }
                     }
-                
-                Toggle("Enable Image Caching", isOn: $isImageCachingEnabled)
+                    
+                    SettingsToggleRow(
+                        icon: "photo",
+                        title: "Enable Image Caching",
+                        isOn: $isImageCachingEnabled
+                    )
                     .onChange(of: isImageCachingEnabled) { newValue in
                         KingfisherCacheManager.shared.isCachingEnabled = newValue
                         if !newValue {
                             calculateCacheSize()
                         }
                     }
-                
-                if isMetadataCachingEnabled {
-                    Toggle("Memory-Only Mode", isOn: $isMemoryOnlyMode)
+                    
+                    if isMetadataCachingEnabled {
+                        SettingsToggleRow(
+                            icon: "memorychip",
+                            title: "Memory-Only Mode",
+                            isOn: $isMemoryOnlyMode
+                        )
                         .onChange(of: isMemoryOnlyMode) { newValue in
                             MetadataCacheManager.shared.isMemoryOnlyMode = newValue
                             if newValue {
-                                // Clear disk cache when switching to memory-only
                                 MetadataCacheManager.shared.clearAllCache()
                                 calculateCacheSize()
                             }
                         }
-                }
-                
-                HStack {
-                    Text("Current Cache Size")
-                    Spacer()
-                    if isCalculatingSize {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                            .padding(.trailing, 5)
                     }
-                    Text(cacheSizeText)
-                        .foregroundColor(.secondary)
+                    
+                    HStack {
+                        Image(systemName: "folder.badge.gearshape")
+                            .frame(width: 24, height: 24)
+                            .foregroundStyle(.primary)
+                        
+                        Text("Current Cache Size")
+                            .foregroundStyle(.primary)
+                        
+                        Spacer()
+                        
+                        if isCalculatingSize {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                                .padding(.trailing, 5)
+                        }
+                        Text(cacheSizeText)
+                            .foregroundStyle(.gray)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    
+                    Button(action: clearAllCaches) {
+                        HStack {
+                            Image(systemName: "trash")
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(.red)
+                            
+                            Text("Clear All Caches")
+                                .foregroundStyle(.red)
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                    }
                 }
                 
-                Button(action: clearAllCaches) {
-                    Text("Clear All Caches")
-                        .foregroundColor(.red)
-                }
-            }
-            
-            Section(header: Text("App storage"), footer: Text("The caches used by Sora are stored images that help load content faster\n\nThe App Data should never be erased if you dont know what that will cause.\n\nClearing the documents folder will remove all the modules and downloads")) {
-                HStack {
+                SettingsSection(
+                    title: "App Storage",
+                    footer: "The caches used by Sora are stored images that help load content faster\n\nThe App Data should never be erased if you dont know what that will cause.\n\nClearing the documents folder will remove all the modules and downloads"
+                ) {
                     Button(action: clearCache) {
-                        Text("Clear Cache")
+                        HStack {
+                            Image(systemName: "trash")
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(.red)
+                            
+                            Text("Clear Cache")
+                                .foregroundStyle(.red)
+                            
+                            Spacer()
+                            
+                            Text(formatSize(cacheSize))
+                                .font(.subheadline)
+                                .foregroundStyle(.gray)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
-                    Spacer()
-                    Text("\(formatSize(cacheSize))")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                
-                HStack {
-                    Button(action: {
-                        showRemoveDocumentsAlert = true
-                    }) {
-                        Text("Remove All Files in Documents")
+                    
+                    Divider()
+                        .padding(.horizontal, 16)
+                    
+                    Button(action: { showRemoveDocumentsAlert = true }) {
+                        HStack {
+                            Image(systemName: "doc.text")
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(.red)
+                            
+                            Text("Remove All Files in Documents")
+                                .foregroundStyle(.red)
+                            
+                            Spacer()
+                            
+                            Text(formatSize(documentsSize))
+                                .font(.subheadline)
+                                .foregroundStyle(.gray)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
-                    Spacer()
-                    Text("\(formatSize(documentsSize))")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                
-                HStack {
-                    Button(action: {
-                        showRemoveMovPkgAlert = true
-                    }) {
-                        Text("Remove Downloads")
+                    
+                    Divider()
+                        .padding(.horizontal, 16)
+                    
+                    Button(action: { showRemoveMovPkgAlert = true }) {
+                        HStack {
+                            Image(systemName: "arrow.down.circle")
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(.red)
+                            
+                            Text("Remove Downloads")
+                                .foregroundStyle(.red)
+                            
+                            Spacer()
+                            
+                            Text(formatSize(movPkgSize))
+                                .font(.subheadline)
+                                .foregroundStyle(.gray)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
-                    Spacer()
-                    Text("\(formatSize(movPkgSize))")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                
-                Button(action: {
-                    showEraseAppDataAlert = true
-                }) {
-                    Text("Erase all App Data")
+                    
+                    Divider()
+                        .padding(.horizontal, 16)
+                    
+                    Button(action: { showEraseAppDataAlert = true }) {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle")
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(.red)
+                            
+                            Text("Erase all App Data")
+                                .foregroundStyle(.red)
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                    }
                 }
             }
+            .padding(.vertical, 20)
         }
+        .scrollViewBottomPadding()
         .navigationTitle("App Data")
         .navigationViewStyle(StackNavigationViewStyle())
         .onAppear {
-            // Initialize state with current values
             isMetadataCachingEnabled = MetadataCacheManager.shared.isCachingEnabled
             isImageCachingEnabled = KingfisherCacheManager.shared.isCachingEnabled
             isMemoryOnlyMode = MetadataCacheManager.shared.isMemoryOnlyMode

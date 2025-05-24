@@ -121,8 +121,8 @@ struct SearchView: View {
                         }
                     }
                 }
-                .padding(.horizontal)
-                .padding(.top)
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
                 ScrollView {
                     let columnsCount = determineColumns()
                     VStack(spacing: 0) {
@@ -216,6 +216,7 @@ struct SearchView: View {
                         }
                     }
                 }
+                .scrollViewBottomPadding()
             }
             .navigationBarHidden(true)
         }

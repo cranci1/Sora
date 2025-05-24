@@ -181,6 +181,7 @@ struct MediaInfoView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarTitle("")
             .navigationViewStyle(StackNavigationViewStyle())
+            .scrollViewBottomPadding()
         }
     }
     

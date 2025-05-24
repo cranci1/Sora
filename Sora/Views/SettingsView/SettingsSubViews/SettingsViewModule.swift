@@ -8,6 +8,137 @@
 import SwiftUI
 import Kingfisher
 
+fileprivate struct SettingsSection<Content: View>: View {
+    let title: String
+    let footer: String?
+    let content: Content
+    
+    init(title: String, footer: String? = nil, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.footer = footer
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title.uppercased())
+                .font(.footnote)
+                .foregroundStyle(.gray)
+                .padding(.horizontal, 20)
+            
+            VStack(spacing: 0) {
+                content
+            }
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+            .padding(.horizontal, 20)
+            
+            if let footer = footer {
+                Text(footer)
+                    .font(.footnote)
+                    .foregroundStyle(.gray)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+            }
+        }
+    }
+}
+
+fileprivate struct ModuleListItemView: View {
+    let module: Module
+    let selectedModuleId: String?
+    let onDelete: () -> Void
+    let onSelect: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                KFImage(URL(string: module.metadata.iconUrl))
+                    .resizable()
+                    .frame(width: 40, height: 40)
+                    .clipShape(Circle())
+                    .padding(.trailing, 10)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(alignment: .bottom, spacing: 4) {
+                        Text(module.metadata.sourceName)
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                        Text("v\(module.metadata.version)")
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                    }
+                    
+                    HStack(spacing: 8) {
+                        Text(module.metadata.author.name)
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                        
+                        Text("•")
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                        
+                        Text(module.metadata.language)
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                    }
+                }
+                
+                Spacer()
+                
+                if module.id.uuidString == selectedModuleId {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color.accentColor)
+                        .frame(width: 20, height: 20)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onSelect)
+            .contextMenu {
+                Button(action: {
+                    UIPasteboard.general.string = module.metadataUrl
+                    DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+                }) {
+                    Label("Copy URL", systemImage: "doc.on.doc")
+                }
+                Button(role: .destructive) {
+                    if selectedModuleId != module.id.uuidString {
+                        onDelete()
+                    }
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+                .disabled(selectedModuleId == module.id.uuidString)
+            }
+            .swipeActions {
+                if selectedModuleId != module.id.uuidString {
+                    Button(role: .destructive) {
+                        onDelete()
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
+    }
+}
+
 struct SettingsViewModule: View {
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @EnvironmentObject var moduleManager: ModuleManager
@@ -21,142 +152,101 @@ struct SettingsViewModule: View {
     @State private var showLibrary = false
     
     var body: some View {
-        VStack {
-            Form {
+        ScrollView {
+            VStack(spacing: 24) {
                 if moduleManager.modules.isEmpty {
-                    VStack(spacing: 8) {
-                        Image(systemName: "plus.app")
-                            .font(.largeTitle)
-                            .foregroundColor(.secondary)
-                        Text("No Modules")
-                            .font(.headline)
+                    SettingsSection(title: "Modules") {
+                        VStack(spacing: 16) {
+                            Image(systemName: "plus.app")
+                                .font(.largeTitle)
+                                .foregroundColor(.secondary)
+                            Text("No Modules")
+                                .font(.headline)
 
-                        if didReceiveDefaultPageLink {
-                            NavigationLink(destination: CommunityLibraryView()
-                                            .environmentObject(moduleManager)) {
-                                Text("Check out some community modules here!")
+                            if didReceiveDefaultPageLink {
+                                NavigationLink(destination: CommunityLibraryView()
+                                                .environmentObject(moduleManager)) {
+                                    Text("Check out some community modules here!")
+                                        .font(.caption)
+                                        .foregroundColor(.accentColor)
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            } else {
+                                Text("Click the plus button to add a module!")
                                     .font(.caption)
-                                    .foregroundColor(.accentColor)
+                                    .foregroundColor(.secondary)
                                     .frame(maxWidth: .infinity)
                             }
-                            .buttonStyle(PlainButtonStyle())
-                        } else {
-                            Text("Click the plus button to add a module!")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .frame(maxWidth: .infinity)
                         }
+                        .padding(.vertical, 24)
+                        .frame(maxWidth: .infinity)
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity)
                 } else {
-                    ForEach(moduleManager.modules) { module in
-                        HStack {
-                            KFImage(URL(string: module.metadata.iconUrl))
-                                .resizable()
-                                .frame(width: 50, height: 50)
-                                .clipShape(Circle())
-                                .padding(.trailing, 10)
-                            
-                            VStack(alignment: .leading) {
-                                HStack(alignment: .bottom, spacing: 4) {
-                                    Text(module.metadata.sourceName)
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                    Text("v\(module.metadata.version)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                                Text("Author: \(module.metadata.author.name)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                Text("Language: \(module.metadata.language)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            if module.id.uuidString == selectedModuleId {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.accentColor)
-                                    .frame(width: 25, height: 25)
-                            }
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            selectedModuleId = module.id.uuidString
-                        }
-                        .contextMenu {
-                            Button(action: {
-                                UIPasteboard.general.string = module.metadataUrl
-                                DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
-                            }) {
-                                Label("Copy URL", systemImage: "doc.on.doc")
-                            }
-                            Button(role: .destructive) {
-                                if selectedModuleId != module.id.uuidString {
+                    SettingsSection(title: "Installed Modules") {
+                        ForEach(moduleManager.modules) { module in
+                            ModuleListItemView(
+                                module: module,
+                                selectedModuleId: selectedModuleId,
+                                onDelete: {
                                     moduleManager.deleteModule(module)
                                     DropManager.shared.showDrop(title: "Module Removed", subtitle: "", duration: 1.0, icon: UIImage(systemName: "trash"))
+                                },
+                                onSelect: {
+                                    selectedModuleId = module.id.uuidString
                                 }
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                            .disabled(selectedModuleId == module.id.uuidString)
-                        }
-                        .swipeActions {
-                            if selectedModuleId != module.id.uuidString {
-                                Button(role: .destructive) {
-                                    moduleManager.deleteModule(module)
-                                    DropManager.shared.showDrop(title: "Module Removed", subtitle: "", duration: 1.0, icon: UIImage(systemName: "trash"))
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
+                            )
+                            
+                            if module.id != moduleManager.modules.last?.id {
+                                Divider()
+                                    .padding(.horizontal, 16)
                             }
                         }
                     }
                 }
             }
-            .navigationTitle("Modules")
-            .navigationBarItems(trailing:
-                HStack(spacing: 16) {
-                    if didReceiveDefaultPageLink && !moduleManager.modules.isEmpty {
-                        Button(action: {
-                            showLibrary = true
-                        }) {
-                            Image(systemName: "books.vertical.fill")
-                                .resizable()
-                                .frame(width: 20, height: 20)
-                                .padding(5)
-                        }
-                        .accessibilityLabel("Open Community Library")
-                    }
-
+            .padding(.vertical, 20)
+        }
+        .scrollViewBottomPadding()
+        .navigationTitle("Modules")
+        .navigationBarItems(trailing:
+            HStack(spacing: 16) {
+                if didReceiveDefaultPageLink && !moduleManager.modules.isEmpty {
                     Button(action: {
-                        showAddModuleAlert()
+                        showLibrary = true
                     }) {
-                        Image(systemName: "plus")
+                        Image(systemName: "books.vertical.fill")
                             .resizable()
                             .frame(width: 20, height: 20)
                             .padding(5)
                     }
-                    .accessibilityLabel("Add Module")
+                    .accessibilityLabel("Open Community Library")
                 }
-            )
-            .background(
-                NavigationLink(
-                    destination: CommunityLibraryView()
-                        .environmentObject(moduleManager),
-                    isActive: $showLibrary
-                ) { EmptyView() }
-            )
-            .refreshable {
-                isRefreshing = true
-                refreshTask?.cancel()
-                refreshTask = Task {
-                    await moduleManager.refreshModules()
-                    isRefreshing = false
+
+                Button(action: {
+                    showAddModuleAlert()
+                }) {
+                    Image(systemName: "plus")
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                        .padding(5)
                 }
+                .accessibilityLabel("Add Module")
+            }
+        )
+        .background(
+            NavigationLink(
+                destination: CommunityLibraryView()
+                    .environmentObject(moduleManager),
+                isActive: $showLibrary
+            ) { EmptyView() }
+        )
+        .refreshable {
+            isRefreshing = true
+            refreshTask?.cancel()
+            refreshTask = Task {
+                await moduleManager.refreshModules()
+                isRefreshing = false
             }
         }
         .onAppear {

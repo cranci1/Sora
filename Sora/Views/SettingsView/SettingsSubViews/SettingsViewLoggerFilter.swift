@@ -7,6 +7,96 @@
 
 import SwiftUI
 
+fileprivate struct SettingsSection<Content: View>: View {
+    let title: String
+    let footer: String?
+    let content: Content
+    
+    init(title: String, footer: String? = nil, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.footer = footer
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title.uppercased())
+                .font(.footnote)
+                .foregroundStyle(.gray)
+                .padding(.horizontal, 20)
+            
+            VStack(spacing: 0) {
+                content
+            }
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+            .padding(.horizontal, 20)
+            
+            if let footer = footer {
+                Text(footer)
+                    .font(.footnote)
+                    .foregroundStyle(.gray)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+            }
+        }
+    }
+}
+
+fileprivate struct SettingsToggleRow: View {
+    let icon: String
+    let title: String
+    @Binding var isOn: Bool
+    var showDivider: Bool = true
+    
+    init(icon: String, title: String, isOn: Binding<Bool>, showDivider: Bool = true) {
+        self.icon = icon
+        self.title = title
+        self._isOn = isOn
+        self.showDivider = showDivider
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Image(systemName: icon)
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(.primary)
+                
+                Text(title)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
+                Toggle("", isOn: $isOn)
+                    .labelsHidden()
+                    .tint(.accentColor)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            
+            if showDivider {
+                Divider()
+                    .padding(.horizontal, 16)
+            }
+        }
+    }
+}
+
 struct LogFilter: Identifiable, Hashable {
     let id = UUID()
     let type: String
@@ -74,14 +164,33 @@ class LogFilterViewModel: ObservableObject {
 struct SettingsViewLoggerFilter: View {
     @ObservedObject var viewModel = LogFilterViewModel.shared
     
+    private func iconForFilter(_ type: String) -> String {
+        switch type {
+        case "General": return "gear"
+        case "Stream": return "play.circle"
+        case "Error": return "exclamationmark.triangle"
+        case "Debug": return "ladybug"
+        case "Download": return "arrow.down.circle"
+        case "HTMLStrings": return "text.alignleft"
+        default: return "circle"
+        }
+    }
+    
     var body: some View {
-        List {
-            ForEach($viewModel.filters) { $filter in
-                VStack(alignment: .leading, spacing: 0) {
-                    Toggle(filter.type, isOn: $filter.isEnabled)
-                        .tint(.accentColor)
+        ScrollView {
+            VStack(spacing: 24) {
+                SettingsSection(title: "Log Types") {
+                    ForEach($viewModel.filters) { $filter in
+                        SettingsToggleRow(
+                            icon: iconForFilter(filter.type),
+                            title: filter.type,
+                            isOn: $filter.isEnabled,
+                            showDivider: viewModel.filters.last?.id != filter.id
+                        )
+                    }
                 }
             }
+            .padding(.vertical, 20)
         }
         .navigationTitle("Log Filters")
     }

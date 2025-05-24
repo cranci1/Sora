@@ -9,6 +9,96 @@ import SwiftUI
 import Security
 import Kingfisher
 
+fileprivate struct SettingsSection<Content: View>: View {
+    let title: String
+    let footer: String?
+    let content: Content
+    
+    init(title: String, footer: String? = nil, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.footer = footer
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title.uppercased())
+                .font(.footnote)
+                .foregroundStyle(.gray)
+                .padding(.horizontal, 20)
+            
+            VStack(spacing: 0) {
+                content
+            }
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+            .padding(.horizontal, 20)
+            
+            if let footer = footer {
+                Text(footer)
+                    .font(.footnote)
+                    .foregroundStyle(.gray)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+            }
+        }
+    }
+}
+
+fileprivate struct SettingsToggleRow: View {
+    let icon: String
+    let title: String
+    @Binding var isOn: Bool
+    var showDivider: Bool = true
+    
+    init(icon: String, title: String, isOn: Binding<Bool>, showDivider: Bool = true) {
+        self.icon = icon
+        self.title = title
+        self._isOn = isOn
+        self.showDivider = showDivider
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Image(systemName: icon)
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(.primary)
+                
+                Text(title)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
+                Toggle("", isOn: $isOn)
+                    .labelsHidden()
+                    .tint(.accentColor)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            
+            if showDivider {
+                Divider()
+                    .padding(.horizontal, 16)
+            }
+        }
+    }
+}
+
 struct SettingsViewTrackers: View {
     @AppStorage("sendPushUpdates") private var isSendPushUpdates = true
     @State private var anilistStatus: String = "You are not logged in"
@@ -24,101 +114,172 @@ struct SettingsViewTrackers: View {
     @State private var isTraktLoading: Bool = false
     
     var body: some View {
-        Form {
-            Section(header: Text("AniList")) {
-                HStack() {
-                    KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png"))
-                        .placeholder {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 80, height: 80)
-                                .shimmering()
+        ScrollView {
+            VStack(spacing: 24) {
+                SettingsSection(title: "AniList") {
+                    VStack(spacing: 0) {
+                        HStack {
+                            KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png"))
+                                .placeholder {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(width: 60, height: 60)
+                                        .shimmering()
+                                }
+                                .resizable()
+                                .frame(width: 60, height: 60)
+                                .clipShape(Rectangle())
+                                .cornerRadius(10)
+                                .padding(.trailing, 10)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("AniList.co")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                
+                                if isAnilistLoading {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                } else if isAnilistLoggedIn {
+                                    HStack(spacing: 0) {
+                                        Text("Logged in as ")
+                                            .font(.footnote)
+                                            .foregroundStyle(.gray)
+                                        Text(anilistUsername)
+                                            .font(.footnote)
+                                            .fontWeight(.medium)
+                                            .foregroundStyle(profileColor)
+                                    }
+                                } else {
+                                    Text(anilistStatus)
+                                        .font(.footnote)
+                                        .foregroundStyle(.gray)
+                                }
+                            }
+                            
+                            Spacer()
                         }
-                        .resizable()
-                        .frame(width: 80, height: 80)
-                        .clipShape(Rectangle())
-                        .cornerRadius(10)
-                    Text("AniList.co")
-                        .font(.title2)
-                }
-                
-                if isAnilistLoading {
-                    ProgressView()
-                } else {
-                    if isAnilistLoggedIn {
-                        HStack(spacing: 0) {
-                            Text("Logged in as ")
-                            Text(anilistUsername)
-                                .foregroundColor(profileColor)
-                                .font(.body)
-                                .fontWeight(.semibold)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        
+                        if isAnilistLoggedIn {
+                            Divider()
+                                .padding(.horizontal, 16)
+                            
+                            SettingsToggleRow(
+                                icon: "arrow.triangle.2.circlepath",
+                                title: "Sync anime progress",
+                                isOn: $isSendPushUpdates,
+                                showDivider: false
+                            )
                         }
-                    } else {
-                        Text(anilistStatus)
-                            .multilineTextAlignment(.center)
+                        
+                        Divider()
+                            .padding(.horizontal, 16)
+                        
+                        Button(action: {
+                            if isAnilistLoggedIn {
+                                logoutAniList()
+                            } else {
+                                loginAniList()
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: isAnilistLoggedIn ? "rectangle.portrait.and.arrow.right" : "person.badge.key")
+                                    .frame(width: 24, height: 24)
+                                    .foregroundStyle(isAnilistLoggedIn ? .red : .accentColor)
+                                
+                                Text(isAnilistLoggedIn ? "Log Out from AniList" : "Log In with AniList")
+                                    .foregroundStyle(isAnilistLoggedIn ? .red : .accentColor)
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
                     }
                 }
                 
-                if isAnilistLoggedIn {
-                    Toggle("Sync anime progress", isOn: $isSendPushUpdates)
-                        .tint(.accentColor)
-                }
-                
-                Button(isAnilistLoggedIn ? "Log Out from AniList" : "Log In with AniList") {
-                    if isAnilistLoggedIn {
-                        logoutAniList()
-                    } else {
-                        loginAniList()
+                SettingsSection(title: "Trakt") {
+                    VStack(spacing: 0) {
+                        HStack {
+                            KFImage(URL(string: "https://static-00.iconduck.com/assets.00/trakt-icon-2048x2048-2633ksxg.png"))
+                                .placeholder {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(width: 60, height: 60)
+                                        .shimmering()
+                                }
+                                .resizable()
+                                .frame(width: 60, height: 60)
+                                .clipShape(Rectangle())
+                                .cornerRadius(10)
+                                .padding(.trailing, 10)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Trakt.tv")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                
+                                if isTraktLoading {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                } else if isTraktLoggedIn {
+                                    HStack(spacing: 0) {
+                                        Text("Logged in as ")
+                                            .font(.footnote)
+                                            .foregroundStyle(.gray)
+                                        Text(traktUsername)
+                                            .font(.footnote)
+                                            .fontWeight(.medium)
+                                            .foregroundStyle(.primary)
+                                    }
+                                } else {
+                                    Text(traktStatus)
+                                        .font(.footnote)
+                                        .foregroundStyle(.gray)
+                                }
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        
+                        Divider()
+                            .padding(.horizontal, 16)
+                        
+                        Button(action: {
+                            if isTraktLoggedIn {
+                                logoutTrakt()
+                            } else {
+                                loginTrakt()
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: isTraktLoggedIn ? "rectangle.portrait.and.arrow.right" : "person.badge.key")
+                                    .frame(width: 24, height: 24)
+                                    .foregroundStyle(isTraktLoggedIn ? .red : .accentColor)
+                                
+                                Text(isTraktLoggedIn ? "Log Out from Trakt" : "Log In with Trakt")
+                                    .foregroundStyle(isTraktLoggedIn ? .red : .accentColor)
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
                     }
                 }
-                .font(.body)
+                
+                SettingsSection(
+                    title: "Info",
+                    footer: "Sora and cranci1 are not affiliated with AniList nor Trakt in any way.\n\nAlso note that progresses update may not be 100% accurate."
+                ) {}
             }
-            
-            Section(header: Text("Trakt")) {
-                HStack() {
-                    KFImage(URL(string: "https://static-00.iconduck.com/assets.00/trakt-icon-2048x2048-2633ksxg.png"))
-                        .placeholder {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 80, height: 80)
-                                .shimmering()
-                        }
-                        .resizable()
-                        .frame(width: 80, height: 80)
-                        .clipShape(Rectangle())
-                        .cornerRadius(10)
-                    Text("Trakt.tv")
-                        .font(.title2)
-                }
-                
-                if isTraktLoading {
-                    ProgressView()
-                } else {
-                    if isTraktLoggedIn {
-                        HStack(spacing: 0) {
-                            Text("Logged in as ")
-                            Text(traktUsername)
-                                .font(.body)
-                                .fontWeight(.semibold)
-                        }
-                    } else {
-                        Text(traktStatus)
-                            .multilineTextAlignment(.center)
-                    }
-                }
-                
-                Button(isTraktLoggedIn ? "Log Out from Trakt" : "Log In with Trakt") {
-                    if isTraktLoggedIn {
-                        logoutTrakt()
-                    } else {
-                        loginTrakt()
-                    }
-                }
-                .font(.body)
-            }
-            
-            Section(footer: Text("Sora and cranci1 are not affiliated with AniList nor Trakt in any way.\n\nAlso note that progresses update may not be 100% accurate.")) {}
+            .padding(.vertical, 20)
         }
+        .scrollViewBottomPadding()
         .navigationTitle("Trackers")
         .onAppear {
             updateAniListStatus()

@@ -76,7 +76,6 @@
 		722248662DCBC13E00CABE2D /* JSController-Downloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722248652DCBC13E00CABE2D /* JSController-Downloads.swift */; };
 		72443C7D2DC8036500A61321 /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C7C2DC8036500A61321 /* DownloadView.swift */; };
 		72443C7F2DC8038300A61321 /* SettingsViewDownloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */; };
-		7272206E2DD6336100C2A4A2 /* SettingsViewPerformance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7272206D2DD6336100C2A4A2 /* SettingsViewPerformance.swift */; };
 		727220712DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7272206F2DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift */; };
 		727220722DD642B100C2A4A2 /* JSController+MP4Download.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727220702DD642B100C2A4A2 /* JSController+MP4Download.swift */; };
 		72AC3A012DD4DAEB00C60B96 /* ImagePrefetchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72AC39FE2DD4DAEA00C60B96 /* ImagePrefetchManager.swift */; };
@@ -155,7 +154,6 @@
 		722248652DCBC13E00CABE2D /* JSController-Downloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Downloads.swift"; sourceTree = "<group>"; };
 		72443C7C2DC8036500A61321 /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewDownloads.swift; sourceTree = "<group>"; };
-		7272206D2DD6336100C2A4A2 /* SettingsViewPerformance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewPerformance.swift; sourceTree = "<group>"; };
 		7272206F2DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-StreamTypeDownload.swift"; sourceTree = "<group>"; };
 		727220702DD642B100C2A4A2 /* JSController+MP4Download.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController+MP4Download.swift"; sourceTree = "<group>"; };
 		72AC39FD2DD4DAEA00C60B96 /* EpisodeMetadataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeMetadataManager.swift; sourceTree = "<group>"; };
@@ -278,7 +276,6 @@
 		133D7C832D2BE2630075467E /* SettingsSubViews */ = {
 			isa = PBXGroup;
 			children = (
-				7272206D2DD6336100C2A4A2 /* SettingsViewPerformance.swift */,
 				1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */,
 				1399FAD32D3AB38C00E97C31 /* SettingsViewLogger.swift */,
 				133D7C842D2BE2630075467E /* SettingsViewModule.swift */,
@@ -637,7 +634,6 @@
 				13DB468E2D90093A008CBC03 /* Anilist-Token.swift in Sources */,
 				1EAC7A322D888BC50083984D /* MusicProgressSlider.swift in Sources */,
 				722248632DCBAA4700CABE2D /* JSController-HeaderManager.swift in Sources */,
-				7272206E2DD6336100C2A4A2 /* SettingsViewPerformance.swift in Sources */,
 				722248642DCBAA4700CABE2D /* JSController+M3U8Download.swift in Sources */,
 				133D7C942D2BE2640075467E /* JSController.swift in Sources */,
 				133D7C922D2BE2640075467E /* URLSession.swift in Sources */,

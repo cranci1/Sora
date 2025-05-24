@@ -286,7 +286,9 @@ struct ContinueWatchingCell: View {
         }) {
             VStack(alignment: .leading) {
                 ZStack {
-                    KFImage(URL(string: item.imageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : item.imageUrl))
+                    KFImage(URL(string: item.imageUrl.isEmpty
+                                    ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png"
+                                    : item.imageUrl))
                         .placeholder {
                             RoundedRectangle(cornerRadius: 10)
                                 .fill(Color.gray.opacity(0.3))
@@ -300,11 +302,23 @@ struct ContinueWatchingCell: View {
                         .cornerRadius(10)
                         .clipped()
                         .overlay(
-                            KFImage(URL(string: item.module.metadata.iconUrl))
-                                .resizable()
-                                .frame(width: 24, height: 24)
-                                .cornerRadius(4)
-                                .padding(4),
+                            Group {
+                                if item.streamUrl.hasPrefix("file://") {
+                                    Image(systemName: "arrow.down.app.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 24, height: 24)
+                                        .foregroundColor(.white)
+                                        .background(Color.black.cornerRadius(6))  // black exactly 24×24
+                                        .padding(4)                                // add spacing outside the black
+                                } else {
+                                    KFImage(URL(string: item.module.metadata.iconUrl))
+                                        .resizable()
+                                        .frame(width: 24, height: 24)
+                                        .cornerRadius(4)
+                                        .padding(4)
+                                }
+                            },
                             alignment: .topLeading
                         )
                 }

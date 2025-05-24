@@ -461,8 +461,10 @@ struct EpisodeCell: View {
         let episodeThumbnailURL = URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl)
         let showPosterImageURL = URL(string: showPosterURL ?? defaultBannerImage)
         
-        let episodeName = episodeTitle.isEmpty ? "Episode \(episodeID + 1)" : episodeTitle
-        let fullEpisodeTitle = "Episode \(episodeID + 1): \(episodeName)"
+        let baseTitle = "Episode \(episodeID + 1)"
+        let fullEpisodeTitle = episodeTitle.isEmpty
+            ? baseTitle
+            : "\(baseTitle): \(episodeTitle)"
         
         let animeTitle = parentTitle.isEmpty ? "Unknown Anime" : parentTitle
         

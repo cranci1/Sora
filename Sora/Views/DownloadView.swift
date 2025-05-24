@@ -486,9 +486,9 @@ struct EpisodeRow: View {
                 Text("Episode \(asset.metadata?.episode ?? 1)")
                     .font(.subheadline)
                     .lineLimit(1)
-                
-                // If AniList provided a custom title, show it underneath
-                if asset.episodeDisplayName != "Episode \(asset.metadata?.episode ?? 1)" {
+
+                let base = "Episode \(asset.metadata?.episode ?? 1)"
+                if asset.episodeDisplayName != base {
                     Text(asset.episodeDisplayName)
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -505,7 +505,6 @@ struct EpisodeRow: View {
                             .foregroundColor(.blue)
                             .font(.caption)
                     }
-                    
                     if !asset.fileExists {
                         Image(systemName: "exclamationmark.triangle")
                             .foregroundColor(.orange)

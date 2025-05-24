@@ -366,7 +366,20 @@ struct ActiveDownload: Identifiable, Equatable {
        }
     
     var episodeDisplayName: String {
-        return metadata?.title ?? originalURL.lastPathComponent
+        guard type == .episode else {
+            return metadata?.title ?? originalURL.lastPathComponent
+        }
+        
+        // Extract base episode number from metadata or default to 1
+        let episodeNumber = metadata?.episode ?? 1
+        let base = "Episode \(episodeNumber)"
+        
+        // Check if we have a valid title that's different from the base
+        if let title = metadata?.title, !title.isEmpty, title != base {
+            return "\(base): \(title)"
+        } else {
+            return base
+        }
     }
     
     init(

@@ -172,7 +172,7 @@ struct EpisodeCell: View {
     private var episodeThumbnail: some View {
         ZStack {
             if let url = URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl) {
-                KFImage.optimizedEpisodeThumbnail(url: url)
+                KFImage(url)
                     .onFailure { error in
                         Logger.shared.log("Failed to load episode image: \(error)", type: "Error")
                     }

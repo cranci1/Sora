@@ -21,11 +21,11 @@ struct SettingsViewGeneral: View {
     private let metadataProvidersList = ["AniList"]
     private let sortOrderOptions = ["Ascending", "Descending"]
     @EnvironmentObject var settings: Settings
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         Form {
             Section(header: Text("Interface")) {
-                ColorPicker("Accent Color", selection: $settings.accentColor)
                 HStack {
                     Text("Appearance")
                     Picker("Appearance", selection: $settings.selectedAppearance) {
@@ -53,7 +53,7 @@ struct SettingsViewGeneral: View {
                 }
                 
                 Toggle("Fetch Episode metadata", isOn: $fetchEpisodeMetadata)
-                    .tint(.accentColor)
+                    .tint(settings.accentColor)
                 
                 HStack {
                     Text("Metadata Provider")
@@ -99,14 +99,15 @@ struct SettingsViewGeneral: View {
             
             Section(header: Text("Modules"), footer: Text("Note that the modules will be replaced only if there is a different version string inside the JSON file.")) {
                 Toggle("Refresh Modules on Launch", isOn: $refreshModulesOnLaunch)
-                    .tint(.accentColor)
+                    .tint(settings.accentColor)
             }
             
             Section(header: Text("Advanced"), footer: Text("Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time.")) {
                 Toggle("Enable Analytics", isOn: $analyticsEnabled)
-                    .tint(.accentColor)
+                    .tint(settings.accentColor)
             }
         }
         .navigationTitle("General")
+        .dynamicAccentColor()
     }
 }

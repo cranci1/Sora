@@ -100,6 +100,7 @@ struct SettingsView: View {
             .navigationTitle("Settings")
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .dynamicAccentColor()
     }
 }
 
@@ -110,11 +111,6 @@ enum Appearance: String, CaseIterable, Identifiable {
 }
 
 class Settings: ObservableObject {
-    @Published var accentColor: Color {
-        didSet {
-            saveAccentColor(accentColor)
-        }
-    }
     @Published var selectedAppearance: Appearance {
         didSet {
             UserDefaults.standard.set(selectedAppearance.rawValue, forKey: "selectedAppearance")
@@ -122,13 +118,15 @@ class Settings: ObservableObject {
         }
     }
     
-    init() {
-        if let colorData = UserDefaults.standard.data(forKey: "accentColor"),
-           let uiColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: colorData) {
-            self.accentColor = Color(uiColor)
-        } else {
-            self.accentColor = .accentColor
+    var accentColor: Color {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else {
+            return .black 
         }
+        return window.traitCollection.userInterfaceStyle == .dark ? .white : .black
+    }
+    
+    init() {
         if let appearanceRawValue = UserDefaults.standard.string(forKey: "selectedAppearance"),
            let appearance = Appearance(rawValue: appearanceRawValue) {
             self.selectedAppearance = appearance
@@ -136,16 +134,6 @@ class Settings: ObservableObject {
             self.selectedAppearance = .system
         }
         updateAppearance()
-    }
-    
-    private func saveAccentColor(_ color: Color) {
-        let uiColor = UIColor(color)
-        do {
-            let colorData = try NSKeyedArchiver.archivedData(withRootObject: uiColor, requiringSecureCoding: false)
-            UserDefaults.standard.set(colorData, forKey: "accentColor")
-        } catch {
-            Logger.shared.log("Failed to save accent color: \(error.localizedDescription)")
-        }
     }
     
     func updateAppearance() {
@@ -158,5 +146,20 @@ class Settings: ObservableObject {
         case .dark:
             windowScene.windows.first?.overrideUserInterfaceStyle = .dark
         }
+        objectWillChange.send()
+    }
+}
+
+struct DynamicAccentColor: ViewModifier {
+    @Environment(\.colorScheme) var colorScheme
+    
+    func body(content: Content) -> some View {
+        content.accentColor(colorScheme == .dark ? .white : .black)
+    }
+}
+
+extension View {
+    func dynamicAccentColor() -> some View {
+        modifier(DynamicAccentColor())
     }
 }

@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04CD76DB2DE20F2200733536 /* AllWatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04CD76DA2DE20F2200733536 /* AllWatching.swift */; };
+		04F08EDC2DE10BF3006B29D9 /* ProgressiveBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EDB2DE10BEC006B29D9 /* ProgressiveBlurView.swift */; };
+		04F08EDF2DE10C1D006B29D9 /* TabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EDE2DE10C1A006B29D9 /* TabBar.swift */; };
+		04F08EE22DE10C40006B29D9 /* TabItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EE12DE10C27006B29D9 /* TabItem.swift */; };
+		04F08EE42DE10D6F006B29D9 /* AllBookmarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EE32DE10D6B006B29D9 /* AllBookmarks.swift */; };
 		130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */; };
 		13103E8B2D58E028000F0673 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8A2D58E028000F0673 /* View.swift */; };
 		13103E8E2D58E04A000F0673 /* SkeletonCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8D2D58E04A000F0673 /* SkeletonCell.swift */; };
@@ -86,6 +91,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		04CD76DA2DE20F2200733536 /* AllWatching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllWatching.swift; sourceTree = "<group>"; };
+		04F08EDB2DE10BEC006B29D9 /* ProgressiveBlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressiveBlurView.swift; sourceTree = "<group>"; };
+		04F08EDE2DE10C1A006B29D9 /* TabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBar.swift; sourceTree = "<group>"; };
+		04F08EE12DE10C27006B29D9 /* TabItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabItem.swift; sourceTree = "<group>"; };
+		04F08EE32DE10D6B006B29D9 /* AllBookmarks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllBookmarks.swift; sourceTree = "<group>"; };
 		130C6BF82D53A4C200DC1432 /* Sora.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sora.entitlements; sourceTree = "<group>"; };
 		130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
 		13103E8A2D58E028000F0673 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
@@ -178,6 +188,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		04F08EDA2DE10BE3006B29D9 /* ProgressiveBlurView */ = {
+			isa = PBXGroup;
+			children = (
+				04F08EDB2DE10BEC006B29D9 /* ProgressiveBlurView.swift */,
+			);
+			path = ProgressiveBlurView;
+			sourceTree = "<group>";
+		};
+		04F08EDD2DE10C05006B29D9 /* TabBar */ = {
+			isa = PBXGroup;
+			children = (
+				04F08EDE2DE10C1A006B29D9 /* TabBar.swift */,
+			);
+			path = TabBar;
+			sourceTree = "<group>";
+		};
+		04F08EE02DE10C22006B29D9 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				04F08EE12DE10C27006B29D9 /* TabItem.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		13103E802D589D6C000F0673 /* Tracking Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -294,6 +328,9 @@
 		133D7C852D2BE2640075467E /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				04F08EE02DE10C22006B29D9 /* Models */,
+				04F08EDD2DE10C05006B29D9 /* TabBar */,
+				04F08EDA2DE10BE3006B29D9 /* ProgressiveBlurView */,
 				7205AEDA2DCCEF9500943F3F /* Cache */,
 				13D842532D45266900EBBFA6 /* Drops */,
 				1399FAD12D3AB33D00E97C31 /* Logger */,
@@ -355,6 +392,8 @@
 		133F55B92D33B53E00E08EEA /* LibraryView */ = {
 			isa = PBXGroup;
 			children = (
+				04CD76DA2DE20F2200733536 /* AllWatching.swift */,
+				04F08EE32DE10D6B006B29D9 /* AllBookmarks.swift */,
 				133F55BA2D33B55100E08EEA /* LibraryManager.swift */,
 				133D7C7E2D2BE2630075467E /* LibraryView.swift */,
 			);
@@ -608,11 +647,13 @@
 				1EF5C3A92DB988E40032BF07 /* CommunityLib.swift in Sources */,
 				13CBEFDA2D5F7D1200D011EE /* String.swift in Sources */,
 				7205AEDB2DCCEF9500943F3F /* EpisodeMetadata.swift in Sources */,
+				04F08EDC2DE10BF3006B29D9 /* ProgressiveBlurView.swift in Sources */,
 				7205AEDC2DCCEF9500943F3F /* MetadataCacheManager.swift in Sources */,
 				7205AEDD2DCCEF9500943F3F /* KingfisherManager.swift in Sources */,
 				1E26E9E72DA9577900B9DC02 /* VolumeSlider.swift in Sources */,
 				136BBE802DB1038000906B5E /* Notification+Name.swift in Sources */,
 				13DB46902D900A38008CBC03 /* URL.swift in Sources */,
+				04F08EE42DE10D6F006B29D9 /* AllBookmarks.swift in Sources */,
 				130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */,
 				1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */,
 				13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */,
@@ -624,8 +665,10 @@
 				13CBA0882D60F19C00EFE70A /* VTTSubtitlesLoader.swift in Sources */,
 				13EA2BD62D32D97400C1EBD7 /* Double+Extension.swift in Sources */,
 				133D7C8F2D2BE2640075467E /* MediaInfoView.swift in Sources */,
+				04F08EE22DE10C40006B29D9 /* TabItem.swift in Sources */,
 				132AF1212D99951700A0140B /* JSController-Streams.swift in Sources */,
 				131845F92D47C62D00CA7A54 /* SettingsViewGeneral.swift in Sources */,
+				04CD76DB2DE20F2200733536 /* AllWatching.swift in Sources */,
 				13103E8E2D58E04A000F0673 /* SkeletonCell.swift in Sources */,
 				13D842552D45267500EBBFA6 /* DropManager.swift in Sources */,
 				13103E8B2D58E028000F0673 /* View.swift in Sources */,
@@ -657,6 +700,7 @@
 				727220712DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift in Sources */,
 				727220722DD642B100C2A4A2 /* JSController+MP4Download.swift in Sources */,
 				1399FAD42D3AB38C00E97C31 /* SettingsViewLogger.swift in Sources */,
+				04F08EDF2DE10C1D006B29D9 /* TabBar.swift in Sources */,
 				72AC3A012DD4DAEB00C60B96 /* ImagePrefetchManager.swift in Sources */,
 				72AC3A022DD4DAEB00C60B96 /* EpisodeMetadataManager.swift in Sources */,
 				72AC3A032DD4DAEB00C60B96 /* PerformanceMonitor.swift in Sources */,

@@ -15,6 +15,14 @@ struct SearchItem: Identifiable {
     let href: String
 }
 
+struct ModuleButtonModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .buttonStyle(PlainButtonStyle())
+            .offset(y: 45)
+            .zIndex(999)
+    }
+}
 
 struct SearchView: View {
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
@@ -25,13 +33,18 @@ struct SearchView: View {
     @EnvironmentObject var moduleManager: ModuleManager
     @Environment(\.verticalSizeClass) var verticalSizeClass
     
+    @Binding public var searchQuery: String
+    
     @State private var searchItems: [SearchItem] = []
     @State private var selectedSearchItem: SearchItem?
     @State private var isSearching = false
-    @State private var searchText = ""
     @State private var hasNoResults = false
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var isModuleSelectorPresented = false
+    
+    init(searchQuery: Binding<String>) {
+        self._searchQuery = searchQuery
+    }
     
     private var selectedModule: ScrapingModule? {
         guard let id = selectedModuleId else { return nil }
@@ -60,141 +73,31 @@ struct SearchView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                let columnsCount = determineColumns()
-                VStack(spacing: 0) {
-                    HStack {
-                        SearchBar(text: $searchText, onSearchButtonClicked: performSearch)
-                            .padding(.leading)
-                            .padding(.trailing, searchText.isEmpty ? 16 : 0)
-                            .disabled(selectedModule == nil)
-                            .padding(.top)
-                        
-                        if !searchText.isEmpty {
-                            Button("Cancel") {
-                                searchText = ""
-                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                            }
-                            .padding(.trailing)
-                            .padding(.top)
-                        }
-                    }
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("Search")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
                     
-                    if selectedModule == nil {
-                        VStack(spacing: 8) {
-                            Image(systemName: "questionmark.app")
-                                .font(.largeTitle)
-                                .foregroundColor(.secondary)
-                            Text("No Module Selected")
-                                .font(.headline)
-                            Text("Please select a module from settings")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color(.systemBackground))
-                        .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
-                    }
+                    Spacer()
                     
-                    if !searchText.isEmpty {
-                        if isSearching {
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
-                                ForEach(0..<columnsCount*4, id: \.self) { _ in
-                                    SearchSkeletonCell(cellWidth: cellWidth)
-                                }
-                            }
-                            .padding(.top)
-                            .padding()
-                        } else if hasNoResults {
-                            VStack(spacing: 8) {
-                                Image(systemName: "magnifyingglass")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.secondary)
-                                Text("No Results Found")
-                                    .font(.headline)
-                                Text("Try different keywords")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .padding(.top)
-                        } else {
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
-                                ForEach(searchItems) { item in
-                                    NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule!)) {
-                                        VStack {
-                                            KFImage(URL(string: item.imageUrl))
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(height: cellWidth * 3 / 2)
-                                                .frame(maxWidth: cellWidth)
-                                                .cornerRadius(10)
-                                                .clipped()
-                                            Text(item.title)
-                                                .font(.subheadline)
-                                                .foregroundColor(Color.primary)
-                                                .padding([.leading, .bottom], 8)
-                                                .lineLimit(1)
-                                        }
-                                    }
-                                }
-                                .onAppear {
-                                    updateOrientation()
-                                }
-                                .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-                                    updateOrientation()
-                                }
-                            }
-                            .padding(.top)
-                            .padding()
-                        }
-                    }
-                }
-            }
-            .navigationTitle("Search")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
-                        if getModuleLanguageGroups().count == 1 {
-                            ForEach(moduleManager.modules, id: \.id) { module in
-                                Button {
-                                    selectedModuleId = module.id.uuidString
-                                } label: {
-                                    HStack {
-                                        KFImage(URL(string: module.metadata.iconUrl))
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 20, height: 20)
-                                            .cornerRadius(4)
-                                        Text(module.metadata.sourceName)
-                                        if module.id.uuidString == selectedModuleId {
-                                            Image(systemName: "checkmark")
-                                                .foregroundColor(.accentColor)
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            ForEach(getModuleLanguageGroups(), id: \.self) { language in
-                                Menu(language) {
-                                    ForEach(getModulesForLanguage(language), id: \.id) { module in
-                                        Button {
-                                            selectedModuleId = module.id.uuidString
-                                        } label: {
-                                            HStack {
-                                                KFImage(URL(string: module.metadata.iconUrl))
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fit)
-                                                    .frame(width: 20, height: 20)
-                                                    .cornerRadius(4)
-                                                Text(module.metadata.sourceName)
-                                                if module.id.uuidString == selectedModuleId {
-                                                    Image(systemName: "checkmark")
-                                                        .foregroundColor(.accentColor)
-                                                }
+                        ForEach(getModuleLanguageGroups(), id: \.self) { language in
+                            Menu(language) {
+                                ForEach(getModulesForLanguage(language), id: \.id) { module in
+                                    Button {
+                                        selectedModuleId = module.id.uuidString
+                                    } label: {
+                                        HStack {
+                                            KFImage(URL(string: module.metadata.iconUrl))
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 20, height: 20)
+                                                .cornerRadius(4)
+                                            Text(module.metadata.sourceName)
+                                            if module.id.uuidString == selectedModuleId {
+                                                Image(systemName: "checkmark")
+                                                    .foregroundColor(.accentColor)
                                             }
                                         }
                                     }
@@ -202,27 +105,104 @@ struct SearchView: View {
                             }
                         }
                     } label: {
-                        HStack(spacing: 4) {
-                            if let selectedModule = selectedModule {
-                                Text(selectedModule.metadata.sourceName)
-                                    .font(.headline)
-                                    .foregroundColor(.secondary)
-                            } else {
-                                Text("Select Module")
-                                    .font(.headline)
-                                    .foregroundColor(.accentColor)
-                            }
-                            Image(systemName: "chevron.down")
+                        if let selectedModule = selectedModule {
+                            KFImage(URL(string: selectedModule.metadata.iconUrl))
+                                .resizable()
+                                .frame(width: 36, height: 36)
+                                .clipShape(Circle())
+                        } else {
+                            Image(systemName: "questionmark.app.fill")
+                                .resizable()
+                                .frame(width: 36, height: 36)
+                                .clipShape(Circle())
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .fixedSize()
+                }
+                .padding(.horizontal)
+                .padding(.top)
+                ScrollView {
+                    let columnsCount = determineColumns()
+                    VStack(spacing: 0) {
+                        if selectedModule == nil {
+                            VStack(spacing: 8) {
+                                Image(systemName: "questionmark.app")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.secondary)
+                                Text("No Module Selected")
+                                    .font(.headline)
+                                Text("Please select a module from settings")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color(.systemBackground))
+                            .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
+                        }
+                        
+                        if !searchQuery.isEmpty {
+                            if isSearching {
+                                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
+                                    ForEach(0..<columnsCount*4, id: \.self) { _ in
+                                        SearchSkeletonCell(cellWidth: cellWidth)
+                                    }
+                                }
+                                .padding(.top)
+                                .padding()
+                            } else if hasNoResults {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "magnifyingglass")
+                                        .font(.largeTitle)
+                                        .foregroundColor(.secondary)
+                                    Text("No Results Found")
+                                        .font(.headline)
+                                    Text("Try different keywords")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .padding(.top)
+                            } else {
+                                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
+                                    ForEach(searchItems) { item in
+                                        NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule!)) {
+                                            VStack {
+                                                KFImage(URL(string: item.imageUrl))
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fill)
+                                                    .frame(height: cellWidth * 3 / 2)
+                                                    .frame(maxWidth: cellWidth)
+                                                    .cornerRadius(10)
+                                                    .clipped()
+                                                Text(item.title)
+                                                    .font(.subheadline)
+                                                    .foregroundColor(Color.primary)
+                                                    .padding([.leading, .bottom], 8)
+                                                    .lineLimit(1)
+                                            }
+                                        }
+                                    }
+                                    .onAppear {
+                                        updateOrientation()
+                                    }
+                                    .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+                                        updateOrientation()
+                                    }
+                                }
+                                .padding(.top)
+                                .padding()
+                            }
+                        }
+                    }
                 }
             }
+            .navigationBarHidden(true)
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .onChange(of: selectedModuleId) { _ in
-            if !searchText.isEmpty {
+            if !searchQuery.isEmpty {
                 performSearch()
             }
         }
@@ -234,18 +214,25 @@ struct SearchView: View {
                 moduleManager.selectedModuleChanged = false
             }
         }
-        .onChange(of: searchText) { newValue in
+        .onChange(of: searchQuery) { newValue in
             if newValue.isEmpty {
                 searchItems = []
                 hasNoResults = false
                 isSearching = false
+            } else {
+                performSearch()
+            }
+        }
+        .onAppear {
+            if !searchQuery.isEmpty {
+                performSearch()
             }
         }
     }
     
     private func performSearch() {
-        Logger.shared.log("Searching for: \(searchText)", type: "General")
-        guard !searchText.isEmpty, let module = selectedModule else {
+        Logger.shared.log("Searching for: \(searchQuery)", type: "General")
+        guard !searchQuery.isEmpty, let module = selectedModule else {
             searchItems = []
             hasNoResults = false
             return
@@ -261,13 +248,13 @@ struct SearchView: View {
                     let jsContent = try moduleManager.getModuleContent(module)
                     jsController.loadScript(jsContent)
                     if module.metadata.asyncJS == true {
-                        jsController.fetchJsSearchResults(keyword: searchText, module: module) { items in
+                        jsController.fetchJsSearchResults(keyword: searchQuery, module: module) { items in
                             searchItems = items
                             hasNoResults = items.isEmpty
                             isSearching = false
                         }
                     } else {
-                        jsController.fetchSearchResults(keyword: searchText, module: module) { items in
+                        jsController.fetchSearchResults(keyword: searchQuery, module: module) { items in
                             searchItems = items
                             hasNoResults = items.isEmpty
                             isSearching = false

@@ -1315,8 +1315,8 @@ struct MediaInfoView: View {
             let episodeTitle = metadata?.title["en"] ?? metadata?.title.values.first ?? ""
             let episodeImageUrl = metadata?.imageUrl ?? ""
             
-            let episodeName = episodeTitle.isEmpty ? "Episode \(episode.number)" : episodeTitle
-            let fullEpisodeTitle = "Episode \(episode.number): \(episodeName)"
+            let episodeName = metadata?.title["en"] ?? "Episode \(episode.number)"
+            let fullEpisodeTitle = episodeName
             
             let episodeThumbnailURL: URL?
             if !episodeImageUrl.isEmpty {

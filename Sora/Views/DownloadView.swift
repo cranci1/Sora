@@ -185,7 +185,8 @@ struct DownloadView: View {
             SimpleDownloadGroup(
                 title: title,
                 assets: assets,
-                posterURL: assets.first?.metadata?.posterURL
+                posterURL: assets.first?.metadata?.showPosterURL
+                          ?? assets.first?.metadata?.posterURL
             )
         }.sorted { $0.title < $1.title }
     }
@@ -237,7 +238,7 @@ struct DownloadView: View {
                 module: dummyModule,
                 urlString: asset.localURL.absoluteString,
                 fullUrl: asset.originalURL.absoluteString,
-                title: asset.name,
+                title: asset.metadata?.showTitle ?? asset.name,
                 episodeNumber: asset.metadata?.episode ?? 0,
                 onWatchNext: {},
                 subtitlesURL: asset.localSubtitleURL?.absoluteString,
@@ -483,9 +484,17 @@ struct EpisodeRow: View {
             }
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(asset.episodeDisplayName)
+                Text("Episode \(asset.metadata?.episode ?? 1)")
                     .font(.subheadline)
                     .lineLimit(1)
+
+                let base = "Episode \(asset.metadata?.episode ?? 1)"
+                if asset.episodeDisplayName != base {
+                    Text(asset.episodeDisplayName)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
                 
                 HStack(spacing: 4) {
                     Text(asset.downloadDate.formatted(date: .abbreviated, time: .omitted))
@@ -497,7 +506,6 @@ struct EpisodeRow: View {
                             .foregroundColor(.blue)
                             .font(.caption)
                     }
-                    
                     if !asset.fileExists {
                         Image(systemName: "exclamationmark.triangle")
                             .foregroundColor(.orange)

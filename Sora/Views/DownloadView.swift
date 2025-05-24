@@ -237,7 +237,7 @@ struct DownloadView: View {
                 module: dummyModule,
                 urlString: asset.localURL.absoluteString,
                 fullUrl: asset.originalURL.absoluteString,
-                title: asset.name,
+                title: asset.metadata?.showTitle ?? asset.name,
                 episodeNumber: asset.metadata?.episode ?? 0,
                 onWatchNext: {},
                 subtitlesURL: asset.localSubtitleURL?.absoluteString,
@@ -483,9 +483,17 @@ struct EpisodeRow: View {
             }
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(asset.episodeDisplayName)
+                Text("Episode \(asset.metadata?.episode ?? 1)")
                     .font(.subheadline)
                     .lineLimit(1)
+                
+                // If AniList provided a custom title, show it underneath
+                if asset.episodeDisplayName != "Episode \(asset.metadata?.episode ?? 1)" {
+                    Text(asset.episodeDisplayName)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
                 
                 HStack(spacing: 4) {
                     Text(asset.downloadDate.formatted(date: .abbreviated, time: .omitted))

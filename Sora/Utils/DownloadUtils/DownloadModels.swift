@@ -357,17 +357,15 @@ struct ActiveDownload: Identifiable, Equatable {
     
     // Add the same grouping properties as DownloadedAsset for consistency
     var groupTitle: String {
-        if type == .episode, let showTitle = metadata?.showTitle, !showTitle.isEmpty {
-            return showTitle
-        }
-        // For movies or episodes without show title, use the title from metadata or fallback to URL
-        return metadata?.title ?? originalURL.lastPathComponent
-    }
+           if type == .episode,
+              let showTitle = metadata?.showTitle,
+              !showTitle.isEmpty {
+               return showTitle
+           }
+           return metadata?.title ?? originalURL.lastPathComponent
+       }
     
     var episodeDisplayName: String {
-        guard type == .episode else { return metadata?.title ?? originalURL.lastPathComponent }
-        
-        // Return the title directly since titles typically already contain episode information
         return metadata?.title ?? originalURL.lastPathComponent
     }
     

@@ -67,7 +67,7 @@ class ContinueWatchingManager {
             remove(item: item)
             return
         }
-        
+
         var items = fetchItems()
         
         let showTitle = item.mediaTitle.replacingOccurrences(of: "Episode \\d+.*$", with: "", options: .regularExpression)
@@ -94,11 +94,25 @@ class ContinueWatchingManager {
     }
     
     func fetchItems() -> [ContinueWatchingItem] {
-        if let data = UserDefaults.standard.data(forKey: storageKey),
-           let items = try? JSONDecoder().decode([ContinueWatchingItem].self, from: data) {
-            return items
+        guard
+            let data = UserDefaults.standard.data(forKey: storageKey),
+            let raw = try? JSONDecoder().decode([ContinueWatchingItem].self, from: data)
+        else {
+            return []
         }
-        return []
+
+        var seen = Set<String>()
+        let unique = raw.reversed().filter { item in
+            let key = "\(item.fullUrl)|\(item.module.metadata.sourceName)|\(item.episodeNumber)"
+            if seen.contains(key) {
+                return false
+            } else {
+                seen.insert(key)
+                return true
+            }
+        }.reversed()
+
+        return Array(unique)
     }
     
     func remove(item: ContinueWatchingItem) {

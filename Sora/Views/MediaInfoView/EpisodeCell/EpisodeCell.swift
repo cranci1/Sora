@@ -105,21 +105,9 @@ struct EpisodeCell: View {
     
     var body: some View {
         HStack {
-            if isMultiSelectMode {
-                Button(action: {
-                    onSelectionChanged?(!isSelected)
-                }) {
-                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(isSelected ? .accentColor : .secondary)
-                        .font(.title3)
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
-            
             episodeThumbnail
             episodeInfo
             Spacer()
-            downloadStatusView
             CircularProgressBar(progress: currentProgress)
                 .frame(width: 40, height: 40)
         }
@@ -132,8 +120,11 @@ struct EpisodeCell: View {
         .onAppear {
             updateProgress()
             updateDownloadStatus()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                fetchEpisodeDetails()
+            
+            if let type = module.metadata.type?.lowercased(), type == "anime" {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    fetchAnimeEpisodeDetails()
+                }
             }
             
             if let totalEpisodes = totalEpisodes, episodeID + 1 < totalEpisodes {
@@ -292,14 +283,6 @@ struct EpisodeCell: View {
     
     private var contextMenuContent: some View {
         Group {
-            if case .notDownloaded = downloadStatus {
-                Button(action: {
-                    showDownloadConfirmation = true
-                }) {
-                    Label("Download Episode", systemImage: "arrow.down.circle")
-                }
-            }
-            
             if progress <= 0.9 {
                 Button(action: markAsWatched) {
                     Label("Mark as Watched", systemImage: "checkmark.circle")

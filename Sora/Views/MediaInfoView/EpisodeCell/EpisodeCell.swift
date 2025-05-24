@@ -108,11 +108,9 @@ struct EpisodeCell: View {
             episodeThumbnail
             episodeInfo
             Spacer()
-            if module.metadata.type?.lowercased() == "anime" {
-                CircularProgressBar(progress: currentProgress)
-                    .frame(width: 40, height: 40)
-                    .padding(.trailing, 8)
-            }
+            CircularProgressBar(progress: currentProgress)
+                .frame(width: 40, height: 40)
+                .padding(.trailing, 8)
         }
         .contentShape(Rectangle())
         .background(isMultiSelectMode && isSelected ? Color.accentColor.opacity(0.1) : Color.clear)

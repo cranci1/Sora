@@ -110,6 +110,7 @@ struct EpisodeCell: View {
             Spacer()
             CircularProgressBar(progress: currentProgress)
                 .frame(width: 40, height: 40)
+                .padding(.trailing, 8)
         }
         .contentShape(Rectangle())
         .background(isMultiSelectMode && isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
@@ -171,11 +172,7 @@ struct EpisodeCell: View {
     private var episodeThumbnail: some View {
         ZStack {
             if let url = URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl) {
-                KFImage.optimizedEpisodeThumbnail(url: url)
-                    .setProcessor(DownsamplingImageProcessor(size: CGSize(width: 100, height: 56)))
-                    .memoryCacheExpiration(.seconds(600))
-                    .cacheOriginalImage()
-                    .fade(duration: 0.1)
+                KFImage(url)
                     .onFailure { error in
                         Logger.shared.log("Failed to load episode image: \(error)", type: "Error")
                     }

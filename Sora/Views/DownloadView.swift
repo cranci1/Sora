@@ -185,7 +185,8 @@ struct DownloadView: View {
             SimpleDownloadGroup(
                 title: title,
                 assets: assets,
-                posterURL: assets.first?.metadata?.posterURL
+                posterURL: assets.first?.metadata?.showPosterURL
+                          ?? assets.first?.metadata?.posterURL
             )
         }.sorted { $0.title < $1.title }
     }

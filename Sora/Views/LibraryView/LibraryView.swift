@@ -54,13 +54,18 @@ struct LibraryView: View {
             ZStack {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
+                        Text("Library")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .padding(.horizontal, 20)
+                            .padding(.top, 20)
                         HStack {
                             HStack(spacing: 4) {
                                 Image(systemName: "play.fill")
                                     .font(.subheadline)
                                 Text("Continue Watching")
                                     .font(.title3)
-                                    .fontWeight(.regular)
+                                    .fontWeight(.semibold)
                             }
                             
                             Spacer()
@@ -72,6 +77,7 @@ struct LibraryView: View {
                                     .padding(.vertical, 6)
                                     .background(Color.gray.opacity(0.2))
                                     .cornerRadius(15)
+                                    .gradientOutline()
                             }
                         }
                         .padding(.horizontal, 20)
@@ -103,7 +109,7 @@ struct LibraryView: View {
                                     .font(.subheadline)
                                 Text("Bookmarks")
                                     .font(.title3)
-                                    .fontWeight(.regular)
+                                    .fontWeight(.semibold)
                             }
                             
                             Spacer()
@@ -115,6 +121,7 @@ struct LibraryView: View {
                                     .padding(.vertical, 6)
                                     .background(Color.gray.opacity(0.2))
                                     .cornerRadius(15)
+                                    .gradientOutline()
                             }
                         }
                         .padding(.horizontal, 20)
@@ -144,9 +151,8 @@ struct LibraryView: View {
                             EmptyView()
                         }
                     }
-                    .padding(.vertical, 20)
+                    .padding(.bottom, 20)
                 }
-                .navigationTitle("‎‎ Library")
                 .onAppear {
                     fetchContinueWatching()
                 }
@@ -292,6 +298,19 @@ struct ContinueWatchingCell: View {
                                 }
                             }
                             .padding(10)
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        .black.opacity(0.7),
+                                        .black.opacity(0.0)
+                                    ],
+                                    startPoint: .bottom,
+                                    endPoint: .top
+                                )
+                                .clipped()
+                                .cornerRadius(10, corners: [.bottomLeft, .bottomRight])
+                                .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
+                            )
                         },
                         alignment: .bottom
                     )
@@ -361,6 +380,23 @@ struct RoundedCorner: Shape {
 extension View {
     func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
         clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+    
+    func gradientOutline() -> some View {
+        self.background(
+            RoundedRectangle(cornerRadius: 15)
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: Color.accentColor.opacity(0.25), location: 0),
+                            .init(color: Color.accentColor.opacity(0), location: 1)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 0.5
+                )
+        )
     }
 }
 
@@ -443,39 +479,58 @@ struct BookmarkItemView: View {
                 selectedBookmark = item
                 isDetailActive = true
             }) {
-                VStack(alignment: .leading) {
-                    ZStack {
-                        KFImage(URL(string: item.imageUrl))
-                            .placeholder {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color.gray.opacity(0.3))
-                                    .aspectRatio(2/3, contentMode: .fit)
-                                    .shimmering()
+                ZStack {
+                    KFImage(URL(string: item.imageUrl))
+                        .placeholder {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.gray.opacity(0.3))
+                                .aspectRatio(2/3, contentMode: .fit)
+                                .shimmering()
+                        }
+                        .resizable()
+                        .aspectRatio(0.72, contentMode: .fill)
+                        .frame(width: 162, height: 243)
+                        .cornerRadius(12)
+                        .clipped()
+                        .overlay(
+                            ZStack {
+                                Circle()
+                                    .fill(Color.black.opacity(0.5))
+                                    .frame(width: 28, height: 28)
+                                    .overlay(
+                                        KFImage(URL(string: module.metadata.iconUrl))
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 32, height: 32)
+                                            .clipShape(Circle())
+                                    )
                             }
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 162, height: 243)
-                            .cornerRadius(10)
-                            .clipped()
-                            .overlay(
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.black.opacity(0.5))
-                                        .frame(width: 28, height: 28)
-                                        .overlay(
-                                            KFImage(URL(string: module.metadata.iconUrl))
-                                                .resizable()
-                                                .scaledToFill()
-                                                .frame(width: 32, height: 32)
-                                                .clipShape(Circle())
-                                        )
-                                }
-                                .padding(8),
-                                alignment: .topLeading
+                            .padding(8),
+                            alignment: .topLeading
+                        )
+                    
+                    VStack {
+                        Spacer()
+                        Text(item.title)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .lineLimit(2)
+                            .foregroundColor(.white)
+                            .padding(12)
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        .black.opacity(0.7),
+                                        .black.opacity(0.0)
+                                    ],
+                                    startPoint: .bottom,
+                                    endPoint: .top
+                                )
+                                .shadow(color: .black, radius: 4, x: 0, y: 2)
                             )
                     }
+                    .frame(width: 162)
                 }
-                .frame(width: 162)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .contextMenu {
                 Button(role: .destructive, action: {
@@ -487,3 +542,4 @@ struct BookmarkItemView: View {
         }
     }
 }
+ 

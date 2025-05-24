@@ -42,6 +42,8 @@ struct SearchView: View {
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var isModuleSelectorPresented = false
     
+    private let columns = [GridItem(.adaptive(minimum: 150))]
+    
     init(searchQuery: Binding<String>) {
         self._searchQuery = searchQuery
     }
@@ -165,23 +167,40 @@ struct SearchView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.top)
                             } else {
-                                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
+                                LazyVGrid(columns: columns, spacing: 16) {
                                     ForEach(searchItems) { item in
                                         NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule!)) {
-                                            VStack {
+                                            ZStack {
                                                 KFImage(URL(string: item.imageUrl))
                                                     .resizable()
-                                                    .aspectRatio(contentMode: .fill)
-                                                    .frame(height: cellWidth * 3 / 2)
-                                                    .frame(maxWidth: cellWidth)
-                                                    .cornerRadius(10)
+                                                    .aspectRatio(0.72, contentMode: .fill)
+                                                    .frame(width: 162, height: 243)
+                                                    .cornerRadius(12)
                                                     .clipped()
-                                                Text(item.title)
-                                                    .font(.subheadline)
-                                                    .foregroundColor(Color.primary)
-                                                    .padding([.leading, .bottom], 8)
-                                                    .lineLimit(1)
+                                                
+                                                VStack {
+                                                    Spacer()
+                                                    Text(item.title)
+                                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                                        .lineLimit(2)
+                                                        .foregroundColor(.white)
+                                                        .padding(12)
+                                                        .background(
+                                                            LinearGradient(
+                                                                colors: [
+                                                                    .black.opacity(0.7),
+                                                                    .black.opacity(0.0)
+                                                                ],
+                                                                startPoint: .bottom,
+                                                                endPoint: .top
+                                                            )
+                                                            .shadow(color: .black, radius: 4, x: 0, y: 2)
+                                                        )
+                                                }
+                                                .frame(width: 162)
                                             }
+                                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                                            .padding(4)
                                         }
                                     }
                                     .onAppear {

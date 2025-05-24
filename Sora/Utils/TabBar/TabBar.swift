@@ -18,6 +18,13 @@ struct TabBar: View {
     
     @State private var keyboardHeight: CGFloat = 0
     
+    private var gradientOpacity: CGFloat {
+        let accentColor = UIColor(Color.accentColor)
+        var white: CGFloat = 0
+        accentColor.getWhite(&white, alpha: nil)
+        return white > 0.5 ? 0.5 : 0.3
+    }
+    
     @Namespace private var animation
     
     var body: some View {
@@ -31,13 +38,27 @@ struct TabBar: View {
                     }
                 }) {
                     Image(systemName: tabs[lastTab].icon + ".fill")
-                        .foregroundStyle(.black)
+                        .foregroundStyle(.gray)
                         .frame(width: 24, height: 24)
                         .matchedGeometryEffect(id: tabs[lastTab].icon, in: animation)
                         .padding(16)
                         .background(
                             Circle()
                                 .fill(.ultraThinMaterial)
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(stops: [
+                                                    .init(color: Color.accentColor.opacity(gradientOpacity), location: 0),
+                                                    .init(color: Color.accentColor.opacity(0), location: 1)
+                                                ]),
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            ),
+                                            lineWidth: 0.5
+                                        )
+                                )
                                 .matchedGeometryEffect(id: "background_circle", in: animation)
                         )
                 }
@@ -49,13 +70,13 @@ struct TabBar: View {
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .font(.footnote)
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.gray)
                             .opacity(0.7)
                         
                         TextField("Search for something...", text: $searchQuery)
                             .textFieldStyle(.plain)
                             .font(.footnote)
-                            .foregroundStyle(.black)
+                            .foregroundStyle(Color.accentColor)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .focused($keyboardFocus)
                             .onChange(of: keyboardFocus) { newValue in
@@ -67,6 +88,7 @@ struct TabBar: View {
                                 keyboardFocus = false
                             }
                     }
+                    .frame(height: 24)
                     .padding(8)
                 } else {
                     ForEach(0..<tabs.count, id: \.self) { index in
@@ -78,8 +100,25 @@ struct TabBar: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(.ultraThinMaterial)
+            .background(
+                Capsule()
+                    .fill(.ultraThinMaterial)
+            )
             .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(gradientOpacity), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
@@ -87,7 +126,6 @@ struct TabBar: View {
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: keyboardHeight)
         .onChange(of: keyboardHeight) { newValue in
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                // Animation will be handled by the offset modifier
             }
         }
         .onAppear {
@@ -126,6 +164,7 @@ struct TabBar: View {
                 Image(systemName: tab.icon + (selectedTab == index ? ".fill" : ""))
                     .frame(width: 28, height: 28)
                     .matchedGeometryEffect(id: tab.icon, in: animation)
+                    .foregroundStyle(selectedTab == index ? .black : .gray)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 10)
                     .frame(maxWidth: .infinity)
@@ -135,6 +174,7 @@ struct TabBar: View {
                     Image(systemName: tab.icon + (selectedTab == index ? ".fill" : ""))
                         .frame(width: 36, height: 18)
                         .matchedGeometryEffect(id: tab.icon, in: animation)
+                        .foregroundStyle(selectedTab == index ? .black : .gray)
                     
                     Text(tab.title)
                         .font(.caption)
@@ -152,7 +192,7 @@ struct TabBar: View {
             selectedTab == index ?
             Capsule()
                 .fill(Color.white)
-                .shadow(color: .black.opacity(0.1), radius: 6)
+                .shadow(color: .black.opacity(0.2), radius: 6)
                 .matchedGeometryEffect(id: "background_capsule", in: animation)
             : nil
         )

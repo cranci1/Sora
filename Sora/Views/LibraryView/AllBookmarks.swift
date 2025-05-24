@@ -9,6 +9,25 @@ import SwiftUI
 import Kingfisher
 import UIKit
 
+extension View {
+    func circularGradientOutlineTwo() -> some View {
+        self.background(
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: Color.accentColor.opacity(0.25), location: 0),
+                            .init(color: Color.accentColor.opacity(0), location: 1)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 0.5
+                )
+        )
+    }
+}
+
 struct BookmarksDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var libraryManager: LibraryManager
@@ -41,7 +60,7 @@ struct BookmarksDetailView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading) {
             HStack(spacing: 8) {
                 Button(action: {
                     dismiss()
@@ -51,9 +70,14 @@ struct BookmarksDetailView: View {
                         .foregroundColor(.primary)
                 }
                 
-                Text("All Bookmarks")
-                    .font(.title3)
-                    .fontWeight(.bold)
+                Button(action: {
+                    dismiss()
+                }) {
+                    Text("All Bookmarks")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                }
                 
                 Spacer()
                 
@@ -74,8 +98,12 @@ struct BookmarksDetailView: View {
                 } label: {
                     Image(systemName: "line.3.horizontal.decrease.circle")
                         .resizable()
-                        .frame(width: 36, height: 36)
+                        .frame(width: 24, height: 24)
                         .foregroundColor(.accentColor)
+                        .padding(6)
+                        .background(Color.gray.opacity(0.2))
+                        .clipShape(Circle())
+                        .circularGradientOutline()
                 }
             }
             .padding(.horizontal)
@@ -95,14 +123,13 @@ struct BookmarksDetailView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
+                .padding(.top)
+                .padding()
             }
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            // Enable swipe back gesture
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first,
                let navigationController = window.rootViewController?.children.first as? UINavigationController {

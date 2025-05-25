@@ -16,6 +16,7 @@ struct LibraryView: View {
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     
     @Environment(\.verticalSizeClass) var verticalSizeClass
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     @State private var selectedBookmark: LibraryItem? = nil
     @State private var isDetailActive: Bool = false
@@ -28,10 +29,15 @@ struct LibraryView: View {
     ]
     
     private var columnsCount: Int {
-        if UIDevice.current.userInterfaceIdiom == .pad {
+        // Stage Manager Detection
+        if UIDevice.current.userInterfaceIdiom == .pad && horizontalSizeClass == .compact {
+            return verticalSizeClass == .compact ? 3 : 2
+        } else if UIDevice.current.userInterfaceIdiom == .pad {
+            // Normal iPad layout
             let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
             return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
         } else {
+            // iPhone layout
             return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }
     }
@@ -206,9 +212,15 @@ struct LibraryView: View {
     }
     
     private func determineColumns() -> Int {
-        if UIDevice.current.userInterfaceIdiom == .pad {
+        // Stage Manager Detection
+        if UIDevice.current.userInterfaceIdiom == .pad && horizontalSizeClass == .compact {
+            return verticalSizeClass == .compact ? 3 : 2
+        } else if UIDevice.current.userInterfaceIdiom == .pad {
+            // Normal iPad layout
+            let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
             return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
         } else {
+            // iPhone layout
             return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }
     }

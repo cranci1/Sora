@@ -23,6 +23,11 @@ struct SettingsViewData: View {
     @State private var isImageCachingEnabled: Bool = true
     @State private var isMemoryOnlyMode: Bool = false
     
+    enum ActiveAlert { case eraseData, removeDocs, removeMovPkg }
+
+    @State private var showAlert = false
+    @State private var activeAlert: ActiveAlert = .eraseData
+    
     var body: some View {
         Form {
             // New section for cache settings
@@ -86,7 +91,8 @@ struct SettingsViewData: View {
                 
                 HStack {
                     Button(action: {
-                        showRemoveDocumentsAlert = true
+                        activeAlert = .removeDocs
+                        showAlert = true
                     }) {
                         Text("Remove All Files in Documents")
                     }
@@ -109,7 +115,8 @@ struct SettingsViewData: View {
                 }
                 
                 Button(action: {
-                    showEraseAppDataAlert = true
+                    activeAlert = .eraseData
+                    showAlert = true
                 }) {
                     Text("Erase all App Data")
                 }
@@ -125,37 +132,32 @@ struct SettingsViewData: View {
             calculateCacheSize()
             updateSizes()
         }
-        .alert(isPresented: $showEraseAppDataAlert) {
-            Alert(
-                title: Text("Erase App Data"),
-                message: Text("Are you sure you want to erase all app data? This action cannot be undone."),
-                primaryButton: .destructive(Text("Erase")) {
-                    eraseAppData()
-                },
-                secondaryButton: .cancel()
+        .alert(isPresented: $showAlert) {
+          switch activeAlert {
+          case .eraseData:
+            return Alert(
+              title: Text("Erase App Data"),
+              message: Text("Are you sure you want to erase all app data? This action cannot be undone."),
+              primaryButton: .destructive(Text("Erase")) { eraseAppData() },
+              secondaryButton: .cancel()
             )
-        }
-        .alert(isPresented: $showRemoveDocumentsAlert) {
-            Alert(
-                title: Text("Remove Documents"),
-                message: Text("Are you sure you want to remove all files in the Documents folder? This will remove all modules."),
-                primaryButton: .destructive(Text("Remove")) {
-                    removeAllFilesInDocuments()
-                },
-                secondaryButton: .cancel()
+          case .removeDocs:
+            return Alert(
+              title: Text("Remove Documents"),
+              message: Text("Are you sure you want to remove all files in the Documents folder? This will remove all modules."),
+              primaryButton: .destructive(Text("Remove")) { removeAllFilesInDocuments() },
+              secondaryButton: .cancel()
             )
-        }
-        .alert(isPresented: $showRemoveMovPkgAlert) {
-            Alert(
-                title: Text("Remove Downloads"),
-                message: Text("Are you sure you want to remove all Downloads?"),
-                primaryButton: .destructive(Text("Remove")) {
-                    removeMovPkgFiles()
-                },
-                secondaryButton: .cancel()
+          case .removeMovPkg:
+            return Alert(
+              title: Text("Remove Downloads"),
+              message: Text("Are you sure you want to remove all Downloads?"),
+              primaryButton: .destructive(Text("Remove")) { removeMovPkgFiles() },
+              secondaryButton: .cancel()
             )
+          }
         }
-    }
+      }
     
     // Calculate and update the combined cache size
     func calculateCacheSize() {

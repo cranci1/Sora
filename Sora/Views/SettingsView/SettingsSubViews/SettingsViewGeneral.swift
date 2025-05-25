@@ -7,6 +7,147 @@
 
 import SwiftUI
 
+fileprivate struct SettingsSection<Content: View>: View {
+    let title: String
+    let footer: String?
+    let content: Content
+    
+    init(title: String, footer: String? = nil, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.footer = footer
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title.uppercased())
+                .font(.footnote)
+                .foregroundStyle(.gray)
+                .padding(.horizontal, 20)
+            
+            VStack(spacing: 0) {
+                content
+            }
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+            .padding(.horizontal, 20)
+            
+            if let footer = footer {
+                Text(footer)
+                    .font(.footnote)
+                    .foregroundStyle(.gray)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+            }
+        }
+    }
+}
+
+fileprivate struct SettingsToggleRow: View {
+    let icon: String
+    let title: String
+    @Binding var isOn: Bool
+    var showDivider: Bool = true
+    
+    init(icon: String, title: String, isOn: Binding<Bool>, showDivider: Bool = true) {
+        self.icon = icon
+        self.title = title
+        self._isOn = isOn
+        self.showDivider = showDivider
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Image(systemName: icon)
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(.primary)
+                
+                Text(title)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
+                Toggle("", isOn: $isOn)
+                    .labelsHidden()
+                    .tint(.accentColor)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            
+            if showDivider {
+                Divider()
+                    .padding(.horizontal, 16)
+            }
+        }
+    }
+}
+
+fileprivate struct SettingsPickerRow<T: Hashable>: View {
+    let icon: String
+    let title: String
+    let options: [T]
+    let optionToString: (T) -> String
+    @Binding var selection: T
+    var showDivider: Bool = true
+    
+    init(icon: String, title: String, options: [T], optionToString: @escaping (T) -> String, selection: Binding<T>, showDivider: Bool = true) {
+        self.icon = icon
+        self.title = title
+        self.options = options
+        self.optionToString = optionToString
+        self._selection = selection
+        self.showDivider = showDivider
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Image(systemName: icon)
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(.primary)
+                
+                Text(title)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
+                Menu {
+                    ForEach(options, id: \.self) { option in
+                        Button(action: { selection = option }) {
+                            Text(optionToString(option))
+                        }
+                    }
+                } label: {
+                    Text(optionToString(selection))
+                        .foregroundStyle(.gray)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            
+            if showDivider {
+                Divider()
+                    .padding(.horizontal, 16)
+            }
+        }
+    }
+}
+
 struct SettingsViewGeneral: View {
     @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 100
     @AppStorage("refreshModulesOnLaunch") private var refreshModulesOnLaunch: Bool = false
@@ -24,89 +165,102 @@ struct SettingsViewGeneral: View {
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        Form {
-            Section(header: Text("Interface")) {
-                HStack {
-                    Text("Appearance")
-                    Picker("Appearance", selection: $settings.selectedAppearance) {
-                        Text("System").tag(Appearance.system)
-                        Text("Light").tag(Appearance.light)
-                        Text("Dark").tag(Appearance.dark)
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                }
-            }
-            
-            Section(header: Text("Media View"), footer: Text("The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1-25, 26-50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata it is refering to the episode thumbnail and title, since sometimes it can contain spoilers.")) {
-                
-                HStack {
-                    Text("Episodes Range")
-                    Spacer()
-                    Menu {
-                        Button(action: { episodeChunkSize = 25 }) { Text("25") }
-                        Button(action: { episodeChunkSize = 50 }) { Text("50") }
-                        Button(action: { episodeChunkSize = 75 }) { Text("75") }
-                        Button(action: { episodeChunkSize = 100 }) { Text("100") }
-                    } label: {
-                        Text("\(episodeChunkSize)")
-                    }
-                }
-                
-                Toggle("Fetch Episode metadata", isOn: $fetchEpisodeMetadata)
-                    .tint(settings.accentColor)
-                
-                HStack {
-                    Text("Metadata Provider")
-                    Spacer()
-                    Menu(metadataProviders) {
-                        ForEach(metadataProvidersList, id: \.self) { provider in
-                            Button(action: { metadataProviders = provider }) {
-                                Text(provider)
+        ScrollView {
+            VStack(spacing: 24) {
+                SettingsSection(title: "Interface") {
+                    SettingsPickerRow(
+                        icon: "paintbrush",
+                        title: "Appearance",
+                        options: [Appearance.system, .light, .dark],
+                        optionToString: { appearance in
+                            switch appearance {
+                            case .system: return "System"
+                            case .light: return "Light"
+                            case .dark: return "Dark"
                             }
-                        }
-                    }
+                        },
+                        selection: $settings.selectedAppearance,
+                        showDivider: false
+                    )
+                }
+                
+                SettingsSection(
+                    title: "Media View",
+                    footer: "The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1-25, 26-50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata it is referring to the episode thumbnail and title, since sometimes it can contain spoilers."
+                ) {
+                    SettingsPickerRow(
+                        icon: "list.number",
+                        title: "Episodes Range",
+                        options: [25, 50, 75, 100],
+                        optionToString: { "\($0)" },
+                        selection: $episodeChunkSize
+                    )
+                    
+                    SettingsToggleRow(
+                        icon: "info.circle",
+                        title: "Fetch Episode metadata",
+                        isOn: $fetchEpisodeMetadata
+                    )
+                    
+                    SettingsPickerRow(
+                        icon: "server.rack",
+                        title: "Metadata Provider",
+                        options: metadataProvidersList,
+                        optionToString: { $0 },
+                        selection: $metadataProviders,
+                        showDivider: false
+                    )
+                }
+                
+                SettingsSection(
+                    title: "Media Grid Layout",
+                    footer: "Adjust the number of media items per row in portrait and landscape modes."
+                ) {
+                    SettingsPickerRow(
+                        icon: "rectangle.portrait",
+                        title: "Portrait Columns",
+                        options: UIDevice.current.userInterfaceIdiom == .pad ? Array(1...5) : Array(1...4),
+                        optionToString: { "\($0)" },
+                        selection: $mediaColumnsPortrait
+                    )
+                    
+                    SettingsPickerRow(
+                        icon: "rectangle",
+                        title: "Landscape Columns",
+                        options: UIDevice.current.userInterfaceIdiom == .pad ? Array(2...8) : Array(2...5),
+                        optionToString: { "\($0)" },
+                        selection: $mediaColumnsLandscape,
+                        showDivider: false
+                    )
+                }
+                
+                SettingsSection(
+                    title: "Modules",
+                    footer: "Note that the modules will be replaced only if there is a different version string inside the JSON file."
+                ) {
+                    SettingsToggleRow(
+                        icon: "arrow.clockwise",
+                        title: "Refresh Modules on Launch",
+                        isOn: $refreshModulesOnLaunch,
+                        showDivider: false
+                    )
+                }
+                
+                SettingsSection(
+                    title: "Advanced",
+                    footer: "Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time."
+                ) {
+                    SettingsToggleRow(
+                        icon: "chart.bar",
+                        title: "Enable Analytics",
+                        isOn: $analyticsEnabled,
+                        showDivider: false
+                    )
                 }
             }
-            
-            Section(header: Text("Media Grid Layout"), footer: Text("Adjust the number of media items per row in portrait and landscape modes.")) {
-                HStack {
-                    if UIDevice.current.userInterfaceIdiom == .pad {
-                        Picker("Portrait Columns", selection: $mediaColumnsPortrait) {
-                            ForEach(1..<6) { i in Text("\(i)").tag(i) }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                    } else {
-                        Picker("Portrait Columns", selection: $mediaColumnsPortrait) {
-                            ForEach(1..<5) { i in Text("\(i)").tag(i) }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                    }
-                }
-                HStack {
-                    if UIDevice.current.userInterfaceIdiom == .pad {
-                        Picker("Landscape Columns", selection: $mediaColumnsLandscape) {
-                            ForEach(2..<9) { i in Text("\(i)").tag(i) }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                    } else {
-                        Picker("Landscape Columns", selection: $mediaColumnsLandscape) {
-                            ForEach(2..<6) { i in Text("\(i)").tag(i) }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                    }
-                }
-            }
-            
-            Section(header: Text("Modules"), footer: Text("Note that the modules will be replaced only if there is a different version string inside the JSON file.")) {
-                Toggle("Refresh Modules on Launch", isOn: $refreshModulesOnLaunch)
-                    .tint(settings.accentColor)
-            }
-            
-            Section(header: Text("Advanced"), footer: Text("Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time.")) {
-                Toggle("Enable Analytics", isOn: $analyticsEnabled)
-                    .tint(settings.accentColor)
-            }
+            .padding(.vertical, 20)
         }
+        .scrollViewBottomPadding()
         .navigationTitle("General")
         .dynamicAccentColor()
     }

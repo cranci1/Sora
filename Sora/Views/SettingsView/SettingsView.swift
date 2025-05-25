@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingsView: View {
+    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "ALPHA"
+    
     var body: some View {
         NavigationView {
             Form {
@@ -92,7 +94,7 @@ struct SettingsView: View {
                         }
                     }
                 }
-                Section(footer: Text("Running Sora 0.3.0 - cranci1")) {}
+                Section(footer: Text("Running Sora \(version) - cranci1")) {}
             }
             .navigationTitle("Settings")
         }

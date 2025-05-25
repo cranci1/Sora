@@ -382,10 +382,3 @@ extension JSController {
         )
     }
 }
-
-// MARK: - Private API Compatibility Extension
-// This extension ensures compatibility with the existing JSController-Downloads.swift implementation
-private extension JSController {
-    // No longer needed since JSController-Downloads.swift has been implemented
-    // Remove the duplicate startDownload method to avoid conflicts
-} 

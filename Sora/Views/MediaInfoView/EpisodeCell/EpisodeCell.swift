@@ -110,10 +110,10 @@ struct EpisodeCell: View {
             Spacer()
             CircularProgressBar(progress: currentProgress)
                 .frame(width: 40, height: 40)
-                .padding(.trailing, 8)
+                .padding(.trailing, 4)
         }
         .contentShape(Rectangle())
-        .background(isMultiSelectMode && isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
+        .background(Color.clear)
         .cornerRadius(8)
         .contextMenu {
             contextMenuContent
@@ -126,6 +126,8 @@ struct EpisodeCell: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     fetchAnimeEpisodeDetails()
                 }
+            } else {
+                isLoading = false
             }
             
             if let totalEpisodes = totalEpisodes, episodeID + 1 < totalEpisodes {

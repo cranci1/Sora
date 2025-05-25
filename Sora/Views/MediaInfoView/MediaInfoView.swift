@@ -755,22 +755,28 @@ struct MediaInfoView: View {
         showLoadingAlert = true
         isFetchingEpisode = true
         let completion: ((streams: [String]?, subtitles: [String]?, sources: [[String: Any]]?)) -> Void = { result in
-            guard self.activeFetchID == fetchID else { return }
+            guard self.activeFetchID == fetchID else {
+                return 
+            }
             self.showLoadingAlert = false
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                guard self.activeFetchID == fetchID else { 
+                    return 
+                }
+                
                 if let streams = result.sources, !streams.isEmpty {
                     if streams.count > 1 {
-                        self.showStreamSelectionAlert(streams: streams, fullURL: href, subtitles: result.subtitles?.first)
+                        self.showStreamSelectionAlert(streams: streams, fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
                     } else {
-                        self.playStream(url: streams[0]["streamUrl"] as? String ?? "", fullURL: href, subtitles: result.subtitles?.first, headers: streams[0]["headers"] as! [String : String])
+                        self.playStream(url: streams[0]["streamUrl"] as? String ?? "", fullURL: href, subtitles: result.subtitles?.first, headers: (streams[0]["headers"] as! [String : String]), fetchID: fetchID)
                     }
                 }
                 else if let streams = result.streams, !streams.isEmpty {
                     if streams.count > 1 {
-                        self.showStreamSelectionAlert(streams: streams, fullURL: href, subtitles: result.subtitles?.first)
+                        self.showStreamSelectionAlert(streams: streams, fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
                     } else {
-                        self.playStream(url: streams[0], fullURL: href, subtitles: result.subtitles?.first)
+                        self.playStream(url: streams[0], fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
                     }
                 } else {
                     self.handleStreamFailure(error: nil)
@@ -816,11 +822,19 @@ struct MediaInfoView: View {
         self.isLoading = false
     }
     
-    func showStreamSelectionAlert(streams: [Any], fullURL: String, subtitles: String? = nil) {
+    func showStreamSelectionAlert(streams: [Any], fullURL: String, subtitles: String? = nil, fetchID: UUID) {
+        guard self.activeFetchID == fetchID else {
+            return
+        }
+        
         self.isFetchingEpisode = false
         self.showLoadingAlert = false
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            guard self.activeFetchID == fetchID else {
+                return
+            }
+            
             let alert = UIAlertController(title: "Select Server", message: "Choose a server to play from", preferredStyle: .actionSheet)
             
             var index = 0
@@ -866,7 +880,10 @@ struct MediaInfoView: View {
                 
                 
                 alert.addAction(UIAlertAction(title: title, style: .default) { _ in
-                    self.playStream(url: streamUrl, fullURL: fullURL, subtitles: subtitles,headers: headers)
+                    guard self.activeFetchID == fetchID else {
+                        return
+                    }
+                    self.playStream(url: streamUrl, fullURL: fullURL, subtitles: subtitles, headers: headers, fetchID: fetchID)
                 })
                 
                 streamIndex += 1
@@ -900,11 +917,19 @@ struct MediaInfoView: View {
         }
     }
     
-    func playStream(url: String, fullURL: String, subtitles: String? = nil, headers: [String:String]? = nil) {
+    func playStream(url: String, fullURL: String, subtitles: String? = nil, headers: [String:String]? = nil, fetchID: UUID) {
+        guard self.activeFetchID == fetchID else {
+            return
+        }
+        
         self.isFetchingEpisode = false
         self.showLoadingAlert = false
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            guard self.activeFetchID == fetchID else {
+                return
+            }
+            
             let externalPlayer = UserDefaults.standard.string(forKey: "externalPlayer") ?? "Sora"
             var scheme: String?
             
@@ -949,6 +974,10 @@ struct MediaInfoView: View {
                 guard let url = URL(string: url) else {
                     Logger.shared.log("Invalid stream URL: \(url)", type: "Error")
                     DropManager.shared.showDrop(title: "Error", subtitle: "Invalid stream URL", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
+                    return
+                }
+                
+                guard self.activeFetchID == fetchID else {
                     return
                 }
                 

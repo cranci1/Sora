@@ -32,6 +32,8 @@ struct SearchView: View {
     @State private var hasNoResults = false
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var isModuleSelectorPresented = false
+    @State private var searchHistory: [String] = []
+    @State private var isSearchFieldFocused = false
     
     private var selectedModule: ScrapingModule? {
         guard let id = selectedModuleId else { return nil }
@@ -64,7 +66,7 @@ struct SearchView: View {
                 let columnsCount = determineColumns()
                 VStack(spacing: 0) {
                     HStack {
-                        SearchBar(text: $searchText, onSearchButtonClicked: performSearch)
+                        SearchBar(text: $searchText, isFocused: $isSearchFieldFocused, onSearchButtonClicked: performSearch)
                             .padding(.leading)
                             .padding(.trailing, searchText.isEmpty ? 16 : 0)
                             .disabled(selectedModule == nil)
@@ -73,11 +75,67 @@ struct SearchView: View {
                         if !searchText.isEmpty {
                             Button("Cancel") {
                                 searchText = ""
+                                isSearchFieldFocused = false
                                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                             }
                             .padding(.trailing)
                             .padding(.top)
                         }
+                    }
+                    
+                    if isSearchFieldFocused && !searchHistory.isEmpty && searchText.isEmpty {
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack {
+                                Text("Recent Searches")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Button("Clear") {
+                                    clearSearchHistory()
+                                }
+                                .font(.caption)
+                                .foregroundColor(.accentColor)
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                            
+                            ForEach(Array(searchHistory.enumerated()), id: \.offset) { index, searchTerm in
+                                Button(action: {
+                                    searchText = searchTerm
+                                    isSearchFieldFocused = false
+                                    performSearch()
+                                }) {
+                                    HStack {
+                                        Image(systemName: "clock")
+                                            .foregroundColor(.secondary)
+                                            .font(.caption)
+                                        Text(searchTerm)
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                        Button(action: {
+                                            removeFromHistory(at: index)
+                                        }) {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .foregroundColor(.secondary)
+                                                .font(.caption)
+                                        }
+                                    }
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 8)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                
+                                if index < searchHistory.count - 1 {
+                                    Divider()
+                                        .padding(.leading, 40)
+                                }
+                            }
+                        }
+                        .background(Color(.systemBackground))
+                        .cornerRadius(8)
+                        .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
+                        .padding(.horizontal)
+                        .padding(.top, 4)
                     }
                     
                     if selectedModule == nil {
@@ -221,6 +279,9 @@ struct SearchView: View {
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .onAppear {
+            loadSearchHistory()
+        }
         .onChange(of: selectedModuleId) { _ in
             if !searchText.isEmpty {
                 performSearch()
@@ -251,6 +312,9 @@ struct SearchView: View {
             return
         }
         
+        addToSearchHistory(searchText)
+        isSearchFieldFocused = false
+        
         isSearching = true
         hasNoResults = false
         searchItems = []
@@ -280,6 +344,39 @@ struct SearchView: View {
                 }
             }
         }
+    }
+    
+    private func loadSearchHistory() {
+        searchHistory = UserDefaults.standard.stringArray(forKey: "searchHistory") ?? []
+    }
+    
+    private func saveSearchHistory() {
+        UserDefaults.standard.set(searchHistory, forKey: "searchHistory")
+    }
+    
+    private func addToSearchHistory(_ term: String) {
+        let trimmedTerm = term.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTerm.isEmpty else { return }
+        
+        searchHistory.removeAll { $0.lowercased() == trimmedTerm.lowercased() }
+        searchHistory.insert(trimmedTerm, at: 0)
+        
+        if searchHistory.count > 10 {
+            searchHistory = Array(searchHistory.prefix(10))
+        }
+        
+        saveSearchHistory()
+    }
+    
+    private func removeFromHistory(at index: Int) {
+        guard index < searchHistory.count else { return }
+        searchHistory.remove(at: index)
+        saveSearchHistory()
+    }
+    
+    private func clearSearchHistory() {
+        searchHistory.removeAll()
+        saveSearchHistory()
     }
     
     private func updateOrientation() {
@@ -335,19 +432,24 @@ struct SearchView: View {
 struct SearchBar: View {
     @State private var debounceTimer: Timer?
     @Binding var text: String
+    @Binding var isFocused: Bool
     var onSearchButtonClicked: () -> Void
     
     var body: some View {
         HStack {
-            TextField("Search...", text: $text, onCommit: onSearchButtonClicked)
+            TextField("Search...", text: $text, onEditingChanged: { isEditing in
+                isFocused = isEditing
+            }, onCommit: onSearchButtonClicked)
                 .padding(7)
                 .padding(.horizontal, 25)
                 .background(Color(.systemGray6))
                 .cornerRadius(8)
                 .onChange(of: text){newValue in
                     debounceTimer?.invalidate()
-                    debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
-                        onSearchButtonClicked()
+                    if !newValue.isEmpty {
+                        debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
+                            onSearchButtonClicked()
+                        }
                     }
                 }
                 .overlay(

@@ -38,6 +38,12 @@ extension JSController {
             print("Subtitle URL: \(subtitle.absoluteString)")
         }
         
+        // Validate URL
+        guard url.scheme == "http" || url.scheme == "https" else {
+            completionHandler?(false, "Invalid URL scheme")
+            return
+        }
+        
         // Create metadata for the download
         var metadata: AssetMetadata? = nil
         if let title = title {
@@ -47,7 +53,7 @@ extension JSController {
                 showTitle: showTitle,
                 season: season,
                 episode: episode,
-                showPosterURL: imageURL // Use the correct show poster URL
+                showPosterURL: imageURL
             )
         }
         
@@ -57,12 +63,24 @@ extension JSController {
         // Generate a unique download ID
         let downloadID = UUID()
         
+        // Get access to the download directory
+        guard let downloadDirectory = getPersistentDownloadDirectory() else {
+            print("MP4 Download: Failed to get download directory")
+            completionHandler?(false, "Failed to create download directory")
+            return
+        }
+        
+        // Generate a safe filename for the MP4 file
+        let sanitizedTitle = title?.replacingOccurrences(of: "[^A-Za-z0-9 ._-]", with: "", options: .regularExpression) ?? "download"
+        let filename = "\(sanitizedTitle)_\(downloadID.uuidString.prefix(8)).mp4"
+        let destinationURL = downloadDirectory.appendingPathComponent(filename)
+        
         // Create an active download object
         let activeDownload = JSActiveDownload(
             id: downloadID,
             originalURL: url,
-            task: nil,  // We'll set this after creating the task
-            queueStatus: .queued,
+            task: nil,
+            queueStatus: .downloading,
             type: downloadType,
             metadata: metadata,
             title: title,
@@ -74,84 +92,79 @@ extension JSController {
         // Add to active downloads
         activeDownloads.append(activeDownload)
         
-        // Create a URL session task for downloading the MP4 file
+        // Create request with headers
         var request = URLRequest(url: url)
+        request.timeoutInterval = 30.0
         for (key, value) in headers {
             request.addValue(value, forHTTPHeaderField: key)
         }
         
-        // Get access to the download directory using the shared instance method
-        guard let downloadDirectory = getPersistentDownloadDirectory() else {
-            print("MP4 Download: Failed to get download directory")
-            completionHandler?(false, "Failed to create download directory")
-            return
-        }
-        
-        // Generate a unique filename for the MP4 file
-        let filename = "\(downloadID.uuidString).mp4"
-        let destinationURL = downloadDirectory.appendingPathComponent(filename)
-        
-        // Use a session configuration that allows handling SSL issues
+        // Enhanced session configuration
         let sessionConfig = URLSessionConfiguration.default
-        // Set a longer timeout for large files
         sessionConfig.timeoutIntervalForRequest = 60.0
-        sessionConfig.timeoutIntervalForResource = 600.0
+        sessionConfig.timeoutIntervalForResource = 1800.0
+        sessionConfig.httpMaximumConnectionsPerHost = 1
+        sessionConfig.allowsCellularAccess = true
         
-        // Create a URL session that handles SSL certificate validation issues
+        // Create custom session with delegate
         let customSession = URLSession(configuration: sessionConfig, delegate: self, delegateQueue: nil)
         
-        // Create the download task with the custom session
-        let downloadTask = customSession.downloadTask(with: request) { (tempURL, response, error) in
+        // Create the download task
+        let downloadTask = customSession.downloadTask(with: request) { [weak self] (tempURL, response, error) in
+            guard let self = self else { return }
+            
             DispatchQueue.main.async {
+                defer {
+                    // Clean up resources
+                    self.cleanupDownloadResources(for: downloadID)
+                }
+                
+                // Handle error cases - just remove from active downloads
                 if let error = error {
                     print("MP4 Download Error: \(error.localizedDescription)")
-                    
-                    // Update active download status
-                    if let index = self.activeDownloads.firstIndex(where: { $0.id == downloadID }) {
-                        self.activeDownloads[index].queueStatus = .queued
-                    }
-                    
-                    // Clean up resources
-                    self.mp4ProgressObservations?[downloadID] = nil
-                    self.mp4CustomSessions?[downloadID] = nil
-                    
-                    // Remove the download after a delay
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                        self.activeDownloads.removeAll { $0.id == downloadID }
-                    }
-                    
+                    self.removeActiveDownload(downloadID: downloadID)
                     completionHandler?(false, "Download failed: \(error.localizedDescription)")
                     return
                 }
                 
+                // Validate response
                 guard let httpResponse = response as? HTTPURLResponse else {
                     print("MP4 Download: Invalid response")
+                    self.removeActiveDownload(downloadID: downloadID)
                     completionHandler?(false, "Invalid server response")
                     return
                 }
                 
-                if httpResponse.statusCode >= 400 {
+                guard (200...299).contains(httpResponse.statusCode) else {
                     print("MP4 Download HTTP Error: \(httpResponse.statusCode)")
+                    self.removeActiveDownload(downloadID: downloadID)
                     completionHandler?(false, "Server error: \(httpResponse.statusCode)")
                     return
                 }
                 
                 guard let tempURL = tempURL else {
                     print("MP4 Download: No temporary file URL")
+                    self.removeActiveDownload(downloadID: downloadID)
                     completionHandler?(false, "Download data not available")
                     return
                 }
                 
+                // Move file to final destination
                 do {
-                    // Move the temporary file to the permanent location
                     if FileManager.default.fileExists(atPath: destinationURL.path) {
                         try FileManager.default.removeItem(at: destinationURL)
                     }
                     
                     try FileManager.default.moveItem(at: tempURL, to: destinationURL)
-                    print("MP4 Download: Successfully moved file to \(destinationURL.path)")
+                    print("MP4 Download: Successfully saved to \(destinationURL.path)")
                     
-                    // Create the downloaded asset
+                    // Verify file size
+                    let fileSize = try FileManager.default.attributesOfItem(atPath: destinationURL.path)[.size] as? Int64 ?? 0
+                    guard fileSize > 0 else {
+                        throw NSError(domain: "DownloadError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Downloaded file is empty"])
+                    }
+                    
+                    // Create downloaded asset
                     let downloadedAsset = DownloadedAsset(
                         name: title ?? url.lastPathComponent,
                         downloadDate: Date(),
@@ -162,112 +175,122 @@ extension JSController {
                         subtitleURL: subtitleURL
                     )
                     
-                    // Add to saved assets
+                    // Save asset
                     self.savedAssets.append(downloadedAsset)
                     self.saveAssets()
                     
-                    // Update active download and remove after a delay
-                    if let index = self.activeDownloads.firstIndex(where: { $0.id == downloadID }) {
-                        self.activeDownloads[index].progress = 1.0
-                        self.activeDownloads[index].queueStatus = .completed
-                    }
+                    // Update progress to complete and remove after delay
+                    self.updateDownloadProgress(downloadID: downloadID, progress: 1.0)
                     
                     // Download subtitle if provided
                     if let subtitleURL = subtitleURL {
                         self.downloadSubtitle(subtitleURL: subtitleURL, assetID: downloadedAsset.id.uuidString)
                     }
                     
-                    // Notify observers - use downloadCompleted since the download finished
-                    NotificationCenter.default.post(name: NSNotification.Name("downloadCompleted"), object: nil)
-                    
+                    // Notify completion
+                    NotificationCenter.default.post(name: NSNotification.Name("downloadCompleted"), object: downloadedAsset)
                     completionHandler?(true, "Download completed successfully")
                     
-                    // Clean up resources
-                    self.mp4ProgressObservations?[downloadID] = nil
-                    self.mp4CustomSessions?[downloadID] = nil
-                    
-                    // Remove the completed download from active list after a delay
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                        self.activeDownloads.removeAll { $0.id == downloadID }
+                    // Remove from active downloads after success
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        self.removeActiveDownload(downloadID: downloadID)
                     }
                     
                 } catch {
-                    print("MP4 Download Error moving file: \(error.localizedDescription)")
+                    print("MP4 Download Error saving file: \(error.localizedDescription)")
+                    self.removeActiveDownload(downloadID: downloadID)
                     completionHandler?(false, "Error saving download: \(error.localizedDescription)")
                 }
             }
         }
         
-        // Set up progress tracking
+        // Set up progress observation
+        setupProgressObservation(for: downloadTask, downloadID: downloadID)
+        
+        // Store session reference
+        storeSessionReference(session: customSession, for: downloadID)
+        
+        // Start download
         downloadTask.resume()
+        print("MP4 Download: Task started for \(filename)")
         
-        // Update the task in the active download
-        if let index = activeDownloads.firstIndex(where: { $0.id == downloadID }) {
-            activeDownloads[index].queueStatus = .downloading
-            
-            // Store reference to the downloadTask directly - no need to access private properties
-            print("MP4 Download: Task started")
-            // We can't directly store URLSessionDownloadTask in place of AVAssetDownloadTask
-            // Just continue tracking progress separately
-        }
-        
-        // Set up progress observation - fix the key path specification
-        let observation = downloadTask.progress.observe(\Progress.fractionCompleted) { progress, _ in
+        // Initial success callback
+        completionHandler?(true, "Download started")
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func removeActiveDownload(downloadID: UUID) {
+        activeDownloads.removeAll { $0.id == downloadID }
+    }
+    
+    private func updateDownloadProgress(downloadID: UUID, progress: Double) {
+        guard let index = activeDownloads.firstIndex(where: { $0.id == downloadID }) else { return }
+        activeDownloads[index].progress = progress
+    }
+    
+    private func setupProgressObservation(for task: URLSessionDownloadTask, downloadID: UUID) {
+        let observation = task.progress.observe(\.fractionCompleted) { [weak self] progress, _ in
             DispatchQueue.main.async {
-                if let index = self.activeDownloads.firstIndex(where: { $0.id == downloadID }) {
-                    self.activeDownloads[index].progress = progress.fractionCompleted
-                    
-                    // Notify observers of progress update
-                    NotificationCenter.default.post(name: NSNotification.Name("downloadProgressUpdated"), object: nil)
-                }
+                guard let self = self else { return }
+                self.updateDownloadProgress(downloadID: downloadID, progress: progress.fractionCompleted)
+                NotificationCenter.default.post(name: NSNotification.Name("downloadProgressUpdated"), object: nil)
             }
         }
         
-        // Store the observation somewhere to keep it alive - using nonatomic property from main class
-        if self.mp4ProgressObservations == nil {
-            self.mp4ProgressObservations = [:]
+        if mp4ProgressObservations == nil {
+            mp4ProgressObservations = [:]
         }
-        self.mp4ProgressObservations?[downloadID] = observation
-        
-        // Store the custom session to keep it alive until download is complete
-        if self.mp4CustomSessions == nil {
-            self.mp4CustomSessions = [:]
+        mp4ProgressObservations?[downloadID] = observation
+    }
+    
+    private func storeSessionReference(session: URLSession, for downloadID: UUID) {
+        if mp4CustomSessions == nil {
+            mp4CustomSessions = [:]
         }
-        self.mp4CustomSessions?[downloadID] = customSession
-        
-        // Notify that download started successfully
-        completionHandler?(true, "Download started")
+        mp4CustomSessions?[downloadID] = session
+    }
+    
+    private func cleanupDownloadResources(for downloadID: UUID) {
+        mp4ProgressObservations?[downloadID] = nil
+        mp4CustomSessions?[downloadID] = nil
     }
 }
 
-// Extension for handling SSL certificate validation for MP4 downloads
+// MARK: - URLSessionDelegate
 extension JSController: URLSessionDelegate {
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        // Handle SSL/TLS certificate validation
-        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-            let host = challenge.protectionSpace.host
-            print("MP4 Download: Handling server trust challenge for host: \(host)")
-            
-            // Accept the server's certificate for known problematic domains
-            // or for domains in our custom session downloads
-            if host.contains("streamtales.cc") || 
-               host.contains("frembed.xyz") || 
-               host.contains("vidclouds.cc") ||
-               self.mp4CustomSessions?.values.contains(session) == true {
-                
-                if let serverTrust = challenge.protectionSpace.serverTrust {
-                    // Log detailed info about the trust
-                    print("MP4 Download: Accepting certificate for \(host)")
-                    
-                    let credential = URLCredential(trust: serverTrust)
-                    completionHandler(.useCredential, credential)
-                    return
-                }
-            }
+        
+        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust else {
+            completionHandler(.performDefaultHandling, nil)
+            return
         }
         
-        // For other authentication challenges, use default handling
-        print("MP4 Download: Using default handling for auth challenge")
-        completionHandler(.performDefaultHandling, nil)
+        let host = challenge.protectionSpace.host
+        print("MP4 Download: Handling server trust challenge for host: \(host)")
+        
+        // Define trusted hosts for MP4 downloads
+        let trustedHosts = [
+            "streamtales.cc",
+            "frembed.xyz", 
+            "vidclouds.cc"
+        ]
+        
+        let isTrustedHost = trustedHosts.contains { host.contains($0) }
+        let isCustomSession = mp4CustomSessions?.values.contains(session) == true
+        
+        if isTrustedHost || isCustomSession {
+            guard let serverTrust = challenge.protectionSpace.serverTrust else {
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+            
+            print("MP4 Download: Accepting certificate for \(host)")
+            let credential = URLCredential(trust: serverTrust)
+            completionHandler(.useCredential, credential)
+        } else {
+            print("MP4 Download: Using default handling for \(host)")
+            completionHandler(.performDefaultHandling, nil)
+        }
     }
-} 
+}

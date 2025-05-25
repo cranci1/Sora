@@ -16,11 +16,13 @@ struct SettingsViewGeneral: View {
     @AppStorage("metadataProviders") private var metadataProviders: String = "AniList"
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
+    @AppStorage("currentAppIcon") private var currentAppIcon = "Default"
     @AppStorage("episodeSortOrder") private var episodeSortOrder: String = "Ascending"
     
     private let metadataProvidersList = ["AniList"]
     private let sortOrderOptions = ["Ascending", "Descending"]
     @EnvironmentObject var settings: Settings
+    @State private var showAppIconPicker = false
     
     var body: some View {
         Form {
@@ -34,6 +36,18 @@ struct SettingsViewGeneral: View {
                         Text("Dark").tag(Appearance.dark)
                     }
                     .pickerStyle(SegmentedPickerStyle())
+                }
+                
+                HStack {
+                    Text("App Icon")
+                    Spacer()
+                    Button(action: {
+                        showAppIconPicker.toggle()
+                    }) {
+                        Text(currentAppIcon.isEmpty ? "Default" : currentAppIcon)
+                            .font(.body)
+                            .foregroundColor(.accentColor)
+                    }
                 }
             }
             
@@ -108,5 +122,13 @@ struct SettingsViewGeneral: View {
             }
         }
         .navigationTitle("General")
+        .sheet(isPresented: $showAppIconPicker) {
+            if #available(iOS 16.0, *) {
+                    SettingsViewAlternateAppIconPicker(isPresented: $showAppIconPicker)
+                        .presentationDetents([.height(200)])
+                } else {
+                    SettingsViewAlternateAppIconPicker(isPresented: $showAppIconPicker)
+                }
+        }
     }
 }

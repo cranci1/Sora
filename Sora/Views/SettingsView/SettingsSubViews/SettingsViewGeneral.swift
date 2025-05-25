@@ -157,12 +157,13 @@ struct SettingsViewGeneral: View {
     @AppStorage("metadataProviders") private var metadataProviders: String = "AniList"
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
+    @AppStorage("currentAppIcon") private var currentAppIcon = "Default"
     @AppStorage("episodeSortOrder") private var episodeSortOrder: String = "Ascending"
     
     private let metadataProvidersList = ["AniList"]
     private let sortOrderOptions = ["Ascending", "Descending"]
     @EnvironmentObject var settings: Settings
-    @Environment(\.colorScheme) private var colorScheme
+    @State private var showAppIconPicker = false
     
     var body: some View {
         ScrollView {
@@ -179,14 +180,35 @@ struct SettingsViewGeneral: View {
                             case .dark: return "Dark"
                             }
                         },
-                        selection: $settings.selectedAppearance,
-                        showDivider: false
+                        selection: $settings.selectedAppearance
                     )
+                    
+                    VStack(spacing: 0) {
+                        HStack {
+                            Image(systemName: "app")
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(.primary)
+                            
+                            Text("App Icon")
+                                .foregroundStyle(.primary)
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                showAppIconPicker = true
+                            }) {
+                                Text(currentAppIcon)
+                                    .foregroundStyle(.gray)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                    }
                 }
                 
                 SettingsSection(
                     title: "Media View",
-                    footer: "The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1-25, 26-50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata it is referring to the episode thumbnail and title, since sometimes it can contain spoilers."
+                    footer: "The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers."
                 ) {
                     SettingsPickerRow(
                         icon: "list.number",
@@ -260,8 +282,15 @@ struct SettingsViewGeneral: View {
             }
             .padding(.vertical, 20)
         }
-        .scrollViewBottomPadding()
         .navigationTitle("General")
-        .dynamicAccentColor()
+        .scrollViewBottomPadding()
+        .sheet(isPresented: $showAppIconPicker) {
+            if #available(iOS 16.0, *) {
+                SettingsViewAlternateAppIconPicker(isPresented: $showAppIconPicker)
+                    .presentationDetents([.height(200)])
+            } else {
+                SettingsViewAlternateAppIconPicker(isPresented: $showAppIconPicker)
+            }
+        }
     }
 }

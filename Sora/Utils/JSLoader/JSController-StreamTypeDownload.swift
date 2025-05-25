@@ -47,17 +47,10 @@ extension JSController {
         if let subtitle = subtitleURL {
             print("Subtitle URL: \(subtitle.absoluteString)")
         }
-        
-        // Check the stream type from the module metadata
         let streamType = module.metadata.streamType.lowercased()
         
-        // Determine which download method to use based on streamType
-        if streamType == "mp4" || streamType == "direct" || url.absoluteString.contains(".mp4") {
-            print("MP4 URL detected - downloading not supported")
-            completionHandler?(false, "MP4 direct downloads are not supported. Please use HLS streams for downloading.")
-            return
-        } else if streamType == "hls" || streamType == "m3u8" || url.absoluteString.contains(".m3u8") {
-            print("Using HLS download method")
+        if streamType == "hls" || streamType == "m3u8" || url.absoluteString.contains(".m3u8") {
+            Logger.shared.log("Using HLS download method")
             downloadWithM3U8Support(
                 url: url,
                 headers: headers,
@@ -71,22 +64,20 @@ extension JSController {
                 showPosterURL: showPosterURL,
                 completionHandler: completionHandler
             )
-        } else {
-            // Default to M3U8 method for unknown types, as it has fallback mechanisms
-            print("Using default HLS download method for unknown stream type: \(streamType)")
-            downloadWithM3U8Support(
+        }else {
+            Logger.shared.log("Using MP4 download method")
+            downloadMP4(
                 url: url,
                 headers: headers,
                 title: title,
-                imageURL: imageURL,
+                imageURL: imageURL ?? showPosterURL,
                 isEpisode: isEpisode,
                 showTitle: showTitle,
                 season: season,
                 episode: episode,
                 subtitleURL: subtitleURL,
-                showPosterURL: showPosterURL,
                 completionHandler: completionHandler
             )
         }
     }
-} 
+}

@@ -1,0 +1,28 @@
+{
+  "images" : [
+    {
+      "filename" : "darkmode.png",
+      "idiom" : "universal",
+      "platform" : "ios",
+      "size" : "1024x1024"
+    },
+    {
+      "filename" : "lightmode.png",
+      "idiom" : "universal",
+      "platform" : "ios",
+      "size" : "1024x1024",
+      "unassigned" : true
+    },
+    {
+      "filename" : "tinting.png",
+      "idiom" : "universal",
+      "platform" : "ios",
+      "size" : "1024x1024",
+      "unassigned" : true
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

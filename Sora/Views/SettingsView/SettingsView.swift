@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingsView: View {
+    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "ALPHA"
+    
     var body: some View {
         NavigationView {
             ScrollView {

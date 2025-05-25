@@ -41,6 +41,8 @@ struct SearchView: View {
     @State private var hasNoResults = false
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var isModuleSelectorPresented = false
+    @State private var searchHistory: [String] = []
+    @State private var isSearchFieldFocused = false
     
     private let columns = [GridItem(.adaptive(minimum: 150))]
     
@@ -221,6 +223,9 @@ struct SearchView: View {
             .navigationBarHidden(true)
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .onAppear {
+            loadSearchHistory()
+        }
         .onChange(of: selectedModuleId) { _ in
             if !searchQuery.isEmpty {
                 performSearch()
@@ -258,6 +263,8 @@ struct SearchView: View {
             return
         }
         
+        isSearchFieldFocused = false
+        
         isSearching = true
         hasNoResults = false
         searchItems = []
@@ -287,6 +294,39 @@ struct SearchView: View {
                 }
             }
         }
+    }
+    
+    private func loadSearchHistory() {
+        searchHistory = UserDefaults.standard.stringArray(forKey: "searchHistory") ?? []
+    }
+    
+    private func saveSearchHistory() {
+        UserDefaults.standard.set(searchHistory, forKey: "searchHistory")
+    }
+    
+    private func addToSearchHistory(_ term: String) {
+        let trimmedTerm = term.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTerm.isEmpty else { return }
+        
+        searchHistory.removeAll { $0.lowercased() == trimmedTerm.lowercased() }
+        searchHistory.insert(trimmedTerm, at: 0)
+        
+        if searchHistory.count > 10 {
+            searchHistory = Array(searchHistory.prefix(10))
+        }
+        
+        saveSearchHistory()
+    }
+    
+    private func removeFromHistory(at index: Int) {
+        guard index < searchHistory.count else { return }
+        searchHistory.remove(at: index)
+        saveSearchHistory()
+    }
+    
+    private func clearSearchHistory() {
+        searchHistory.removeAll()
+        saveSearchHistory()
     }
     
     private func updateOrientation() {
@@ -342,19 +382,24 @@ struct SearchView: View {
 struct SearchBar: View {
     @State private var debounceTimer: Timer?
     @Binding var text: String
+    @Binding var isFocused: Bool
     var onSearchButtonClicked: () -> Void
     
     var body: some View {
         HStack {
-            TextField("Search...", text: $text, onCommit: onSearchButtonClicked)
+            TextField("Search...", text: $text, onEditingChanged: { isEditing in
+                isFocused = isEditing
+            }, onCommit: onSearchButtonClicked)
                 .padding(7)
                 .padding(.horizontal, 25)
                 .background(Color(.systemGray6))
                 .cornerRadius(8)
                 .onChange(of: text){newValue in
                     debounceTimer?.invalidate()
-                    debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
-                        onSearchButtonClicked()
+                    if !newValue.isEmpty {
+                        debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
+                            onSearchButtonClicked()
+                        }
                     }
                 }
                 .overlay(

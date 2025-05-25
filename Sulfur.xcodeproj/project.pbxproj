@@ -22,6 +22,7 @@
 		132AF1212D99951700A0140B /* JSController-Streams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132AF1202D99951700A0140B /* JSController-Streams.swift */; };
 		132AF1232D9995C300A0140B /* JSController-Details.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132AF1222D9995C300A0140B /* JSController-Details.swift */; };
 		132AF1252D9995F900A0140B /* JSController-Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132AF1242D9995F900A0140B /* JSController-Search.swift */; };
+		132FC5B32DE31DAE009A80F7 /* SettingsViewAlternateAppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132FC5B22DE31DAD009A80F7 /* SettingsViewAlternateAppIconPicker.swift */; };
 		133D7C6E2D2BE2500075467E /* SoraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6D2D2BE2500075467E /* SoraApp.swift */; };
 		133D7C702D2BE2500075467E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6F2D2BE2500075467E /* ContentView.swift */; };
 		133D7C722D2BE2520075467E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 133D7C712D2BE2520075467E /* Assets.xcassets */; };
@@ -106,6 +107,7 @@
 		132AF1202D99951700A0140B /* JSController-Streams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Streams.swift"; sourceTree = "<group>"; };
 		132AF1222D9995C300A0140B /* JSController-Details.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Details.swift"; sourceTree = "<group>"; };
 		132AF1242D9995F900A0140B /* JSController-Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Search.swift"; sourceTree = "<group>"; };
+		132FC5B22DE31DAD009A80F7 /* SettingsViewAlternateAppIconPicker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewAlternateAppIconPicker.swift; sourceTree = "<group>"; };
 		133D7C6A2D2BE2500075467E /* Sulfur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sulfur.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		133D7C6D2D2BE2500075467E /* SoraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoraApp.swift; sourceTree = "<group>"; };
 		133D7C6F2D2BE2500075467E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -231,8 +233,8 @@
 		13103E8C2D58E037000F0673 /* SkeletonCells */ = {
 			isa = PBXGroup;
 			children = (
-				13103E8D2D58E04A000F0673 /* SkeletonCell.swift */,
 				13B7F4C02D58FFDD0045714A /* Shimmer.swift */,
+				13103E8D2D58E04A000F0673 /* SkeletonCell.swift */,
 			);
 			path = SkeletonCells;
 			sourceTree = "<group>";
@@ -310,6 +312,7 @@
 		133D7C832D2BE2630075467E /* SettingsSubViews */ = {
 			isa = PBXGroup;
 			children = (
+				132FC5B22DE31DAD009A80F7 /* SettingsViewAlternateAppIconPicker.swift */,
 				1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */,
 				1399FAD32D3AB38C00E97C31 /* SettingsViewLogger.swift */,
 				133D7C842D2BE2630075467E /* SettingsViewModule.swift */,
@@ -695,6 +698,7 @@
 				13EA2BD52D32D97400C1EBD7 /* CustomPlayer.swift in Sources */,
 				727220712DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift in Sources */,
 				727220722DD642B100C2A4A2 /* JSController+MP4Download.swift in Sources */,
+				132FC5B32DE31DAE009A80F7 /* SettingsViewAlternateAppIconPicker.swift in Sources */,
 				1399FAD42D3AB38C00E97C31 /* SettingsViewLogger.swift in Sources */,
 				04F08EDF2DE10C1D006B29D9 /* TabBar.swift in Sources */,
 				72AC3A012DD4DAEB00C60B96 /* ImagePrefetchManager.swift in Sources */,
@@ -837,8 +841,10 @@
 		133D7C792D2BE2520075467E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon_Pride AppIcon_Original AppIcon_Pixel";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon_Default;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = Sora/Sora.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -879,8 +885,10 @@
 		133D7C7A2D2BE2520075467E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon_Pride AppIcon_Original AppIcon_Pixel";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon_Default;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = Sora/Sora.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;

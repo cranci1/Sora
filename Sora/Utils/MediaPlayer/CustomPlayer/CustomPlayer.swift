@@ -28,6 +28,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var aniListUpdateImpossible: Bool = false
     private var aniListRetryCount = 0
     private let aniListMaxRetries = 6
+    private let totalEpisodes: Int
     
     var player: AVPlayer!
     var timeObserverToken: Any?
@@ -183,6 +184,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
          onWatchNext: @escaping () -> Void,
          subtitlesURL: String?,
          aniListID: Int,
+         totalEpisodes: Int,
          episodeImageUrl: String,headers:[String:String]?) {
         
         self.module = module
@@ -195,6 +197,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         self.subtitlesURL = subtitlesURL
         self.aniListID = aniListID
         self.headers = headers
+        self.totalEpisodes = totalEpisodes
         
         super.init(nibName: nil, bundle: nil)
         
@@ -1424,7 +1427,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                         subtitles: self.subtitlesURL,
                         aniListID: self.aniListID,
                         module: self.module,
-                        headers: self.headers
+                        headers: self.headers,
+                        totalEpisodes: self.totalEpisodes
                     )
                     ContinueWatchingManager.shared.save(item: item)
                 }
@@ -1758,35 +1762,77 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     private func tryAniListUpdate() {
-        let aniListMutation = AniListMutation()
-        aniListMutation.updateAnimeProgress(animeId: self.aniListID, episodeNumber: self.episodeNumber) { [weak self] result in
+        guard !aniListUpdatedSuccessfully else { return }
+
+        guard aniListID > 0 else {
+            Logger.shared.log("AniList ID is invalid, skipping update.", type: "Warning")
+            return
+        }
+
+        let client = AniListMutation()
+
+        client.fetchMediaStatus(mediaId: aniListID) { [weak self] statusResult in
             guard let self = self else { return }
-            
-            switch result {
-            case .success:
-                self.aniListUpdatedSuccessfully = true
-                Logger.shared.log("Successfully updated AniList progress for episode \(self.episodeNumber)", type: "General")
-                
-            case .failure(let error):
-                let errorString = error.localizedDescription.lowercased()
-                Logger.shared.log("AniList progress update failed: \(errorString)", type: "Error")
-                
-                if errorString.contains("access token not found") {
-                    Logger.shared.log("AniList update will NOT retry due to missing token.", type: "Error")
-                    self.aniListUpdateImpossible = true
-                    
-                } else {
-                    if self.aniListRetryCount < self.aniListMaxRetries {
-                        self.aniListRetryCount += 1
-                        
-                        let delaySeconds = 5.0
-                        Logger.shared.log("AniList update will retry in \(delaySeconds)s (attempt \(self.aniListRetryCount)).", type: "Debug")
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + delaySeconds) {
-                            self.tryAniListUpdate()
-                        }
+
+            let newStatus: String = {
+                switch statusResult {
+                case .success(let mediaStatus):
+                    if mediaStatus == "RELEASING" {
+                        return "CURRENT"
+                    }
+                    return (self.episodeNumber == self.totalEpisodes) ? "COMPLETED" : "CURRENT"
+
+                case .failure(let error):
+                    Logger.shared.log(
+                        "Failed to fetch AniList status: \(error.localizedDescription). " +
+                        "Using default CURRENT/COMPLETED logic.",
+                        type: "Warning"
+                    )
+                    return (self.episodeNumber == self.totalEpisodes) ? "COMPLETED" : "CURRENT"
+                }
+            }()
+
+            client.updateAnimeProgress(
+                animeId: self.aniListID,
+                episodeNumber: self.episodeNumber,
+                status: newStatus
+            ) { result in
+                switch result {
+                case .success:
+                    self.aniListUpdatedSuccessfully = true
+                    Logger.shared.log(
+                        "AniList progress updated to \(newStatus) for ep \(self.episodeNumber)",
+                        type: "General"
+                    )
+
+                case .failure(let error):
+                    let errorString = error.localizedDescription.lowercased()
+                    Logger.shared.log("AniList progress update failed: \(errorString)", type: "Error")
+
+                    if errorString.contains("access token not found") {
+                        Logger.shared.log("AniList update will NOT retry due to missing token.", type: "Error")
+                        self.aniListUpdateImpossible = true
+
                     } else {
-                        Logger.shared.log("AniList update reached max retries. No more attempts.", type: "Error")
+                        if self.aniListRetryCount < self.aniListMaxRetries {
+                            self.aniListRetryCount += 1
+
+                            let delaySeconds = 5.0
+                            Logger.shared.log(
+                                "AniList update will retry in \(delaySeconds)s " +
+                                "(attempt \(self.aniListRetryCount)).",
+                                type: "Debug"
+                            )
+
+                            DispatchQueue.main.asyncAfter(deadline: .now() + delaySeconds) {
+                                self.tryAniListUpdate()
+                            }
+                        } else {
+                            Logger.shared.log(
+                                "Reached max retry count (\(self.aniListMaxRetries)). Giving up.",
+                                type: "Error"
+                            )
+                        }
                     }
                 }
             }

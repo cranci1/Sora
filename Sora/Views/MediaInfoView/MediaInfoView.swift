@@ -568,18 +568,40 @@ struct MediaInfoView: View {
         var updates = [String: Double]()
         
         for idx in 0..<index {
-            if idx < episodeLinks.count {
-                let href = episodeLinks[idx].href
-                updates["lastPlayedTime_\(href)"] = 1000.0
-                updates["totalTime_\(href)"] = 1000.0
-            }
+            let href = episodeLinks[idx].href
+            updates["lastPlayedTime_\(href)"] = 1000.0
+            updates["totalTime_\(href)"] = 1000.0
         }
-        
         for (key, value) in updates {
             userDefaults.set(value, forKey: key)
         }
-        
-        Logger.shared.log("Marked \(ep.number - 1) episodes watched within series \"\(title)\".", type: "General")
+        userDefaults.synchronize()
+        Logger.shared.log(
+            "Marked \(ep.number - 1) episodes watched within series \"\(title)\".",
+            type: "General"
+        )
+
+        guard let listID = itemID, listID > 0 else { return }
+        let watchedCount = ep.number - 1
+        let statusToSend = (watchedCount == episodeLinks.count) ? "COMPLETED" : "CURRENT"
+        AniListMutation().updateAnimeProgress(
+            animeId: listID,
+            episodeNumber: watchedCount,
+            status: statusToSend
+        ) { result in
+            switch result {
+            case .success:
+                Logger.shared.log(
+                    "AniList bulk‐sync: set progress to \(watchedCount) (\(statusToSend))",
+                    type: "General"
+                )
+            case .failure(let error):
+                Logger.shared.log(
+                    "AniList bulk‐sync failed: \(error.localizedDescription)",
+                    type: "Error"
+                )
+            }
+        }
     }
     
     @ViewBuilder
@@ -997,6 +1019,7 @@ struct MediaInfoView: View {
                     },
                     subtitlesURL: subtitles,
                     aniListID: itemID ?? 0,
+                    totalEpisodes: episodeLinks.count,
                     episodeImageUrl: selectedEpisodeImage,
                     headers: headers ?? nil
                 )

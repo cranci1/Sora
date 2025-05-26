@@ -5,6 +5,7 @@
 //  Created by Francesco on 30/03/25.
 //
 
+import Foundation
 import JavaScriptCore
 
 extension JSController {
@@ -51,7 +52,7 @@ extension JSController {
                let episodesResult = fetchEpisodesFunction.call(withArguments: [html]).toArray() as? [[String: String]] {
                 for episodeData in episodesResult {
                     if let num = episodeData["number"], let link = episodeData["href"], let number = Int(num) {
-                        episodeLinks.append(EpisodeLink(number: number, href: link))
+                        episodeLinks.append(EpisodeLink(number: number, title: "", href: link, duration: nil))
                     }
                 }
             }
@@ -152,7 +153,9 @@ extension JSController {
                         episodeLinks = array.map { item -> EpisodeLink in
                             EpisodeLink(
                                 number: item["number"] as? Int ?? 0,
-                                href: item["href"] as? String ?? ""
+                                title: "",
+                                href: item["href"] as? String ?? "",
+                                duration: nil
                             )
                         }
                     } else {
@@ -182,4 +185,13 @@ extension JSController {
             completion(resultItems, episodeLinks)
         }
     }
+}
+
+// If import Models does not work, add the struct directly:
+struct EpisodeLink: Identifiable {
+    let id = UUID()
+    let number: Int
+    let title: String
+    let href: String
+    let duration: Int?
 }

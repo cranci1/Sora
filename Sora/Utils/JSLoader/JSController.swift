@@ -120,3 +120,5 @@ class JSController: NSObject, ObservableObject {
     // MARK: - Header Management
     // Header management functions are implemented in JSController-HeaderManager.swift extension file
 }
+
+

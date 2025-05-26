@@ -9,12 +9,6 @@ import SwiftUI
 import Kingfisher
 import AVFoundation
 
-struct EpisodeLink: Identifiable {
-    let id = UUID()
-    let number: Int
-    let href: String
-}
-
 struct EpisodeCell: View {
     let episodeIndex: Int
     let episode: String

@@ -102,7 +102,19 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var bodyContent: some View {
-        Group {
+        ZStack {
+            // Background gradient
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color.black.opacity(0.9),
+                    Color.black.opacity(0.7),
+                    Color.black
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+            
             if isLoading {
                 ProgressView()
                     .padding()
@@ -162,90 +174,133 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var mainScrollView: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                mediaHeaderSection
-                
-                if !synopsis.isEmpty {
-                    synopsisSection
-                }
-                
-                playAndBookmarkSection
-                
-                if !episodeLinks.isEmpty {
-                    episodesSection
-                } else {
-                    noEpisodesSection
-                }
-            }
-            .padding()
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarTitle("")
-            .navigationViewStyle(StackNavigationViewStyle())
-            .scrollViewBottomPadding()
-        }
-    }
-    
-    @ViewBuilder
-    private var mediaHeaderSection: some View {
-        HStack(alignment: .top, spacing: 10) {
-            KFImage(URL(string: imageUrl))
-                .placeholder {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 150, height: 225)
-                        .shimmering()
-                }
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 150, height: 225)
-                .clipped()
-                .cornerRadius(10)
-            
-            mediaInfoSection
-        }
-    }
-    
-    @ViewBuilder
-    private var mediaInfoSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.system(size: 17))
-                .fontWeight(.bold)
-                .onLongPressGesture {
-                    UIPasteboard.general.string = title
-                    DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
-                }
-            
-            if !aliases.isEmpty && aliases != title && aliases != "N/A" && aliases != "No Data" {
-                Text(aliases)
-                    .font(.system(size: 13))
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-            
-            if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
-                HStack(alignment: .center, spacing: 12) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "calendar")
-                            .resizable()
-                            .frame(width: 15, height: 15)
-                            .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: 0) {
+                // Compact header with poster overlay
+                ZStack(alignment: .bottomLeading) {
+                    // Poster background
+                    KFImage(URL(string: imageUrl))
+                        .placeholder {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(height: 300)
+                                .shimmering()
+                        }
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(height: 300)
+                        .clipped()
+                        .overlay(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.clear,
+                                    Color.black.opacity(0.8)
+                                ]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                    
+                    // Content overlay
+                    VStack(alignment: .leading, spacing: 8) {
+                        // Title
+                        Text(title)
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(2)
+                            .onLongPressGesture {
+                                UIPasteboard.general.string = title
+                                DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+                            }
                         
-                        Text(airdate)
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
+                        // Synopsis
+                        if !synopsis.isEmpty {
+                            Text(synopsis)
+                                .font(.system(size: 14))
+                                .foregroundColor(.white.opacity(0.8))
+                                .lineLimit(showFullSynopsis ? nil : 3)
+                                .onTapGesture {
+                                    showFullSynopsis.toggle()
+                                }
+                        }
+                        
+                        // Action buttons
+                        HStack(spacing: 12) {
+                            // Play button
+                            Button(action: {
+                                playFirstUnwatchedEpisode()
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "play.fill")
+                                        .font(.system(size: 16, weight: .bold))
+                                    Text(startWatchingText)
+                                        .font(.system(size: 16, weight: .semibold))
+                                }
+                                .foregroundColor(.black)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 12)
+                                .background(Color.white)
+                                .cornerRadius(25)
+                            }
+                            .disabled(isFetchingEpisode)
+                            
+                            // Bookmark button
+                            Button(action: {
+                                libraryManager.toggleBookmark(
+                                    title: title,
+                                    imageUrl: imageUrl,
+                                    href: href,
+                                    moduleId: module.id.uuidString,
+                                    moduleName: module.metadata.sourceName
+                                )
+                            }) {
+                                Image(systemName: libraryManager.isBookmarked(href: href, moduleName: module.metadata.sourceName) ? "bookmark.fill" : "bookmark")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 44, height: 44)
+                                    .background(Color.black.opacity(0.6))
+                                    .cornerRadius(22)
+                            }
+                        }
+                        
+                        // Source and metadata
+                        HStack(spacing: 16) {
+                            sourceButton
+                            
+                            if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "calendar")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.white.opacity(0.7))
+                                    Text("Aired: \(airdate)")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.white.opacity(0.7))
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            menuButton
+                        }
                     }
-                    .padding(4)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
                 }
-            }
-            
-            HStack(alignment: .center, spacing: 12) {
-                sourceButton
                 
-                menuButton
+                // Episodes section
+                VStack(alignment: .leading, spacing: 12) {
+                    if !episodeLinks.isEmpty {
+                        episodesSection
+                    } else {
+                        noEpisodesSection
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitle("")
+        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     @ViewBuilder
@@ -253,18 +308,13 @@ struct MediaInfoView: View {
         Button(action: {
             openSafariViewController(with: href)
         }) {
-            HStack(spacing: 4) {
-                Text(module.metadata.sourceName)
-                    .font(.system(size: 13))
-                    .foregroundColor(.primary)
-                
-                Image(systemName: "safari")
-                    .resizable()
-                    .frame(width: 20, height: 20)
-                    .foregroundColor(.primary)
-            }
-            .padding(4)
-            .background(Capsule().fill(Color.accentColor.opacity(0.4)))
+            Text(module.metadata.sourceName)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color.white.opacity(0.2))
+                .cornerRadius(12)
         }
     }
     
@@ -313,81 +363,19 @@ struct MediaInfoView: View {
                 Label("Log Debug Info", systemImage: "terminal")
             }
         } label: {
-            Image(systemName: "ellipsis.circle")
-                .resizable()
-                .frame(width: 20, height: 20)
-                .foregroundColor(.primary)
-        }
-    }
-    
-    @ViewBuilder
-    private var synopsisSection: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(alignment: .center) {
-                Text("Synopsis")
-                    .font(.system(size: 18))
-                    .fontWeight(.bold)
-                
-                Spacer()
-                
-                Button(action: {
-                    showFullSynopsis.toggle()
-                }) {
-                    Text(showFullSynopsis ? "Less" : "More")
-                        .font(.system(size: 14))
-                }
-            }
-            
-            Text(synopsis)
-                .lineLimit(showFullSynopsis ? nil : 4)
-                .font(.system(size: 14))
-        }
-    }
-    
-    @ViewBuilder
-    private var playAndBookmarkSection: some View {
-        HStack {
-            Button(action: {
-                playFirstUnwatchedEpisode()
-            }) {
-                HStack {
-                    Image(systemName: "play.fill")
-                        .foregroundColor(.primary)
-                    Text(startWatchingText)
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.accentColor)
-                .cornerRadius(10)
-            }
-            .disabled(isFetchingEpisode)
-            
-            Button(action: {
-                libraryManager.toggleBookmark(
-                    title: title,
-                    imageUrl: imageUrl,
-                    href: href,
-                    moduleId: module.id.uuidString,
-                    moduleName: module.metadata.sourceName
-                )
-            }) {
-                Image(systemName: libraryManager.isBookmarked(href: href, moduleName: module.metadata.sourceName) ? "bookmark.fill" : "bookmark")
-                    .resizable()
-                    .frame(width: 20, height: 27)
-                    .foregroundColor(Color.accentColor)
-            }
+            Image(systemName: "ellipsis")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(.white)
         }
     }
     
     @ViewBuilder
     private var episodesSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("Episodes")
-                    .font(.system(size: 18))
-                    .fontWeight(.bold)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.white)
                 
                 Spacer()
                 episodeNavigationSection
@@ -410,7 +398,7 @@ struct MediaInfoView: View {
                 } label: {
                     Text("\(selectedRange.lowerBound + 1)-\(selectedRange.upperBound)")
                         .font(.system(size: 14))
-                        .foregroundColor(.accentColor)
+                        .foregroundColor(.white.opacity(0.7))
                 }
             } else if isGroupedBySeasons {
                 let seasons = groupedEpisodes()
@@ -424,7 +412,7 @@ struct MediaInfoView: View {
                     } label: {
                         Text("Season \(selectedSeason + 1)")
                             .font(.system(size: 14))
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(.white.opacity(0.7))
                     }
                 }
             }
@@ -446,173 +434,139 @@ struct MediaInfoView: View {
     private var seasonsEpisodeList: some View {
         let seasons = groupedEpisodes()
         if !seasons.isEmpty, selectedSeason < seasons.count {
-            ForEach(seasons[selectedSeason]) { ep in
-                let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
-                let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
-                let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
-                
-                let defaultBannerImageValue = getBannerImageBasedOnAppearance()
-                
-                EpisodeCell(
-                    episodeIndex: selectedSeason,
-                    episode: ep.href,
-                    episodeID: ep.number - 1,
-                    progress: progress,
-                    itemID: itemID ?? 0,
-                    totalEpisodes: episodeLinks.count,
-                    defaultBannerImage: defaultBannerImageValue,
-                    module: module,
-                    parentTitle: title,
-                    showPosterURL: imageUrl,
-                    isMultiSelectMode: isMultiSelectMode,
-                    isSelected: selectedEpisodes.contains(ep.number),
-                    onSelectionChanged: { isSelected in
-                        if isSelected {
-                            selectedEpisodes.insert(ep.number)
-                        } else {
-                            selectedEpisodes.remove(ep.number)
+            LazyVStack(spacing: 8) {
+                ForEach(seasons[selectedSeason]) { ep in
+                    let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+                    let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+                    let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
+                    
+                    ModernEpisodeCell(
+                        episode: ep,
+                        progress: progress,
+                        onTap: {
+                            episodeTapAction(ep: ep, imageUrl: "")
                         }
-                    },
-                    onTap: { imageUrl in
-                        episodeTapAction(ep: ep, imageUrl: imageUrl)
-                    },
-                    onMarkAllPrevious: {
-                        markAllPreviousEpisodesAsWatched(ep: ep, inSeason: true)
-                    }
-                )
+                    )
                     .disabled(isFetchingEpisode)
+                }
             }
         } else {
             Text("No episodes available")
-        }
-    }
-    
-    private func getBannerImageBasedOnAppearance() -> String {
-        let isLightMode = selectedAppearance == .light || (selectedAppearance == .system && colorScheme == .light)
-        return isLightMode
-        ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner1.png"
-        : "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner2.png"
-    }
-    
-    private func episodeTapAction(ep: EpisodeLink, imageUrl: String) {
-        if !isFetchingEpisode {
-            selectedEpisodeNumber = ep.number
-            selectedEpisodeImage = imageUrl
-            fetchStream(href: ep.href)
-            AnalyticsManager.shared.sendEvent(
-                event: "watch",
-                additionalData: ["title": title, "episode": ep.number]
-            )
-        }
-    }
-    
-    private func markAllPreviousEpisodesAsWatched(ep: EpisodeLink, inSeason: Bool) {
-        let userDefaults = UserDefaults.standard
-        var updates = [String: Double]()
-        
-        if inSeason {
-            let seasons = groupedEpisodes()
-            for ep2 in seasons[selectedSeason] where ep2.number < ep.number {
-                let href = ep2.href
-                updates["lastPlayedTime_\(href)"] = 99999999.0
-                updates["totalTime_\(href)"] = 99999999.0
-            }
-            
-            for (key, value) in updates {
-                userDefaults.set(value, forKey: key)
-            }
-            
-            userDefaults.synchronize()
-            Logger.shared.log("Marked episodes watched within season \(selectedSeason + 1) of \"\(title)\".", type: "General")
+                .foregroundColor(.white.opacity(0.7))
         }
     }
     
     @ViewBuilder
     private var flatEpisodeList: some View {
-        ForEach(episodeLinks.indices.filter { selectedRange.contains($0) }, id: \.self) { i in
-            let ep = episodeLinks[i]
-            let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
-            let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
-            let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
-            
-            EpisodeCell(
-                episodeIndex: i,
-                episode: ep.href,
-                episodeID: ep.number - 1,
-                progress: progress,
-                itemID: itemID ?? 0,
-                module: module,
-                parentTitle: title,
-                showPosterURL: imageUrl,
-                isMultiSelectMode: isMultiSelectMode,
-                isSelected: selectedEpisodes.contains(ep.number),
-                onSelectionChanged: { isSelected in
-                    if isSelected {
-                        selectedEpisodes.insert(ep.number)
-                    } else {
-                        selectedEpisodes.remove(ep.number)
+        LazyVStack(spacing: 8) {
+            ForEach(episodeLinks.indices.filter { selectedRange.contains($0) }, id: \.self) { i in
+                let ep = episodeLinks[i]
+                let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+                let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+                let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
+                
+                ModernEpisodeCell(
+                    episode: ep,
+                    progress: progress,
+                    onTap: {
+                        episodeTapAction(ep: ep, imageUrl: "")
                     }
-                },
-                onTap: { imageUrl in
-                    episodeTapAction(ep: ep, imageUrl: imageUrl)
-                },
-                onMarkAllPrevious: {
-                    markAllPreviousEpisodesInFlatList(ep: ep, index: i)
-                }
-            )
+                )
                 .disabled(isFetchingEpisode)
-        }
-    }
-    
-    private func markAllPreviousEpisodesInFlatList(ep: EpisodeLink, index: Int) {
-        let userDefaults = UserDefaults.standard
-        var updates = [String: Double]()
-        
-        for idx in 0..<index {
-            if idx < episodeLinks.count {
-                let href = episodeLinks[idx].href
-                updates["lastPlayedTime_\(href)"] = 1000.0
-                updates["totalTime_\(href)"] = 1000.0
             }
         }
-        
-        for (key, value) in updates {
-            userDefaults.set(value, forKey: key)
-        }
-        
-        Logger.shared.log("Marked \(ep.number - 1) episodes watched within series \"\(title)\".", type: "General")
     }
     
     @ViewBuilder
     private var noEpisodesSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Episodes")
-                .font(.system(size: 18))
-                .fontWeight(.bold)
-        }
-        VStack(spacing: 8) {
+        VStack(spacing: 16) {
             if isRefetching {
                 ProgressView()
                     .padding()
             } else {
-                Image(systemName: "exclamationmark.triangle")
-                    .font(.largeTitle)
-                    .foregroundColor(.secondary)
-                HStack(spacing: 2) {
-                    Text("No episodes Found:")
-                        .foregroundColor(.secondary)
+                VStack(spacing: 12) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.largeTitle)
+                        .foregroundColor(.white.opacity(0.7))
+                    
+                    Text("No episodes found")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.white.opacity(0.7))
+                    
                     Button(action: {
                         isRefetching = true
                         fetchDetails()
                     }) {
                         Text("Retry")
-                            .foregroundColor(.accentColor)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.white.opacity(0.2))
+                            .cornerRadius(16)
                     }
                 }
             }
         }
         .padding()
         .frame(maxWidth: .infinity)
+    }
+    
+    // Modern Episode Cell Component
+    struct ModernEpisodeCell: View {
+        let episode: EpisodeLink
+        let progress: Double
+        let onTap: () -> Void
+        
+        var body: some View {
+            Button(action: onTap) {
+                HStack(spacing: 12) {
+                    // Episode thumbnail placeholder
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 80, height: 45)
+                        .overlay(
+                            Image(systemName: "play.fill")
+                                .foregroundColor(.white.opacity(0.7))
+                                .font(.system(size: 16))
+                        )
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Episode \(episode.number)")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.white)
+                        
+                        Text("Episode Title")
+                            .font(.system(size: 14))
+                            .foregroundColor(.white.opacity(0.7))
+                    }
+                    
+                    Spacer()
+                    
+                    // Progress indicator
+                    ZStack {
+                        Circle()
+                            .stroke(Color.white.opacity(0.3), lineWidth: 3)
+                            .frame(width: 40, height: 40)
+                        
+                        Circle()
+                            .trim(from: 0, to: progress)
+                            .stroke(Color.white, lineWidth: 3)
+                            .rotationEffect(.degrees(-90))
+                            .frame(width: 40, height: 40)
+                        
+                        Text("\(Int(progress * 100))%")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color.white.opacity(0.1))
+                .cornerRadius(12)
+            }
+            .buttonStyle(PlainButtonStyle())
+        }
     }
     
     private var startWatchingText: String {
@@ -622,12 +576,12 @@ struct MediaInfoView: View {
         
         if let finishedIndex = finished, finishedIndex < episodeLinks.count - 1 {
             let nextEp = episodeLinks[finishedIndex + 1]
-            return "Start Watching Episode \(nextEp.number)"
+            return "Episode \(nextEp.number)"
         }
         
         if let unfinishedIndex = unfinished {
             let currentEp = episodeLinks[unfinishedIndex]
-            return "Continue Watching Episode \(currentEp.number)"
+            return "Continue Episode \(currentEp.number)"
         }
         
         return "Start Watching"
@@ -711,6 +665,39 @@ struct MediaInfoView: View {
         return groups
     }
     
+    private func episodeTapAction(ep: EpisodeLink, imageUrl: String) {
+        if !isFetchingEpisode {
+            selectedEpisodeNumber = ep.number
+            selectedEpisodeImage = imageUrl
+            fetchStream(href: ep.href)
+            AnalyticsManager.shared.sendEvent(
+                event: "watch",
+                additionalData: ["title": title, "episode": ep.number]
+            )
+        }
+    }
+    
+    private func markAllPreviousEpisodesAsWatched(ep: EpisodeLink, inSeason: Bool) {
+        let userDefaults = UserDefaults.standard
+        var updates = [String: Double]()
+        
+        if inSeason {
+            let seasons = groupedEpisodes()
+            for ep2 in seasons[selectedSeason] where ep2.number < ep.number {
+                let href = ep2.href
+                updates["lastPlayedTime_\(href)"] = 99999999.0
+                updates["totalTime_\(href)"] = 99999999.0
+            }
+            
+            for (key, value) in updates {
+                userDefaults.set(value, forKey: key)
+            }
+            
+            userDefaults.synchronize()
+            Logger.shared.log("Marked episodes watched within season \(selectedSeason + 1) of \"\(title)\".", type: "General")
+        }
+    }
+    
     func fetchDetails() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             Task {
@@ -757,27 +744,27 @@ struct MediaInfoView: View {
         isFetchingEpisode = true
         let completion: ((streams: [String]?, subtitles: [String]?, sources: [[String: Any]]?)) -> Void = { result in
             guard self.activeFetchID == fetchID else {
-                return 
+                return
             }
             self.showLoadingAlert = false
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                guard self.activeFetchID == fetchID else { 
-                    return 
+                guard self.activeFetchID == fetchID else {
+                    return
                 }
                 
                 if let streams = result.sources, !streams.isEmpty {
                     if streams.count > 1 {
-                        self.showStreamSelectionAlert(streams: streams, fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
+                        self.showStreamSelectionAlert(streams: streams, fullURL: href, subtitles: result.subtitles?.first)
                     } else {
-                        self.playStream(url: streams[0]["streamUrl"] as? String ?? "", fullURL: href, subtitles: result.subtitles?.first, headers: (streams[0]["headers"] as! [String : String]), fetchID: fetchID)
+                        self.playStream(url: streams[0]["streamUrl"] as? String ?? "", fullURL: href, subtitles: result.subtitles?.first, headers: (streams[0]["headers"] as! [String : String]))
                     }
                 }
                 else if let streams = result.streams, !streams.isEmpty {
                     if streams.count > 1 {
-                        self.showStreamSelectionAlert(streams: streams, fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
+                        self.showStreamSelectionAlert(streams: streams, fullURL: href, subtitles: result.subtitles?.first)
                     } else {
-                        self.playStream(url: streams[0], fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
+                        self.playStream(url: streams[0], fullURL: href, subtitles: result.subtitles?.first)
                     }
                 } else {
                     self.handleStreamFailure(error: nil)
@@ -810,290 +797,6 @@ struct MediaInfoView: View {
         }
     }
     
-    func handleStreamFailure(error: Error? = nil) {
-        self.isFetchingEpisode = false
-        self.showLoadingAlert = false
-        if let error = error {
-            Logger.shared.log("Error loading module: \(error)", type: "Error")
-            AnalyticsManager.shared.sendEvent(event: "error", additionalData: ["error": error, "message": "Failed to fetch stream"])
-        }
-        DropManager.shared.showDrop(title: "Stream not Found", subtitle: "", duration: 0.5, icon: UIImage(systemName: "xmark"))
-        
-        UINotificationFeedbackGenerator().notificationOccurred(.error)
-        self.isLoading = false
-    }
-    
-    func showStreamSelectionAlert(streams: [Any], fullURL: String, subtitles: String? = nil, fetchID: UUID) {
-        guard self.activeFetchID == fetchID else {
-            return
-        }
-        
-        self.isFetchingEpisode = false
-        self.showLoadingAlert = false
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            guard self.activeFetchID == fetchID else {
-                return
-            }
-            
-            let alert = UIAlertController(title: "Select Server", message: "Choose a server to play from", preferredStyle: .actionSheet)
-            
-            var index = 0
-            var streamIndex = 1
-            
-            while index < streams.count {
-                var title: String = ""
-                var streamUrl: String = ""
-                var headers: [String:String]? = nil
-                if let streams = streams as? [String]
-                {
-                    if index + 1 < streams.count {
-                        if !streams[index].lowercased().contains("http") {
-                            title = streams[index]
-                            streamUrl = streams[index + 1]
-                            index += 2
-                        } else {
-                            title = "Stream \(streamIndex)"
-                            streamUrl = streams[index]
-                            index += 1
-                        }
-                    } else {
-                        title = "Stream \(streamIndex)"
-                        streamUrl = streams[index]
-                        index += 1
-                    }
-                }
-                else if let streams = streams as? [[String: Any]]
-                {
-                    if let currTitle = streams[index]["title"] as? String
-                    {
-                        title = currTitle
-                        streamUrl = (streams[index]["streamUrl"] as? String) ?? ""
-                    }
-                    else
-                    {
-                        title = "Stream \(streamIndex)"
-                        streamUrl = (streams[index]["streamUrl"] as? String)!
-                    }
-                    headers = streams[index]["headers"] as? [String:String] ?? [:]
-                    index += 1
-                }
-                
-                
-                alert.addAction(UIAlertAction(title: title, style: .default) { _ in
-                    guard self.activeFetchID == fetchID else {
-                        return
-                    }
-                    self.playStream(url: streamUrl, fullURL: fullURL, subtitles: subtitles, headers: headers, fetchID: fetchID)
-                })
-                
-                streamIndex += 1
-            }
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-            
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let window = windowScene.windows.first,
-               let rootVC = window.rootViewController {
-                
-                if UIDevice.current.userInterfaceIdiom == .pad {
-                    if let popover = alert.popoverPresentationController {
-                        popover.sourceView = window
-                        popover.sourceRect = CGRect(
-                            x: UIScreen.main.bounds.width / 2,
-                            y: UIScreen.main.bounds.height / 2,
-                            width: 0,
-                            height: 0
-                        )
-                        popover.permittedArrowDirections = []
-                    }
-                }
-                
-                findTopViewController.findViewController(rootVC).present(alert, animated: true)
-            }
-            
-            DispatchQueue.main.async {
-                self.isFetchingEpisode = false
-            }
-        }
-    }
-    
-    func playStream(url: String, fullURL: String, subtitles: String? = nil, headers: [String:String]? = nil, fetchID: UUID) {
-        guard self.activeFetchID == fetchID else {
-            return
-        }
-        
-        self.isFetchingEpisode = false
-        self.showLoadingAlert = false
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            guard self.activeFetchID == fetchID else {
-                return
-            }
-            
-            let externalPlayer = UserDefaults.standard.string(forKey: "externalPlayer") ?? "Sora"
-            var scheme: String?
-            
-            switch externalPlayer {
-            case "Infuse":
-                scheme = "infuse://x-callback-url/play?url=\(url)"
-            case "VLC":
-                scheme = "vlc://\(url)"
-            case "OutPlayer":
-                scheme = "outplayer://\(url)"
-            case "nPlayer":
-                scheme = "nplayer-\(url)"
-            case "SenPlayer":
-                scheme = "senplayer://x-callback-url/play?url=\(url)"
-            case "IINA":
-                scheme = "iina://weblink?url=\(url)"
-            case "Default":
-                let videoPlayerViewController = VideoPlayerViewController(module: module)
-                videoPlayerViewController.headers = headers
-                videoPlayerViewController.streamUrl = url
-                videoPlayerViewController.fullUrl = fullURL
-                videoPlayerViewController.episodeNumber = selectedEpisodeNumber
-                videoPlayerViewController.episodeImageUrl = selectedEpisodeImage
-                videoPlayerViewController.mediaTitle = title
-                videoPlayerViewController.subtitles = subtitles ?? ""
-                videoPlayerViewController.aniListID = itemID ?? 0
-                videoPlayerViewController.modalPresentationStyle = .fullScreen
-                
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let rootVC = windowScene.windows.first?.rootViewController {
-                    findTopViewController.findViewController(rootVC).present(videoPlayerViewController, animated: true, completion: nil)
-                }
-                return
-            default:
-                break
-            }
-            
-            if let scheme = scheme, let url = URL(string: scheme), UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                Logger.shared.log("Opening external app with scheme: \(url)", type: "General")
-            } else {
-                guard let url = URL(string: url) else {
-                    Logger.shared.log("Invalid stream URL: \(url)", type: "Error")
-                    DropManager.shared.showDrop(title: "Error", subtitle: "Invalid stream URL", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
-                    return
-                }
-                
-                guard self.activeFetchID == fetchID else {
-                    return
-                }
-                
-                let customMediaPlayer = CustomMediaPlayerViewController(
-                    module: module,
-                    urlString: url.absoluteString,
-                    fullUrl: fullURL,
-                    title: title,
-                    episodeNumber: selectedEpisodeNumber,
-                    onWatchNext: {
-                        selectNextEpisode()
-                    },
-                    subtitlesURL: subtitles,
-                    aniListID: itemID ?? 0,
-                    episodeImageUrl: selectedEpisodeImage,
-                    headers: headers ?? nil
-                )
-                customMediaPlayer.modalPresentationStyle = .fullScreen
-                Logger.shared.log("Opening custom media player with url: \(url)")
-                
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let rootVC = windowScene.windows.first?.rootViewController {
-                    findTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
-                } else {
-                    Logger.shared.log("Failed to find root view controller", type: "Error")
-                    DropManager.shared.showDrop(title: "Error", subtitle: "Failed to present player", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
-                }
-            }
-        }
-    }
-    
-    private func selectNextEpisode() {
-        guard let currentIndex = episodeLinks.firstIndex(where: { $0.number == selectedEpisodeNumber }),
-              currentIndex + 1 < episodeLinks.count else {
-                  Logger.shared.log("No more episodes to play", type: "Info")
-                  return
-              }
-        
-        let nextEpisode = episodeLinks[currentIndex + 1]
-        selectedEpisodeNumber = nextEpisode.number
-        fetchStream(href: nextEpisode.href)
-        DropManager.shared.showDrop(title: "Fetching Next Episode", subtitle: "", duration: 0.5, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
-    }
-    
-    private func openSafariViewController(with urlString: String) {
-        guard let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) else {
-            Logger.shared.log("Unable to open the webpage", type: "Error")
-            return
-        }
-        let safariViewController = SFSafariViewController(url: url)
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first?.rootViewController {
-            rootVC.present(safariViewController, animated: true, completion: nil)
-        }
-    }
-    
-    private func cleanTitle(_ title: String?) -> String {
-        guard let title = title else { return "Unknown" }
-        
-        let cleaned = title.replacingOccurrences(
-            of: "\\s*\\([^\\)]*\\)",
-            with: "",
-            options: .regularExpression
-        ).trimmingCharacters(in: .whitespaces)
-        
-        return cleaned.isEmpty ? "Unknown" : cleaned
-    }
-    
-    private func fetchItemID(byTitle title: String, completion: @escaping (Result<Int, Error>) -> Void) {
-        let query = """
-        query {
-            Media(search: "\(title)", type: ANIME) {
-                id
-            }
-        }
-        """
-        
-        guard let url = URL(string: "https://graphql.anilist.co") else {
-            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let parameters: [String: Any] = ["query": query]
-        request.httpBody = try? JSONSerialization.data(withJSONObject: parameters)
-        
-        URLSession.custom.dataTask(with: request) { data, _, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
-                return
-            }
-            
-            do {
-                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                   let data = json["data"] as? [String: Any],
-                   let media = data["Media"] as? [String: Any],
-                   let id = media["id"] as? Int {
-                    completion(.success(id))
-                } else {
-                    let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
-                    completion(.failure(error))
-                }
-            } catch {
-                completion(.failure(error))
-            }
-        }.resume()
-    }
     
     private func showCustomIDAlert() {
         let alert = UIAlertController(title: "Set Custom AniList ID", message: "Enter the AniList ID for this media", preferredStyle: .alert)
@@ -1497,5 +1200,231 @@ struct MediaInfoView: View {
                 completion(nil)
             }
         }.resume()
+    }
+    
+    // MARK: - Missing Helper Methods (added from backup)
+    
+    private func cleanTitle(_ title: String?) -> String {
+        guard let title = title else { return "Unknown" }
+        let cleaned = title.replacingOccurrences(
+            of: "\\s*\\([^\\)]*\\)",
+            with: "",
+            options: .regularExpression
+        ).trimmingCharacters(in: .whitespaces)
+        return cleaned.isEmpty ? "Unknown" : cleaned
+    }
+
+    private func fetchItemID(byTitle title: String, completion: @escaping (Result<Int, Error>) -> Void) {
+        let query = """
+        query {
+            Media(search: \"\(title)\", type: ANIME) {
+                id
+            }
+        }
+        """
+        guard let url = URL(string: "https://graphql.anilist.co") else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let parameters: [String: Any] = ["query": query]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: parameters)
+        URLSession.custom.dataTask(with: request) { data, _, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            guard let data = data else {
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
+                return
+            }
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let data = json["data"] as? [String: Any],
+                   let media = data["Media"] as? [String: Any],
+                   let id = media["id"] as? Int {
+                    completion(.success(id))
+                } else {
+                    let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+                    completion(.failure(error))
+                }
+            } catch {
+                completion(.failure(error))
+            }
+        }.resume()
+    }
+
+    private func openSafariViewController(with urlString: String) {
+        guard let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) else {
+            Logger.shared.log("Unable to open the webpage", type: "Error")
+            return
+        }
+        let safariViewController = SFSafariViewController(url: url)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+            rootVC.present(safariViewController, animated: true, completion: nil)
+        }
+    }
+
+    func handleStreamFailure(error: Error? = nil) {
+        self.isFetchingEpisode = false
+        self.showLoadingAlert = false
+        if let error = error {
+            Logger.shared.log("Error loading module: \(error)", type: "Error")
+            AnalyticsManager.shared.sendEvent(event: "error", additionalData: ["error": error, "message": "Failed to fetch stream"])
+        }
+        DropManager.shared.showDrop(title: "Stream not Found", subtitle: "", duration: 0.5, icon: UIImage(systemName: "xmark"))
+        UINotificationFeedbackGenerator().notificationOccurred(.error)
+        self.isLoading = false
+    }
+
+    func showStreamSelectionAlert(streams: [Any], fullURL: String, subtitles: String? = nil) {
+        self.isFetchingEpisode = false
+        self.showLoadingAlert = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            let alert = UIAlertController(title: "Select Server", message: "Choose a server to play from", preferredStyle: .actionSheet)
+            var index = 0
+            var streamIndex = 1
+            while index < streams.count {
+                var title: String = ""
+                var streamUrl: String = ""
+                var headers: [String:String]? = nil
+                if let streams = streams as? [String] {
+                    if index + 1 < streams.count {
+                        if !streams[index].lowercased().contains("http") {
+                            title = streams[index]
+                            streamUrl = streams[index + 1]
+                            index += 2
+                        } else {
+                            title = "Stream \(streamIndex)"
+                            streamUrl = streams[index]
+                            index += 1
+                        }
+                    } else {
+                        title = "Stream \(streamIndex)"
+                        streamUrl = streams[index]
+                        index += 1
+                    }
+                } else if let streams = streams as? [[String: Any]] {
+                    if let currTitle = streams[index]["title"] as? String {
+                        title = currTitle
+                        streamUrl = (streams[index]["streamUrl"] as? String) ?? ""
+                    } else {
+                        title = "Stream \(streamIndex)"
+                        streamUrl = (streams[index]["streamUrl"] as? String) ?? ""
+                    }
+                    headers = streams[index]["headers"] as? [String:String] ?? [:]
+                    index += 1
+                }
+                alert.addAction(UIAlertAction(title: title, style: .default) { _ in
+                    self.playStream(url: streamUrl, fullURL: fullURL, subtitles: subtitles, headers: headers)
+                })
+                streamIndex += 1
+            }
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootVC = window.rootViewController {
+                findTopViewController.findViewController(rootVC).present(alert, animated: true)
+            }
+            DispatchQueue.main.async {
+                self.isFetchingEpisode = false
+            }
+        }
+    }
+
+    func playStream(url: String, fullURL: String, subtitles: String? = nil, headers: [String:String]? = nil) {
+        self.isFetchingEpisode = false
+        self.showLoadingAlert = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            let externalPlayer = UserDefaults.standard.string(forKey: "externalPlayer") ?? "Sora"
+            var scheme: String?
+            switch externalPlayer {
+            case "Infuse":
+                scheme = "infuse://x-callback-url/play?url=\(url)"
+            case "VLC":
+                scheme = "vlc://\(url)"
+            case "OutPlayer":
+                scheme = "outplayer://\(url)"
+            case "nPlayer":
+                scheme = "nplayer-\(url)"
+            case "SenPlayer":
+                scheme = "senplayer://x-callback-url/play?url=\(url)"
+            case "IINA":
+                scheme = "iina://weblink?url=\(url)"
+            case "Default":
+                let videoPlayerViewController = VideoPlayerViewController(module: module)
+                videoPlayerViewController.headers = headers
+                videoPlayerViewController.streamUrl = url
+                videoPlayerViewController.fullUrl = fullURL
+                videoPlayerViewController.episodeNumber = selectedEpisodeNumber
+                videoPlayerViewController.episodeImageUrl = selectedEpisodeImage
+                videoPlayerViewController.mediaTitle = title
+                videoPlayerViewController.subtitles = subtitles ?? ""
+                videoPlayerViewController.aniListID = itemID ?? 0
+                videoPlayerViewController.modalPresentationStyle = .fullScreen
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let rootVC = windowScene.windows.first?.rootViewController {
+                    findTopViewController.findViewController(rootVC).present(videoPlayerViewController, animated: true, completion: nil)
+                }
+                return
+            default:
+                break
+            }
+            if let scheme = scheme, let url = URL(string: scheme), UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                Logger.shared.log("Opening external app with scheme: \(url)", type: "General")
+            } else {
+                guard let url = URL(string: url) else {
+                    Logger.shared.log("Invalid stream URL: \(url)", type: "Error")
+                    DropManager.shared.showDrop(title: "Error", subtitle: "Invalid stream URL", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
+                    return
+                }
+                let customMediaPlayer = CustomMediaPlayerViewController(
+                    module: module,
+                    urlString: url.absoluteString,
+                    fullUrl: fullURL,
+                    title: title,
+                    episodeNumber: selectedEpisodeNumber,
+                    onWatchNext: {
+                        selectNextEpisode()
+                    },
+                    subtitlesURL: subtitles,
+                    aniListID: itemID ?? 0,
+                    episodeImageUrl: selectedEpisodeImage,
+                    headers: headers ?? nil
+                )
+                customMediaPlayer.modalPresentationStyle = .fullScreen
+                Logger.shared.log("Opening custom media player with url: \(url)")
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let rootVC = windowScene.windows.first?.rootViewController {
+                    findTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
+                } else {
+                    Logger.shared.log("Failed to find root view controller", type: "Error")
+                    DropManager.shared.showDrop(title: "Error", subtitle: "Failed to present player", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
+                }
+            }
+        }
+    }
+
+    private func selectNextEpisode() {
+        guard let currentIndex = episodeLinks.firstIndex(where: { $0.number == selectedEpisodeNumber }),
+              currentIndex + 1 < episodeLinks.count else {
+                  Logger.shared.log("No more episodes to play", type: "Info")
+                  return
+              }
+        let nextEpisode = episodeLinks[currentIndex + 1]
+        selectedEpisodeNumber = nextEpisode.number
+        fetchStream(href: nextEpisode.href)
+        DropManager.shared.showDrop(title: "Fetching Next Episode", subtitle: "", duration: 0.5, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
+    }
+
+    private func getBannerImageBasedOnAppearance() -> String {
+        let isLightMode = selectedAppearance == .light || (selectedAppearance == .system && colorScheme == .light)
+        return isLightMode
+            ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner1.png"
+            : "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner2.png"
     }
 }

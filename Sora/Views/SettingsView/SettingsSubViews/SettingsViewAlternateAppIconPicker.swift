@@ -14,8 +14,7 @@ struct SettingsViewAlternateAppIconPicker: View {
     let icons: [(name: String, icon: String)] = [
         ("Default", "Default"),
         ("Original", "Original"),
-        ("Pixel", "Pixel"),
-        ("Pride", "Pride")
+        ("Pixel", "Pixel")
     ]
 
     var body: some View {
@@ -60,9 +59,9 @@ struct SettingsViewAlternateAppIconPicker: View {
     private func setAppIcon(named iconName: String) {
         if UIApplication.shared.supportsAlternateIcons {
             UIApplication.shared.setAlternateIconName(iconName == "Default" ? nil : "AppIcon_\(iconName)", completionHandler: { error in
-                isPresented = false
                 if let error = error {
                     Logger.shared.log("Failed to set alternate icon: \(error.localizedDescription)", type: "Error")
+                    isPresented = false
                 }
             })
         }

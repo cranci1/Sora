@@ -17,7 +17,8 @@ struct LibraryView: View {
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
 
     @Environment(\.verticalSizeClass) var verticalSizeClass
-
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    
     @State private var selectedBookmark: LibraryItem? = nil
     @State private var isDetailActive: Bool = false
 
@@ -30,10 +31,15 @@ struct LibraryView: View {
     ]
 
     private var columnsCount: Int {
-        if UIDevice.current.userInterfaceIdiom == .pad {
+        // Stage Manager Detection
+        if UIDevice.current.userInterfaceIdiom == .pad && horizontalSizeClass == .compact {
+            return verticalSizeClass == .compact ? 3 : 2
+        } else if UIDevice.current.userInterfaceIdiom == .pad {
+            // Normal iPad layout
             let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
             return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
         } else {
+            // iPhone layout
             return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }
     }
@@ -195,9 +201,15 @@ struct LibraryView: View {
     }
 
     private func determineColumns() -> Int {
-        if UIDevice.current.userInterfaceIdiom == .pad {
+        // Stage Manager Detection
+        if UIDevice.current.userInterfaceIdiom == .pad && horizontalSizeClass == .compact {
+            return verticalSizeClass == .compact ? 3 : 2
+        } else if UIDevice.current.userInterfaceIdiom == .pad {
+            // Normal iPad layout
+            let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
             return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
         } else {
+            // iPhone layout
             return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait
         }
     }
@@ -378,14 +390,27 @@ struct ContinueWatchingCell: View {
     }
 
     private func updateProgress() {
-        let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(item.fullUrl)")
-        let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(item.fullUrl)")
-
+        // grab the true playback times
+        let lastPlayed = UserDefaults.standard.double(forKey: "lastPlayedTime_\(item.fullUrl)")
+        let totalTime  = UserDefaults.standard.double(forKey: "totalTime_\(item.fullUrl)")
+        
+        // compute a clean 0…1 ratio
+        let ratio: Double
         if totalTime > 0 {
-            let ratio = lastPlayedTime / totalTime
-            currentProgress = max(0, min(ratio, 1))
+            ratio = min(max(lastPlayed / totalTime, 0), 1)
         } else {
-            currentProgress = max(0, min(item.progress, 1))
+            ratio = min(max(item.progress, 0), 1)
+        }
+        currentProgress = ratio
+        
+        if ratio >= 0.9 {
+            // >90% watched? drop it immediately
+            removeItem()
+        } else {
+            // otherwise persist the latest progress
+            var updated = item
+            updated.progress = ratio
+            ContinueWatchingManager.shared.save(item: updated)
         }
     }
 }

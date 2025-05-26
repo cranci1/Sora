@@ -40,6 +40,7 @@
 		136BBE802DB1038000906B5E /* Notification+Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136BBE7F2DB1038000906B5E /* Notification+Name.swift */; };
 		138AA1B82D2D66FD0021F9DF /* EpisodeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138AA1B62D2D66FD0021F9DF /* EpisodeCell.swift */; };
 		138AA1B92D2D66FD0021F9DF /* CircularProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138AA1B72D2D66FD0021F9DF /* CircularProgressBar.swift */; };
+		1398FB3F2DE4E161004D3F5F /* SettingsViewAbout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398FB3E2DE4E161004D3F5F /* SettingsViewAbout.swift */; };
 		139935662D468C450065CEFF /* ModuleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139935652D468C450065CEFF /* ModuleManager.swift */; };
 		1399FAD42D3AB38C00E97C31 /* SettingsViewLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1399FAD32D3AB38C00E97C31 /* SettingsViewLogger.swift */; };
 		1399FAD62D3AB3DB00E97C31 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1399FAD52D3AB3DB00E97C31 /* Logger.swift */; };
@@ -118,6 +119,7 @@
 		136BBE7F2DB1038000906B5E /* Notification+Name.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification+Name.swift"; sourceTree = "<group>"; };
 		138AA1B62D2D66FD0021F9DF /* EpisodeCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EpisodeCell.swift; sourceTree = "<group>"; };
 		138AA1B72D2D66FD0021F9DF /* CircularProgressBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularProgressBar.swift; sourceTree = "<group>"; };
+		1398FB3E2DE4E161004D3F5F /* SettingsViewAbout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewAbout.swift; sourceTree = "<group>"; };
 		139935652D468C450065CEFF /* ModuleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleManager.swift; sourceTree = "<group>"; };
 		1399FAD32D3AB38C00E97C31 /* SettingsViewLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewLogger.swift; sourceTree = "<group>"; };
 		1399FAD52D3AB3DB00E97C31 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
@@ -287,6 +289,7 @@
 				130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */,
 				13DB46912D900BCE008CBC03 /* SettingsViewTrackers.swift */,
 				72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */,
+				1398FB3E2DE4E161004D3F5F /* SettingsViewAbout.swift */,
 			);
 			path = SettingsSubViews;
 			sourceTree = "<group>";
@@ -652,6 +655,7 @@
 				13E62FC22DABC5830007E259 /* Trakt-Login.swift in Sources */,
 				133F55BB2D33B55100E08EEA /* LibraryManager.swift in Sources */,
 				13E62FC42DABC58C0007E259 /* Trakt-Token.swift in Sources */,
+				1398FB3F2DE4E161004D3F5F /* SettingsViewAbout.swift in Sources */,
 				133D7C8E2D2BE2640075467E /* LibraryView.swift in Sources */,
 				13E62FC72DABFE900007E259 /* TraktPushUpdates.swift in Sources */,
 				133D7C6E2D2BE2500075467E /* SoraApp.swift in Sources */,

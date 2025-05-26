@@ -41,6 +41,9 @@ struct SettingsView: View {
                 }
                 
                 Section(header: Text("Info")) {
+                    NavigationLink(destination: SettingsViewAbout()) {
+                        Text("About Sora")
+                    }
                     Button(action: {
                         if let url = URL(string: "https://github.com/cranci1/Sora") {
                             UIApplication.shared.open(url)

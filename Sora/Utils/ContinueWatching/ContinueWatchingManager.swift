@@ -20,25 +20,43 @@ class ContinueWatchingManager {
     }
     
     func save(item: ContinueWatchingItem) {
-        if item.progress >= 0.9 {
+        // Read the real playback times
+        let lastKey  = "lastPlayedTime_\(item.fullUrl)"
+        let totalKey = "totalTime_\(item.fullUrl)"
+        let lastPlayed = UserDefaults.standard.double(forKey: lastKey)
+        let totalTime  = UserDefaults.standard.double(forKey: totalKey)
+
+        // Compute up-to-date progress
+        let actualProgress: Double
+        if totalTime > 0 {
+            actualProgress = min(max(lastPlayed / totalTime, 0), 1)
+        } else {
+            actualProgress = item.progress
+        }
+
+        // If watched ≥ 90%, remove it
+        if actualProgress >= 0.9 {
             remove(item: item)
             return
         }
 
-        var items = fetchItems()
+        // Otherwise update progress and re-save
+        var updatedItem = item
+        updatedItem.progress = actualProgress
 
+        var items = fetchItems()
         items.removeAll { existing in
             existing.fullUrl == item.fullUrl &&
             existing.episodeNumber == item.episodeNumber &&
             existing.module.metadata.sourceName == item.module.metadata.sourceName
         }
-
-        items.append(item)
+        items.append(updatedItem)
 
         if let data = try? JSONEncoder().encode(items) {
             UserDefaults.standard.set(data, forKey: storageKey)
         }
     }
+
     
     func fetchItems() -> [ContinueWatchingItem] {
         guard

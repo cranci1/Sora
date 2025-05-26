@@ -123,17 +123,18 @@ struct DownloadView: View {
             Image(systemName: "arrow.down.circle")
                 .font(.system(size: 60))
                 .foregroundColor(.gray)
-                .padding()
+                .padding(4)
             
             Text("No Active Downloads")
                 .font(.title2)
                 .foregroundColor(.gray)
+                .padding(3)
             
             Text("Download episodes from the episode list")
                 .font(.subheadline)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
-                .padding()
+               
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -143,17 +144,17 @@ struct DownloadView: View {
             Image(systemName: "arrow.down.circle")
                 .font(.system(size: 60))
                 .foregroundColor(.gray)
-                .padding()
+                .padding(4)
             
             Text("No Downloads")
                 .font(.title2)
                 .foregroundColor(.gray)
+                .padding(3)
             
-            Text("Your downloaded assets will appear here")
+            Text("Your downloaded episodes will appear here")
                 .font(.subheadline)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
-                .padding()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

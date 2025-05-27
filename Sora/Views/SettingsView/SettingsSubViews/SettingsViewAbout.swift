@@ -8,70 +8,127 @@
 import SwiftUI
 import Kingfisher
 
+fileprivate struct SettingsSection<Content: View>: View {
+    let title: String
+    let footer: String?
+    let content: Content
+    
+    init(title: String, footer: String? = nil, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.footer = footer
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title.uppercased())
+                .font(.footnote)
+                .foregroundStyle(.gray)
+                .padding(.horizontal, 20)
+            
+            VStack(spacing: 0) {
+                content
+            }
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+            .padding(.horizontal, 20)
+            
+            if let footer = footer {
+                Text(footer)
+                    .font(.footnote)
+                    .foregroundStyle(.gray)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+            }
+        }
+    }
+}
+
 struct SettingsViewAbout: View {
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "ALPHA"
     
     var body: some View {
-        Form {
-            Section(footer: Text("Sora/Sulfur will always remain free with no ADs!")) {
-                HStack {
-                    KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/Sora/Assets.xcassets/AppIcons/AppIcon_Default.appiconset/darkmode.png"))
-                        .placeholder {
-                            ProgressView()
-                        }
-                        .resizable()
-                        .frame(width: 100, height: 100)
-                        .cornerRadius(20)
-                        .shadow(radius: 5)
-                    
-                    VStack(spacing: 8) {
-                        Text("Sora")
-                            .font(.title)
-                            .bold()
-                        Text("Version \(version)")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .listRowInsets(EdgeInsets())
-                .padding()
-            }
-            
-            Section("Main Developer") {
-                Button(action: {
-                    if let url = URL(string: "https://github.com/cranci1") {
-                        UIApplication.shared.open(url)
-                    }
-                }) {
+        ScrollView {
+            VStack(spacing: 24) {
+                SettingsSection(title: "App Info", footer: "Sora/Sulfur will always remain free with no ADs!") {
                     HStack {
-                        KFImage(URL(string: "https://avatars.githubusercontent.com/u/100066266?v=4"))
+                        KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/Sora/Assets.xcassets/AppIcons/AppIcon_Default.appiconset/darkmode.png"))
                             .placeholder {
                                 ProgressView()
                             }
                             .resizable()
-                            .frame(width: 40, height: 40)
-                            .clipShape(Circle())
+                            .frame(width: 100, height: 100)
+                            .cornerRadius(20)
+                            .shadow(radius: 5)
                         
-                        VStack(alignment: .leading) {
-                            Text("cranci1")
-                                .font(.headline)
-                                .foregroundColor(.indigo)
-                            Text("me frfr")
+                        VStack(spacing: 8) {
+                            Text("Sora")
+                                .font(.title)
+                                .bold()
+                            Text("Version \(version)")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
                         Spacer()
-                        Image(systemName: "safari")
-                            .foregroundColor(.indigo)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                }
+                
+                SettingsSection(title: "Main Developer") {
+                    Button(action: {
+                        if let url = URL(string: "https://github.com/cranci1") {
+                            UIApplication.shared.open(url)
+                        }
+                    }) {
+                        HStack {
+                            KFImage(URL(string: "https://avatars.githubusercontent.com/u/100066266?v=4"))
+                                .placeholder {
+                                    ProgressView()
+                                }
+                                .resizable()
+                                .frame(width: 40, height: 40)
+                                .clipShape(Circle())
+                            
+                            VStack(alignment: .leading) {
+                                Text("cranci1")
+                                    .font(.headline)
+                                    .foregroundColor(.indigo)
+                                Text("me frfr")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "safari")
+                                .foregroundColor(.indigo)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
                 }
+                
+                SettingsSection(title: "Contributors") {
+                    ContributorsView()
+                }
             }
-            
-            Section("Contributors") {
-                ContributorsView()
-            }
+            .padding(.vertical, 20)
         }
         .navigationTitle("About")
+        .scrollViewBottomPadding()
     }
 }
 
@@ -88,12 +145,18 @@ struct ContributorsView: View {
                     ProgressView()
                     Spacer()
                 }
+                .padding(.vertical, 12)
             } else if error != nil {
                 Text("Failed to load contributors")
                     .foregroundColor(.secondary)
+                    .padding(.vertical, 12)
             } else {
                 ForEach(filteredContributors) { contributor in
                     ContributorView(contributor: contributor)
+                    if contributor.id != filteredContributors.last?.id {
+                        Divider()
+                            .padding(.horizontal, 16)
+                    }
                 }
             }
         }
@@ -158,6 +221,8 @@ struct ContributorView: View {
                 Image(systemName: "safari")
                     .foregroundColor(.accentColor)
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
     }
 }

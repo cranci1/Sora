@@ -270,9 +270,10 @@ struct ContinueWatchingCell: View {
                         fullUrl: item.fullUrl,
                         title: item.mediaTitle,
                         episodeNumber: item.episodeNumber,
-                        onWatchNext: {},
+                        onWatchNext: { },
                         subtitlesURL: item.subtitles,
                         aniListID: item.aniListID ?? 0,
+                        totalEpisodes: item.totalEpisodes,
                         episodeImageUrl: item.imageUrl,
                         headers: item.headers ?? nil
                     )

@@ -161,86 +161,118 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var mainScrollView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                mediaHeaderSection
+        GeometryReader { geometry in
+            ZStack(alignment: .top) {
+                // Background poster with blur
+                KFImage(URL(string: imageUrl))
+                    .placeholder {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .shimmering()
+                    }
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .clipped()
+                    .blur(radius: 20)
+                    .overlay(
+                        // Gradient overlay for better text readability
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.clear, location: 0.0),
+                                .init(color: Color.clear, location: 0.3),
+                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.8), location: 0.7),
+                                .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
                 
-                if !synopsis.isEmpty {
-                    synopsisSection
-                }
-                
-                playAndBookmarkSection
-                
-                if !episodeLinks.isEmpty {
-                    episodesSection
-                } else {
-                    noEpisodesSection
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // Top spacing to push content down
+                        Rectangle()
+                            .fill(Color.clear)
+                            .frame(height: geometry.safeAreaInsets.top + 200)
+                        
+                        VStack(alignment: .leading, spacing: 16) {
+                            mediaHeaderSection
+                            
+                            if !synopsis.isEmpty {
+                                synopsisSection
+                            }
+                            
+                            playAndBookmarkSection
+                            
+                            if !episodeLinks.isEmpty {
+                                episodesSection
+                            } else {
+                                noEpisodesSection
+                            }
+                        }
+                        .padding()
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(stops: [
+                                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
+                                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.5), location: 0.2),
+                                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.8), location: 0.5),
+                                    .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
+                                ]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 0))
+                        )
+                    }
                 }
             }
-            .padding()
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarTitle("")
-            .navigationViewStyle(StackNavigationViewStyle())
         }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitle("")
+        .navigationViewStyle(StackNavigationViewStyle())
+        .ignoresSafeArea(.container, edges: .top)
     }
     
     @ViewBuilder
     private var mediaHeaderSection: some View {
-        HStack(alignment: .top, spacing: 10) {
-            KFImage(URL(string: imageUrl))
-                .placeholder {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 150, height: 225)
-                        .shimmering()
+        VStack(alignment: .leading, spacing: 16) {
+            // Title and info section
+            VStack(alignment: .leading, spacing: 8) {
+                Text(title)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.primary)
+                    .onLongPressGesture {
+                        UIPasteboard.general.string = title
+                        DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+                    }
+                
+                if !synopsis.isEmpty {
+                    Text(synopsis)
+                        .font(.system(size: 16))
+                        .foregroundColor(.secondary)
+                        .lineLimit(3)
+                        .multilineTextAlignment(.leading)
                 }
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 150, height: 225)
-                .clipped()
-                .cornerRadius(10)
-            
-            mediaInfoSection
-        }
-    }
-    
-    @ViewBuilder
-    private var mediaInfoSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.system(size: 17))
-                .fontWeight(.bold)
-                .onLongPressGesture {
-                    UIPasteboard.general.string = title
-                    DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
-                }
-            
-            if !aliases.isEmpty && aliases != title && aliases != "N/A" && aliases != "No Data" {
-                Text(aliases)
-                    .font(.system(size: 13))
-                    .foregroundColor(.secondary)
             }
             
-            Spacer()
-            
-            if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
-                HStack(alignment: .center, spacing: 12) {
+            // Metadata row
+            HStack(spacing: 16) {
+                sourceButton
+                
+                if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
                     HStack(spacing: 4) {
                         Image(systemName: "calendar")
-                            .resizable()
-                            .frame(width: 15, height: 15)
                             .foregroundColor(.secondary)
                         
                         Text(airdate)
-                            .font(.system(size: 12))
+                            .font(.system(size: 14))
                             .foregroundColor(.secondary)
                     }
-                    .padding(4)
                 }
-            }
-            
-            HStack(alignment: .center, spacing: 12) {
-                sourceButton
+                
+                Spacer()
                 
                 menuButton
             }
@@ -252,18 +284,26 @@ struct MediaInfoView: View {
         Button(action: {
             openSafariViewController(with: href)
         }) {
-            HStack(spacing: 4) {
+            HStack(spacing: 6) {
                 Text(module.metadata.sourceName)
-                    .font(.system(size: 13))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.primary)
                 
                 Image(systemName: "safari")
                     .resizable()
-                    .frame(width: 20, height: 20)
+                    .frame(width: 16, height: 16)
                     .foregroundColor(.primary)
             }
-            .padding(4)
-            .background(Capsule().fill(Color.accentColor.opacity(0.4)))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(Color.accentColor.opacity(0.2))
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
+                    )
+            )
         }
     }
     
@@ -312,9 +352,9 @@ struct MediaInfoView: View {
                 Label("Log Debug Info", systemImage: "terminal")
             }
         } label: {
-            Image(systemName: "ellipsis.circle")
+            Image(systemName: "ellipsis")
                 .resizable()
-                .frame(width: 20, height: 20)
+                .frame(width: 20, height: 4)
                 .foregroundColor(.primary)
         }
     }
@@ -340,26 +380,32 @@ struct MediaInfoView: View {
             Text(synopsis)
                 .lineLimit(showFullSynopsis ? nil : 4)
                 .font(.system(size: 14))
+                .onTapGesture {
+                    showFullSynopsis.toggle()
+                }
         }
     }
     
     @ViewBuilder
     private var playAndBookmarkSection: some View {
-        HStack {
+        HStack(spacing: 12) {
             Button(action: {
                 playFirstUnwatchedEpisode()
             }) {
-                HStack {
+                HStack(spacing: 8) {
                     Image(systemName: "play.fill")
                         .foregroundColor(.primary)
                     Text(startWatchingText)
-                        .font(.headline)
+                        .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.primary)
                 }
-                .padding()
+                .padding(.vertical, 12)
+                .padding(.horizontal, 20)
                 .frame(maxWidth: .infinity)
-                .background(Color.accentColor)
-                .cornerRadius(10)
+                .background(
+                    RoundedRectangle(cornerRadius: 25)
+                        .fill(Color.white.opacity(0.9))
+                )
             }
             .disabled(isFetchingEpisode)
             
@@ -375,21 +421,35 @@ struct MediaInfoView: View {
                 Image(systemName: libraryManager.isBookmarked(href: href, moduleName: module.metadata.sourceName) ? "bookmark.fill" : "bookmark")
                     .resizable()
                     .frame(width: 20, height: 27)
-                    .foregroundColor(Color.accentColor)
+                    .foregroundColor(.primary)
+                    .padding(12)
+                    .background(
+                        Circle()
+                            .fill(Color.black.opacity(0.6))
+                    )
             }
         }
     }
     
     @ViewBuilder
     private var episodesSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("Episodes")
-                    .font(.system(size: 18))
-                    .fontWeight(.bold)
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(.primary)
                 
                 Spacer()
-                episodeNavigationSection
+                
+                Group {
+                    if !isGroupedBySeasons && episodeLinks.count <= episodeChunkSize {
+                        Text("All episodes already shown")
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                    } else {
+                        episodeNavigationSection
+                    }
+                }
             }
             
             episodeListSection
@@ -785,8 +845,8 @@ struct MediaInfoView: View {
             self.showLoadingAlert = false
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                guard self.activeFetchID == fetchID else { 
-                    return 
+                guard self.activeFetchID == fetchID else {
+                    return
                 }
                 
                 if let sources = result.sources, !sources.isEmpty {

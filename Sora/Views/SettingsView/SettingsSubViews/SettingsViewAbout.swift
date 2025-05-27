@@ -65,7 +65,7 @@ struct SettingsViewAbout: View {
         ScrollView {
             VStack(spacing: 24) {
                 SettingsSection(title: "App Info", footer: "Sora/Sulfur will always remain free with no ADs!") {
-                    HStack {
+                    HStack(alignment: .center, spacing: 16) {
                         KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/Sora/Assets.xcassets/AppIcons/AppIcon_Default.appiconset/darkmode.png"))
                             .placeholder {
                                 ProgressView()
@@ -75,10 +75,13 @@ struct SettingsViewAbout: View {
                             .cornerRadius(20)
                             .shadow(radius: 5)
                         
-                        VStack(spacing: 8) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Text("Sora")
                                 .font(.title)
                                 .bold()
+                            Text("AKA Sulfur")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                             Text("Version \(version)")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)

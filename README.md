@@ -25,7 +25,7 @@
 - [x] iOS/iPadOS 15.0+ support
 - [x] macOS 12.0+ support
 - [x] JavaScript Main Core
-- [ ] Download support (HLS & MP4)
+- [x] Download support (HLS & MP4)
 - [x] Tracking Services (AniList, Trakt)
 - [x] Apple KeyChain support for auth Tokens
 - [x] Streams support (Jellyfin/Plex like servers)

@@ -246,6 +246,7 @@ struct DownloadView: View {
                 onWatchNext: {},
                 subtitlesURL: asset.localSubtitleURL?.absoluteString,
                 aniListID: 0,
+                totalEpisodes: asset.metadata?.episode ?? 0,
                 episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
                 headers: nil
             )

@@ -23,18 +23,33 @@ struct DownloadView: View {
         case title = "Title"
         
         var id: String { self.rawValue }
+        
+        var systemImage: String {
+            switch self {
+            case .newest: return "calendar.badge.clock"
+            case .oldest: return "calendar"
+            case .title: return "textformat.abc"
+            }
+        }
     }
     
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                Picker("Download Status", selection: $selectedTab) {
-                    Text("Active").tag(0)
-                    Text("Downloaded").tag(1)
+                // Enhanced Tab Picker
+                VStack(spacing: 0) {
+                    Picker("Download Status", selection: $selectedTab) {
+                        Label("Active", systemImage: "arrow.down.circle").tag(0)
+                        Label("Downloaded", systemImage: "checkmark.circle").tag(1)
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(height: 0.5)
                 }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal)
-                .padding(.top, 8)
                 
                 if selectedTab == 0 {
                     activeDownloadsView
@@ -43,14 +58,29 @@ struct DownloadView: View {
                 }
             }
             .navigationTitle("Downloads")
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 if selectedTab == 1 && !jsController.savedAssets.isEmpty {
                     Menu {
-                        Button("Sort by Newest") { sortOption = .newest }
-                        Button("Sort by Oldest") { sortOption = .oldest }
-                        Button("Sort by Title") { sortOption = .title }
+                        ForEach(SortOption.allCases) { option in
+                            Button(action: { sortOption = option }) {
+                                HStack {
+                                    Image(systemName: option.systemImage)
+                                    Text(option.rawValue)
+                                    if sortOption == option {
+                                        Spacer()
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
                     } label: {
-                        Image(systemName: "arrow.up.arrow.down")
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.up.arrow.down")
+                            Text("Sort")
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.accentColor)
                     }
                 }
             }
@@ -77,18 +107,24 @@ struct DownloadView: View {
                 emptyActiveDownloadsView
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(jsController.downloadQueue) { download in
-                            ActiveDownloadCard(download: download)
-                                .padding(.horizontal)
+                    VStack(spacing: 20) {
+                        if !jsController.downloadQueue.isEmpty {
+                            DownloadSectionView(
+                                title: "Queue",
+                                icon: "clock.fill",
+                                downloads: jsController.downloadQueue
+                            )
                         }
                         
-                        ForEach(jsController.activeDownloads) { download in
-                            ActiveDownloadCard(download: download)
-                                .padding(.horizontal)
+                        if !jsController.activeDownloads.isEmpty {
+                            DownloadSectionView(
+                                title: "Active Downloads",
+                                icon: "arrow.down.circle.fill",
+                                downloads: jsController.activeDownloads
+                            )
                         }
                     }
-                    .padding(.vertical)
+                    .padding(.top, 20)
                     .scrollViewBottomPadding()
                 }
             }
@@ -101,20 +137,25 @@ struct DownloadView: View {
                 emptyDownloadsView
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(groupedAssets, id: \.title) { group in
-                            DownloadGroupCard(
-                                group: group,
-                                onDelete: { asset in
-                                    assetToDelete = asset
-                                    showDeleteAlert = true
-                                },
-                                onPlay: playAsset
-                            )
-                                .padding(.horizontal)
-                        }
+                    VStack(spacing: 20) {
+                        // Summary Card
+                        DownloadSummaryCard(
+                            totalShows: groupedAssets.count,
+                            totalEpisodes: filteredAndSortedAssets.count,
+                            totalSize: filteredAndSortedAssets.reduce(0) { $0 + $1.fileSize }
+                        )
+                        
+                        // Downloads Section
+                        DownloadedSection(
+                            groups: groupedAssets,
+                            onDelete: { asset in
+                                assetToDelete = asset
+                                showDeleteAlert = true
+                            },
+                            onPlay: playAsset
+                        )
                     }
-                    .padding(.vertical)
+                    .padding(.top, 20)
                     .scrollViewBottomPadding()
                 }
             }
@@ -122,44 +163,47 @@ struct DownloadView: View {
     }
     
     private var emptyActiveDownloadsView: some View {
-        VStack {
+        VStack(spacing: 20) {
             Image(systemName: "arrow.down.circle")
-                .font(.system(size: 60))
-                .foregroundColor(.gray)
-                .padding(4)
+                .font(.system(size: 64, weight: .ultraLight))
+                .foregroundStyle(.tertiary)
             
-            Text("No Active Downloads")
-                .font(.title2)
-                .foregroundColor(.gray)
-                .padding(3)
-            
-            Text("Download episodes from the episode list")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-               
+            VStack(spacing: 8) {
+                Text("No Active Downloads")
+                    .font(.title2)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+                
+                Text("Download episodes from the episode list to see them here")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 40)
     }
     
     private var emptyDownloadsView: some View {
-        VStack {
+        VStack(spacing: 20) {
             Image(systemName: "arrow.down.circle")
-                .font(.system(size: 60))
-                .foregroundColor(.gray)
-                .padding(4)
+                .font(.system(size: 64, weight: .ultraLight))
+                .foregroundStyle(.tertiary)
             
-            Text("No Downloads")
-                .font(.title2)
-                .foregroundColor(.gray)
-                .padding(3)
-            
-            Text("Your downloaded episodes will appear here")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
+            VStack(spacing: 8) {
+                Text("No Downloads")
+                    .font(.title2)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+                
+                Text("Your downloaded episodes will appear here")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 40)
     }
     
     private var filteredAndSortedAssets: [DownloadedAsset] {
@@ -262,6 +306,8 @@ struct DownloadView: View {
     }
 }
 
+// MARK: - Supporting Views
+
 struct SimpleDownloadGroup {
     let title: String
     let assets: [DownloadedAsset]
@@ -273,7 +319,194 @@ struct SimpleDownloadGroup {
     }
 }
 
-struct ActiveDownloadCard: View {
+struct DownloadSectionView: View {
+    let title: String
+    let icon: String
+    let downloads: [JSActiveDownload]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(.accentColor)
+                Text(title.uppercased())
+                    .font(.footnote)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 20)
+            
+            VStack(spacing: 8) {
+                ForEach(downloads) { download in
+                    EnhancedActiveDownloadCard(download: download)
+                }
+            }
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+            .padding(.horizontal, 20)
+        }
+    }
+}
+
+struct DownloadSummaryCard: View {
+    let totalShows: Int
+    let totalEpisodes: Int
+    let totalSize: Int64
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Image(systemName: "chart.bar.fill")
+                    .foregroundColor(.accentColor)
+                Text("Download Summary".uppercased())
+                    .font(.footnote)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            
+            HStack(spacing: 20) {
+                SummaryItem(
+                    title: "Shows",
+                    value: "\(totalShows)",
+                    icon: "tv.fill"
+                )
+                
+                Divider()
+                    .frame(height: 40)
+                
+                SummaryItem(
+                    title: "Episodes",
+                    value: "\(totalEpisodes)",
+                    icon: "play.rectangle.fill"
+                )
+                
+                Divider()
+                    .frame(height: 40)
+                
+                SummaryItem(
+                    title: "Size",
+                    value: formatFileSize(totalSize),
+                    icon: "internaldrive.fill"
+                )
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 4)
+        }
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(
+                    LinearGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: Color.accentColor.opacity(0.3), location: 0),
+                            .init(color: Color.accentColor.opacity(0), location: 1)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 0.5
+                )
+        )
+        .padding(.horizontal, 20)
+    }
+    
+    private func formatFileSize(_ size: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useKB, .useMB, .useGB]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: size)
+    }
+}
+
+struct SummaryItem: View {
+    let title: String
+    let value: String
+    let icon: String
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(.accentColor)
+            
+            Text(value)
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+            
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+struct DownloadedSection: View {
+    let groups: [SimpleDownloadGroup]
+    let onDelete: (DownloadedAsset) -> Void
+    let onPlay: (DownloadedAsset) -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "folder.fill")
+                    .foregroundColor(.accentColor)
+                Text("Downloaded Shows".uppercased())
+                    .font(.footnote)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 20)
+            
+            VStack(spacing: 8) {
+                ForEach(groups, id: \.title) { group in
+                    EnhancedDownloadGroupCard(
+                        group: group,
+                        onDelete: onDelete,
+                        onPlay: onPlay
+                    )
+                }
+            }
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+            .padding(.horizontal, 20)
+        }
+    }
+}
+
+struct EnhancedActiveDownloadCard: View {
     let download: JSActiveDownload
     @State private var currentProgress: Double
     @State private var taskState: URLSessionTask.State
@@ -285,95 +518,130 @@ struct ActiveDownloadCard: View {
     }
     
     var body: some View {
-        HStack(spacing: 12) {
-            if let imageURL = download.imageURL {
-                KFImage(imageURL)
-                    .placeholder {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                    }
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 60, height: 60)
-                    .cornerRadius(8)
-            } else {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 60, height: 60)
-                    .cornerRadius(8)
-            }
-            
-            VStack(alignment: .leading, spacing: 6) {
-                Text(download.title ?? download.originalURL.lastPathComponent)
-                    .font(.headline)
-                    .lineLimit(1)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    if download.queueStatus == .queued {
-                        ProgressView()
-                            .progressViewStyle(LinearProgressViewStyle())
-                            .tint(.orange)
+        VStack(spacing: 0) {
+            HStack(spacing: 16) {
+                // Thumbnail
+                Group {
+                    if let imageURL = download.imageURL {
+                        KFImage(imageURL)
+                            .placeholder {
+                                Rectangle()
+                                    .fill(.tertiary)
+                            }
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
                     } else {
-                        ProgressView(value: currentProgress)
-                            .progressViewStyle(LinearProgressViewStyle())
-                            .tint(currentProgress >= 1.0 ? .green : .blue)
+                        Rectangle()
+                            .fill(.tertiary)
+                            .overlay(
+                                Image(systemName: "photo")
+                                    .foregroundStyle(.secondary)
+                            )
                     }
+                }
+                .frame(width: 64, height: 64)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                
+                // Content
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(download.title ?? download.originalURL.lastPathComponent)
+                        .font(.headline)
+                        .fontWeight(.medium)
+                        .lineLimit(2)
+                        .foregroundStyle(.primary)
                     
-                    HStack {
-                        if download.queueStatus == .queued {
-                            Text("Queued")
-                                .font(.caption)
-                                .foregroundColor(.orange)
-                        } else {
-                            Text("\(Int(currentProgress * 100))%")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                    // Progress Section
+                    VStack(spacing: 6) {
+                        HStack {
+                            if download.queueStatus == .queued {
+                                Text("Queued")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.orange)
+                            } else {
+                                Text("\(Int(currentProgress * 100))%")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(statusColor)
+                                    .frame(width: 6, height: 6)
+                                
+                                Text(statusText)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         
-                        Spacer()
+                        if download.queueStatus == .queued {
+                            ProgressView()
+                                .progressViewStyle(LinearProgressViewStyle(tint: .orange))
+                                .scaleEffect(y: 0.8)
+                        } else {
+                            ProgressView(value: currentProgress)
+                                .progressViewStyle(LinearProgressViewStyle(tint: currentProgress >= 1.0 ? .green : .accentColor))
+                                .scaleEffect(y: 0.8)
+                        }
+                    }
+                }
+                
+                // Controls
+                HStack(spacing: 12) {
+                    if download.queueStatus == .queued {
+                        Button(action: cancelDownload) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(.red)
+                        }
+                    } else {
+                        Button(action: toggleDownload) {
+                            Image(systemName: taskState == .running ? "pause.circle.fill" : "play.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(taskState == .running ? .orange : .accentColor)
+                        }
                         
-                        if taskState == .running {
-                            Text("Downloading")
-                                .font(.caption)
-                                .foregroundColor(.blue)
-                        } else if taskState == .suspended {
-                            Text("Paused")
-                                .font(.caption)
-                                .foregroundColor(.orange)
+                        Button(action: cancelDownload) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(.red)
                         }
                     }
                 }
             }
+            .padding(16)
             
-            Spacer()
-            
-            HStack(spacing: 8) {
-                if download.queueStatus == .queued {
-                    Button(action: cancelDownload) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
-                            .font(.title2)
-                    }
-                } else {
-                    Button(action: toggleDownload) {
-                        Image(systemName: taskState == .running ? "pause.circle.fill" : "play.circle.fill")
-                            .foregroundColor(taskState == .running ? .orange : .blue)
-                            .font(.title2)
-                    }
-                    
-                    Button(action: cancelDownload) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
-                            .font(.title2)
-                    }
-                }
+            if download != download { // Not last item (placeholder condition)
+                Divider()
+                    .padding(.horizontal, 16)
             }
         }
-        .padding()
-        .background(Color(UIColor.secondarySystemBackground))
-        .cornerRadius(12)
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadProgressChanged"))) { _ in
             updateProgress()
+        }
+    }
+    
+    private var statusColor: Color {
+        if download.queueStatus == .queued {
+            return .orange
+        } else if taskState == .running {
+            return .green
+        } else {
+            return .orange
+        }
+    }
+    
+    private var statusText: String {
+        if download.queueStatus == .queued {
+            return "Queued"
+        } else if taskState == .running {
+            return "Downloading"
+        } else {
+            return "Paused"
         }
     }
     
@@ -407,53 +675,65 @@ struct ActiveDownloadCard: View {
     }
 }
 
-struct DownloadGroupCard: View {
+struct EnhancedDownloadGroupCard: View {
     let group: SimpleDownloadGroup
     let onDelete: (DownloadedAsset) -> Void
     let onPlay: (DownloadedAsset) -> Void
     
     var body: some View {
-        NavigationLink(destination: ShowEpisodesView(group: group, onDelete: onDelete, onPlay: onPlay)) {
-            HStack(spacing: 12) {
-                if let posterURL = group.posterURL {
-                    KFImage(posterURL)
-                        .placeholder {
+        NavigationLink(destination: EnhancedShowEpisodesView(group: group, onDelete: onDelete, onPlay: onPlay)) {
+            VStack(spacing: 0) {
+                HStack(spacing: 16) {
+                    // Poster
+                    Group {
+                        if let posterURL = group.posterURL {
+                            KFImage(posterURL)
+                                .placeholder {
+                                    Rectangle()
+                                        .fill(.tertiary)
+                                }
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } else {
                             Rectangle()
-                                .fill(Color.gray.opacity(0.3))
+                                .fill(.tertiary)
+                                .overlay(
+                                    Image(systemName: "tv")
+                                        .foregroundStyle(.secondary)
+                                )
                         }
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 50, height: 75)
-                        .cornerRadius(6)
-                } else {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 50, height: 75)
-                        .cornerRadius(6)
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(group.title)
-                        .font(.headline)
-                        .lineLimit(2)
+                    }
+                    .frame(width: 56, height: 84)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                     
-                    Text("\(group.assetCount) Episodes")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    // Content
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(group.title)
+                            .font(.headline)
+                            .fontWeight(.medium)
+                            .lineLimit(2)
+                            .foregroundStyle(.primary)
+                        
+                        HStack(spacing: 16) {
+                            Label("\(group.assetCount)", systemImage: "play.rectangle")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            
+                            Label(formatFileSize(group.totalFileSize), systemImage: "internaldrive")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                     
-                    Text(formatFileSize(group.totalFileSize))
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.tertiary)
                 }
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
-                    .font(.caption)
+                .padding(16)
+                .contentShape(Rectangle())
             }
-            .contentShape(Rectangle())
-            .background(Color.clear)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -466,88 +746,7 @@ struct DownloadGroupCard: View {
     }
 }
 
-struct EpisodeRow: View {
-    let asset: DownloadedAsset
-    let onDelete: () -> Void
-    let onPlay: () -> Void
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            if let backdropURL = asset.metadata?.backdropURL {
-                KFImage(backdropURL)
-                    .placeholder {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                    }
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 60, height: 40)
-                    .cornerRadius(6)
-            } else {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 60, height: 40)
-                    .cornerRadius(6)
-            }
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Episode \(asset.metadata?.episode ?? 1)")
-                    .font(.subheadline)
-                    .lineLimit(1)
-
-                let base = "Episode \(asset.metadata?.episode ?? 1)"
-                if asset.episodeDisplayName != base {
-                    Text(asset.episodeDisplayName)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                }
-                
-                HStack(spacing: 4) {
-                    Text(asset.downloadDate.formatted(date: .abbreviated, time: .omitted))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    if asset.localSubtitleURL != nil {
-                        Image(systemName: "captions.bubble")
-                            .foregroundColor(.blue)
-                            .font(.caption)
-                    }
-                    if !asset.fileExists {
-                        Image(systemName: "exclamationmark.triangle")
-                            .foregroundColor(.orange)
-                            .font(.caption)
-                    }
-                }
-            }
-            
-            Spacer()
-            
-            Button(action: onPlay) {
-                Image(systemName: "play.circle.fill")
-                    .foregroundColor(asset.fileExists ? .blue : .gray)
-                    .font(.title3)
-            }
-            .disabled(!asset.fileExists)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(Color(UIColor.tertiarySystemBackground))
-        .cornerRadius(8)
-        .contextMenu {
-            Button(action: onPlay) {
-                Label("Play", systemImage: "play.fill")
-            }
-            .disabled(!asset.fileExists)
-            
-            Button(role: .destructive, action: onDelete) {
-                Label("Delete", systemImage: "trash")
-            }
-        }
-    }
-}
-
-struct ShowEpisodesView: View {
+struct EnhancedShowEpisodesView: View {
     let group: SimpleDownloadGroup
     let onDelete: (DownloadedAsset) -> Void
     let onPlay: (DownloadedAsset) -> Void
@@ -585,115 +784,147 @@ struct ShowEpisodesView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
-                HStack(alignment: .top, spacing: 16) {
-                    if let posterURL = group.posterURL {
-                        KFImage(posterURL)
-                            .placeholder {
+            VStack(spacing: 24) {
+                // Header Section
+                VStack(spacing: 20) {
+                    HStack(alignment: .top, spacing: 20) {
+                        Group {
+                            if let posterURL = group.posterURL {
+                                KFImage(posterURL)
+                                    .placeholder {
+                                        Rectangle()
+                                            .fill(.tertiary)
+                                    }
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            } else {
                                 Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
+                                    .fill(.tertiary)
+                                    .overlay(
+                                        Image(systemName: "tv")
+                                            .font(.largeTitle)
+                                            .foregroundColor(.secondary)
+                                    )
                             }
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 120, height: 180)
-                            .cornerRadius(10)
-                    } else {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(width: 120, height: 180)
-                            .cornerRadius(10)
+                        }
+                        .frame(width: 120, height: 180)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(group.title)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .lineLimit(3)
+                                .foregroundColor(.primary)
+                            
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Image(systemName: "play.rectangle.fill")
+                                        .foregroundColor(.accentColor)
+                                    Text("\(group.assetCount) Episodes")
+                                        .font(.headline)
+                                        .foregroundColor(.secondary)
+                                }
+                                
+                                HStack {
+                                    Image(systemName: "internaldrive.fill")
+                                        .foregroundColor(.accentColor)
+                                    Text(formatFileSize(group.totalFileSize))
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(group.title)
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .lineLimit(3)
-                        
-                        Text("\(group.assetCount) Episodes")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                        
-                        Text(formatFileSize(group.totalFileSize))
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal)
+                .padding(.top, 20)
                 
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        Text("Episodes")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                        
-                        Spacer()
-                        
-                        Menu {
-                            ForEach(EpisodeSortOption.allCases) { option in
-                                Button(action: {
-                                    episodeSortOption = option
-                                }) {
-                                    HStack {
-                                        Text(option.rawValue)
-                                        if episodeSortOption == option {
-                                            Image(systemName: "checkmark")
+                // Episodes Section
+                VStack(spacing: 16) {
+                    // Section Header
+                    VStack(spacing: 12) {
+                        HStack {
+                            Image(systemName: "list.bullet.rectangle")
+                                .foregroundColor(.accentColor)
+                            Text("Episodes".uppercased())
+                                .font(.footnote)
+                                .fontWeight(.medium)
+                                .foregroundColor(.secondary)
+                            
+                            Spacer()
+                            
+                            Menu {
+                                ForEach(EpisodeSortOption.allCases) { option in
+                                    Button(action: {
+                                        episodeSortOption = option
+                                    }) {
+                                        HStack {
+                                            Image(systemName: option.systemImage)
+                                            Text(option.rawValue)
+                                            if episodeSortOption == option {
+                                                Spacer()
+                                                Image(systemName: "checkmark")
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: episodeSortOption.systemImage)
-                                Text("Sort")
-                            }
-                            .font(.subheadline)
-                            .foregroundColor(.blue)
-                        }
-                        
-                        Button(action: {
-                            showDeleteAllAlert = true
-                        }) {
-                            Label("Delete All", systemImage: "trash")
-                                .foregroundColor(.red)
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: episodeSortOption.systemImage)
+                                    Text("Sort")
+                                }
                                 .font(.subheadline)
+                                .foregroundColor(.accentColor)
+                            }
+                            
+                            Button(action: {
+                                showDeleteAllAlert = true
+                            }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "trash")
+                                    Text("Delete All")
+                                }
+                                .font(.subheadline)
+                                .foregroundColor(.red)
+                            }
                         }
+                        .padding(.horizontal, 20)
                     }
-                    .padding(.horizontal)
                     
+                    // Episodes List
                     if group.assets.isEmpty {
                         Text("No episodes available")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.secondary)
                             .italic()
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(40)
                     } else {
-                        LazyVStack(spacing: 8) {
-                            ForEach(sortedEpisodes) { asset in
-                                DetailedEpisodeRow(asset: asset)
-                                    .padding(.horizontal)
-                                    .background(Color(UIColor.secondarySystemBackground))
-                                    .cornerRadius(10)
-                                    .padding(.horizontal)
-                                    .contextMenu {
-                                        Button(action: { onPlay(asset) }) {
-                                            Label("Play", systemImage: "play.fill")
-                                        }
-                                        .disabled(!asset.fileExists)
-                                        
-                                        Button(role: .destructive, action: {
-                                            assetToDelete = asset
-                                            showDeleteAlert = true
-                                        }) {
-                                            Label("Delete", systemImage: "trash")
-                                        }
+                        VStack(spacing: 8) {
+                            ForEach(Array(sortedEpisodes.enumerated()), id: \.element.id) { index, asset in
+                                EnhancedEpisodeRow(
+                                    asset: asset,
+                                    showDivider: index < sortedEpisodes.count - 1
+                                )
+                                .contextMenu {
+                                    Button(action: { onPlay(asset) }) {
+                                        Label("Play", systemImage: "play.fill")
                                     }
-                                    .onTapGesture {
-                                        onPlay(asset)
+                                    .disabled(!asset.fileExists)
+                                    
+                                    Button(role: .destructive, action: {
+                                        assetToDelete = asset
+                                        showDeleteAlert = true
+                                    }) {
+                                        Label("Delete", systemImage: "trash")
                                     }
+                                }
+                                .onTapGesture {
+                                    onPlay(asset)
+                                }
                             }
                         }
                     }
@@ -739,63 +970,79 @@ struct ShowEpisodesView: View {
     }
 }
 
-struct DetailedEpisodeRow: View {
+struct EnhancedEpisodeRow: View {
     let asset: DownloadedAsset
+    let showDivider: Bool
     
     var body: some View {
-        HStack(spacing: 12) {
-            if let backdropURL = asset.metadata?.backdropURL ?? asset.metadata?.posterURL {
-                KFImage(backdropURL)
-                    .placeholder {
+        VStack(spacing: 0) {
+            HStack(spacing: 16) {
+                // Thumbnail
+                Group {
+                    if let backdropURL = asset.metadata?.backdropURL ?? asset.metadata?.posterURL {
+                        KFImage(backdropURL)
+                            .placeholder {
+                                Rectangle()
+                                    .fill(.tertiary)
+                            }
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } else {
                         Rectangle()
-                            .fill(Color.gray.opacity(0.3))
+                            .fill(.tertiary)
+                            .overlay(
+                                Image(systemName: "photo")
+                                    .foregroundColor(.secondary)
+                            )
                     }
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 100, height: 60)
-                    .cornerRadius(8)
-            } else {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 100, height: 60)
-                    .cornerRadius(8)
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(asset.episodeDisplayName)
-                    .font(.headline)
-                    .lineLimit(2)
+                }
+                .frame(width: 100, height: 60)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
                 
-                Text(formatFileSize(asset.fileSize))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                HStack(spacing: 6) {
-                    Text(asset.downloadDate.formatted(date: .abbreviated, time: .shortened))
+                // Content
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(asset.episodeDisplayName)
+                        .font(.headline)
+                        .lineLimit(2)
+                        .foregroundColor(.primary)
+                    
+                    Text(formatFileSize(asset.fileSize))
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
-                    if asset.localSubtitleURL != nil {
-                        Image(systemName: "captions.bubble")
-                            .foregroundColor(.blue)
+                    HStack(spacing: 6) {
+                        Text(asset.downloadDate.formatted(date: .abbreviated, time: .shortened))
                             .font(.caption)
-                    }
-                    
-                    if !asset.fileExists {
-                        Image(systemName: "exclamationmark.triangle")
-                            .foregroundColor(.orange)
-                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        if asset.localSubtitleURL != nil {
+                            Image(systemName: "captions.bubble")
+                                .foregroundColor(.blue)
+                                .font(.caption)
+                        }
+                        
+                        if !asset.fileExists {
+                            Image(systemName: "exclamationmark.triangle")
+                                .foregroundColor(.orange)
+                                .font(.caption)
+                        }
                     }
                 }
+                
+                Spacer()
+                
+                Image(systemName: "play.circle.fill")
+                    .foregroundColor(asset.fileExists ? .blue : .gray)
+                    .font(.title2)
             }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
             
-            Spacer()
-            
-            Image(systemName: "play.circle.fill")
-                .foregroundColor(asset.fileExists ? .blue : .gray)
-                .font(.title2)
+            if showDivider {
+                Divider()
+                    .padding(.horizontal, 16)
+            }
         }
-        .padding(.vertical, 8)
     }
     
     private func formatFileSize(_ size: Int64) -> String {

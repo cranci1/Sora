@@ -51,6 +51,7 @@ struct MediaInfoView: View {
     @StateObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
     @EnvironmentObject private var libraryManager: LibraryManager
+    @EnvironmentObject var tabBarController: TabBarController
     
     @State private var selectedRange: Range<Int> = 0..<100
     @State private var showSettingsMenu = false
@@ -105,7 +106,6 @@ struct MediaInfoView: View {
                 .navigationViewStyle(StackNavigationViewStyle())
                 .ignoresSafeArea(.container, edges: .top)
                 .onAppear {
-                    // Enable swipe back gesture
                     if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                        let window = windowScene.windows.first,
                        let navigationController = window.rootViewController?.children.first as? UINavigationController {
@@ -175,6 +175,10 @@ struct MediaInfoView: View {
                 hasFetched = true
                 AnalyticsManager.shared.sendEvent(event: "search", additionalData: ["title": title])
             }
+            tabBarController.hideTabBar()
+        }
+        .onDisappear(){
+            tabBarController.showTabBar()
         }
         .alert("Loading Stream", isPresented: $showLoadingAlert) {
             Button("Cancel", role: .cancel) {
@@ -283,12 +287,11 @@ struct MediaInfoView: View {
         }
         .onAppear {
             UIScrollView.appearance().bounces = false
-        }
+        } 
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarTitle("")
         .navigationViewStyle(StackNavigationViewStyle())
         .ignoresSafeArea(.container, edges: .top)
-        .scrollViewBottomPadding()
     }
     
     @ViewBuilder

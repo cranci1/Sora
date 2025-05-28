@@ -8,12 +8,6 @@
 import SwiftUI
 import Kingfisher
 
-struct SearchItem: Identifiable {
-    let id = UUID()
-    let title: String
-    let imageUrl: String
-    let href: String
-}
 
 struct ModuleButtonModifier: ViewModifier {
     func body(content: Content) -> some View {
@@ -85,138 +79,38 @@ struct SearchView: View {
                     
                     Spacer()
                     
-                    Menu {
-                        ForEach(getModuleLanguageGroups(), id: \.self) { language in
-                            Menu(language) {
-                                ForEach(getModulesForLanguage(language), id: \.id) { module in
-                                    Button {
-                                        selectedModuleId = module.id.uuidString
-                                    } label: {
-                                        HStack {
-                                            KFImage(URL(string: module.metadata.iconUrl))
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(width: 20, height: 20)
-                                                .cornerRadius(4)
-                                            Text(module.metadata.sourceName)
-                                            if module.id.uuidString == selectedModuleId {
-                                                Image(systemName: "checkmark")
-                                                    .foregroundColor(.accentColor)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                    ModuleSelectorMenu(
+                        selectedModule: selectedModule,
+                        moduleGroups: getModuleLanguageGroups(),
+                        modulesByLanguage: getModulesByLanguage(),
+                        selectedModuleId: selectedModuleId,
+                        onModuleSelected: { moduleId in
+                            selectedModuleId = moduleId
                         }
-                    } label: {
-                        if let selectedModule = selectedModule {
-                            KFImage(URL(string: selectedModule.metadata.iconUrl))
-                                .resizable()
-                                .frame(width: 36, height: 36)
-                                .clipShape(Circle())
-                        } else {
-                            Image(systemName: "questionmark.app.fill")
-                                .resizable()
-                                .frame(width: 36, height: 36)
-                                .clipShape(Circle())
-                                .foregroundColor(.secondary)
-                        }
-                    }
+                    )
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
+                
                 ScrollView {
-                    let columnsCount = determineColumns()
-                    VStack(spacing: 0) {
-                        if selectedModule == nil {
-                            VStack(spacing: 8) {
-                                Image(systemName: "questionmark.app")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.secondary)
-                                Text("No Module Selected")
-                                    .font(.headline)
-                                Text("Please select a module from settings")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color(.systemBackground))
-                            .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
-                        }
-                        
-                        if !searchQuery.isEmpty {
-                            if isSearching {
-                                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
-                                    ForEach(0..<columnsCount*4, id: \.self) { _ in
-                                        SearchSkeletonCell(cellWidth: cellWidth)
-                                    }
-                                }
-                                .padding(.top)
-                                .padding()
-                            } else if hasNoResults {
-                                VStack(spacing: 8) {
-                                    Image(systemName: "magnifyingglass")
-                                        .font(.largeTitle)
-                                        .foregroundColor(.secondary)
-                                    Text("No Results Found")
-                                        .font(.headline)
-                                    Text("Try different keywords")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .padding(.top)
-                            } else {
-                                LazyVGrid(columns: columns, spacing: 16) {
-                                    ForEach(searchItems) { item in
-                                        NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule!)) {
-                                            ZStack {
-                                                KFImage(URL(string: item.imageUrl))
-                                                    .resizable()
-                                                    .aspectRatio(0.72, contentMode: .fill)
-                                                    .frame(width: 162, height: 243)
-                                                    .cornerRadius(12)
-                                                    .clipped()
-                                                
-                                                VStack {
-                                                    Spacer()
-                                                    Text(item.title)
-                                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                                        .lineLimit(2)
-                                                        .foregroundColor(.white)
-                                                        .padding(12)
-                                                        .background(
-                                                            LinearGradient(
-                                                                colors: [
-                                                                    .black.opacity(0.7),
-                                                                    .black.opacity(0.0)
-                                                                ],
-                                                                startPoint: .bottom,
-                                                                endPoint: .top
-                                                            )
-                                                            .shadow(color: .black, radius: 4, x: 0, y: 2)
-                                                        )
-                                                }
-                                                .frame(width: 162)
-                                            }
-                                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                                            .padding(4)
-                                        }
-                                    }
-                                    .onAppear {
-                                        updateOrientation()
-                                    }
-                                    .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-                                        updateOrientation()
-                                    }
-                                }
-                                .padding(.top)
-                                .padding()
-                            }
-                        }
-                    }
+                    SearchContent(
+                        selectedModule: selectedModule,
+                        searchQuery: searchQuery,
+                        searchHistory: searchHistory,
+                        searchItems: searchItems,
+                        isSearching: isSearching,
+                        hasNoResults: hasNoResults,
+                        columns: columns,
+                        columnsCount: columnsCount,
+                        cellWidth: cellWidth,
+                        onHistoryItemSelected: { query in
+                            searchQuery = query
+                        },
+                        onHistoryItemDeleted: { index in
+                            removeFromHistory(at: index)
+                        },
+                        onClearHistory: clearSearchHistory
+                    )
                 }
                 .scrollViewBottomPadding()
             }
@@ -225,6 +119,9 @@ struct SearchView: View {
         .navigationViewStyle(StackNavigationViewStyle())
         .onAppear {
             loadSearchHistory()
+            if !searchQuery.isEmpty {
+                performSearch()
+            }
         }
         .onChange(of: selectedModuleId) { _ in
             if !searchQuery.isEmpty {
@@ -248,11 +145,6 @@ struct SearchView: View {
                 performSearch()
             }
         }
-        .onAppear {
-            if !searchQuery.isEmpty {
-                performSearch()
-            }
-        }
     }
     
     private func performSearch() {
@@ -264,6 +156,7 @@ struct SearchView: View {
         }
         
         isSearchFieldFocused = false
+        addToSearchHistory(searchQuery)
         
         isSearching = true
         hasNoResults = false
@@ -423,3 +316,4 @@ struct SearchBar: View {
         }
     }
 }
+

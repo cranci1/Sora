@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0402DA0E2DE7AA01003BB42C /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402DA0D2DE7A9FC003BB42C /* TabBarController.swift */; };
+		0402DA132DE7B5EC003BB42C /* SearchStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402DA112DE7B5EC003BB42C /* SearchStateView.swift */; };
+		0402DA142DE7B5EC003BB42C /* SearchResultsGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402DA102DE7B5EC003BB42C /* SearchResultsGrid.swift */; };
+		0402DA152DE7B5EC003BB42C /* SearchComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402DA0F2DE7B5EC003BB42C /* SearchComponents.swift */; };
+		0402DA172DE7B7B8003BB42C /* SearchViewComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402DA162DE7B7B8003BB42C /* SearchViewComponents.swift */; };
 		0457C5972DE7712A000AFBD9 /* DeviceScaleModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C5942DE7712A000AFBD9 /* DeviceScaleModifier.swift */; };
 		0457C59D2DE78267000AFBD9 /* BookmarkGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C59A2DE78267000AFBD9 /* BookmarkGridView.swift */; };
 		0457C59E2DE78267000AFBD9 /* BookmarkLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C59B2DE78267000AFBD9 /* BookmarkLink.swift */; };
@@ -99,6 +104,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0402DA0D2DE7A9FC003BB42C /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
+		0402DA0F2DE7B5EC003BB42C /* SearchComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchComponents.swift; sourceTree = "<group>"; };
+		0402DA102DE7B5EC003BB42C /* SearchResultsGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsGrid.swift; sourceTree = "<group>"; };
+		0402DA112DE7B5EC003BB42C /* SearchStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchStateView.swift; sourceTree = "<group>"; };
+		0402DA162DE7B7B8003BB42C /* SearchViewComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewComponents.swift; sourceTree = "<group>"; };
 		0457C5942DE7712A000AFBD9 /* DeviceScaleModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceScaleModifier.swift; sourceTree = "<group>"; };
 		0457C5992DE78267000AFBD9 /* BookmarkGridItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkGridItemView.swift; sourceTree = "<group>"; };
 		0457C59A2DE78267000AFBD9 /* BookmarkGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkGridView.swift; sourceTree = "<group>"; };
@@ -204,6 +214,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0402DA122DE7B5EC003BB42C /* SearchView */ = {
+			isa = PBXGroup;
+			children = (
+				0402DA162DE7B7B8003BB42C /* SearchViewComponents.swift */,
+				0402DA0F2DE7B5EC003BB42C /* SearchComponents.swift */,
+				0402DA102DE7B5EC003BB42C /* SearchResultsGrid.swift */,
+				0402DA112DE7B5EC003BB42C /* SearchStateView.swift */,
+			);
+			path = SearchView;
+			sourceTree = "<group>";
+		};
 		0457C5962DE7712A000AFBD9 /* ViewModifiers */ = {
 			isa = PBXGroup;
 			children = (
@@ -234,6 +255,7 @@
 		04F08EDD2DE10C05006B29D9 /* TabBar */ = {
 			isa = PBXGroup;
 			children = (
+				0402DA0D2DE7A9FC003BB42C /* TabBarController.swift */,
 				04F08EDE2DE10C1A006B29D9 /* TabBar.swift */,
 			);
 			path = TabBar;
@@ -327,6 +349,7 @@
 			isa = PBXGroup;
 			children = (
 				72443C7C2DC8036500A61321 /* DownloadView.swift */,
+				0402DA122DE7B5EC003BB42C /* SearchView */,
 				133D7C7F2D2BE2630075467E /* MediaInfoView */,
 				1399FAD22D3AB34F00E97C31 /* SettingsView */,
 				133F55B92D33B53E00E08EEA /* LibraryView */,
@@ -704,7 +727,9 @@
 				13DB46902D900A38008CBC03 /* URL.swift in Sources */,
 				04F08EE42DE10D6F006B29D9 /* AllBookmarks.swift in Sources */,
 				130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */,
+				0402DA172DE7B7B8003BB42C /* SearchViewComponents.swift in Sources */,
 				1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */,
+				0402DA0E2DE7AA01003BB42C /* TabBarController.swift in Sources */,
 				13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */,
 				133D7C932D2BE2640075467E /* Modules.swift in Sources */,
 				0457C5972DE7712A000AFBD9 /* DeviceScaleModifier.swift in Sources */,
@@ -752,6 +777,9 @@
 				727220722DD642B100C2A4A2 /* JSController+MP4Download.swift in Sources */,
 				132FC5B32DE31DAE009A80F7 /* SettingsViewAlternateAppIconPicker.swift in Sources */,
 				1EA64DCD2DE5030100AC14BC /* ImageUpscaler.swift in Sources */,
+				0402DA132DE7B5EC003BB42C /* SearchStateView.swift in Sources */,
+				0402DA142DE7B5EC003BB42C /* SearchResultsGrid.swift in Sources */,
+				0402DA152DE7B5EC003BB42C /* SearchComponents.swift in Sources */,
 				1399FAD42D3AB38C00E97C31 /* SettingsViewLogger.swift in Sources */,
 				04F08EDF2DE10C1D006B29D9 /* TabBar.swift in Sources */,
 				72AC3A012DD4DAEB00C60B96 /* ImagePrefetchManager.swift in Sources */,

@@ -4,7 +4,6 @@
 //
 //  Created by Francesco on 06/01/25.
 //
-
 import SwiftUI
 
 struct ContentView_Previews: PreviewProvider {
@@ -17,13 +16,13 @@ struct ContentView_Previews: PreviewProvider {
 }
 
 struct ContentView: View {
+    @StateObject private var tabBarController = TabBarController()  // Add this line
     @State var selectedTab: Int = 0
     @State var lastTab: Int = 0
     @State private var searchQuery: String = ""
     
     let tabs: [TabItem] = [
         TabItem(icon: "square.stack", title: ""),
-        TabItem(icon: "shippingbox", title: ""),
         TabItem(icon: "arrow.down.circle", title: ""),
         TabItem(icon: "gearshape", title: ""),
         TabItem(icon: "magnifyingglass", title: "")
@@ -34,30 +33,31 @@ struct ContentView: View {
             switch selectedTab {
             case 0:
                 LibraryView()
+                    .environmentObject(tabBarController)
             case 1:
-                SettingsViewModule()
-            case 2:
                 DownloadView()
-            case 3:
+                    .environmentObject(tabBarController)
+            case 2:
                 SettingsView()
-            case 4:
+                    .environmentObject(tabBarController)
+            case 3:
                 SearchView(searchQuery: $searchQuery)
+                    .environmentObject(tabBarController)
             default:
                 LibraryView()
+                    .environmentObject(tabBarController)
             }
             
-            TabBar(tabs: tabs, selectedTab: $selectedTab, lastTab: $lastTab, searchQuery: $searchQuery)
-                .background {
-                    ProgressiveBlurView()
-                        .blur(radius: 10)
-                        .padding(.horizontal, -20)
-                        .padding(.bottom, -100)
-                        .padding(.top, -10)
-                }
+            TabBar(
+                tabs: tabs,
+                selectedTab: $selectedTab,
+                lastTab: $lastTab,
+                searchQuery: $searchQuery,
+                controller: tabBarController
+            )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .padding(.bottom, -20)
     }
 }
-

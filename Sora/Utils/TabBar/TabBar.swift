@@ -43,6 +43,7 @@ struct TabBar: View {
     @FocusState var keyboardFocus: Bool
     @State var keyboardHidden: Bool = true
     @Binding var searchQuery: String
+    @ObservedObject var controller: TabBarController
     
     @State private var keyboardHeight: CGFloat = 0
     
@@ -54,6 +55,18 @@ struct TabBar: View {
     }
     
     @Namespace private var animation
+    
+    // MARK: - Slide Animation Functions (Optional - controller handles this now)
+    
+    /// Slides the tab bar down (hides it)
+    func slideDown() {
+        controller.hideTabBar()
+    }
+    
+    /// Slides the tab bar up (shows it)
+    func slideUp() {
+        controller.showTabBar()
+    }
     
     var body: some View {
         HStack {
@@ -150,8 +163,19 @@ struct TabBar: View {
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
-        .offset(y: keyboardFocus ? -keyboardHeight + 36 : 0)
+        .background {
+            // Move the blur background here and animate it
+            ProgressiveBlurView()
+                .blur(radius: 10)
+                .padding(.horizontal, -20)
+                .padding(.bottom, -100)
+                .padding(.top, -10)
+                .opacity(controller.isHidden ? 0 : 1)  // Animate opacity
+                .animation(.easeInOut(duration: 0.15), value: controller.isHidden)
+        }
+        .offset(y: controller.isHidden ? 120 : (keyboardFocus ? -keyboardHeight + 36 : 0))
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: keyboardHeight)
+        .animation(.easeInOut(duration: 0.15), value: controller.isHidden)
         .onChange(of: keyboardHeight) { newValue in
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
             }

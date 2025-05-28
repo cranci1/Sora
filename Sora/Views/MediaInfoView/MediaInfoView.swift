@@ -97,7 +97,44 @@ struct MediaInfoView: View {
     }
     
     var body: some View {
-        bodyContent
+        ZStack {
+            bodyContent
+                .navigationBarHidden(true)
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarTitle("")
+                .navigationViewStyle(StackNavigationViewStyle())
+                .ignoresSafeArea(.container, edges: .top)
+                .onAppear {
+                    // Enable swipe back gesture
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                       let window = windowScene.windows.first,
+                       let navigationController = window.rootViewController?.children.first as? UINavigationController {
+                        navigationController.interactivePopGestureRecognizer?.isEnabled = true
+                        navigationController.interactivePopGestureRecognizer?.delegate = nil
+                    }
+                }
+            
+            VStack {
+                HStack {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 24))
+                            .foregroundColor(.primary)
+                            .padding(12)
+                            .background(Color.gray.opacity(0.2))
+                            .clipShape(Circle())
+                            .circularGradientOutline()
+                    }
+                    .padding(.top, 8)
+                    .padding(.leading, 16)
+                    
+                    Spacer()
+                }
+                Spacer()
+            }
+        }
     }
     
     @ViewBuilder
@@ -161,101 +198,123 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var mainScrollView: some View {
-        GeometryReader { geometry in
+        ScrollView {
             ZStack(alignment: .top) {
-                // Background poster with blur
                 KFImage(URL(string: imageUrl))
                     .placeholder {
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
                             .shimmering()
                     }
+                    .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1, sharpeningRadius: 1))
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .frame(width: UIScreen.main.bounds.width, height: 600)
                     .clipped()
-                    .blur(radius: 20)
-                    .overlay(
-                        // Gradient overlay for better text readability
+
+                KFImage(URL(string: imageUrl))
+                    .placeholder { EmptyView() }
+                    .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1, sharpeningRadius: 1))
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: UIScreen.main.bounds.width, height: 600)
+                    .clipped()
+                    .blur(radius: 30)
+                    .mask(
                         LinearGradient(
                             gradient: Gradient(stops: [
-                                .init(color: Color.clear, location: 0.0),
-                                .init(color: Color.clear, location: 0.3),
-                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.8), location: 0.7),
-                                .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
+                                .init(color: .clear, location: 0.0),
+                                .init(color: .clear, location: 0.6),
+                                .init(color: .black, location: 0.8),
+                                .init(color: .black, location: 1.0)
                             ]),
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
-                
-                ScrollView {
-                    VStack(spacing: 0) {
-                        // Top spacing to push content down
-                        Rectangle()
-                            .fill(Color.clear)
-                            .frame(height: geometry.safeAreaInsets.top + 200)
-                        
-                        VStack(alignment: .leading, spacing: 16) {
-                            mediaHeaderSection
-                            
-                            if !synopsis.isEmpty {
-                                synopsisSection
-                            }
-                            
-                            playAndBookmarkSection
-                            
-                            if !episodeLinks.isEmpty {
-                                episodesSection
-                            } else {
-                                noEpisodesSection
-                            }
-                        }
-                        .padding()
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(stops: [
-                                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
-                                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.5), location: 0.2),
-                                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.8), location: 0.5),
-                                    .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
-                                ]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 0))
+                    .overlay(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: .clear, location: 0.0),
+                                .init(color: .clear, location: 0.7),
+                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.9), location: 1.0)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
                         )
+                    )
+
+                VStack(spacing: 0) {
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: 400)
+
+                    VStack(alignment: .leading, spacing: 16) {
+                        headerSection
+                        if !episodeLinks.isEmpty {
+                            episodesSection
+                        } else {
+                            noEpisodesSection
+                        }
                     }
+                    .padding()
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
+                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.5), location: 0.2),
+                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.8), location: 0.5),
+                                .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 0))
+                        .shadow(
+                            color: (colorScheme == .dark ? Color.black : Color.white).opacity(1),
+                            radius: 10,
+                            x: 0,
+                            y: 10
+                        )
+                    )
                 }
+                .deviceScaled()
             }
+        }
+        .onAppear {
+            UIScrollView.appearance().bounces = false
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarTitle("")
         .navigationViewStyle(StackNavigationViewStyle())
         .ignoresSafeArea(.container, edges: .top)
+        .scrollViewBottomPadding()
     }
     
     @ViewBuilder
-    private var mediaHeaderSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Title and info section
-            VStack(alignment: .leading, spacing: 8) {
-                Text(title)
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.primary)
-                    .onLongPressGesture {
-                        UIPasteboard.general.string = title
-                        DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
-                    }
-                
-                if !synopsis.isEmpty {
-                    Text(synopsis)
-                        .font(.system(size: 16))
-                        .foregroundColor(.secondary)
-                        .lineLimit(3)
-                        .multilineTextAlignment(.leading)
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.system(size: 28, weight: .bold))
+                .foregroundColor(.primary)
+                .onLongPressGesture {
+                    UIPasteboard.general.string = title
+                    DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
                 }
+            
+            if !synopsis.isEmpty {
+                Text(synopsis)
+                    .font(.system(size: 16))
+                    .foregroundColor(.secondary)
+                    .lineLimit(showFullSynopsis ? nil : 3)
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            showFullSynopsis.toggle()
+                        }
+                    }
             }
+            
+            playAndBookmarkSection
             
             // Metadata row
             HStack(spacing: 16) {
@@ -280,30 +339,45 @@ struct MediaInfoView: View {
     }
     
     @ViewBuilder
+    private var contentSection: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            playAndBookmarkSection
+            
+            if !episodeLinks.isEmpty {
+                episodesSection
+            } else {
+                noEpisodesSection
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 20)
+        .background(
+            Rectangle()
+                .fill(colorScheme == .dark ? Color.black : Color.white)
+        )
+    }
+    
+    @ViewBuilder
     private var sourceButton: some View {
         Button(action: {
             openSafariViewController(with: href)
         }) {
-            HStack(spacing: 6) {
+            HStack(spacing: 4) {
                 Text(module.metadata.sourceName)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.primary)
+                    .lineLimit(1)
                 
                 Image(systemName: "safari")
                     .resizable()
-                    .frame(width: 16, height: 16)
+                    .frame(width: 14, height: 14)
                     .foregroundColor(.primary)
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(
-                Capsule()
-                    .fill(Color.accentColor.opacity(0.2))
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
-                    )
-            )
+            .background(Color.gray.opacity(0.2))
+            .cornerRadius(15)
+            .gradientOutline()
         }
     }
     
@@ -356,33 +430,10 @@ struct MediaInfoView: View {
                 .resizable()
                 .frame(width: 20, height: 4)
                 .foregroundColor(.primary)
-        }
-    }
-    
-    @ViewBuilder
-    private var synopsisSection: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(alignment: .center) {
-                Text("Synopsis")
-                    .font(.system(size: 18))
-                    .fontWeight(.bold)
-                
-                Spacer()
-                
-                Button(action: {
-                    showFullSynopsis.toggle()
-                }) {
-                    Text(showFullSynopsis ? "Less" : "More")
-                        .font(.system(size: 14))
-                }
-            }
-            
-            Text(synopsis)
-                .lineLimit(showFullSynopsis ? nil : 4)
-                .font(.system(size: 14))
-                .onTapGesture {
-                    showFullSynopsis.toggle()
-                }
+                .padding(12)
+                .background(Color.gray.opacity(0.2))
+                .clipShape(Circle())
+                .circularGradientOutline()
         }
     }
     
@@ -394,17 +445,17 @@ struct MediaInfoView: View {
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "play.fill")
-                        .foregroundColor(.primary)
+                        .foregroundColor(colorScheme == .dark ? .black : .white)
                     Text(startWatchingText)
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(colorScheme == .dark ? .black : .white)
                 }
                 .padding(.vertical, 12)
                 .padding(.horizontal, 20)
                 .frame(maxWidth: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 25)
-                        .fill(Color.white.opacity(0.9))
+                        .fill(Color.accentColor)
                 )
             }
             .disabled(isFetchingEpisode)
@@ -420,13 +471,8 @@ struct MediaInfoView: View {
             }) {
                 Image(systemName: libraryManager.isBookmarked(href: href, moduleName: module.metadata.sourceName) ? "bookmark.fill" : "bookmark")
                     .resizable()
-                    .frame(width: 20, height: 27)
+                    .frame(width: 24, height: 32)
                     .foregroundColor(.primary)
-                    .padding(12)
-                    .background(
-                        Circle()
-                            .fill(Color.black.opacity(0.6))
-                    )
             }
         }
     }
@@ -600,6 +646,8 @@ struct MediaInfoView: View {
                 episodeID: ep.number - 1,
                 progress: progress,
                 itemID: itemID ?? 0,
+                totalEpisodes: episodeLinks.count,
+                defaultBannerImage: getBannerImageBasedOnAppearance(),
                 module: module,
                 parentTitle: title,
                 showPosterURL: imageUrl,
@@ -666,34 +714,23 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var noEpisodesSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Episodes")
-                .font(.system(size: 18))
-                .fontWeight(.bold)
+        VStack(spacing: 16) {
+            Image(systemName: "tv.slash")
+                .font(.system(size: 48))
+                .foregroundColor(.secondary)
+            
+            Text("No Episodes Available")
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+            
+            Text("Episodes might not be available yet or there could be an issue with the source.")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
         }
-        VStack(spacing: 8) {
-            if isRefetching {
-                ProgressView()
-                    .padding()
-            } else {
-                Image(systemName: "exclamationmark.triangle")
-                    .font(.largeTitle)
-                    .foregroundColor(.secondary)
-                HStack(spacing: 2) {
-                    Text("No episodes Found:")
-                        .foregroundColor(.secondary)
-                    Button(action: {
-                        isRefetching = true
-                        fetchDetails()
-                    }) {
-                        Text("Retry")
-                            .foregroundColor(.accentColor)
-                    }
-                }
-            }
-        }
-        .padding()
-        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
     }
     
     private var startWatchingText: String {

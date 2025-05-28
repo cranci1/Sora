@@ -187,7 +187,6 @@ extension JSController {
     }
 }
 
-// If import Models does not work, add the struct directly:
 struct EpisodeLink: Identifiable {
     let id = UUID()
     let number: Int

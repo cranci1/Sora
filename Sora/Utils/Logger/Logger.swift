@@ -64,39 +64,62 @@ class Logger {
         
         let logString = "[\(dateFormatter.string(from: log.timestamp))] [\(log.type)] \(log.message)\n---\n"
         
-        if let data = logString.data(using: .utf8) {
-            if FileManager.default.fileExists(atPath: logFileURL.path) {
-                do {
-                    let attributes = try FileManager.default.attributesOfItem(atPath: logFileURL.path)
-                    let fileSize = attributes[.size] as? UInt64 ?? 0
+        guard let data = logString.data(using: .utf8) else {
+            print("Failed to encode log string to UTF-8")
+            return
+        }
+        
+        if FileManager.default.fileExists(atPath: logFileURL.path) {
+            do {
+                let attributes = try FileManager.default.attributesOfItem(atPath: logFileURL.path)
+                let fileSize = attributes[.size] as? UInt64 ?? 0
+                
+                if fileSize + UInt64(data.count) > maxFileSize {
+                    guard var content = try? String(contentsOf: logFileURL, encoding: .utf8) else { return }
                     
-                    if fileSize + UInt64(data.count) > maxFileSize {
-                        guard var content = try? String(contentsOf: logFileURL, encoding: .utf8) else { return }
-                        
-                        while (content.data(using: .utf8)?.count ?? 0) + data.count > maxFileSize {
-                            if let rangeOfFirstLine = content.range(of: "\n---\n") {
-                                content.removeSubrange(content.startIndex...rangeOfFirstLine.upperBound)
-                            } else {
-                                content = ""
-                                break
-                            }
+                    // Ensure content is not empty and contains valid UTF-8
+                    guard !content.isEmpty else {
+                        try? data.write(to: logFileURL)
+                        return
+                    }
+                    
+                    // Remove old entries until we have space
+                    while (content.data(using: .utf8)?.count ?? 0) + data.count > maxFileSize {
+                        if let rangeOfFirstLine = content.range(of: "\n---\n") {
+                            // Ensure we don't try to remove beyond the string's bounds
+                            let endIndex = min(rangeOfFirstLine.upperBound, content.endIndex)
+                            content.removeSubrange(content.startIndex..<endIndex)
+                        } else {
+                            // If we can't find a separator, clear the content
+                            content = ""
+                            break
                         }
                         
-                        content += logString
-                        try? content.data(using: .utf8)?.write(to: logFileURL)
-                    } else {
-                        if let handle = try? FileHandle(forWritingTo: logFileURL) {
-                            handle.seekToEndOfFile()
-                            handle.write(data)
-                            handle.closeFile()
+                        // Safety check to prevent infinite loops
+                        if content.isEmpty {
+                            break
                         }
                     }
-                } catch {
-                    print("Error managing log file: \(error)")
+                    
+                    // Append new log entry
+                    content += logString
+                    
+                    // Write back to file
+                    if let finalData = content.data(using: .utf8) {
+                        try? finalData.write(to: logFileURL)
+                    }
+                } else {
+                    if let handle = try? FileHandle(forWritingTo: logFileURL) {
+                        handle.seekToEndOfFile()
+                        handle.write(data)
+                        handle.closeFile()
+                    }
                 }
-            } else {
-                try? data.write(to: logFileURL)
+            } catch {
+                print("Error managing log file: \(error)")
             }
+        } else {
+            try? data.write(to: logFileURL)
         }
     }
     

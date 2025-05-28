@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0457C5972DE7712A000AFBD9 /* DeviceScaleModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C5942DE7712A000AFBD9 /* DeviceScaleModifier.swift */; };
+		0457C59D2DE78267000AFBD9 /* BookmarkGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C59A2DE78267000AFBD9 /* BookmarkGridView.swift */; };
+		0457C59E2DE78267000AFBD9 /* BookmarkLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C59B2DE78267000AFBD9 /* BookmarkLink.swift */; };
+		0457C59F2DE78267000AFBD9 /* BookmarkGridItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C5992DE78267000AFBD9 /* BookmarkGridItemView.swift */; };
+		0457C5A12DE78385000AFBD9 /* BookmarksDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C5A02DE78385000AFBD9 /* BookmarksDetailView.swift */; };
 		04CD76DB2DE20F2200733536 /* AllWatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04CD76DA2DE20F2200733536 /* AllWatching.swift */; };
 		04F08EDC2DE10BF3006B29D9 /* ProgressiveBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EDB2DE10BEC006B29D9 /* ProgressiveBlurView.swift */; };
 		04F08EDF2DE10C1D006B29D9 /* TabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EDE2DE10C1A006B29D9 /* TabBar.swift */; };
@@ -94,6 +99,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0457C5942DE7712A000AFBD9 /* DeviceScaleModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceScaleModifier.swift; sourceTree = "<group>"; };
+		0457C5992DE78267000AFBD9 /* BookmarkGridItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkGridItemView.swift; sourceTree = "<group>"; };
+		0457C59A2DE78267000AFBD9 /* BookmarkGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkGridView.swift; sourceTree = "<group>"; };
+		0457C59B2DE78267000AFBD9 /* BookmarkLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkLink.swift; sourceTree = "<group>"; };
+		0457C5A02DE78385000AFBD9 /* BookmarksDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksDetailView.swift; sourceTree = "<group>"; };
 		04CD76DA2DE20F2200733536 /* AllWatching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllWatching.swift; sourceTree = "<group>"; };
 		04F08EDB2DE10BEC006B29D9 /* ProgressiveBlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressiveBlurView.swift; sourceTree = "<group>"; };
 		04F08EDE2DE10C1A006B29D9 /* TabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBar.swift; sourceTree = "<group>"; };
@@ -194,6 +204,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0457C5962DE7712A000AFBD9 /* ViewModifiers */ = {
+			isa = PBXGroup;
+			children = (
+				0457C5942DE7712A000AFBD9 /* DeviceScaleModifier.swift */,
+			);
+			path = ViewModifiers;
+			sourceTree = "<group>";
+		};
+		0457C59C2DE78267000AFBD9 /* BookmarkComponents */ = {
+			isa = PBXGroup;
+			children = (
+				0457C5A02DE78385000AFBD9 /* BookmarksDetailView.swift */,
+				0457C5992DE78267000AFBD9 /* BookmarkGridItemView.swift */,
+				0457C59A2DE78267000AFBD9 /* BookmarkGridView.swift */,
+				0457C59B2DE78267000AFBD9 /* BookmarkLink.swift */,
+			);
+			path = BookmarkComponents;
+			sourceTree = "<group>";
+		};
 		04F08EDA2DE10BE3006B29D9 /* ProgressiveBlurView */ = {
 			isa = PBXGroup;
 			children = (
@@ -335,6 +364,7 @@
 		133D7C852D2BE2640075467E /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				0457C5962DE7712A000AFBD9 /* ViewModifiers */,
 				04F08EE02DE10C22006B29D9 /* Models */,
 				04F08EDD2DE10C05006B29D9 /* TabBar */,
 				04F08EDA2DE10BE3006B29D9 /* ProgressiveBlurView */,
@@ -395,6 +425,7 @@
 		133F55B92D33B53E00E08EEA /* LibraryView */ = {
 			isa = PBXGroup;
 			children = (
+				0457C59C2DE78267000AFBD9 /* BookmarkComponents */,
 				04CD76DA2DE20F2200733536 /* AllWatching.swift */,
 				04F08EE32DE10D6B006B29D9 /* AllBookmarks.swift */,
 				133F55BA2D33B55100E08EEA /* LibraryManager.swift */,
@@ -676,6 +707,7 @@
 				1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */,
 				13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */,
 				133D7C932D2BE2640075467E /* Modules.swift in Sources */,
+				0457C5972DE7712A000AFBD9 /* DeviceScaleModifier.swift in Sources */,
 				13DB7CC32D7D99C0004371D3 /* SubtitleSettingsManager.swift in Sources */,
 				133D7C702D2BE2500075467E /* ContentView.swift in Sources */,
 				13D99CF72D4E73C300250A86 /* ModuleAdditionSettingsView.swift in Sources */,
@@ -701,6 +733,7 @@
 				722248642DCBAA4700CABE2D /* JSController+M3U8Download.swift in Sources */,
 				133D7C942D2BE2640075467E /* JSController.swift in Sources */,
 				133D7C922D2BE2640075467E /* URLSession.swift in Sources */,
+				0457C5A12DE78385000AFBD9 /* BookmarksDetailView.swift in Sources */,
 				133D7C912D2BE2640075467E /* SettingsViewModule.swift in Sources */,
 				13E62FC22DABC5830007E259 /* Trakt-Login.swift in Sources */,
 				133F55BB2D33B55100E08EEA /* LibraryManager.swift in Sources */,
@@ -730,6 +763,9 @@
 				722248602DCBAA2C00CABE2D /* M3U8StreamExtractor.swift in Sources */,
 				13C0E5EA2D5F85EA00E7F619 /* ContinueWatchingManager.swift in Sources */,
 				13637B8A2DE0EA1100BDA2FC /* UserDefaults.swift in Sources */,
+				0457C59D2DE78267000AFBD9 /* BookmarkGridView.swift in Sources */,
+				0457C59E2DE78267000AFBD9 /* BookmarkLink.swift in Sources */,
+				0457C59F2DE78267000AFBD9 /* BookmarkGridItemView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

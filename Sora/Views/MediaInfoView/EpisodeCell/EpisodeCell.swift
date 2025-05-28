@@ -44,6 +44,10 @@ struct EpisodeCell: View {
     @State private var lastLoggedStatus: EpisodeDownloadStatus?
     @State private var downloadAnimationScale: CGFloat = 1.0
     
+    @State private var swipeOffset: CGFloat = 0
+    @State private var isShowingActions: Bool = false
+    @State private var actionButtonWidth: CGFloat = 60
+    
     @State private var retryAttempts: Int = 0
     private let maxRetryAttempts: Int = 3
     private let initialBackoffDelay: TimeInterval = 1.0
@@ -98,19 +102,111 @@ struct EpisodeCell: View {
     }
     
     var body: some View {
-        HStack {
-            episodeThumbnail
-            episodeInfo
-            Spacer()
-            CircularProgressBar(progress: currentProgress)
-                .frame(width: 40, height: 40)
-                .padding(.trailing, 4)
+        ZStack {
+            HStack {
+                Spacer()
+                actionButtons
+            }
+            .zIndex(0)
+            
+            HStack {
+                episodeThumbnail
+                episodeInfo
+                Spacer()
+                CircularProgressBar(progress: currentProgress)
+                    .frame(width: 40, height: 40)
+                    .padding(.trailing, 4)
+            }
+            .contentShape(Rectangle())
+            .padding(.horizontal, 8)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(Color(UIColor.systemBackground))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .fill(Color.gray.opacity(0.2))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: Color.accentColor.opacity(0.25), location: 0),
+                                        .init(color: Color.accentColor.opacity(0), location: 1)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 0.5
+                            )
+                    )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 15))
+            .offset(x: swipeOffset)
+            .zIndex(1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: swipeOffset)
+            .contextMenu {
+                contextMenuContent
+            }
+            .simultaneousGesture(
+                DragGesture()
+                    .onChanged { value in
+                        let horizontalTranslation = value.translation.width
+                        let verticalTranslation = value.translation.height
+                        
+                        let isDefinitelyHorizontalSwipe = abs(horizontalTranslation) > 30 && 
+                                                        abs(horizontalTranslation) > abs(verticalTranslation) * 3.0
+                        
+                        if isShowingActions || isDefinitelyHorizontalSwipe {
+                            if horizontalTranslation < 0 {
+                                let maxSwipe = calculateMaxSwipeDistance()
+                                swipeOffset = max(horizontalTranslation, -maxSwipe)
+                            } else if isShowingActions {
+                                let maxSwipe = calculateMaxSwipeDistance()
+                                swipeOffset = max(horizontalTranslation - maxSwipe, -maxSwipe)
+                            }
+                        }
+                    }
+                    .onEnded { value in
+                        let horizontalTranslation = value.translation.width
+                        let verticalTranslation = value.translation.height
+                        
+                        let wasHandlingGesture = abs(horizontalTranslation) > 30 && 
+                                               abs(horizontalTranslation) > abs(verticalTranslation) * 3.0
+                        
+                        if isShowingActions || wasHandlingGesture {
+                            let maxSwipe = calculateMaxSwipeDistance()
+                            let threshold = maxSwipe * 0.4
+                            
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                if horizontalTranslation < -threshold && !isShowingActions {
+                                    swipeOffset = -maxSwipe
+                                    isShowingActions = true
+                                } else if horizontalTranslation > threshold && isShowingActions {
+                                    swipeOffset = 0
+                                    isShowingActions = false
+                                } else {
+                                    swipeOffset = isShowingActions ? -maxSwipe : 0
+                                }
+                            }
+                        }
+                    }
+            )
         }
-        .contentShape(Rectangle())
-        .background(Color.clear)
-        .cornerRadius(8)
-        .contextMenu {
-            contextMenuContent
+        .onTapGesture {
+            if isShowingActions {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    swipeOffset = 0
+                    isShowingActions = false
+                }
+            } else if isMultiSelectMode {
+                onSelectionChanged?(!isSelected)
+            } else {
+                let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
+                onTap(imageUrl)
+            }
         }
         .onAppear {
             updateProgress()
@@ -146,22 +242,6 @@ struct EpisodeCell: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadCompleted"))) { _ in
             updateDownloadStatus()
-        }
-        .onTapGesture {
-            if isMultiSelectMode {
-                onSelectionChanged?(!isSelected)
-            } else {
-                let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
-                onTap(imageUrl)
-            }
-        }
-        .alert("Download Episode", isPresented: $showDownloadConfirmation) {
-            Button("Cancel", role: .cancel) {}
-            Button("Download") {
-                downloadEpisode()
-            }
-        } message: {
-            Text("Do you want to download Episode \(episodeID + 1)\(episodeTitle.isEmpty ? "" : ": \(episodeTitle)")?")
         }
     }
     
@@ -672,6 +752,104 @@ struct EpisodeCell: View {
                 self.isLoading = false
                 self.retryAttempts = 0
             }
+        }
+    }
+    
+    private func calculateMaxSwipeDistance() -> CGFloat {
+        var buttonCount = 1
+        
+        if progress <= 0.9 { buttonCount += 1 }
+        if progress != 0 { buttonCount += 1 }
+        if episodeIndex > 0 { buttonCount += 1 }
+        
+        var swipeDistance = CGFloat(buttonCount) * actionButtonWidth + 16
+        
+        if buttonCount == 3 {
+            swipeDistance += 12
+        }
+        
+        return swipeDistance
+    }
+    
+    private var actionButtons: some View {
+        HStack(spacing: 8) {
+            Button(action: {
+                closeActionsAndPerform {
+                    downloadEpisode()
+                }
+            }) {
+                VStack(spacing: 2) {
+                    Image(systemName: "arrow.down.circle")
+                        .font(.title3)
+                    Text("Download")
+                        .font(.caption2)
+                }
+            }
+            .foregroundColor(.blue)
+            .frame(width: actionButtonWidth)
+            
+            if progress <= 0.9 {
+                Button(action: {
+                    closeActionsAndPerform {
+                        markAsWatched()
+                    }
+                }) {
+                    VStack(spacing: 2) {
+                        Image(systemName: "checkmark.circle")
+                            .font(.title3)
+                        Text("Watched")
+                            .font(.caption2)
+                    }
+                }
+                .foregroundColor(.green)
+                .frame(width: actionButtonWidth)
+            }
+            
+            if progress != 0 {
+                Button(action: {
+                    closeActionsAndPerform {
+                        resetProgress()
+                    }
+                }) {
+                    VStack(spacing: 2) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.title3)
+                        Text("Reset")
+                            .font(.caption2)
+                    }
+                }
+                .foregroundColor(.orange)
+                .frame(width: actionButtonWidth)
+            }
+            
+            if episodeIndex > 0 {
+                Button(action: {
+                    closeActionsAndPerform {
+                        onMarkAllPrevious()
+                    }
+                }) {
+                    VStack(spacing: 2) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title3)
+                        Text("All Prev")
+                            .font(.caption2)
+                    }
+                }
+                .foregroundColor(.purple)
+                .frame(width: actionButtonWidth)
+            }
+        }
+        .padding(.horizontal, 8)
+    }
+    
+    private func closeActionsAndPerform(action: @escaping () -> Void) {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            swipeOffset = 0
+            isShowingActions = false
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            action()
         }
     }
 }

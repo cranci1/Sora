@@ -220,6 +220,7 @@ struct SettingsView: View {
                 .scrollViewBottomPadding()
                 .padding(.bottom, 20)
             }
+            .deviceScaled()
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .navigationBarHidden(true)

@@ -68,6 +68,7 @@ struct DownloadView: View {
                 }
             }
         }
+        .deviceScaled()
     }
     
     private var activeDownloadsView: some View {

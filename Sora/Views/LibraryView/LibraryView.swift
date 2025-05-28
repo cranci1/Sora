@@ -164,6 +164,7 @@ struct LibraryView: View {
                         .padding(.bottom, 20)
                 }
                 .scrollViewBottomPadding()
+                .deviceScaled()
                 .onAppear {
                     fetchContinueWatching()
                 }

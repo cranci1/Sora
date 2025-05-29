@@ -16,6 +16,7 @@ struct DownloadView: View {
     @State private var sortOption: SortOption = .newest
     @State private var showDeleteAlert = false
     @State private var assetToDelete: DownloadedAsset?
+    @State private var isSearchActive = false
     
     enum SortOption: String, CaseIterable, Identifiable {
         case newest = "Newest"
@@ -36,20 +37,14 @@ struct DownloadView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Enhanced Tab Picker
-                VStack(spacing: 0) {
-                    Picker("Download Status", selection: $selectedTab) {
-                        Label("Active", systemImage: "arrow.down.circle").tag(0)
-                        Label("Downloaded", systemImage: "checkmark.circle").tag(1)
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-                    
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 0.5)
-                }
+                // Custom Header
+                CustomDownloadHeader(
+                    selectedTab: $selectedTab,
+                    searchText: $searchText,
+                    isSearchActive: $isSearchActive,
+                    sortOption: $sortOption,
+                    showSortMenu: selectedTab == 1 && !jsController.savedAssets.isEmpty
+                )
                 
                 if selectedTab == 0 {
                     activeDownloadsView
@@ -57,34 +52,7 @@ struct DownloadView: View {
                     downloadedContentView
                 }
             }
-            .navigationTitle("Downloads")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                if selectedTab == 1 && !jsController.savedAssets.isEmpty {
-                    Menu {
-                        ForEach(SortOption.allCases) { option in
-                            Button(action: { sortOption = option }) {
-                                HStack {
-                                    Image(systemName: option.systemImage)
-                                    Text(option.rawValue)
-                                    if sortOption == option {
-                                        Spacer()
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "arrow.up.arrow.down")
-                            Text("Sort")
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.accentColor)
-                    }
-                }
-            }
-            .searchable(text: $searchText, prompt: "Search downloads")
+            .navigationBarHidden(true)
             .alert("Delete Download", isPresented: $showDeleteAlert) {
                 Button("Delete", role: .destructive) {
                     if let asset = assetToDelete {
@@ -306,7 +274,231 @@ struct DownloadView: View {
     }
 }
 
-// MARK: - Supporting Views
+struct CustomDownloadHeader: View {
+    @Binding var selectedTab: Int
+    @Binding var searchText: String
+    @Binding var isSearchActive: Bool
+    @Binding var sortOption: DownloadView.SortOption
+    let showSortMenu: Bool
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Downloads")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
+                HStack(spacing: 16) {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isSearchActive.toggle()
+                        }
+                        if !isSearchActive {
+                            searchText = ""
+                        }
+                    }) {
+                        Image(systemName: isSearchActive ? "xmark.circle.fill" : "magnifyingglass")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(.accentColor)
+                            .padding(6)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            )
+                            .overlay(
+                                Circle()
+                                    .stroke(
+                                        LinearGradient(
+                                            gradient: Gradient(stops: [
+                                                .init(color: Color.accentColor.opacity(0.25), location: 0),
+                                                .init(color: Color.accentColor.opacity(0), location: 1)
+                                            ]),
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        ),
+                                        lineWidth: 0.5
+                                    )
+                                    .frame(width: 32, height: 32)
+                            )
+                    }
+
+                    if showSortMenu {
+                        Menu {
+                            ForEach(DownloadView.SortOption.allCases) { option in
+                                Button(action: { sortOption = option }) {
+                                    HStack {
+                                        Image(systemName: option.systemImage)
+                                        Text(option.rawValue)
+                                        if sortOption == option {
+                                            Spacer()
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "arrow.up.arrow.down")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24)
+                                .foregroundColor(.accentColor)
+                                .padding(6)
+                                .background(
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.2))
+                                        .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                                )
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(stops: [
+                                                    .init(color: Color.accentColor.opacity(0.25), location: 0),
+                                                    .init(color: Color.accentColor.opacity(0), location: 1)
+                                                ]),
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            ),
+                                            lineWidth: 0.5
+                                        )
+                                )
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            .padding(.bottom, isSearchActive ? 16 : 20)
+            
+            if isSearchActive {
+                HStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                            .font(.body)
+                        
+                        TextField("Search downloads", text: $searchText)
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .foregroundColor(.primary)
+                        
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary)
+                                    .font(.body)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(
+                                        LinearGradient(
+                                            gradient: Gradient(stops: [
+                                                .init(color: Color.accentColor.opacity(0.25), location: 0),
+                                                .init(color: Color.accentColor.opacity(0), location: 1)
+                                            ]),
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        ),
+                                        lineWidth: 1.5
+                                    )
+                    )
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .top).combined(with: .opacity),
+                    removal: .move(edge: .top).combined(with: .opacity)
+                ))
+            }
+            
+            VStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    TabButton(
+                        title: "Active",
+                        icon: "arrow.down.circle",
+                        isSelected: selectedTab == 0,
+                        action: { selectedTab = 0 }
+                    )
+                    
+                    TabButton(
+                        title: "Downloaded",
+                        icon: "checkmark.circle",
+                        isSelected: selectedTab == 1,
+                        action: { selectedTab = 1 }
+                    )
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+                
+                Rectangle()
+                    .fill(Color.gray.opacity(0.2))
+                    .frame(height: 0.5)
+            }
+        }
+    }
+}
+
+struct TabButton: View {
+    let title: String
+    let icon: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.body)
+                    .foregroundColor(isSelected ? .accentColor : .secondary)
+                Text(title)
+                    .font(.body)
+                    .fontWeight(isSelected ? .semibold : .regular)
+                    .foregroundColor(isSelected ? .accentColor : .secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        isSelected
+                            ? AnyShapeStyle(
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: Color.accentColor.opacity(0.25), location: 0),
+                                        .init(color: Color.accentColor.opacity(0), location: 1)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            : AnyShapeStyle(Color.clear),
+                        lineWidth: 1.5
+                    )
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PlainButtonStyle())
+        .animation(.easeInOut(duration: 0.2), value: isSelected)
+    }
+}
 
 struct SimpleDownloadGroup {
     let title: String
@@ -366,48 +558,51 @@ struct DownloadSummaryCard: View {
     let totalShows: Int
     let totalEpisodes: Int
     let totalSize: Int64
-    
+
     var body: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Image(systemName: "chart.bar.fill")
-                    .foregroundColor(.accentColor)
-                Text("Download Summary".uppercased())
-                    .font(.footnote)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            
+        HStack {
+            Image(systemName: "chart.bar.fill")
+                .foregroundColor(.accentColor)
+            Text("Download Summary".uppercased())
+                .font(.footnote)
+                .fontWeight(.medium)
+                .foregroundColor(.secondary)
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+
+        VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 20) {
                 SummaryItem(
                     title: "Shows",
                     value: "\(totalShows)",
                     icon: "tv.fill"
                 )
-                
-                Divider()
-                    .frame(height: 40)
-                
+
+                Divider().frame(height: 40)
+
                 SummaryItem(
                     title: "Episodes",
                     value: "\(totalEpisodes)",
                     icon: "play.rectangle.fill"
                 )
-                
-                Divider()
-                    .frame(height: 40)
-                
+
+                Divider().frame(height: 40)
+
+                let formattedSize = formatFileSize(totalSize)
+                let components = formattedSize.split(separator: " ")
+                let sizeValue = components.first.map(String.init) ?? formattedSize
+                let sizeUnit = components.dropFirst().first.map(String.init) ?? ""
+
                 SummaryItem(
-                    title: "Size",
-                    value: formatFileSize(totalSize),
+                    title: "Size (\(sizeUnit))",
+                    value: sizeValue,
                     icon: "internaldrive.fill"
                 )
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 4)
         }
+        .padding(20)
+        .frame(maxWidth: .infinity)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(
@@ -426,7 +621,7 @@ struct DownloadSummaryCard: View {
         )
         .padding(.horizontal, 20)
     }
-    
+
     private func formatFileSize(_ size: Int64) -> String {
         let formatter = ByteCountFormatter()
         formatter.allowedUnits = [.useKB, .useMB, .useGB]
@@ -434,6 +629,28 @@ struct DownloadSummaryCard: View {
         return formatter.string(fromByteCount: size)
     }
 }
+
+    
+    private func formatFileSize(_ size: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useKB, .useMB, .useGB]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: size)
+    }
+    
+    private func formatFileSizeWithUnit(_ size: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useKB, .useMB, .useGB]
+        formatter.countStyle = .file
+
+        let formattedString = formatter.string(fromByteCount: size)
+        let components = formattedString.components(separatedBy: " ")
+        if components.count == 2 {
+            return "Size (\(components[1]))"
+        }
+        return "Size"
+    }
+
 
 struct SummaryItem: View {
     let title: String
@@ -445,12 +662,14 @@ struct SummaryItem: View {
             Image(systemName: icon)
                 .font(.title2)
                 .foregroundColor(.accentColor)
-            
-            Text(value)
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
-            
+
+            if !value.isEmpty {
+                Text(value)
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+            }
+
             Text(title)
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -1050,6 +1269,32 @@ struct EnhancedEpisodeRow: View {
         formatter.allowedUnits = [.useKB, .useMB, .useGB]
         formatter.countStyle = .file
         return formatter.string(fromByteCount: size)
+    }
+}
+
+
+struct SearchableStyleModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .searchable(text: .constant(""), prompt: "")
+            .background(
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(Color.gray.opacity(0.2))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: Color.accentColor.opacity(0.25), location: 0),
+                                        .init(color: Color.accentColor.opacity(0), location: 1)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 0.5
+                            )
+                    )
+            )
     }
 }
 

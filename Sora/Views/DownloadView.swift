@@ -974,8 +974,8 @@ struct EnhancedShowEpisodesView: View {
     @State private var assetToDelete: DownloadedAsset?
     @EnvironmentObject var jsController: JSController
     
-    @State private var episodeSortOption: EpisodeSortOption = .downloadDate
-    
+    @State private var episodeSortOption: EpisodeSortOption = .episodeOrder
+
     enum EpisodeSortOption: String, CaseIterable, Identifiable {
         case downloadDate = "Download Date"
         case episodeOrder = "Episode Order"
@@ -1297,4 +1297,3 @@ struct SearchableStyleModifier: ViewModifier {
             )
     }
 }
-

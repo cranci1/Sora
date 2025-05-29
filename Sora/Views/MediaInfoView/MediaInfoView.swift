@@ -300,21 +300,28 @@ struct MediaInfoView: View {
             Text(title)
                 .font(.system(size: 28, weight: .bold))
                 .foregroundColor(.primary)
+                .lineLimit(3)
                 .onLongPressGesture {
                     UIPasteboard.general.string = title
                     DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
                 }
             
             if !synopsis.isEmpty {
-                Text(synopsis)
-                    .font(.system(size: 16))
-                    .foregroundColor(.secondary)
-                    .lineLimit(showFullSynopsis ? nil : 3)
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            showFullSynopsis.toggle()
-                        }
+                HStack(alignment: .bottom) {
+                    Text(synopsis)
+                        .font(.system(size: 16))
+                        .foregroundColor(.secondary)
+                        .lineLimit(showFullSynopsis ? nil : 3)
+                    
+                    Text(showFullSynopsis ? "LESS" : "MORE")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.accentColor)
+                }
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showFullSynopsis.toggle()
                     }
+                }
             }
             
             playAndBookmarkSection
@@ -337,6 +344,88 @@ struct MediaInfoView: View {
                 Spacer()
                 
                 menuButton
+            }
+            
+            // Single episode action buttons
+            if episodeLinks.count == 1 {
+                VStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        Button(action: {
+                            if let ep = episodeLinks.first {
+                                let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+                                let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+                                let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
+                                
+                                if progress <= 0.9 {
+                                    UserDefaults.standard.set(99999999.0, forKey: "lastPlayedTime_\(ep.href)")
+                                    UserDefaults.standard.set(99999999.0, forKey: "totalTime_\(ep.href)")
+                                    DropManager.shared.showDrop(title: "Marked as Watched", subtitle: "", duration: 1.0, icon: UIImage(systemName: "checkmark.circle.fill"))
+                                }
+                            }
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "checkmark.circle")
+                                    .foregroundColor(.primary)
+                                Text("Mark as Watched")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.primary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(15)
+                            .gradientOutline()
+                        }
+                        
+                        Button(action: {
+                            if let ep = episodeLinks.first {
+                                let downloadStatus = jsController.isEpisodeDownloadedOrInProgress(
+                                    showTitle: title,
+                                    episodeNumber: ep.number,
+                                    season: 1
+                                )
+                                
+                                if downloadStatus == .notDownloaded {
+                                    selectedEpisodeNumber = ep.number
+                                    fetchStream(href: ep.href)
+                                    DropManager.shared.showDrop(title: "Starting Download", subtitle: "", duration: 1.0, icon: UIImage(systemName: "arrow.down.circle"))
+                                } else {
+                                    DropManager.shared.showDrop(title: "Already Downloaded", subtitle: "", duration: 1.0, icon: UIImage(systemName: "checkmark.circle"))
+                                }
+                            }
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.down.circle")
+                                    .foregroundColor(.primary)
+                                Text("Download")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.primary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(15)
+                            .gradientOutline()
+                        }
+                    }
+                    Text("Why am I not seeing any episodes?")
+                        .font(.caption)
+                        .bold()
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 4)
+                        .padding(.leading, 2.8)
+                    Text("The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases.")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 4)
+                }
             }
         }
     }
@@ -431,7 +520,7 @@ struct MediaInfoView: View {
         } label: {
             Image(systemName: "ellipsis")
                 .resizable()
-                .frame(width: 20, height: 4)
+                .frame(width: 16, height: 4)
                 .foregroundColor(.primary)
                 .padding(12)
                 .background(Color.gray.opacity(0.2))
@@ -455,11 +544,11 @@ struct MediaInfoView: View {
                 }
                 .padding(.vertical, 12)
                 .padding(.horizontal, 20)
-                .frame(maxWidth: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 25)
                         .fill(Color.accentColor)
                 )
+                .fixedSize(horizontal: true, vertical: false)
             }
             .disabled(isFetchingEpisode)
             
@@ -474,34 +563,43 @@ struct MediaInfoView: View {
             }) {
                 Image(systemName: libraryManager.isBookmarked(href: href, moduleName: module.metadata.sourceName) ? "bookmark.fill" : "bookmark")
                     .resizable()
-                    .frame(width: 24, height: 32)
+                    .frame(width: 16, height: 22)
                     .foregroundColor(.primary)
+                    .padding(12)
+                    .background(Color.gray.opacity(0.2))
+                    .clipShape(Circle())
+                    .circularGradientOutline()
             }
         }
     }
     
     @ViewBuilder
     private var episodesSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Episodes")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundColor(.primary)
-                
-                Spacer()
-                
-                Group {
-                    if !isGroupedBySeasons && episodeLinks.count <= episodeChunkSize {
-                        Text("All episodes already shown")
-                            .font(.system(size: 14))
-                            .foregroundColor(.secondary)
-                    } else {
-                        episodeNavigationSection
+        if episodeLinks.count == 1 {
+            // Don't show episodes list for single-episode media
+            EmptyView()
+        } else {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    Text("Episodes")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundColor(.primary)
+                    
+                    Spacer()
+                    
+                    Group {
+                        if !isGroupedBySeasons && episodeLinks.count <= episodeChunkSize {
+                            Text("All episodes already shown")
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                        } else {
+                            episodeNavigationSection
+                        }
                     }
                 }
+                
+                episodeListSection
             }
-            
-            episodeListSection
         }
     }
     
@@ -740,6 +838,13 @@ struct MediaInfoView: View {
         let indices = finishedAndUnfinishedIndices()
         let finished = indices.finished
         let unfinished = indices.unfinished
+        
+        if episodeLinks.count == 1 {
+            if let unfinishedIndex = unfinished {
+                return "Continue Watching"
+            }
+            return "Start Watching"
+        }
         
         if let finishedIndex = finished, finishedIndex < episodeLinks.count - 1 {
             let nextEp = episodeLinks[finishedIndex + 1]

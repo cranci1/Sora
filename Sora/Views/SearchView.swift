@@ -287,7 +287,7 @@ struct SearchBar: View {
                 .padding(.horizontal, 25)
                 .background(Color(.systemGray6))
                 .cornerRadius(8)
-                .onChange(of: text){newValue in
+                .onChange(of: text) { newValue in
                     debounceTimer?.invalidate()
                     if !newValue.isEmpty {
                         debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in

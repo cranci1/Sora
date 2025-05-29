@@ -1,8 +1,8 @@
 //
-//  View.swift
+//  ScrollViewBottomPadding.swift
 //  Sora
 //
-//  Created by Francesco on 09/02/25.
+//  Created by paul on 29/05/25.
 //
 
 import SwiftUI

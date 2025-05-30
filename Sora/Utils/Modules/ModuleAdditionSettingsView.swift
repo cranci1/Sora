@@ -11,6 +11,7 @@ import Kingfisher
 struct ModuleAdditionSettingsView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var moduleManager: ModuleManager
+    @Environment(\.colorScheme) var colorScheme
     
     @State private var moduleMetadata: ModuleMetadata?
     @State private var isLoading = false
@@ -115,13 +116,14 @@ struct ModuleAdditionSettingsView: View {
                         Text("Add Module")
                     }
                     .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
+                    .foregroundColor(colorScheme == .dark ? .black : .white)
                     .padding()
+                    .frame(maxWidth: .infinity)
                     .background(
                         RoundedRectangle(cornerRadius: 15)
-                            .fill(Color.accentColor)
+                            .foregroundColor(colorScheme == .dark ? .white : .black)
                     )
+
                     .padding(.horizontal)
                 }
                 .disabled(isLoading)
@@ -131,7 +133,7 @@ struct ModuleAdditionSettingsView: View {
                     self.presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Cancel")
-                        .foregroundColor((Color.accentColor))
+                        .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                         .padding(.top, 10)
                 }
             }

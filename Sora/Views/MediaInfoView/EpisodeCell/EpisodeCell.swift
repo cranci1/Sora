@@ -156,8 +156,8 @@ struct EpisodeCell: View {
                         let horizontalTranslation = value.translation.width
                         let verticalTranslation = value.translation.height
                         
-                        let isDefinitelyHorizontalSwipe = abs(horizontalTranslation) > 30 && 
-                                                        abs(horizontalTranslation) > abs(verticalTranslation) * 3.0
+                        let isDefinitelyHorizontalSwipe = abs(horizontalTranslation) > 10 && 
+                                                        abs(horizontalTranslation) > abs(verticalTranslation) * 1.5
                         
                         if isShowingActions || isDefinitelyHorizontalSwipe {
                             if horizontalTranslation < 0 {
@@ -173,12 +173,12 @@ struct EpisodeCell: View {
                         let horizontalTranslation = value.translation.width
                         let verticalTranslation = value.translation.height
                         
-                        let wasHandlingGesture = abs(horizontalTranslation) > 30 && 
-                                               abs(horizontalTranslation) > abs(verticalTranslation) * 3.0
+                        let wasHandlingGesture = abs(horizontalTranslation) > 10 && 
+                                               abs(horizontalTranslation) > abs(verticalTranslation) * 1.5
                         
                         if isShowingActions || wasHandlingGesture {
                             let maxSwipe = calculateMaxSwipeDistance()
-                            let threshold = maxSwipe * 0.4
+                            let threshold = maxSwipe * 0.2
                             
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 if horizontalTranslation < -threshold && !isShowingActions {

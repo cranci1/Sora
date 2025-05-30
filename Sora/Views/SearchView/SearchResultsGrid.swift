@@ -26,11 +26,14 @@ struct SearchResultsGrid: View {
                             .clipped()
                         
                         VStack {
-                            Spacer()
-                            Text(item.title)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .lineLimit(2)
-                                .foregroundColor(.white)
+                                Spacer()
+                                HStack {
+                                    Text(item.title)
+                                        .lineLimit(2)
+                                        .foregroundColor(.white)
+                                        .multilineTextAlignment(.leading)
+                                    Spacer()
+                                }
                                 .padding(12)
                                 .background(
                                     LinearGradient(
@@ -43,8 +46,8 @@ struct SearchResultsGrid: View {
                                     )
                                     .shadow(color: .black, radius: 4, x: 0, y: 2)
                                 )
-                        }
-                        .frame(width: 162)
+                            }
+                            .frame(width: 162)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .padding(4)

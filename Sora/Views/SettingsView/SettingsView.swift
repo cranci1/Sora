@@ -43,9 +43,10 @@ fileprivate struct SettingsNavigationRow: View {
         .padding(.vertical, 12)
     }
 }
-
 struct SettingsView: View {
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "ALPHA"
+    @Environment(\.colorScheme) var colorScheme
+    @StateObject var settings = Settings()
     
     var body: some View {
         NavigationView {
@@ -224,6 +225,20 @@ struct SettingsView: View {
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .navigationBarHidden(true)
+        .onChange(of: colorScheme) { newScheme in
+            // Always update accent color when system color scheme changes
+            if settings.selectedAppearance == .system {
+                settings.updateAccentColor(currentColorScheme: newScheme)
+            }
+        }
+        .onChange(of: settings.selectedAppearance) { _ in
+            // Update accent color when appearance setting changes
+            settings.updateAccentColor(currentColorScheme: colorScheme)
+        }
+        .onAppear {
+            // Ensure accent color is correct when view appears
+            settings.updateAccentColor(currentColorScheme: colorScheme)
+        }
     }
 }
 
@@ -236,21 +251,17 @@ enum Appearance: String, CaseIterable, Identifiable {
 class Settings: ObservableObject {
     @Published var accentColor: Color {
         didSet {
-            // Remove saving accent color since it's now hardcoded
         }
     }
     @Published var selectedAppearance: Appearance {
         didSet {
             UserDefaults.standard.set(selectedAppearance.rawValue, forKey: "selectedAppearance")
             updateAppearance()
-            // Update accent color when appearance changes
-            updateAccentColor()
         }
     }
     
     init() {
-        // Initialize with default accent color
-        self.accentColor = .white
+        self.accentColor = .primary
         if let appearanceRawValue = UserDefaults.standard.string(forKey: "selectedAppearance"),
            let appearance = Appearance(rawValue: appearanceRawValue) {
             self.selectedAppearance = appearance
@@ -258,17 +269,17 @@ class Settings: ObservableObject {
             self.selectedAppearance = .system
         }
         updateAppearance()
-        updateAccentColor()
     }
     
-    private func updateAccentColor() {
+    func updateAccentColor(currentColorScheme: ColorScheme? = nil) {
         switch selectedAppearance {
         case .system:
-            // Use system appearance to determine color
-            if UITraitCollection.current.userInterfaceStyle == .dark {
-                accentColor = .white
+            if let scheme = currentColorScheme {
+                accentColor = scheme == .dark ? .white : .black
             } else {
-                accentColor = .black
+                guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                      let window = windowScene.windows.first else { return }
+                accentColor = window.traitCollection.userInterfaceStyle == .dark ? .white : .black
             }
         case .light:
             accentColor = .black
@@ -287,7 +298,5 @@ class Settings: ObservableObject {
         case .dark:
             windowScene.windows.first?.overrideUserInterfaceStyle = .dark
         }
-        // Update accent color after appearance changes
-        updateAccentColor()
     }
 }

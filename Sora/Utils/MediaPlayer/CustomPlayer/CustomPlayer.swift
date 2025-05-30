@@ -1051,7 +1051,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     func setupSkipButtons() {
         let introConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let introImage = UIImage(systemName: "forward.frame", withConfiguration: introConfig)
-        skipIntroButton = UIButton(type: .system)
+        skipIntroButton = GradientOverlayButton(type: .system)
         skipIntroButton.setTitle(" Skip Intro", for: .normal)
         skipIntroButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skipIntroButton.setImage(introImage, for: .normal)
@@ -1083,7 +1083,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         let outroConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let outroImage = UIImage(systemName: "forward.frame", withConfiguration: outroConfig)
-        skipOutroButton = UIButton(type: .system)
+        skipOutroButton = GradientOverlayButton(type: .system)
         skipOutroButton.setTitle(" Skip Outro", for: .normal)
         skipOutroButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skipOutroButton.setImage(outroImage, for: .normal)
@@ -1283,7 +1283,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let image = UIImage(systemName: "goforward", withConfiguration: config)
         
-        skip85Button = UIButton(type: .system)
+        skip85Button = GradientOverlayButton(type: .system)
         skip85Button.setTitle(" Skip 85s", for: .normal)
         skip85Button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skip85Button.setImage(image, for: .normal)
@@ -2453,7 +2453,45 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
 }
 
+class GradientOverlayButton: UIButton {
+    private let gradientLayer = CAGradientLayer()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupGradient()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupGradient()
+    }
+    
+    private func setupGradient() {
+        gradientLayer.colors = [
+            UIColor.white.withAlphaComponent(0.25).cgColor,
+            UIColor.white.withAlphaComponent(0).cgColor
+        ]
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1)
+        layer.addSublayer(gradientLayer)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        gradientLayer.frame = bounds
+        
+        let path = UIBezierPath(roundedRect: bounds.insetBy(dx: 0.25, dy: 0.25), cornerRadius: bounds.height / 2)
+        let maskLayer = CAShapeLayer()
+        maskLayer.path = path.cgPath
+        maskLayer.fillColor = nil
+        maskLayer.strokeColor = UIColor.white.cgColor
+        maskLayer.lineWidth = 0.5
+        gradientLayer.mask = maskLayer
+    }
+}
+
 // yes? Like the plural of the famous american rapper ye? -IBHRAD
 // low taper fade the meme is massive -cranci
 // cranci still doesnt have a job -seiike
 // guys watch Clannad already - ibro
+// May the Divine Providence bestow its infinite mercy upon your soul, and may eternal grace find you beyond the shadows of this mortal realm. - paul, 15/11/2005 - 13/05/2023

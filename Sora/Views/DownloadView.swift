@@ -37,7 +37,8 @@ struct DownloadView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Custom Header
+                Spacer()
+                    .frame(height: 20)
                 CustomDownloadHeader(
                     selectedTab: $selectedTab,
                     searchText: $searchText,
@@ -374,8 +375,8 @@ struct CustomDownloadHeader: View {
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.top, 8)
-            .padding(.bottom, isSearchActive ? 16 : 20)
+            .padding(.top, 2)
+            .padding(.bottom, isSearchActive ? 12 : 8)
             
             if isSearchActive {
                 HStack(spacing: 12) {

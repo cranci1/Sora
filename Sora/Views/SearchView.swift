@@ -8,7 +8,6 @@
 import SwiftUI
 import Kingfisher
 
-
 struct ModuleButtonModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
@@ -37,6 +36,7 @@ struct SearchView: View {
     @State private var isModuleSelectorPresented = false
     @State private var searchHistory: [String] = []
     @State private var isSearchFieldFocused = false
+    @State private var saveDebounceTimer: Timer?
     
     private let columns = [GridItem(.adaptive(minimum: 150))]
     
@@ -138,15 +138,28 @@ struct SearchView: View {
         }
         .onChange(of: searchQuery) { newValue in
             if newValue.isEmpty {
+                saveDebounceTimer?.invalidate()
                 searchItems = []
                 hasNoResults = false
                 isSearching = false
             } else {
                 performSearch()
+                
+                saveDebounceTimer?.invalidate()
+                saveDebounceTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { _ in
+                    self.addToSearchHistory(newValue)}
             }
         }
     }
     
+    private func lockOrientation() {
+        OrientationManager.shared.lockOrientation()
+    }
+
+    private func unlockOrientation(after delay: TimeInterval = 1.0) {
+        OrientationManager.shared.unlockOrientation(after: delay)
+    }
+
     private func performSearch() {
         Logger.shared.log("Searching for: \(searchQuery)", type: "General")
         guard !searchQuery.isEmpty, let module = selectedModule else {
@@ -156,11 +169,12 @@ struct SearchView: View {
         }
         
         isSearchFieldFocused = false
-        addToSearchHistory(searchQuery)
         
         isSearching = true
         hasNoResults = false
         searchItems = []
+        
+        lockOrientation()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             Task {
@@ -169,21 +183,30 @@ struct SearchView: View {
                     jsController.loadScript(jsContent)
                     if module.metadata.asyncJS == true {
                         jsController.fetchJsSearchResults(keyword: searchQuery, module: module) { items in
-                            searchItems = items
-                            hasNoResults = items.isEmpty
-                            isSearching = false
+                            DispatchQueue.main.async {
+                                searchItems = items
+                                hasNoResults = items.isEmpty
+                                isSearching = false
+                                unlockOrientation(after: 3.0)
+                            }
                         }
                     } else {
                         jsController.fetchSearchResults(keyword: searchQuery, module: module) { items in
-                            searchItems = items
-                            hasNoResults = items.isEmpty
-                            isSearching = false
+                            DispatchQueue.main.async {
+                                searchItems = items
+                                hasNoResults = items.isEmpty
+                                isSearching = false
+                                unlockOrientation(after: 3.0)
+                            }
                         }
                     }
                 } catch {
                     Logger.shared.log("Error loading module: \(error)", type: "Error")
-                    isSearching = false
-                    hasNoResults = true
+                    DispatchQueue.main.async {
+                        isSearching = false
+                        hasNoResults = true
+                        unlockOrientation(after: 3.0)
+                    }
                 }
             }
         }
@@ -290,7 +313,7 @@ struct SearchBar: View {
                 .onChange(of: text) { newValue in
                     debounceTimer?.invalidate()
                     if !newValue.isEmpty {
-                        debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
+                        debounceTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
                             onSearchButtonClicked()
                         }
                     }
@@ -316,4 +339,3 @@ struct SearchBar: View {
         }
     }
 }
-

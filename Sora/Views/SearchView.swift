@@ -113,6 +113,11 @@ struct SearchView: View {
                     )
                 }
                 .scrollViewBottomPadding()
+                .simultaneousGesture(
+                    DragGesture().onChanged { _ in
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                )
             }
             .navigationBarHidden(true)
         }

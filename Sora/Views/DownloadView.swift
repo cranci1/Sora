@@ -48,10 +48,13 @@ struct DownloadView: View {
                 
                 if selectedTab == 0 {
                     activeDownloadsView
+                        .transition(.opacity)
                 } else {
                     downloadedContentView
+                        .transition(.opacity)
                 }
             }
+            .animation(.easeInOut(duration: 0.2), value: selectedTab)
             .navigationBarHidden(true)
             .alert("Delete Download", isPresented: $showDeleteAlert) {
                 Button("Delete", role: .destructive) {
@@ -106,14 +109,12 @@ struct DownloadView: View {
             } else {
                 ScrollView {
                     VStack(spacing: 20) {
-                        // Summary Card
                         DownloadSummaryCard(
                             totalShows: groupedAssets.count,
                             totalEpisodes: filteredAndSortedAssets.count,
                             totalSize: filteredAndSortedAssets.reduce(0) { $0 + $1.fileSize }
                         )
                         
-                        // Downloads Section
                         DownloadedSection(
                             groups: groupedAssets,
                             onDelete: { asset in

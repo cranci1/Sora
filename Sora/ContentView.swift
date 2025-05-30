@@ -16,7 +16,7 @@ struct ContentView_Previews: PreviewProvider {
 }
 
 struct ContentView: View {
-    @StateObject private var tabBarController = TabBarController()  // Add this line
+    @StateObject private var tabBarController = TabBarController()
     @State var selectedTab: Int = 0
     @State var lastTab: Int = 0
     @State private var searchQuery: String = ""

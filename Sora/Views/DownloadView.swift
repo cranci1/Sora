@@ -572,8 +572,9 @@ struct DownloadSummaryCard: View {
             Spacer()
         }
         .padding(.horizontal, 20)
+        .padding(.bottom, -6)
 
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 20) {
                 SummaryItem(
                     title: "Shows",
@@ -581,7 +582,7 @@ struct DownloadSummaryCard: View {
                     icon: "tv.fill"
                 )
 
-                Divider().frame(height: 40)
+                Divider().frame(height: 32)
 
                 SummaryItem(
                     title: "Episodes",
@@ -589,7 +590,7 @@ struct DownloadSummaryCard: View {
                     icon: "play.rectangle.fill"
                 )
 
-                Divider().frame(height: 40)
+                Divider().frame(height: 32)
 
                 let formattedSize = formatFileSize(totalSize)
                 let components = formattedSize.split(separator: " ")
@@ -603,8 +604,8 @@ struct DownloadSummaryCard: View {
                 )
             }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(
@@ -1273,7 +1274,6 @@ struct EnhancedEpisodeRow: View {
         return formatter.string(fromByteCount: size)
     }
 }
-
 
 struct SearchableStyleModifier: ViewModifier {
     func body(content: Content) -> some View {

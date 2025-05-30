@@ -56,14 +56,11 @@ struct TabBar: View {
     
     @Namespace private var animation
     
-    // MARK: - Slide Animation Functions (Optional - controller handles this now)
     
-    /// Slides the tab bar down (hides it)
     func slideDown() {
         controller.hideTabBar()
     }
     
-    /// Slides the tab bar up (shows it)
     func slideUp() {
         controller.showTabBar()
     }
@@ -78,10 +75,11 @@ struct TabBar: View {
                         showSearch = false
                     }
                 }) {
-                    Image(systemName: tabs[lastTab].icon + ".fill")
+                    Image(systemName: "x.circle")
+                        .font(.system(size: 30))
                         .foregroundStyle(.gray)
                         .frame(width: 24, height: 24)
-                        .matchedGeometryEffect(id: tabs[lastTab].icon, in: animation)
+                        .matchedGeometryEffect(id: "x.circle", in: animation)
                         .padding(16)
                         .background(
                             Circle()

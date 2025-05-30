@@ -544,13 +544,13 @@ struct MediaInfoView: View {
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(colorScheme == .dark ? .black : .white)
                 }
+                .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .padding(.horizontal, 20)
                 .background(
                     RoundedRectangle(cornerRadius: 25)
                         .fill(Color.accentColor)
                 )
-                .fixedSize(horizontal: true, vertical: false)
             }
             .disabled(isFetchingEpisode)
             

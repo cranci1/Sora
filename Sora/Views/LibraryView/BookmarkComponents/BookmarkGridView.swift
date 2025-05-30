@@ -25,7 +25,6 @@ struct BookmarkGridView: View {
                     )
                 }
             }
-            .padding(.top)
             .padding()
             .scrollViewBottomPadding()
         }

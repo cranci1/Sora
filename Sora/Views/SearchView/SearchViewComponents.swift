@@ -15,6 +15,9 @@ struct ModuleSelectorMenu: View {
     let selectedModuleId: String?
     let onModuleSelected: (String) -> Void
     
+    @Namespace private var animation
+    let gradientOpacity: Double = 0.5
+    
     var body: some View {
         Menu {
             ForEach(moduleGroups, id: \.self) { language in
@@ -40,17 +43,63 @@ struct ModuleSelectorMenu: View {
                 }
             }
         } label: {
-            if let selectedModule = selectedModule {
-                KFImage(URL(string: selectedModule.metadata.iconUrl))
-                    .resizable()
-                    .frame(width: 36, height: 36)
-                    .clipShape(Circle())
-            } else {
-                Image(systemName: "questionmark.app.fill")
-                    .resizable()
-                    .frame(width: 36, height: 36)
-                    .clipShape(Circle())
-                    .foregroundColor(.secondary)
+            HStack(spacing: 8) {
+                if let selectedModule = selectedModule {
+                    Text(selectedModule.metadata.sourceName)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    KFImage(URL(string: selectedModule.metadata.iconUrl))
+                        .resizable()
+                        .frame(width: 36, height: 36)
+                        .clipShape(Circle())
+                        .background(
+                            Circle()
+                                .fill(.ultraThinMaterial)
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(stops: [
+                                                    .init(color: Color.accentColor.opacity(gradientOpacity), location: 0),
+                                                    .init(color: Color.accentColor.opacity(0), location: 1)
+                                                ]),
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            ),
+                                            lineWidth: 0.5
+                                        )
+                                )
+                                .matchedGeometryEffect(id: "background_circle", in: animation)
+                        )
+                } else {
+                    Text("Select Module")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    Image(systemName: "questionmark.app.fill")
+                        .resizable()
+                        .frame(width: 36, height: 36)
+                        .clipShape(Circle())
+                        .foregroundColor(.secondary)
+                        .background(
+                            Circle()
+                                .fill(.ultraThinMaterial)
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(stops: [
+                                                    .init(color: Color.accentColor.opacity(gradientOpacity), location: 0),
+                                                    .init(color: Color.accentColor.opacity(0), location: 1)
+                                                ]),
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            ),
+                                            lineWidth: 0.5
+                                        )
+                                )
+                                .matchedGeometryEffect(id: "background_circle", in: animation)
+                        )
+                }
             }
         }
     }
@@ -93,16 +142,6 @@ struct SearchContent: View {
                 if !searchHistory.isEmpty {
                     SearchHistorySection(title: "Recent Searches") {
                         VStack(spacing: 0) {
-                            HStack {
-                                Spacer()
-                                Button(action: onClearHistory) {
-                                    Text("Clear")
-                                        .foregroundColor(.accentColor)
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                            
                             Divider()
                                 .padding(.horizontal, 16)
                             
@@ -117,6 +156,13 @@ struct SearchContent: View {
                                     },
                                     showDivider: index < searchHistory.count - 1
                                 )
+                            }
+                            HStack {
+                                Button(action: onClearHistory) {
+                                    Text("Clear")
+                                        .foregroundColor(.accentColor)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .center)
                             }
                         }
                     }

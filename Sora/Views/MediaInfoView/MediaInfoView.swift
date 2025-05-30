@@ -150,6 +150,8 @@ struct MediaInfoView: View {
         .onAppear {
             buttonRefreshTrigger.toggle()
             
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            
             if !hasFetched {
                 DropManager.shared.showDrop(title: "Fetching Data", subtitle: "Please wait while fetching.", duration: 0.5, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
                 fetchDetails()

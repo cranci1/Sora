@@ -142,7 +142,7 @@ struct DownloadView: View {
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)
                 
-                Text("Download episodes from the episode list to see them here")
+                Text("Download movies/episodes to view them here.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

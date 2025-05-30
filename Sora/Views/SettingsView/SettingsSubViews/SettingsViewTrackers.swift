@@ -86,7 +86,7 @@ fileprivate struct SettingsToggleRow: View {
                 
                 Toggle("", isOn: $isOn)
                     .labelsHidden()
-                    .tint(.accentColor)
+                    .tint(.accentColor.opacity(0.7))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)

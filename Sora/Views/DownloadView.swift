@@ -444,10 +444,6 @@ struct CustomDownloadHeader: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
-                
-                Rectangle()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(height: 0.5)
             }
         }
     }

@@ -144,7 +144,7 @@ struct DownloadView: View {
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)
                 
-                Text("Download movies/episodes to view them here.")
+                Text("Actively downloading media can be tracked from here.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

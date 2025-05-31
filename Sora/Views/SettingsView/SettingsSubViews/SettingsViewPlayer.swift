@@ -203,6 +203,7 @@ struct SettingsViewPlayer: View {
     @AppStorage("skip85Visible") private var skip85Visible: Bool = true
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
+    @AppStorage("pipButtonVisible") private var pipButtonVisible: Bool = true
     
     private let mediaPlayers = ["Default", "Sora", "VLC", "OutPlayer", "Infuse", "nPlayer", "SenPlayer", "IINA"]
     private let inAppPlayers = ["Default", "Sora"]
@@ -233,6 +234,13 @@ struct SettingsViewPlayer: View {
                         icon: "hand.tap",
                         title: "Two Finger Hold for Pause",
                         isOn: $holdForPauseEnabled,
+                        showDivider: false
+                    )
+                    
+                    SettingsToggleRow(
+                        icon: "pip",
+                        title: "Show PiP Button",
+                        isOn: $pipButtonVisible,
                         showDivider: false
                     )
                 }

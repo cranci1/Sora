@@ -61,26 +61,39 @@ fileprivate struct SettingsSection<Content: View>: View {
 
 struct SettingsViewLogger: View {
     @State private var logs: String = ""
+    @State private var isLoading: Bool = true
     @StateObject private var filterViewModel = LogFilterViewModel.shared
     
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
                 SettingsSection(title: "Logs") {
-                    Text(logs)
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .textSelection(.enabled)
+                    if isLoading {
+                        HStack {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Loading logs...")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 20)
+                    } else {
+                        Text(logs)
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .textSelection(.enabled)
+                    }
                 }
             }
             .padding(.vertical, 20)
         }
         .navigationTitle("Logs")
         .onAppear {
-            logs = Logger.shared.getLogs()
+            loadLogsAsync()
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -93,8 +106,7 @@ struct SettingsViewLogger: View {
                             Label("Copy to Clipboard", systemImage: "doc.on.doc")
                         }
                         Button(role: .destructive, action: {
-                            Logger.shared.clearLogs()
-                            logs = Logger.shared.getLogs()
+                            clearLogsAsync()
                         }) {
                             Label("Clear Logs", systemImage: "trash")
                         }
@@ -108,6 +120,25 @@ struct SettingsViewLogger: View {
                         Image(systemName: "slider.horizontal.3")
                     }
                 }
+            }
+        }
+    }
+    
+    private func loadLogsAsync() {
+        Task {
+            let loadedLogs = await Logger.shared.getLogsAsync()
+            await MainActor.run {
+                self.logs = loadedLogs
+                self.isLoading = false
+            }
+        }
+    }
+    
+    private func clearLogsAsync() {
+        Task {
+            await Logger.shared.clearLogsAsync()
+            await MainActor.run {
+                self.logs = ""
             }
         }
     }

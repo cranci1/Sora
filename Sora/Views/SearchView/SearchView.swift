@@ -96,7 +96,7 @@ struct SearchView: View {
                 .padding(.top, 20)
                 
                 ScrollView {
-                    SearchContentView(
+                    SearchContent(
                         selectedModule: selectedModule,
                         searchQuery: searchQuery,
                         searchHistory: searchHistory,
@@ -115,6 +115,7 @@ struct SearchView: View {
                         onClearHistory: clearSearchHistory
                     )
                 }
+                .navigationViewStyle(StackNavigationViewStyle())
                 .scrollViewBottomPadding()
                 .simultaneousGesture(
                     DragGesture().onChanged { _ in

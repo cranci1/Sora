@@ -82,6 +82,11 @@ struct SettingsView: View {
                             }
                             Divider().padding(.horizontal, 16)
                             
+                            NavigationLink(destination: SettingsViewDownloads()) {
+                                SettingsNavigationRow(icon: "arrow.down.circle", title: "Download Settings")
+                            }
+                            Divider().padding(.horizontal, 16)
+                            
                             NavigationLink(destination: SettingsViewTrackers()) {
                                 SettingsNavigationRow(icon: "square.stack.3d.up", title: "Trackers")
                             }

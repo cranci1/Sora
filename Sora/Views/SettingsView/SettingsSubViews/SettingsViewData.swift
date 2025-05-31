@@ -203,8 +203,6 @@ struct SettingsViewData: View {
                     }
                     
                     VStack {
-                        Spacer()
-
                         if isCalculatingSize {
                             ProgressView()
                                 .scaleEffect(0.7)
@@ -233,9 +231,9 @@ struct SettingsViewData: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
                     }
-                    Spacer()
-
-                    Divider().padding(.horizontal, 16)
+                    
+                    Divider()
+                    
                     Button(action: clearAllCaches) {
                         Text("Clear All Caches")
                             .foregroundColor(.red)

@@ -17,10 +17,8 @@ class DropManager {
     private init() {}
     
     func showDrop(title: String, subtitle: String, duration: TimeInterval, icon: UIImage?) {
-        // Add to queue
         notificationQueue.append((title: title, subtitle: subtitle, duration: duration, icon: icon))
         
-        // Process queue if not already processing
         if !isProcessingQueue {
             processQueue()
         }
@@ -33,11 +31,8 @@ class DropManager {
         }
         
         isProcessingQueue = true
-        
-        // Get the next notification
         let notification = notificationQueue.removeFirst()
         
-        // Show the notification
         let drop = Drop(
             title: notification.title,
             subtitle: notification.subtitle,
@@ -48,7 +43,6 @@ class DropManager {
         
         Drops.show(drop)
         
-        // Schedule next notification
         DispatchQueue.main.asyncAfter(deadline: .now() + notification.duration) { [weak self] in
             self?.processQueue()
         }
@@ -69,9 +63,7 @@ class DropManager {
         showDrop(title: "Info", subtitle: message, duration: duration, icon: icon)
     }
     
-    // Method for handling download notifications with accurate status determination
     func downloadStarted(episodeNumber: Int) {
-        // Use the JSController method to accurately determine if download will start immediately
         let willStartImmediately = JSController.shared.willDownloadStartImmediately()
         
         let message = willStartImmediately 

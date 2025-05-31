@@ -243,6 +243,9 @@ struct EpisodeCell: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadCompleted"))) { _ in
             updateDownloadStatus()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("episodeProgressChanged"))) { _ in
+            updateProgress()
+        }
     }
     
     private var episodeThumbnail: some View {

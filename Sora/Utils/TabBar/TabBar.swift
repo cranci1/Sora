@@ -126,6 +126,18 @@ struct TabBar: View {
                             .onDisappear {
                                 keyboardFocus = false
                             }
+                        
+                        if !searchQuery.isEmpty {
+                            Button(action: {
+                                searchQuery = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.footnote)
+                                    .foregroundStyle(.gray)
+                                    .opacity(0.7)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
                     }
                     .frame(height: 24)
                     .padding(8)

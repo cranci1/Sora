@@ -18,19 +18,16 @@ struct SearchItem: Identifiable {
 struct SearchHistorySection<Content: View>: View {
     let title: String
     let content: Content
-
     init(title: String, @ViewBuilder content: () -> Content) {
         self.title = title
         self.content = content()
     }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title.uppercased())
                 .font(.footnote)
                 .foregroundStyle(Color.secondary)
                 .padding(.horizontal, 20)
-
             VStack(spacing: 0) {
                 content
             }
@@ -48,18 +45,15 @@ struct SearchHistoryRow: View {
     
     var body: some View {
         HStack {
-            // Clock Icon
             Image(systemName: "clock")
                 .frame(width: 24, height: 24)
                 .foregroundStyle(Color.primary)
             
-            // Search Text
             Text(text)
                 .foregroundStyle(Color.primary)
             
             Spacer()
             
-            // Delete Button
             Button(action: onDelete) {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(Color.secondary)
@@ -70,7 +64,6 @@ struct SearchHistoryRow: View {
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
         
-        // Divider if needed
         if showDivider {
             Divider()
                 .padding(.horizontal, 16)

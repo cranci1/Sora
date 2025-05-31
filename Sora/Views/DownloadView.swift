@@ -71,6 +71,7 @@ struct DownloadView: View {
             }
         }
         .deviceScaled()
+        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     private var activeDownloadsView: some View {
@@ -833,7 +834,7 @@ struct EnhancedActiveDownloadCard: View {
             }
             .padding(16)
             
-            if download != download { // Not last item (placeholder condition)
+            if download != download {
                 Divider()
                     .padding(.horizontal, 16)
             }

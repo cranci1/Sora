@@ -105,6 +105,42 @@ struct ModuleSelectorMenu: View {
     }
 }
 
+struct SearchContentView: View {
+    let selectedModule: ScrapingModule?
+    let searchQuery: String
+    let searchHistory: [String]
+    let searchItems: [SearchItem]
+    let isSearching: Bool
+    let hasNoResults: Bool
+    let columns: [GridItem]
+    let columnsCount: Int
+    let cellWidth: CGFloat
+    let onHistoryItemSelected: (String) -> Void
+    let onHistoryItemDeleted: (Int) -> Void
+    let onClearHistory: () -> Void
+    
+    var body: some View {
+        NavigationView {
+            SearchContent(
+                selectedModule: selectedModule,
+                searchQuery: searchQuery,
+                searchHistory: searchHistory,
+                searchItems: searchItems,
+                isSearching: isSearching,
+                hasNoResults: hasNoResults,
+                columns: columns,
+                columnsCount: columnsCount,
+                cellWidth: cellWidth,
+                onHistoryItemSelected: onHistoryItemSelected,
+                onHistoryItemDeleted: onHistoryItemDeleted,
+                onClearHistory: onClearHistory
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .navigationViewStyle(.stack)
+    }
+}
+
 struct SearchContent: View {
     let selectedModule: ScrapingModule?
     let searchQuery: String
@@ -133,7 +169,7 @@ struct SearchContent: View {
                         .foregroundColor(.secondary)
                 }
                 .padding()
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(.systemBackground))
                 .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
             }
@@ -167,6 +203,18 @@ struct SearchContent: View {
                         }
                     }
                     .padding(.vertical)
+                } else {
+                    VStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.largeTitle)
+                            .foregroundColor(.secondary)
+                        Text("Start Searching")
+                            .font(.headline)
+                        Text("Enter a search term to begin")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             } else {
                 if let module = selectedModule {
@@ -174,7 +222,8 @@ struct SearchContent: View {
                         SearchResultsGrid(
                             items: searchItems,
                             columns: columns,
-                            selectedModule: module
+                            selectedModule: module,
+                            cellWidth: cellWidth
                         )
                     } else {
                         SearchStateView(
@@ -187,5 +236,6 @@ struct SearchContent: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-} 
+}

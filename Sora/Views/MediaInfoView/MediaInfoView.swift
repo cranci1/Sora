@@ -217,7 +217,6 @@ struct MediaInfoView: View {
                     .aspectRatio(contentMode: .fill)
                     .frame(width: UIScreen.main.bounds.width, height: 600)
                     .clipped()
-
                 KFImage(URL(string: imageUrl))
                     .placeholder { EmptyView() }
                     .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1, sharpeningRadius: 1))
@@ -249,12 +248,10 @@ struct MediaInfoView: View {
                             endPoint: .bottom
                         )
                     )
-
                 VStack(spacing: 0) {
                     Rectangle()
                         .fill(Color.clear)
                         .frame(height: 400)
-
                     VStack(alignment: .leading, spacing: 16) {
                         headerSection
                         if !episodeLinks.isEmpty {
@@ -275,13 +272,8 @@ struct MediaInfoView: View {
                             startPoint: .top,
                             endPoint: .bottom
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 0))
-                        .shadow(
-                            color: (colorScheme == .dark ? Color.black : Color.white).opacity(2),
-                            radius: 20,
-                            x: 0,
-                            y: -10
-                        )
+                            .clipShape(RoundedRectangle(cornerRadius: 0))
+                            .shadow(color: (colorScheme == .dark ? Color.black : Color.white).opacity(1), radius: 10, x: 0, y: 10)
                     )
                 }
                 .deviceScaled()
@@ -345,6 +337,88 @@ struct MediaInfoView: View {
             
             playAndBookmarkSection
 
+            if episodeLinks.count == 1 {
+                VStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        Button(action: {
+                            if let ep = episodeLinks.first {
+                                let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+                                let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+                                let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
+                                
+                                if progress <= 0.9 {
+                                    UserDefaults.standard.set(99999999.0, forKey: "lastPlayedTime_\(ep.href)")
+                                    UserDefaults.standard.set(99999999.0, forKey: "totalTime_\(ep.href)")
+                                    DropManager.shared.showDrop(title: "Marked as Watched", subtitle: "", duration: 1.0, icon: UIImage(systemName: "checkmark.circle.fill"))
+                                }
+                            }
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "checkmark.circle")
+                                    .foregroundColor(.primary)
+                                Text("Mark as Watched")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.primary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(15)
+                            .gradientOutline()
+                        }
+                        
+                        Button(action: {
+                            if let ep = episodeLinks.first {
+                                let downloadStatus = jsController.isEpisodeDownloadedOrInProgress(
+                                    showTitle: title,
+                                    episodeNumber: ep.number,
+                                    season: 1
+                                )
+                                
+                                if downloadStatus == .notDownloaded {
+                                    selectedEpisodeNumber = ep.number
+                                    fetchStream(href: ep.href)
+                                    DropManager.shared.showDrop(title: "Starting Download", subtitle: "", duration: 1.0, icon: UIImage(systemName: "arrow.down.circle"))
+                                } else {
+                                    DropManager.shared.showDrop(title: "Already Downloaded", subtitle: "", duration: 1.0, icon: UIImage(systemName: "checkmark.circle"))
+                                }
+                            }
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.down.circle")
+                                    .foregroundColor(.primary)
+                                Text("Download")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.primary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(15)
+                            .gradientOutline()
+                        }
+                    }
+                    Text("Why am I not seeing any episodes?")
+                        .font(.caption)
+                        .bold()
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 4)
+                        .padding(.leading, 2.8)
+                    Text("The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases.")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 4)
+                }
+            }
+            
+            // Single episode action buttons
             if episodeLinks.count == 1 {
                 VStack(spacing: 12) {
                     HStack(spacing: 12) {
@@ -779,11 +853,13 @@ struct MediaInfoView: View {
             userDefaults.set(value, forKey: key)
         }
         userDefaults.synchronize()
+        NotificationCenter.default.post(name: NSNotification.Name("episodeProgressChanged"), object: nil)
+        
         Logger.shared.log(
             "Marked \(ep.number - 1) episodes watched within series \"\(title)\".",
             type: "General"
         )
-
+        
         guard let listID = itemID, listID > 0 else { return }
         let watchedCount = ep.number - 1
         let statusToSend = (watchedCount == episodeLinks.count) ? "COMPLETED" : "CURRENT"
@@ -821,11 +897,12 @@ struct MediaInfoView: View {
             
             Text("Episodes might not be available yet or there could be an issue with the source.")
                 .font(.body)
+                .lineLimit(0)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
         }
-        .padding(.vertical, 40)
+        .padding(.vertical, 60)
     }
     
     private var startWatchingText: String {

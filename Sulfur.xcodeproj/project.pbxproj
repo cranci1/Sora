@@ -217,6 +217,7 @@
 		0402DA122DE7B5EC003BB42C /* SearchView */ = {
 			isa = PBXGroup;
 			children = (
+				133D7C7C2D2BE2630075467E /* SearchView.swift */,
 				0402DA162DE7B7B8003BB42C /* SearchViewComponents.swift */,
 				0402DA0F2DE7B5EC003BB42C /* SearchComponents.swift */,
 				0402DA102DE7B5EC003BB42C /* SearchResultsGrid.swift */,
@@ -353,7 +354,6 @@
 				133D7C7F2D2BE2630075467E /* MediaInfoView */,
 				1399FAD22D3AB34F00E97C31 /* SettingsView */,
 				133F55B92D33B53E00E08EEA /* LibraryView */,
-				133D7C7C2D2BE2630075467E /* SearchView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";

@@ -20,8 +20,9 @@ class Logger {
     private var logs: [LogEntry] = []
     private let logFileURL: URL
     private let logFilterViewModel = LogFilterViewModel.shared
-    
+
     private let maxFileSize = 1024 * 512
+    private let maxLogEntries = 1000 
     
     private init() {
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -35,6 +36,11 @@ class Logger {
         
         queue.async(flags: .barrier) {
             self.logs.append(entry)
+            
+            if self.logs.count > self.maxLogEntries {
+                self.logs.removeFirst(self.logs.count - self.maxLogEntries)
+            }
+            
             self.saveLogToFile(entry)
             self.debugLog(entry)
         }
@@ -51,10 +57,32 @@ class Logger {
         return result
     }
     
+    func getLogsAsync() async -> String {
+        return await withCheckedContinuation { continuation in
+            queue.async {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "dd-MM HH:mm:ss"
+                let result = self.logs.map { "[\(dateFormatter.string(from: $0.timestamp))] [\($0.type)] \($0.message)" }
+                .joined(separator: "\n----\n")
+                continuation.resume(returning: result)
+            }
+        }
+    }
+    
     func clearLogs() {
         queue.async(flags: .barrier) {
             self.logs.removeAll()
             try? FileManager.default.removeItem(at: self.logFileURL)
+        }
+    }
+    
+    func clearLogsAsync() async {
+        await withCheckedContinuation { continuation in
+            queue.async(flags: .barrier) {
+                self.logs.removeAll()
+                try? FileManager.default.removeItem(at: self.logFileURL)
+                continuation.resume()
+            }
         }
     }
     
@@ -69,61 +97,52 @@ class Logger {
             return
         }
         
-        if FileManager.default.fileExists(atPath: logFileURL.path) {
-            do {
+        do {
+            if FileManager.default.fileExists(atPath: logFileURL.path) {
                 let attributes = try FileManager.default.attributesOfItem(atPath: logFileURL.path)
                 let fileSize = attributes[.size] as? UInt64 ?? 0
                 
                 if fileSize + UInt64(data.count) > maxFileSize {
-                    guard var content = try? String(contentsOf: logFileURL, encoding: .utf8) else { return }
-                    
-                    // Ensure content is not empty and contains valid UTF-8
-                    guard !content.isEmpty else {
-                        try? data.write(to: logFileURL)
-                        return
-                    }
-                    
-                    // Remove old entries until we have space
-                    while (content.data(using: .utf8)?.count ?? 0) + data.count > maxFileSize {
-                        if let rangeOfFirstLine = content.range(of: "\n---\n") {
-                            // Ensure we don't try to remove beyond the string's bounds
-                            let endIndex = min(rangeOfFirstLine.upperBound, content.endIndex)
-                            content.removeSubrange(content.startIndex..<endIndex)
-                        } else {
-                            // If we can't find a separator, clear the content
-                            content = ""
-                            break
-                        }
-                        
-                        // Safety check to prevent infinite loops
-                        if content.isEmpty {
-                            break
-                        }
-                    }
-                    
-                    // Append new log entry
-                    content += logString
-                    
-                    // Write back to file
-                    if let finalData = content.data(using: .utf8) {
-                        try? finalData.write(to: logFileURL)
-                    }
-                } else {
-                    if let handle = try? FileHandle(forWritingTo: logFileURL) {
-                        handle.seekToEndOfFile()
-                        handle.write(data)
-                        handle.closeFile()
-                    }
+                    self.truncateLogFile()
                 }
-            } catch {
-                print("Error managing log file: \(error)")
+                
+                if let handle = try? FileHandle(forWritingTo: logFileURL) {
+                    handle.seekToEndOfFile()
+                    handle.write(data)
+                    handle.closeFile()
+                }
+            } else {
+                try data.write(to: logFileURL)
             }
-        } else {
+        } catch {
+            print("Error managing log file: \(error)")
             try? data.write(to: logFileURL)
         }
     }
     
-    /// Prints log messages to the Xcode console only in DEBUG mode
+    private func truncateLogFile() {
+        do {
+            guard let content = try? String(contentsOf: logFileURL, encoding: .utf8),
+                  !content.isEmpty else {
+                return
+            }
+            
+            let entries = content.components(separatedBy: "\n---\n")
+            guard entries.count > 10 else { return }
+            
+            let keepCount = entries.count / 2
+            let truncatedEntries = Array(entries.suffix(keepCount))
+            let truncatedContent = truncatedEntries.joined(separator: "\n---\n")
+            
+            if let truncatedData = truncatedContent.data(using: .utf8) {
+                try truncatedData.write(to: logFileURL)
+            }
+        } catch {
+            print("Error truncating log file: \(error)")
+            try? FileManager.default.removeItem(at: logFileURL)
+        }
+    }
+    
     private func debugLog(_ entry: LogEntry) {
 #if DEBUG
         let dateFormatter = DateFormatter()

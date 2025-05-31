@@ -217,6 +217,7 @@
 		0402DA122DE7B5EC003BB42C /* SearchView */ = {
 			isa = PBXGroup;
 			children = (
+				133D7C7C2D2BE2630075467E /* SearchView.swift */,
 				0402DA162DE7B7B8003BB42C /* SearchViewComponents.swift */,
 				0402DA0F2DE7B5EC003BB42C /* SearchComponents.swift */,
 				0402DA102DE7B5EC003BB42C /* SearchResultsGrid.swift */,
@@ -348,7 +349,6 @@
 		133D7C7B2D2BE2630075467E /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				133D7C7C2D2BE2630075467E /* SearchView.swift */,
 				72443C7C2DC8036500A61321 /* DownloadView.swift */,
 				0402DA122DE7B5EC003BB42C /* SearchView */,
 				133D7C7F2D2BE2630075467E /* MediaInfoView */,

@@ -229,7 +229,7 @@ struct TabBar: View {
                     .foregroundStyle(selectedTab == index ? .black : .gray)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 10)
-                    .frame(maxWidth: .infinity)
+                    .frame(width: 70)
                     .opacity(selectedTab == index ? 1 : 0.5)
             } else {
                 VStack {
@@ -246,7 +246,7 @@ struct TabBar: View {
                 }
                 .padding(.vertical, 8)
                 .padding(.horizontal, 10)
-                .frame(maxWidth: .infinity)
+                .frame(width: 80)
                 .opacity(selectedTab == index ? 1 : 0.5)
             }
         }

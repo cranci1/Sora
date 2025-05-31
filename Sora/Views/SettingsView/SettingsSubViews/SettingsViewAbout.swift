@@ -82,9 +82,6 @@ struct SettingsViewAbout: View {
                             Text("AKA Sulfur")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                            Text("Version \(version)")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
                         }
                         Spacer()
                     }

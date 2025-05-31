@@ -1,33 +1,34 @@
 {
-  "originHash" : "60d5882290a22b3286d882ec649bd11b12151e9ee052d03237e8071773244b7f",
-  "pins" : [
-    {
-      "identity" : "drops",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/omaralbeik/Drops.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "5824681795286c36bdc4a493081a63e64e2a064e"
+  "object": {
+    "pins": [
+      {
+        "package": "Drops",
+        "repositoryURL": "https://github.com/omaralbeik/Drops.git",
+        "state": {
+          "branch": "main",
+          "revision": "5824681795286c36bdc4a493081a63e64e2a064e",
+          "version": null
+        }
+      },
+      {
+        "package": "Kingfisher",
+        "repositoryURL": "https://github.com/onevcat/Kingfisher.git",
+        "state": {
+          "branch": null,
+          "revision": "b6f62758f21a8c03cd64f4009c037cfa580a256e",
+          "version": "7.9.1"
+        }
+      },
+      {
+        "package": "MarqueeLabel",
+        "repositoryURL": "https://github.com/cbpowell/MarqueeLabel",
+        "state": {
+          "branch": null,
+          "revision": "cffb6938940d3242882e6a2f9170b7890a4729ea",
+          "version": "4.2.1"
+        }
       }
-    },
-    {
-      "identity" : "kingfisher",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/onevcat/Kingfisher.git",
-      "state" : {
-        "revision" : "b6f62758f21a8c03cd64f4009c037cfa580a256e",
-        "version" : "7.9.1"
-      }
-    },
-    {
-      "identity" : "marqueelabel",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/cbpowell/MarqueeLabel",
-      "state" : {
-        "revision" : "cffb6938940d3242882e6a2f9170b7890a4729ea",
-        "version" : "4.2.1"
-      }
-    }
-  ],
-  "version" : 3
+    ]
+  },
+  "version": 1
 }

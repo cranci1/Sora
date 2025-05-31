@@ -277,10 +277,10 @@ struct MediaInfoView: View {
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 0))
                         .shadow(
-                            color: (colorScheme == .dark ? Color.black : Color.white).opacity(1),
-                            radius: 10,
+                            color: (colorScheme == .dark ? Color.black : Color.white).opacity(2),
+                            radius: 20,
                             x: 0,
-                            y: 10
+                            y: -10
                         )
                     )
                 }
@@ -299,6 +299,23 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
+            Spacer()
+            HStack(spacing: 16) {
+                
+                if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar")
+                            .foregroundColor(.secondary)
+                        
+                        Text(airdate)
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Spacer()
+                
+            }
             Text(title)
                 .font(.system(size: 28, weight: .bold))
                 .foregroundColor(.primary)
@@ -327,28 +344,7 @@ struct MediaInfoView: View {
             }
             
             playAndBookmarkSection
-            
-            // Metadata row
-            HStack(spacing: 16) {
-                sourceButton
-                
-                if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
-                    HStack(spacing: 4) {
-                        Image(systemName: "calendar")
-                            .foregroundColor(.secondary)
-                        
-                        Text(airdate)
-                            .font(.system(size: 14))
-                            .foregroundColor(.secondary)
-                    }
-                }
-                
-                Spacer()
-                
-                menuButton
-            }
-            
-            // Single episode action buttons
+
             if episodeLinks.count == 1 {
                 VStack(spacing: 12) {
                     HStack(spacing: 12) {
@@ -456,22 +452,14 @@ struct MediaInfoView: View {
         Button(action: {
             openSafariViewController(with: href)
         }) {
-            HStack(spacing: 4) {
-                Text(module.metadata.sourceName)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-                
-                Image(systemName: "safari")
-                    .resizable()
-                    .frame(width: 14, height: 14)
-                    .foregroundColor(.primary)
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(Color.gray.opacity(0.2))
-            .cornerRadius(15)
-            .gradientOutline()
+            Image(systemName: "safari")
+                .resizable()
+                .frame(width: 16, height: 16)
+                .foregroundColor(.primary)
+                .padding(6)
+                .background(Color.gray.opacity(0.2))
+                .clipShape(Circle())
+                .circularGradientOutline()
         }
     }
     
@@ -578,7 +566,6 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var episodesSection: some View {
         if episodeLinks.count == 1 {
-            // Don't show episodes list for single-episode media
             EmptyView()
         } else {
             VStack(alignment: .leading, spacing: 16) {
@@ -591,12 +578,17 @@ struct MediaInfoView: View {
                     
                     Group {
                         if !isGroupedBySeasons && episodeLinks.count <= episodeChunkSize {
-                            Text("All episodes already shown")
+                            Text("")
                                 .font(.system(size: 14))
                                 .foregroundColor(.secondary)
                         } else {
                             episodeNavigationSection
                         }
+                    }
+                    
+                    HStack(spacing: 4) {
+                        sourceButton
+                        menuButton
                     }
                 }
                 

@@ -2496,6 +2496,7 @@ class GradientOverlayButton: UIButton {
 
 // yes? Like the plural of the famous american rapper ye? -IBHRAD
 // low taper fade the meme is massive -cranci
-// cranci still doesnt have a job -seiike
+// The mind is the source of good and evil, only you yourself can decide which you will bring yourself. -seiike
 // guys watch Clannad already - ibro
 // May the Divine Providence bestow its infinite mercy upon your soul, and may eternal grace find you beyond the shadows of this mortal realm. - paul, 15/11/2005 - 13/05/2023
+// this dumbass ↑ defo used gpt

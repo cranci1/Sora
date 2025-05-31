@@ -37,8 +37,7 @@ struct SearchView: View {
     @State private var searchHistory: [String] = []
     @State private var isSearchFieldFocused = false
     @State private var saveDebounceTimer: Timer?
-    
-    private let columns = [GridItem(.adaptive(minimum: 150))]
+    @State private var searchDebounceTimer: Timer?
     
     init(searchQuery: Binding<String>) {
         self._searchQuery = searchQuery
@@ -48,6 +47,10 @@ struct SearchView: View {
         guard let id = selectedModuleId else { return nil }
         return moduleManager.modules.first { $0.id.uuidString == id }
     }
+    
+    private let columns = [
+        GridItem(.adaptive(minimum: 150), spacing: 12)
+    ]
     
     private var columnsCount: Int {
         if UIDevice.current.userInterfaceIdiom == .pad {
@@ -112,6 +115,7 @@ struct SearchView: View {
                         onClearHistory: clearSearchHistory
                     )
                 }
+                .navigationViewStyle(StackNavigationViewStyle())
                 .scrollViewBottomPadding()
                 .simultaneousGesture(
                     DragGesture().onChanged { _ in
@@ -121,7 +125,6 @@ struct SearchView: View {
             }
             .navigationBarHidden(true)
         }
-        .navigationViewStyle(StackNavigationViewStyle())
         .onAppear {
             loadSearchHistory()
             if !searchQuery.isEmpty {
@@ -142,29 +145,35 @@ struct SearchView: View {
             }
         }
         .onChange(of: searchQuery) { newValue in
+            searchDebounceTimer?.invalidate()
+            
             if newValue.isEmpty {
                 saveDebounceTimer?.invalidate()
                 searchItems = []
                 hasNoResults = false
                 isSearching = false
             } else {
-                performSearch()
+                searchDebounceTimer = Timer.scheduledTimer(withTimeInterval: 0.7, repeats: false) { _ in
+                    performSearch()
+                }
                 
                 saveDebounceTimer?.invalidate()
                 saveDebounceTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { _ in
-                    self.addToSearchHistory(newValue)}
+                    self.addToSearchHistory(newValue)
+                }
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     private func lockOrientation() {
         OrientationManager.shared.lockOrientation()
     }
-
-    private func unlockOrientation(after delay: TimeInterval = 1.0) {
+    
+    private func unlockOrientation(after delay: TimeInterval = 0.2) {
         OrientationManager.shared.unlockOrientation(after: delay)
     }
-
+    
     private func performSearch() {
         Logger.shared.log("Searching for: \(searchQuery)", type: "General")
         guard !searchQuery.isEmpty, let module = selectedModule else {

@@ -203,6 +203,8 @@ struct SettingsViewData: View {
                     }
                     
                     VStack {
+                        Spacer()
+
                         if isCalculatingSize {
                             ProgressView()
                                 .scaleEffect(0.7)
@@ -231,7 +233,9 @@ struct SettingsViewData: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
                     }
-                    
+                    Spacer()
+
+                    Divider().padding(.horizontal, 16)
                     Button(action: clearAllCaches) {
                         Text("Clear All Caches")
                             .foregroundColor(.red)
@@ -242,17 +246,9 @@ struct SettingsViewData: View {
                 
                 SettingsSection(
                     title: "App Storage",
-                    footer: "The caches used by Sora are stored images that help load content faster\nThe App Data should never be erased if you don't know what that will cause.\nClearing the documents folder will remove all the modules and downloads\n "
+                    footer: "The App Data should never be erased if you don't know what that will cause.\nClearing the documents folder will remove all the modules and downloads\n "
                 ) {
                     VStack(spacing: 0) {
-                        SettingsButtonRow(
-                            icon: "trash",
-                            title: "Clear Cache",
-                            subtitle: formatSize(cacheSize),
-                            action: clearCache
-                        )
-                        Divider().padding(.horizontal, 16)
-                        
                         SettingsButtonRow(
                             icon: "doc.text",
                             title: "Remove All Files in Documents",

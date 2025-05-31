@@ -75,11 +75,11 @@ struct TabBar: View {
                         showSearch = false
                     }
                 }) {
-                    Image(systemName: "x.circle")
-                        .font(.system(size: 25))
+                    Image(systemName: "xmark")
+                        .font(.system(size: 30))
                         .foregroundStyle(.gray)
-                        .frame(width: 20, height: 20)
-                        .matchedGeometryEffect(id: "x.circle", in: animation)
+                        .frame(width: 24, height: 24)
+                        .matchedGeometryEffect(id: "xmark", in: animation)
                         .padding(16)
                         .background(
                             Circle()

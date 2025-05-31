@@ -769,6 +769,8 @@ struct EpisodeCell: View {
         
         if buttonCount == 3 {
             swipeDistance += 12
+        } else if buttonCount == 4 {
+            swipeDistance += 24
         }
         
         return swipeDistance

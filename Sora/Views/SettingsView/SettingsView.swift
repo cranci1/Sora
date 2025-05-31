@@ -226,17 +226,14 @@ struct SettingsView: View {
         .navigationViewStyle(StackNavigationViewStyle())
         .navigationBarHidden(true)
         .onChange(of: colorScheme) { newScheme in
-            // Always update accent color when system color scheme changes
             if settings.selectedAppearance == .system {
                 settings.updateAccentColor(currentColorScheme: newScheme)
             }
         }
         .onChange(of: settings.selectedAppearance) { _ in
-            // Update accent color when appearance setting changes
             settings.updateAccentColor(currentColorScheme: colorScheme)
         }
         .onAppear {
-            // Ensure accent color is correct when view appears
             settings.updateAccentColor(currentColorScheme: colorScheme)
         }
     }

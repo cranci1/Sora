@@ -175,7 +175,6 @@ struct TabBar: View {
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
         .background {
-            // Move the blur background here and animate it
             ProgressiveBlurView()
                 .blur(radius: 10)
                 .padding(.horizontal, -20)
@@ -208,7 +207,6 @@ struct TabBar: View {
     private func tabButton(for tab: TabItem, index: Int) -> some View {
         Button(action: {
             if index == tabs.count - 1 {
-                // Search tab - apply the lock
                 searchLocked = true
                 
                 withAnimation(.bouncy(duration: 0.3)) {
@@ -217,12 +215,10 @@ struct TabBar: View {
                     showSearch = true
                 }
                 
-                // Unlock search after 0.5 seconds
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     searchLocked = false
                 }
             } else {
-                // Other tabs - check if search is locked before allowing switch
                 if !searchLocked {
                     withAnimation(.bouncy(duration: 0.3)) {
                         lastTab = selectedTab

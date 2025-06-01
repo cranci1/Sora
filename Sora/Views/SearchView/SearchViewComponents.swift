@@ -157,6 +157,9 @@ struct SearchContent: View {
                                     showDivider: index < searchHistory.count - 1
                                 )
                             }
+                            Divider()
+                                .padding(.horizontal, 16)
+                            Spacer()
                             HStack {
                                 Button(action: onClearHistory) {
                                     Text("Clear")

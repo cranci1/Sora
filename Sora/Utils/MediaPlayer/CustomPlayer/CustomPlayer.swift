@@ -1921,9 +1921,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     return (self.episodeNumber == self.totalEpisodes) ? "COMPLETED" : "CURRENT"
                 }
             }()
-
-
-
+            
             client.updateAnimeProgress(
                 animeId: self.aniListID,
                 episodeNumber: self.episodeNumber,

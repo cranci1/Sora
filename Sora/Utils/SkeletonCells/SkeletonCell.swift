@@ -11,7 +11,7 @@ struct HomeSkeletonCell: View {
     let cellWidth: CGFloat
     
     var body: some View {
-        VStack {
+        ZStack(alignment: .bottom) {
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color.gray.opacity(0.3))
                 .frame(width: cellWidth, height: cellWidth * 1.5)
@@ -31,11 +31,12 @@ struct SearchSkeletonCell: View {
     let cellWidth: CGFloat
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        ZStack(alignment: .bottom) {
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color.gray.opacity(0.3))
                 .frame(width: cellWidth, height: cellWidth * 1.5)
                 .shimmering()
+            
             RoundedRectangle(cornerRadius: 5)
                 .fill(Color.gray.opacity(0.3))
                 .frame(width: cellWidth, height: 20)

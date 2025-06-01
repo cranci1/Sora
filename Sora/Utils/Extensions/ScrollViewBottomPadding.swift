@@ -19,7 +19,7 @@ struct ScrollViewBottomPadding: ViewModifier {
 
 extension View {
     func shimmering() -> some View {
-        self.modifier(Shimmer())
+        modifier(Shimmer())
     }
 
     func scrollViewBottomPadding() -> some View {

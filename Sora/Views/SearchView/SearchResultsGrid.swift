@@ -66,7 +66,6 @@ struct SearchResultsGrid: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .padding(4)
                 }
-                .navigationViewStyle(StackNavigationViewStyle())
             }
         }
         .padding(.top)

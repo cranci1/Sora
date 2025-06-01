@@ -108,16 +108,8 @@ struct MediaInfoView: View {
                 .navigationBarHidden(true)
                 .navigationBarTitleDisplayMode(.inline)
                 .navigationBarTitle("")
-                .navigationViewStyle(StackNavigationViewStyle())
+                .navigationBarBackButtonHidden(true)
                 .ignoresSafeArea(.container, edges: .top)
-                .onAppear {
-                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                       let window = windowScene.windows.first,
-                       let navigationController = window.rootViewController?.children.first as? UINavigationController {
-                        navigationController.interactivePopGestureRecognizer?.isEnabled = true
-                        navigationController.interactivePopGestureRecognizer?.delegate = nil
-                    }
-                }
             
             VStack {
                 HStack {
@@ -284,11 +276,8 @@ struct MediaInfoView: View {
             }
         }
         .onAppear {
-            UIScrollView.appearance().bounces = false
+            UIScrollView.appearance().bounces = true
         }
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarTitle("")
-        .navigationViewStyle(StackNavigationViewStyle())
         .ignoresSafeArea(.container, edges: .top)
     }
     

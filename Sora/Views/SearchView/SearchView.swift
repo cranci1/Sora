@@ -115,7 +115,6 @@ struct SearchView: View {
                         onClearHistory: clearSearchHistory
                     )
                 }
-                .navigationViewStyle(StackNavigationViewStyle())
                 .scrollViewBottomPadding()
                 .simultaneousGesture(
                     DragGesture().onChanged { _ in
@@ -125,6 +124,7 @@ struct SearchView: View {
             }
             .navigationBarHidden(true)
         }
+        .navigationViewStyle(.stack)
         .onAppear {
             loadSearchHistory()
             if !searchQuery.isEmpty {
@@ -163,7 +163,6 @@ struct SearchView: View {
                 }
             }
         }
-        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     private func performSearch() {

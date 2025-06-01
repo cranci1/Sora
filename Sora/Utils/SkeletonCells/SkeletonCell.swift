@@ -39,6 +39,7 @@ struct SearchSkeletonCell: View {
             RoundedRectangle(cornerRadius: 5)
                 .fill(Color.gray.opacity(0.3))
                 .frame(width: cellWidth - 10, height: 20)
+                .padding(.bottom)
                 .shimmering()
         }
     }

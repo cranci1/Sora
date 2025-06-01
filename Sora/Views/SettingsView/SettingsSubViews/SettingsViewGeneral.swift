@@ -154,7 +154,7 @@ struct SettingsViewGeneral: View {
     @AppStorage("fetchEpisodeMetadata") private var fetchEpisodeMetadata: Bool = true
     @AppStorage("analyticsEnabled") private var analyticsEnabled: Bool = false
     @AppStorage("metadataProviders") private var metadataProviders: String = "TMDB"
-    @AppStorage("tmdbImageWidth") private var TMDBimageWidht: String = "w780"
+    @AppStorage("tmdbImageWidth") private var TMDBimageWidht: String = "original"
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     @AppStorage("currentAppIcon") private var currentAppIcon = "Default"

@@ -219,14 +219,14 @@ struct MediaInfoView: View {
                     .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1.5, sharpeningRadius: 0.8))
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: UIScreen.main.bounds.width, height: 600)
+                    .frame(width: UIScreen.main.bounds.width, height: 700)
                     .clipped()
                 KFImage(URL(string: imageUrl))
                     .placeholder { EmptyView() }
                     .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1.5, sharpeningRadius: 0.8))
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: UIScreen.main.bounds.width, height: 600)
+                    .frame(width: UIScreen.main.bounds.width, height: 700)
                     .clipped()
                     .blur(radius: 30)
                     .mask(

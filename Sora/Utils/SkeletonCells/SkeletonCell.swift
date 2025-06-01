@@ -20,9 +20,8 @@ struct HomeSkeletonCell: View {
             
             RoundedRectangle(cornerRadius: 5)
                 .fill(Color.gray.opacity(0.3))
-                .frame(width: cellWidth, height: 20)
+                .frame(width: cellWidth - 10, height: 20)
                 .shimmering()
-                .padding([.leading, .trailing], 4)
         }
     }
 }
@@ -39,9 +38,8 @@ struct SearchSkeletonCell: View {
             
             RoundedRectangle(cornerRadius: 5)
                 .fill(Color.gray.opacity(0.3))
-                .frame(width: cellWidth, height: 20)
+                .frame(width: cellWidth - 10, height: 20)
                 .shimmering()
-                .padding([.leading, .trailing], 4)
         }
     }
 }

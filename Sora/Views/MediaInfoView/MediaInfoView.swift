@@ -47,6 +47,7 @@ struct MediaInfoView: View {
     
     @State private var isModuleSelectorPresented = false
     @State private var isError = false
+    @State private var isMatchingPresented = false
     
     @StateObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
@@ -149,6 +150,10 @@ struct MediaInfoView: View {
         }
         .onAppear {
             buttonRefreshTrigger.toggle()
+            
+            let savedID = UserDefaults.standard.integer(forKey: "custom_anilist_id_\(href)")
+            if savedID != 0 {
+                customAniListID = savedID }
             
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
             
@@ -490,6 +495,11 @@ struct MediaInfoView: View {
                     Label("Open in AniList", systemImage: "link")
                 }
             }
+            Button(action: {
+                isMatchingPresented = true
+            }) {
+                Label("Match with AniList", systemImage: "magnifyingglass")
+            }
             
             Divider()
             
@@ -508,6 +518,16 @@ struct MediaInfoView: View {
                 .background(Color.gray.opacity(0.2))
                 .clipShape(Circle())
                 .circularGradientOutline()
+        }
+        .sheet(isPresented: $isMatchingPresented) {
+                AnilistMatchPopupView(seriesTitle: title) { selectedID in
+                    // 1) Assign the new AniList ID:
+                    self.customAniListID = selectedID
+                    self.itemID = selectedID
+                    UserDefaults.standard.set(selectedID, forKey: "custom_anilist_id_\(href)")
+                    
+                    isMatchingPresented = false
+                }
         }
     }
     

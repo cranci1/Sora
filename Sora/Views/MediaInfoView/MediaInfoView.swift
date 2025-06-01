@@ -48,6 +48,7 @@ struct MediaInfoView: View {
     @State private var isModuleSelectorPresented = false
     @State private var isError = false
     @State private var isMatchingPresented = false
+    @State private var matchedTitle: String? = nil
     
     @StateObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
@@ -463,16 +464,22 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var menuButton: some View {
         Menu {
-            Button(action: {
-                showCustomIDAlert()
-            }) {
-                Label("Set Custom AniList ID", systemImage: "number")
+            // Show current match (title if available, else ID)
+            if let id = itemID ?? customAniListID {
+                let labelText = (matchedTitle?.isEmpty == false ? matchedTitle! : "\(id)")
+                Text("Matched with: \(labelText)")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding(.vertical, 4)
             }
-            
-            if let customID = customAniListID {
+
+            Divider()
+
+            if let _ = customAniListID {
                 Button(action: {
                     customAniListID = nil
                     itemID = nil
+                    matchedTitle = nil
                     fetchItemID(byTitle: cleanTitle(title)) { result in
                         switch result {
                         case .success(let id):
@@ -504,8 +511,21 @@ struct MediaInfoView: View {
             Divider()
             
             Button(action: {
-                Logger.shared.log("Debug Info:\nTitle: \(title)\nHref: \(href)\nModule: \(module.metadata.sourceName)\nAniList ID: \(itemID ?? -1)\nCustom ID: \(customAniListID ?? -1)", type: "Debug")
-                DropManager.shared.showDrop(title: "Debug Info Logged", subtitle: "", duration: 1.0, icon: UIImage(systemName: "terminal"))
+                Logger.shared.log("""
+                    Debug Info:
+                    Title: \(title)
+                    Href: \(href)
+                    Module: \(module.metadata.sourceName)
+                    AniList ID: \(itemID ?? -1)
+                    Custom ID: \(customAniListID ?? -1)
+                    Matched Title: \(matchedTitle ?? "—")
+                    """, type: "Debug")
+                DropManager.shared.showDrop(
+                    title: "Debug Info Logged",
+                    subtitle: "",
+                    duration: 1.0,
+                    icon: UIImage(systemName: "terminal")
+                )
             }) {
                 Label("Log Debug Info", systemImage: "terminal")
             }
@@ -782,6 +802,44 @@ struct MediaInfoView: View {
                 .disabled(isFetchingEpisode)
             }
         }
+    }
+    
+    private func fetchAniListTitle(id: Int) {
+        let query = """
+        query ($id: Int) {
+          Media(id: $id, type: ANIME) {
+            title {
+              english
+              romaji
+            }
+          }
+        }
+        """
+        let variables: [String: Any] = ["id": id]
+
+        guard let url = URL(string: "https://graphql.anilist.co") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["query": query, "variables": variables])
+
+        URLSession.shared.dataTask(with: request) { data, _, _ in
+            guard
+                let data = data,
+                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                let dataDict = json["data"] as? [String: Any],
+                let media = dataDict["Media"] as? [String: Any],
+                let titleDict = media["title"] as? [String: Any]
+            else { return }
+
+            let english = titleDict["english"] as? String
+            let romaji  = titleDict["romaji"]  as? String
+            let finalTitle = (english?.isEmpty == false ? english! : (romaji ?? "Unknown"))
+
+            DispatchQueue.main.async {
+                matchedTitle = finalTitle
+            }
+        }.resume()
     }
 
     

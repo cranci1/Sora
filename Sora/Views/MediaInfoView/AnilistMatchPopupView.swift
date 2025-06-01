@@ -23,20 +23,21 @@ struct AnilistMatchPopupView: View {
             || (selectedAppearance == .system && colorScheme == .light)
     }
 
+    @State private var manualIDText: String = ""
+    @State private var showingManualIDAlert = false
+
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationView {
             ScrollView {
-                // Begin inlined AnilistMatchView content
                 VStack(alignment: .leading, spacing: 4) {
-                    // Title (empty string results in no visible label, but structure remains)
+                    // (Optional) A hidden header; can be omitted if empty
                     Text("".uppercased())
                         .font(.footnote)
                         .foregroundStyle(.gray)
                         .padding(.horizontal, 10)
 
-                    // Container for the dynamic list/content
                     VStack(spacing: 0) {
                         if isLoading {
                             ProgressView()
@@ -111,10 +112,9 @@ struct AnilistMatchPopupView: View {
                             .padding(.top, 16)
                         }
                     }
-                    .padding(.horizontal, 0)
-                    // Footer text if any
-                    if let footer = results.isEmpty ? nil : "Tap a title to override the current match." {
-                        Text(footer)
+
+                    if !results.isEmpty {
+                        Text("Tap a title to override the current match.")
                             .font(.footnote)
                             .foregroundStyle(.gray)
                             .padding(.horizontal, 20)
@@ -122,7 +122,6 @@ struct AnilistMatchPopupView: View {
                     }
                 }
                 .padding(.top, 2)
-                // End inlined AnilistMatchView content
             }
             .navigationTitle("AniList Match")
             .navigationBarTitleDisplayMode(.inline)
@@ -133,7 +132,29 @@ struct AnilistMatchPopupView: View {
                     }
                     .foregroundColor(isLightMode ? .black : .white)
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        manualIDText = ""
+                        showingManualIDAlert = true
+                    }) {
+                        Image(systemName: "number")
+                            .foregroundColor(isLightMode ? .black : .white)
+                    }
+                }
             }
+            .alert("Set Custom AniList ID", isPresented: $showingManualIDAlert, actions: {
+                TextField("AniList ID", text: $manualIDText)
+                    .keyboardType(.numberPad)
+                Button("Cancel", role: .cancel) { }
+                Button("Save", action: {
+                    if let idInt = Int(manualIDText.trimmingCharacters(in: .whitespaces)) {
+                        onSelect(idInt)
+                        dismiss()
+                    }
+                })
+            }, message: {
+                Text("Enter the AniList ID for this media")
+            })
         }
         .onAppear(perform: fetchMatches)
     }

@@ -23,7 +23,7 @@
 		04F08EE22DE10C40006B29D9 /* TabItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EE12DE10C27006B29D9 /* TabItem.swift */; };
 		04F08EE42DE10D6F006B29D9 /* AllBookmarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EE32DE10D6B006B29D9 /* AllBookmarks.swift */; };
 		130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */; };
-		13103E8B2D58E028000F0673 /* ScrollViewBottomPadding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8A2D58E028000F0673 /* ScrollViewBottomPadding.swift */; };
+		13103E8B2D58E028000F0673 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8A2D58E028000F0673 /* View.swift */; };
 		13103E8E2D58E04A000F0673 /* SkeletonCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8D2D58E04A000F0673 /* SkeletonCell.swift */; };
 		131270172DC13A010093AA9C /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131270162DC13A010093AA9C /* DownloadManager.swift */; };
 		131845F92D47C62D00CA7A54 /* SettingsViewGeneral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131845F82D47C62D00CA7A54 /* SettingsViewGeneral.swift */; };
@@ -122,7 +122,7 @@
 		04F08EE32DE10D6B006B29D9 /* AllBookmarks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllBookmarks.swift; sourceTree = "<group>"; };
 		130C6BF82D53A4C200DC1432 /* Sora.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sora.entitlements; sourceTree = "<group>"; };
 		130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
-		13103E8A2D58E028000F0673 /* ScrollViewBottomPadding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollViewBottomPadding.swift; sourceTree = "<group>"; };
+		13103E8A2D58E028000F0673 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
 		13103E8D2D58E04A000F0673 /* SkeletonCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonCell.swift; sourceTree = "<group>"; };
 		131270162DC13A010093AA9C /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
 		131845F82D47C62D00CA7A54 /* SettingsViewGeneral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewGeneral.swift; sourceTree = "<group>"; };
@@ -420,7 +420,7 @@
 				133D7C872D2BE2640075467E /* URLSession.swift */,
 				1359ED132D76F49900C13034 /* finTopView.swift */,
 				13CBEFD92D5F7D1200D011EE /* String.swift */,
-				13103E8A2D58E028000F0673 /* ScrollViewBottomPadding.swift */,
+				13103E8A2D58E028000F0673 /* View.swift */,
 				13DB468F2D900A38008CBC03 /* URL.swift */,
 			);
 			path = Extensions;
@@ -758,7 +758,7 @@
 				04CD76DB2DE20F2200733536 /* AllWatching.swift in Sources */,
 				13103E8E2D58E04A000F0673 /* SkeletonCell.swift in Sources */,
 				13D842552D45267500EBBFA6 /* DropManager.swift in Sources */,
-				13103E8B2D58E028000F0673 /* ScrollViewBottomPadding.swift in Sources */,
+				13103E8B2D58E028000F0673 /* View.swift in Sources */,
 				72443C7D2DC8036500A61321 /* DownloadView.swift in Sources */,
 				1327FBA92D758DEA00FC6689 /* UIDevice+Model.swift in Sources */,
 				138AA1B82D2D66FD0021F9DF /* EpisodeCell.swift in Sources */,

@@ -27,7 +27,7 @@ extension UserDefaults {
             let data = try NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: false)
             set(data, forKey: key)
         } catch {
-            print("Error archiving color: \(error)")
+            Logger.shared.log("Error archiving color: \(error)", type: "Error")
         }
     }
 }

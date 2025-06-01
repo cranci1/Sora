@@ -21,7 +21,7 @@ extension View {
     func shimmering() -> some View {
         modifier(Shimmer())
     }
-
+    
     func scrollViewBottomPadding() -> some View {
         modifier(ScrollViewBottomPadding())
     }

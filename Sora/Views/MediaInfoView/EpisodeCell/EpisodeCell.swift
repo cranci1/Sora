@@ -231,6 +231,15 @@ struct EpisodeCell: View {
         .onChange(of: progress) { _ in
             updateProgress()
         }
+        .onChange(of: itemID) { newID in
+            // 1) Clear any cached title/image so that the UI shows the loading spinner:
+            loadedFromCache = false
+            isLoading = true
+            retryAttempts = maxRetryAttempts  // reset retries if you want
+
+            // 2) Call the same logic you already use to pull per-episode info:
+            fetchEpisodeDetails()
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadProgressChanged"))) { _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 updateDownloadStatus()

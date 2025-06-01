@@ -190,6 +190,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var subtitleDelay: Double = 0.0
     var currentPlaybackSpeed: Float = 1.0
     
+    private var wasPlayingBeforeBackground = false
+    private var backgroundToken: Any?
+    private var foregroundToken: Any?
+    
     init(module: ScrapingModule,
          urlString: String,
          fullUrl: String,
@@ -249,6 +253,14 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
+        
+        backgroundToken = NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main ) { [weak self] _ in
+            self?.handleEnterBackground()
+        }
+        
+        foregroundToken = NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main ) { [weak self] _ in
+            self?.handleBecomeActive()
+        }
         
         setupHoldGesture()
         loadSubtitleSettings()
@@ -404,6 +416,21 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         player.pause()
     }
     
+    deinit {
+        if let token = timeObserverToken {
+            player.removeTimeObserver(token)
+        }
+        
+        if let backgroundToken = backgroundToken {
+            NotificationCenter.default.removeObserver(backgroundToken)
+        }
+        if let foregroundToken = foregroundToken {
+            NotificationCenter.default.removeObserver(foregroundToken)
+        }
+        
+        player.pause()
+    }
+
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         guard context == &playerItemKVOContext else {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
@@ -1766,6 +1793,25 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         }
     }
     
+    func handleEnterBackground() {
+        wasPlayingBeforeBackground = player.rate > 0
+        if isPipAutoEnabled && AVPictureInPictureController.isPictureInPictureSupported() {
+            startPipIfNeeded()
+        } else {
+            player.pause()
+        }
+    }
+    
+    private func handleBecomeActive() {
+        if wasPlayingBeforeBackground && 
+           !(pipController?.isPictureInPictureActive ?? false) {
+            player.play()
+            player.rate = currentPlaybackSpeed
+            isPlaying = true
+            playPauseButton.image = UIImage(systemName: "pause.fill")
+        }
+    }
+
     @objc private func skipIntro() {
         if let range = skipIntervals.op {
             player.seek(to: range.end)
@@ -1875,6 +1921,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     return (self.episodeNumber == self.totalEpisodes) ? "COMPLETED" : "CURRENT"
                 }
             }()
+
+
 
             client.updateAnimeProgress(
                 animeId: self.aniListID,

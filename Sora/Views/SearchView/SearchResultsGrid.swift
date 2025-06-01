@@ -65,7 +65,7 @@ struct SearchResultsGrid: View {
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .padding(4)
-                }
+                }.id(item.href)
             }
         }
         .padding(.top)

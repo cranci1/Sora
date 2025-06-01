@@ -11,18 +11,11 @@ struct HomeSkeletonCell: View {
     let cellWidth: CGFloat
     
     var body: some View {
-        ZStack(alignment: .bottom) {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: cellWidth, height: cellWidth * 1.5)
-                .cornerRadius(10)
-                .shimmering()
-            
-            RoundedRectangle(cornerRadius: 5)
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: cellWidth - 10, height: 20)
-                .shimmering()
-        }
+        RoundedRectangle(cornerRadius: 10)
+            .fill(Color.gray.opacity(0.3))
+            .frame(width: cellWidth, height: cellWidth * 1.5)
+            .cornerRadius(10)
+            .shimmering()
     }
 }
 
@@ -30,17 +23,9 @@ struct SearchSkeletonCell: View {
     let cellWidth: CGFloat
     
     var body: some View {
-        ZStack(alignment: .bottom) {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: cellWidth, height: cellWidth * 1.5)
-                .shimmering()
-            
-            RoundedRectangle(cornerRadius: 5)
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: cellWidth - 10, height: 20)
-                .padding(.bottom)
-                .shimmering()
-        }
+        RoundedRectangle(cornerRadius: 10)
+            .fill(Color.gray.opacity(0.3))
+            .frame(width: cellWidth, height: cellWidth * 1.5)
+            .shimmering()
     }
 }

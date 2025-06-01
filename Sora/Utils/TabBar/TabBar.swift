@@ -77,9 +77,9 @@ struct TabBar: View {
                     }
                 }) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 30))
+                        .font(.system(size: 20))
                         .foregroundStyle(.gray)
-                        .frame(width: 24, height: 24)
+                        .frame(width: 20, height: 20)
                         .matchedGeometryEffect(id: "xmark", in: animation)
                         .padding(16)
                         .background(
@@ -133,7 +133,7 @@ struct TabBar: View {
                                 searchQuery = ""
                             }) {
                                 Image(systemName: "xmark.circle.fill")
-                                    .font(.footnote)
+                                    .font(.system(size: 16))
                                     .foregroundStyle(.gray)
                                     .opacity(0.7)
                             }

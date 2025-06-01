@@ -215,8 +215,12 @@ struct ContributorView: View {
                 
                 Text(contributor.login)
                     .font(.headline)
-                    .foregroundColor(contributor.login == "IBH-RAD" ? Color(hexTwo: "#41127b") : .accentColor)
-                
+                    .foregroundColor(
+                        contributor.login == "IBH-RAD" ? Color(hexTwo: "#41127b") :
+                        contributor.login == "50n50" ? Color(hexTwo: "#fa4860") :
+                        .accentColor
+                    )
+
                 Spacer()
                 Image(systemName: "safari")
                     .foregroundColor(.accentColor)

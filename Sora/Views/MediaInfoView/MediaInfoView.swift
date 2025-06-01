@@ -174,6 +174,13 @@ struct MediaInfoView: View {
                 AnalyticsManager.shared.sendEvent(event: "search", additionalData: ["title": title])
             }
             tabBarController.hideTabBar()
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let navigationController = window.rootViewController?.children.first as? UINavigationController {
+                navigationController.interactivePopGestureRecognizer?.isEnabled = true
+                navigationController.interactivePopGestureRecognizer?.delegate = nil
+            }
         }
         .onDisappear(){
             tabBarController.showTabBar()
@@ -276,7 +283,7 @@ struct MediaInfoView: View {
             }
         }
         .onAppear {
-            UIScrollView.appearance().bounces = true
+            UIScrollView.appearance().bounces = false
         }
         .ignoresSafeArea(.container, edges: .top)
     }
@@ -290,11 +297,11 @@ struct MediaInfoView: View {
                 if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
                     HStack(spacing: 4) {
                         Image(systemName: "calendar")
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.accentColor)
                         
                         Text(airdate)
                             .font(.system(size: 14))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.accentColor)
                     }
                 }
                 
@@ -366,9 +373,9 @@ struct MediaInfoView: View {
                                         let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
                                         let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
                                         let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
-                                        return progress <= 0.9 ? "Mark as watched" : "Reset progress"
+                                        return progress <= 0.9 ? "Mark watched" : "Reset progress"
                                     }
-                                    return "Mark as watched"
+                                    return "Mark watched"
                                 }())
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(.primary)
@@ -422,7 +429,6 @@ struct MediaInfoView: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.top, 4)
-                        .padding(.leading, 2.8)
                     Text("The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases.")
                         .font(.caption)
                         .foregroundColor(.gray)

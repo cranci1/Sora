@@ -59,7 +59,6 @@ struct SettingsView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 16)
                     
-                    // MAIN SECTION
                     VStack(alignment: .leading, spacing: 4) {
                         Text("MAIN")
                             .font(.footnote)
@@ -77,13 +76,13 @@ struct SettingsView: View {
                             }
                             Divider().padding(.horizontal, 16)
                             
-                            NavigationLink(destination: SettingsViewModule()) {
-                                SettingsNavigationRow(icon: "cube", title: "Modules")
+                            NavigationLink(destination: SettingsViewDownloads()) {
+                                SettingsNavigationRow(icon: "arrow.down.circle", title: "Download")
                             }
                             Divider().padding(.horizontal, 16)
                             
-                            NavigationLink(destination: SettingsViewDownloads()) {
-                                SettingsNavigationRow(icon: "arrow.down.circle", title: "Download Settings")
+                            NavigationLink(destination: SettingsViewModule()) {
+                                SettingsNavigationRow(icon: "cube", title: "Modules")
                             }
                             Divider().padding(.horizontal, 16)
                             
@@ -110,7 +109,6 @@ struct SettingsView: View {
                         .padding(.horizontal, 20)
                     }
                     
-                    // DATA/LOGS SECTION
                     VStack(alignment: .leading, spacing: 4) {
                         Text("DATA/LOGS")
                             .font(.footnote)
@@ -146,7 +144,6 @@ struct SettingsView: View {
                         .padding(.horizontal, 20)
                     }
                     
-                    // INFOS SECTION
                     VStack(alignment: .leading, spacing: 4) {
                         Text("INFOS")
                             .font(.footnote)

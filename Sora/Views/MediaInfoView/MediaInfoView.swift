@@ -9,6 +9,8 @@ import SwiftUI
 import Kingfisher
 import SafariServices
 
+private let tmdbFetcher = TMDBFetcher()
+
 struct MediaItem: Identifiable {
     let id = UUID()
     let description: String
@@ -18,7 +20,7 @@ struct MediaItem: Identifiable {
 
 struct MediaInfoView: View {
     let title: String
-    let imageUrl: String
+    @State var imageUrl: String
     let href: String
     let module: ScrapingModule
     
@@ -47,6 +49,8 @@ struct MediaInfoView: View {
     
     @State private var isModuleSelectorPresented = false
     @State private var isError = false
+    @State private var isMatchingPresented = false
+    @State private var matchedTitle: String? = nil
     
     @StateObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
@@ -73,6 +77,7 @@ struct MediaInfoView: View {
     @State private var showRangeInput: Bool = false
     @State private var isBulkDownloading: Bool = false
     @State private var bulkDownloadProgress: String = ""
+    @State private var tmdbType: TMDBFetcher.MediaType? = nil
     
     private var isGroupedBySeasons: Bool {
         return groupedEpisodes().count > 1
@@ -150,6 +155,13 @@ struct MediaInfoView: View {
         .onAppear {
             buttonRefreshTrigger.toggle()
             
+            let savedID = UserDefaults.standard.integer(forKey: "custom_anilist_id_\(href)")
+            if savedID != 0 { customAniListID = savedID }
+            
+            if let savedPoster = UserDefaults.standard.string(forKey: "tmdbPosterURL_\(href)") {
+                self.imageUrl = savedPoster
+            }
+            
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
             
             if !hasFetched {
@@ -161,15 +173,7 @@ struct MediaInfoView: View {
                     itemID = savedID
                     Logger.shared.log("Using custom AniList ID: \(savedID)", type: "Debug")
                 } else {
-                    fetchItemID(byTitle: cleanTitle(title)) { result in
-                        switch result {
-                        case .success(let id):
-                            itemID = id
-                        case .failure(let error):
-                            Logger.shared.log("Failed to fetch AniList ID: \(error)")
-                            AnalyticsManager.shared.sendEvent(event: "error", additionalData: ["error": error, "message": "Failed to fetch AniList ID"])
-                        }
-                    }
+                    fetchMetadataIDIfNeeded()
                 }
                 
                 selectedRange = 0..<episodeChunkSize
@@ -212,14 +216,14 @@ struct MediaInfoView: View {
                             .fill(Color.gray.opacity(0.3))
                             .shimmering()
                     }
-                    .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1, sharpeningRadius: 1))
+                    .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1.5, sharpeningRadius: 0.8))
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: UIScreen.main.bounds.width, height: 600)
                     .clipped()
                 KFImage(URL(string: imageUrl))
                     .placeholder { EmptyView() }
-                    .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1, sharpeningRadius: 1))
+                    .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1.5, sharpeningRadius: 0.8))
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: UIScreen.main.bounds.width, height: 600)
@@ -281,7 +285,7 @@ struct MediaInfoView: View {
         }
         .onAppear {
             UIScrollView.appearance().bounces = false
-        } 
+        }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarTitle("")
         .navigationViewStyle(StackNavigationViewStyle())
@@ -336,7 +340,7 @@ struct MediaInfoView: View {
             }
             
             playAndBookmarkSection
-
+            
             if episodeLinks.count == 1 {
                 VStack(spacing: 12) {
                     HStack(spacing: 12) {
@@ -458,16 +462,21 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var menuButton: some View {
         Menu {
-            Button(action: {
-                showCustomIDAlert()
-            }) {
-                Label("Set Custom AniList ID", systemImage: "number")
+            if let id = itemID ?? customAniListID {
+                let labelText = (matchedTitle?.isEmpty == false ? matchedTitle! : "\(id)")
+                Text("Matched with: \(labelText)")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding(.vertical, 4)
             }
             
-            if let customID = customAniListID {
+            Divider()
+            
+            if let _ = customAniListID {
                 Button(action: {
                     customAniListID = nil
                     itemID = nil
+                    matchedTitle = nil
                     fetchItemID(byTitle: cleanTitle(title)) { result in
                         switch result {
                         case .success(let id):
@@ -491,11 +500,38 @@ struct MediaInfoView: View {
                 }
             }
             
+            if UserDefaults.standard.string(forKey: "metadataProviders") ?? "TMDB" == "AniList" {
+                Button(action: {
+                    isMatchingPresented = true
+                }) {
+                    Label("Match with AniList", systemImage: "magnifyingglass")
+                }
+            }
+            
+            Button(action: {
+                fetchTMDBPosterImageAndSet()
+            }) {
+                Label("Use TMDB Poster Image", systemImage: "photo")
+            }
+            
             Divider()
             
             Button(action: {
-                Logger.shared.log("Debug Info:\nTitle: \(title)\nHref: \(href)\nModule: \(module.metadata.sourceName)\nAniList ID: \(itemID ?? -1)\nCustom ID: \(customAniListID ?? -1)", type: "Debug")
-                DropManager.shared.showDrop(title: "Debug Info Logged", subtitle: "", duration: 1.0, icon: UIImage(systemName: "terminal"))
+                Logger.shared.log("""
+                    Debug Info:
+                    Title: \(title)
+                    Href: \(href)
+                    Module: \(module.metadata.sourceName)
+                    AniList ID: \(itemID ?? -1)
+                    Custom ID: \(customAniListID ?? -1)
+                    Matched Title: \(matchedTitle ?? "—")
+                    """, type: "Debug")
+                DropManager.shared.showDrop(
+                    title: "Debug Info Logged",
+                    subtitle: "",
+                    duration: 1.0,
+                    icon: UIImage(systemName: "terminal")
+                )
             }) {
                 Label("Log Debug Info", systemImage: "terminal")
             }
@@ -508,6 +544,15 @@ struct MediaInfoView: View {
                 .background(Color.gray.opacity(0.2))
                 .clipShape(Circle())
                 .circularGradientOutline()
+        }
+        .sheet(isPresented: $isMatchingPresented) {
+            AnilistMatchPopupView(seriesTitle: title) { selectedID in
+                self.customAniListID = selectedID
+                self.itemID = selectedID
+                UserDefaults.standard.set(selectedID, forKey: "custom_anilist_id_\(href)")
+                self.fetchDetails()
+                isMatchingPresented = false
+            }
         }
     }
     
@@ -635,10 +680,10 @@ struct MediaInfoView: View {
     }
     
     @ViewBuilder
-    private var seasonsEpisodeList: some View {
-        let seasons = groupedEpisodes()
-        if !seasons.isEmpty, selectedSeason < seasons.count {
-            ForEach(seasons[selectedSeason]) { ep in
+    private var flatEpisodeList: some View {
+        LazyVStack(spacing: 15) {
+            ForEach(episodeLinks.indices.filter { selectedRange.contains($0) }, id: \.self) { i in
+                let ep = episodeLinks[i]
                 let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
                 let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
                 let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
@@ -646,7 +691,7 @@ struct MediaInfoView: View {
                 let defaultBannerImageValue = getBannerImageBasedOnAppearance()
                 
                 EpisodeCell(
-                    episodeIndex: selectedSeason,
+                    episodeIndex: i,
                     episode: ep.href,
                     episodeID: ep.number - 1,
                     progress: progress,
@@ -669,10 +714,59 @@ struct MediaInfoView: View {
                         episodeTapAction(ep: ep, imageUrl: imageUrl)
                     },
                     onMarkAllPrevious: {
-                        markAllPreviousEpisodesAsWatched(ep: ep, inSeason: true)
-                    }
+                        markAllPreviousEpisodesInFlatList(ep: ep, index: i)
+                    },
+                    tmdbID: tmdbID,
+                    seasonNumber: 1
                 )
                     .disabled(isFetchingEpisode)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var seasonsEpisodeList: some View {
+        let seasons = groupedEpisodes()
+        if !seasons.isEmpty, selectedSeason < seasons.count {
+            LazyVStack(spacing: 15) {
+                ForEach(seasons[selectedSeason]) { ep in
+                    let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+                    let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+                    let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
+                    
+                    let defaultBannerImageValue = getBannerImageBasedOnAppearance()
+                    
+                    EpisodeCell(
+                        episodeIndex: selectedSeason,
+                        episode: ep.href,
+                        episodeID: ep.number - 1,
+                        progress: progress,
+                        itemID: itemID ?? 0,
+                        totalEpisodes: episodeLinks.count,
+                        defaultBannerImage: defaultBannerImageValue,
+                        module: module,
+                        parentTitle: title,
+                        showPosterURL: imageUrl,
+                        isMultiSelectMode: isMultiSelectMode,
+                        isSelected: selectedEpisodes.contains(ep.number),
+                        onSelectionChanged: { isSelected in
+                            if isSelected {
+                                selectedEpisodes.insert(ep.number)
+                            } else {
+                                selectedEpisodes.remove(ep.number)
+                            }
+                        },
+                        onTap: { imageUrl in
+                            episodeTapAction(ep: ep, imageUrl: imageUrl)
+                        },
+                        onMarkAllPrevious: {
+                            markAllPreviousEpisodesAsWatched(ep: ep, inSeason: true)
+                        },
+                        tmdbID: tmdbID,
+                        seasonNumber: selectedSeason + 1
+                    )
+                        .disabled(isFetchingEpisode)
+                }
             }
         } else {
             Text("No episodes available")
@@ -698,6 +792,65 @@ struct MediaInfoView: View {
         }
     }
     
+    private func fetchMetadataIDIfNeeded() {
+        let provider = UserDefaults.standard.string(forKey: "metadataProviders") ?? "TMDB"
+        let cleaned = cleanTitle(title)
+        
+        if provider == "TMDB" {
+            tmdbID = nil
+            tmdbFetcher.fetchBestMatchID(for: cleaned) { id, type in
+                DispatchQueue.main.async {
+                    self.tmdbID = id
+                    self.tmdbType = type
+                    Logger.shared.log("Fetched TMDB ID: \(id ?? -1) (\(type?.rawValue ?? "unknown")) for title: \(cleaned)", type: "Debug")
+                }
+            }
+        } else if provider == "Anilist" {
+            itemID = nil
+            fetchItemID(byTitle: cleaned) { result in
+                switch result {
+                case .success(let id):
+                    DispatchQueue.main.async {
+                        self.itemID = id
+                        Logger.shared.log("Fetched AniList ID: \(id) for title: \(cleaned)", type: "Debug")
+                    }
+                case .failure(let error):
+                    Logger.shared.log("Failed to fetch AniList ID: \(error)", type: "Error")
+                }
+            }
+        }
+    }
+    
+    private func fetchTMDBPosterImageAndSet() {
+        guard let tmdbID = tmdbID, let tmdbType = tmdbType else { return }
+        let apiType = tmdbType.rawValue
+        let urlString = "https://api.themoviedb.org/3/\(apiType)/\(tmdbID)?api_key=738b4edd0a156cc126dc4a4b8aea4aca"
+        guard let url = URL(string: urlString) else { return }
+
+        let tmdbImageWidth = UserDefaults.standard.string(forKey: "tmdbImageWidth") ?? "780"
+
+        URLSession.custom.dataTask(with: url) { data, _, error in
+            guard let data = data, error == nil else { return }
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let posterPath = json["poster_path"] as? String {
+                    let imageUrl: String
+                    if tmdbImageWidth == "original" {
+                        imageUrl = "https://image.tmdb.org/t/p/original\(posterPath)"
+                    } else {
+                        imageUrl = "https://image.tmdb.org/t/p/w\(tmdbImageWidth)\(posterPath)"
+                    }
+                    DispatchQueue.main.async {
+                        self.imageUrl = imageUrl
+                        UserDefaults.standard.set(imageUrl, forKey: "tmdbPosterURL_\(self.href)")
+                    }
+                }
+            } catch {
+                Logger.shared.log("Failed to parse TMDB poster: \(error.localizedDescription)", type: "Error")
+            }
+        }.resume()
+    }
+    
     private func markAllPreviousEpisodesAsWatched(ep: EpisodeLink, inSeason: Bool) {
         let userDefaults = UserDefaults.standard
         var updates = [String: Double]()
@@ -716,45 +869,6 @@ struct MediaInfoView: View {
             
             userDefaults.synchronize()
             Logger.shared.log("Marked episodes watched within season \(selectedSeason + 1) of \"\(title)\".", type: "General")
-        }
-    }
-    
-    @ViewBuilder
-    private var flatEpisodeList: some View {
-        ForEach(episodeLinks.indices.filter { selectedRange.contains($0) }, id: \.self) { i in
-            let ep = episodeLinks[i]
-            let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
-            let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
-            let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
-            
-            EpisodeCell(
-                episodeIndex: i,
-                episode: ep.href,
-                episodeID: ep.number - 1,
-                progress: progress,
-                itemID: itemID ?? 0,
-                totalEpisodes: episodeLinks.count,
-                defaultBannerImage: getBannerImageBasedOnAppearance(),
-                module: module,
-                parentTitle: title,
-                showPosterURL: imageUrl,
-                isMultiSelectMode: isMultiSelectMode,
-                isSelected: selectedEpisodes.contains(ep.number),
-                onSelectionChanged: { isSelected in
-                    if isSelected {
-                        selectedEpisodes.insert(ep.number)
-                    } else {
-                        selectedEpisodes.remove(ep.number)
-                    }
-                },
-                onTap: { imageUrl in
-                    episodeTapAction(ep: ep, imageUrl: imageUrl)
-                },
-                onMarkAllPrevious: {
-                    markAllPreviousEpisodesInFlatList(ep: ep, index: i)
-                }
-            )
-                .disabled(isFetchingEpisode)
         }
     }
     
@@ -1335,6 +1449,7 @@ struct MediaInfoView: View {
                 itemID = id
                 UserDefaults.standard.set(id, forKey: "custom_anilist_id_\(href)")
                 Logger.shared.log("Set custom AniList ID: \(id)", type: "General")
+                self.fetchDetails()
             }
         })
         

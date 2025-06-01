@@ -69,12 +69,18 @@ struct EpisodeCell: View {
         }
     }
     
+    let tmdbID: Int?
+    let seasonNumber: Int?
+
     init(episodeIndex: Int, episode: String, episodeID: Int, progress: Double,
          itemID: Int, totalEpisodes: Int? = nil, defaultBannerImage: String = "",
          module: ScrapingModule, parentTitle: String, showPosterURL: String? = nil,
          isMultiSelectMode: Bool = false, isSelected: Bool = false,
          onSelectionChanged: ((Bool) -> Void)? = nil,
-         onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void) {
+         onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void,
+         tmdbID: Int? = nil,
+         seasonNumber: Int? = nil
+    ) {
         self.episodeIndex = episodeIndex
         self.episode = episode
         self.episodeID = episodeID
@@ -99,6 +105,8 @@ struct EpisodeCell: View {
         self.onSelectionChanged = onSelectionChanged
         self.onTap = onTap
         self.onMarkAllPrevious = onMarkAllPrevious
+        self.tmdbID = tmdbID
+        self.seasonNumber = seasonNumber
     }
     
     var body: some View {
@@ -211,13 +219,14 @@ struct EpisodeCell: View {
         .onAppear {
             updateProgress()
             updateDownloadStatus()
-            
-            if let type = module.metadata.type?.lowercased(), type == "anime" {
+            if UserDefaults.standard.string(forKey: "metadataProviders") ?? "TMDB" == "TMDB" {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    fetchTMDBEpisodeImage()
+                }
+            } else {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     fetchAnimeEpisodeDetails()
                 }
-            } else {
-                isLoading = false
             }
             
             if let totalEpisodes = totalEpisodes, episodeID + 1 < totalEpisodes {
@@ -230,6 +239,12 @@ struct EpisodeCell: View {
         }
         .onChange(of: progress) { _ in
             updateProgress()
+        }
+        .onChange(of: itemID) { newID in
+            loadedFromCache = false
+            isLoading = true
+            retryAttempts = maxRetryAttempts
+            fetchEpisodeDetails()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadProgressChanged"))) { _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -756,6 +771,45 @@ struct EpisodeCell: View {
                 self.retryAttempts = 0
             }
         }
+    }
+    
+    private func fetchTMDBEpisodeImage() {
+        guard let tmdbID = tmdbID, let season = seasonNumber else { return }
+        let episodeNum = episodeID + 1
+        let urlString = "https://api.themoviedb.org/3/tv/\(tmdbID)/season/\(season)/episode/\(episodeNum)?api_key=738b4edd0a156cc126dc4a4b8aea4aca"
+        guard let url = URL(string: urlString) else { return }
+        
+        let tmdbImageWidth = UserDefaults.standard.string(forKey: "tmdbImageWidth") ?? "780"
+        
+        URLSession.custom.dataTask(with: url) { data, _, error in
+            guard let data = data, error == nil else { return }
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    let name = json["name"] as? String ?? ""
+                    let stillPath = json["still_path"] as? String
+                    let imageUrl: String
+                    if let stillPath = stillPath {
+                        if tmdbImageWidth == "original" {
+                            imageUrl = "https://image.tmdb.org/t/p/original\(stillPath)"
+                        } else {
+                            imageUrl = "https://image.tmdb.org/t/p/w\(tmdbImageWidth)\(stillPath)"
+                        }
+                    } else {
+                        imageUrl = ""
+                    }
+                    DispatchQueue.main.async {
+                        self.episodeTitle = name
+                        self.episodeImageUrl = imageUrl
+                        self.isLoading = false
+                    }
+                }
+            } catch {
+                Logger.shared.log("Failed to parse TMDB episode details: \(error.localizedDescription)", type: "Error")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
+            }
+        }.resume()
     }
     
     private func calculateMaxSwipeDistance() -> CGFloat {

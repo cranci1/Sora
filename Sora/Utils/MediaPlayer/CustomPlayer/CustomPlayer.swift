@@ -60,6 +60,20 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         return UserDefaults.standard.bool(forKey: "doubleTapSeekEnabled")
     }
     
+    private var isPipAutoEnabled: Bool {
+        UserDefaults.standard.bool(forKey: "pipAutoEnabled")
+    }
+    
+    private var isPipButtonVisible: Bool {
+        if UserDefaults.standard.object(forKey: "pipButtonVisible") == nil {
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: "pipButtonVisible")
+    }
+    private var pipController: AVPictureInPictureController?
+    private var pipButton: UIButton!
+
+    
     var portraitButtonVisibleConstraints: [NSLayoutConstraint] = []
     var portraitButtonHiddenConstraints: [NSLayoutConstraint] = []
     var landscapeButtonVisibleConstraints: [NSLayoutConstraint] = []
@@ -259,6 +273,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupAudioSession()
         updateSkipButtonsVisibility()
         setupHoldSpeedIndicator()
+        setupPipIfSupported()
         
         view.bringSubviewToFront(subtitleStackView)
         
@@ -1189,6 +1204,53 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         }
     }
     
+    private func setupPipIfSupported() {
+        guard AVPictureInPictureController.isPictureInPictureSupported() else {
+            return
+        }
+        let pipPlayerLayer = AVPlayerLayer(player: playerViewController.player)
+        pipPlayerLayer.frame = playerViewController.view.layer.bounds
+        pipPlayerLayer.videoGravity = .resizeAspect
+
+        playerViewController.view.layer.insertSublayer(pipPlayerLayer, at: 0)
+        pipController = AVPictureInPictureController(playerLayer: pipPlayerLayer)
+        pipController?.delegate = self
+
+            let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .medium)
+            let Image = UIImage(systemName: "pip", withConfiguration: config)
+            pipButton = UIButton(type: .system)
+            pipButton.setImage(Image, for: .normal)
+            pipButton.tintColor = .white
+            pipButton.addTarget(self, action: #selector(pipButtonTapped(_:)), for: .touchUpInside)
+
+            pipButton.layer.shadowColor = UIColor.black.cgColor
+            pipButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+            pipButton.layer.shadowOpacity = 0.6
+            pipButton.layer.shadowRadius = 4
+            pipButton.layer.masksToBounds = false
+
+            controlsContainerView.addSubview(pipButton)
+            pipButton.translatesAutoresizingMaskIntoConstraints = false
+
+            // NEW: pin pipButton to the left of lockButton:
+            NSLayoutConstraint.activate([
+                pipButton.centerYAnchor.constraint(equalTo: dimButton.centerYAnchor),
+                pipButton.trailingAnchor.constraint(equalTo: dimButton.leadingAnchor, constant: -8),
+                pipButton.widthAnchor.constraint(equalToConstant: 44),
+                pipButton.heightAnchor.constraint(equalToConstant: 44)
+            ])
+
+            pipButton.isHidden = !isPipButtonVisible
+
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(startPipIfNeeded),
+                name: UIApplication.willResignActiveNotification,
+                object: nil
+            )
+        }
+
+    
     func setupMenuButton() {
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
         let image = UIImage(systemName: "text.bubble", withConfiguration: config)
@@ -1643,6 +1705,24 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             isPlaying = true
             playPauseButton.image = UIImage(systemName: "pause.fill")
         }
+    }
+    
+    @objc private func pipButtonTapped(_ sender: UIButton) {
+        guard let pip = pipController else { return }
+        if pip.isPictureInPictureActive {
+            pip.stopPictureInPicture()
+        } else {
+            pip.startPictureInPicture()
+        }
+    }
+
+    @objc private func startPipIfNeeded() {
+        guard isPipAutoEnabled,
+              let pip = pipController,
+              !pip.isPictureInPictureActive else {
+            return
+        }
+        pip.startPictureInPicture()
     }
     
     @objc private func lockTapped() {
@@ -2494,8 +2574,25 @@ class GradientOverlayButton: UIButton {
     }
 }
 
+extension CustomMediaPlayerViewController: AVPictureInPictureControllerDelegate {
+    func pictureInPictureControllerWillStartPictureInPicture(_ pipController: AVPictureInPictureController) {
+        pipButton.alpha = 0.5
+    }
+    
+    func pictureInPictureControllerDidStopPictureInPicture(_ pipController: AVPictureInPictureController) {
+        pipButton.alpha = 1.0
+    }
+    
+    func pictureInPictureController(_ pipController: AVPictureInPictureController,
+                                    failedToStartPictureInPictureWithError error: Error) {
+        
+        Logger.shared.log("PiP failed to start: \(error.localizedDescription)", type: "Error")
+    }
+}
+
 // yes? Like the plural of the famous american rapper ye? -IBHRAD
 // low taper fade the meme is massive -cranci
-// cranci still doesnt have a job -seiike
+// The mind is the source of good and evil, only you yourself can decide which you will bring yourself. -seiike
 // guys watch Clannad already - ibro
 // May the Divine Providence bestow its infinite mercy upon your soul, and may eternal grace find you beyond the shadows of this mortal realm. - paul, 15/11/2005 - 13/05/2023
+// this dumbass ↑ defo used gpt

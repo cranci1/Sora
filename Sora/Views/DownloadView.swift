@@ -739,7 +739,6 @@ struct EnhancedActiveDownloadCard: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 16) {
-                // Thumbnail
                 Group {
                     if let imageURL = download.imageURL {
                         KFImage(imageURL)
@@ -761,7 +760,6 @@ struct EnhancedActiveDownloadCard: View {
                 .frame(width: 64, height: 64)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 
-                // Content
                 VStack(alignment: .leading, spacing: 8) {
                     Text(download.title ?? download.originalURL.lastPathComponent)
                         .font(.headline)
@@ -769,7 +767,6 @@ struct EnhancedActiveDownloadCard: View {
                         .lineLimit(2)
                         .foregroundStyle(.primary)
                     
-                    // Progress Section
                     VStack(spacing: 6) {
                         HStack {
                             if download.queueStatus == .queued {
@@ -809,7 +806,6 @@ struct EnhancedActiveDownloadCard: View {
                     }
                 }
                 
-                // Controls
                 HStack(spacing: 12) {
                     if download.queueStatus == .queued {
                         Button(action: cancelDownload) {

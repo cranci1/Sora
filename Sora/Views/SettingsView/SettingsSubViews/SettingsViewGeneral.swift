@@ -150,17 +150,17 @@ fileprivate struct SettingsPickerRow<T: Hashable>: View {
 
 struct SettingsViewGeneral: View {
     @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 100
-    @AppStorage("refreshModulesOnLaunch") private var refreshModulesOnLaunch: Bool = false
+    @AppStorage("refreshModulesOnLaunch") private var refreshModulesOnLaunch: Bool = true
     @AppStorage("fetchEpisodeMetadata") private var fetchEpisodeMetadata: Bool = true
     @AppStorage("analyticsEnabled") private var analyticsEnabled: Bool = false
-    @AppStorage("multiThreads") private var multiThreadsEnabled: Bool = false
-    @AppStorage("metadataProviders") private var metadataProviders: String = "AniList"
+    @AppStorage("metadataProviders") private var metadataProviders: String = "TMDB"
+    @AppStorage("tmdbImageWidth") private var TMDBimageWidht: String = "w780"
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     @AppStorage("currentAppIcon") private var currentAppIcon = "Default"
-    @AppStorage("episodeSortOrder") private var episodeSortOrder: String = "Ascending"
     
-    private let metadataProvidersList = ["AniList"]
+    private let metadataProvidersList = ["AniList", "TMDB"]
+    private let TMDBimageWidhtList = ["300", "500", "780", "1280", "original"]
     private let sortOrderOptions = ["Ascending", "Descending"]
     @EnvironmentObject var settings: Settings
     @State private var showAppIconPicker = false
@@ -224,14 +224,34 @@ struct SettingsViewGeneral: View {
                         isOn: $fetchEpisodeMetadata
                     )
                     
-                    SettingsPickerRow(
-                        icon: "server.rack",
-                        title: "Metadata Provider",
-                        options: metadataProvidersList,
-                        optionToString: { $0 },
-                        selection: $metadataProviders,
-                        showDivider: false
-                    )
+                    if metadataProviders == "TMDB" {
+                        SettingsPickerRow(
+                            icon: "server.rack",
+                            title: "Metadata Provider",
+                            options: metadataProvidersList,
+                            optionToString: { $0 },
+                            selection: $metadataProviders,
+                            showDivider: true
+                        )
+                        
+                        SettingsPickerRow(
+                            icon: "square.stack.3d.down.right",
+                            title: "Thumbnails Width",
+                            options: TMDBimageWidhtList,
+                            optionToString: { $0 },
+                            selection: $TMDBimageWidht,
+                            showDivider: false
+                        )
+                    } else {
+                        SettingsPickerRow(
+                            icon: "server.rack",
+                            title: "Metadata Provider",
+                            options: metadataProvidersList,
+                            optionToString: { $0 },
+                            selection: $metadataProviders,
+                            showDivider: false
+                        )
+                    }
                 }
                 
                 SettingsSection(

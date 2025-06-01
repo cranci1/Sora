@@ -177,10 +177,13 @@ struct SoraApp: App {
         }
     }
 }
-
 class AppInfo: NSObject {
     @objc func getBundleIdentifier() -> String {
         return Bundle.main.bundleIdentifier ?? "me.cranci.sulfur"
+    }
+    
+    @objc func getDisplayName() -> String {
+        return Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as! String
     }
 }
 

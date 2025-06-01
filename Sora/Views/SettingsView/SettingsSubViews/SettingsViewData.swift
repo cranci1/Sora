@@ -145,7 +145,7 @@ struct SettingsViewData: View {
     @State private var documentsSize: Int64 = 0
     @State private var movPkgSize: Int64 = 0
     @State private var showRemoveMovPkgAlert = false
-    @State private var isMetadataCachingEnabled: Bool = true
+    @State private var isMetadataCachingEnabled: Bool = false
     @State private var isImageCachingEnabled: Bool = true
     @State private var isMemoryOnlyMode: Bool = false
     @State private var showAlert = false
@@ -232,7 +232,7 @@ struct SettingsViewData: View {
                         .padding(.vertical, 12)
                     }
                     
-                    Divider()
+                    Divider().padding(.horizontal, 16)
                     
                     Button(action: clearAllCaches) {
                         Text("Clear All Caches")

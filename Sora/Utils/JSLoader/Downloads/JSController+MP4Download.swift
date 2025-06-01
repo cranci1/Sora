@@ -99,8 +99,7 @@ extension JSController {
             request.addValue(value, forHTTPHeaderField: key)
         }
         
-        let sessionIdentifier = "mp4-background-\(downloadID.uuidString)"
-        let sessionConfig = URLSessionConfiguration.background(withIdentifier: sessionIdentifier)
+        let sessionConfig = URLSessionConfiguration.default
         sessionConfig.timeoutIntervalForRequest = 60.0
         sessionConfig.timeoutIntervalForResource = 1800.0
         sessionConfig.httpMaximumConnectionsPerHost = 1

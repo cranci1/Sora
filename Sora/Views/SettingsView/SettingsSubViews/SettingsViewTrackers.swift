@@ -90,6 +90,7 @@ fileprivate struct SettingsToggleRow: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
+            .frame(height: 48)
             
             if showDivider {
                 Divider()
@@ -118,7 +119,7 @@ struct SettingsViewTrackers: View {
             VStack(spacing: 24) {
                 SettingsSection(title: "AniList") {
                     VStack(spacing: 0) {
-                        HStack {
+                        HStack(alignment: .center, spacing: 10) {
                             KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png"))
                                 .placeholder {
                                     RoundedRectangle(cornerRadius: 10)
@@ -137,30 +138,37 @@ struct SettingsViewTrackers: View {
                                     .font(.title3)
                                     .fontWeight(.semibold)
                                 
-                                if isAnilistLoading {
-                                    ProgressView()
-                                        .scaleEffect(0.8)
-                                } else if isAnilistLoggedIn {
-                                    HStack(spacing: 0) {
-                                        Text("Logged in as ")
+                                Group {
+                                    if isAnilistLoading {
+                                        ProgressView()
+                                            .scaleEffect(0.8)
+                                            .frame(height: 18)
+                                    } else if isAnilistLoggedIn {
+                                        HStack(spacing: 0) {
+                                            Text("Logged in as ")
+                                                .font(.footnote)
+                                                .foregroundStyle(.gray)
+                                            Text(anilistUsername)
+                                                .font(.footnote)
+                                                .fontWeight(.medium)
+                                                .foregroundStyle(profileColor)
+                                        }
+                                        .frame(height: 18)
+                                    } else {
+                                        Text(anilistStatus)
                                             .font(.footnote)
                                             .foregroundStyle(.gray)
-                                        Text(anilistUsername)
-                                            .font(.footnote)
-                                            .fontWeight(.medium)
-                                            .foregroundStyle(profileColor)
+                                            .frame(height: 18)
                                     }
-                                } else {
-                                    Text(anilistStatus)
-                                        .font(.footnote)
-                                        .foregroundStyle(.gray)
                                 }
                             }
+                            .frame(height: 60, alignment: .center)
                             
                             Spacer()
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
+                        .frame(height: 84)
                         
                         if isAnilistLoggedIn {
                             Divider()
@@ -196,13 +204,14 @@ struct SettingsViewTrackers: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
+                            .frame(height: 48)
                         }
                     }
                 }
                 
                 SettingsSection(title: "Trakt") {
                     VStack(spacing: 0) {
-                        HStack {
+                        HStack(alignment: .center, spacing: 10) {
                             KFImage(URL(string: "https://static-00.iconduck.com/assets.00/trakt-icon-2048x2048-2633ksxg.png"))
                                 .placeholder {
                                     RoundedRectangle(cornerRadius: 10)
@@ -221,30 +230,37 @@ struct SettingsViewTrackers: View {
                                     .font(.title3)
                                     .fontWeight(.semibold)
                                 
-                                if isTraktLoading {
-                                    ProgressView()
-                                        .scaleEffect(0.8)
-                                } else if isTraktLoggedIn {
-                                    HStack(spacing: 0) {
-                                        Text("Logged in as ")
+                                Group {
+                                    if isTraktLoading {
+                                        ProgressView()
+                                            .scaleEffect(0.8)
+                                            .frame(height: 18)
+                                    } else if isTraktLoggedIn {
+                                        HStack(spacing: 0) {
+                                            Text("Logged in as ")
+                                                .font(.footnote)
+                                                .foregroundStyle(.gray)
+                                            Text(traktUsername)
+                                                .font(.footnote)
+                                                .fontWeight(.medium)
+                                                .foregroundStyle(.primary)
+                                        }
+                                        .frame(height: 18)
+                                    } else {
+                                        Text(traktStatus)
                                             .font(.footnote)
                                             .foregroundStyle(.gray)
-                                        Text(traktUsername)
-                                            .font(.footnote)
-                                            .fontWeight(.medium)
-                                            .foregroundStyle(.primary)
+                                            .frame(height: 18)
                                     }
-                                } else {
-                                    Text(traktStatus)
-                                        .font(.footnote)
-                                        .foregroundStyle(.gray)
                                 }
                             }
+                            .frame(height: 60, alignment: .center)
                             
                             Spacer()
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
+                        .frame(height: 84)
                         
                         Divider()
                             .padding(.horizontal, 16)
@@ -268,6 +284,7 @@ struct SettingsViewTrackers: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
+                            .frame(height: 48)
                         }
                     }
                 }
@@ -405,8 +422,8 @@ struct SettingsViewTrackers: View {
         guard status == errSecSuccess,
               let tokenData = item as? Data,
               let token = String(data: tokenData, encoding: .utf8) else {
-            return nil
-        }
+                  return nil
+              }
         return token
     }
     

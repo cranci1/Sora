@@ -354,13 +354,33 @@ struct MediaInfoView: View {
                                     UserDefaults.standard.set(99999999.0, forKey: "lastPlayedTime_\(ep.href)")
                                     UserDefaults.standard.set(99999999.0, forKey: "totalTime_\(ep.href)")
                                     DropManager.shared.showDrop(title: "Marked as Watched", subtitle: "", duration: 1.0, icon: UIImage(systemName: "checkmark.circle.fill"))
+                                } else {
+                                    UserDefaults.standard.set(0.0, forKey: "lastPlayedTime_\(ep.href)")
+                                    UserDefaults.standard.set(0.0, forKey: "totalTime_\(ep.href)")
+                                    DropManager.shared.showDrop(title: "Progress Reset", subtitle: "", duration: 1.0, icon: UIImage(systemName: "arrow.counterclockwise"))
                                 }
                             }
                         }) {
                             HStack(spacing: 4) {
-                                Image(systemName: "checkmark.circle")
+                                Image(systemName: {
+                                    if let ep = episodeLinks.first {
+                                        let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+                                        let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+                                        let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
+                                        return progress <= 0.9 ? "checkmark.circle" : "arrow.counterclockwise"
+                                    }
+                                    return "checkmark.circle"
+                                }())
                                     .foregroundColor(.primary)
-                                Text("Mark as Watched")
+                                Text({
+                                    if let ep = episodeLinks.first {
+                                        let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+                                        let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+                                        let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
+                                        return progress <= 0.9 ? "Mark as watched" : "Reset progress"
+                                    }
+                                    return "Mark as watched"
+                                }())
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(.primary)
                             }
@@ -401,6 +421,8 @@ struct MediaInfoView: View {
                             .cornerRadius(15)
                             .gradientOutline()
                         }
+                        
+                        menuButton
                     }
                     Text("Why am I not seeing any episodes?")
                         .font(.caption)

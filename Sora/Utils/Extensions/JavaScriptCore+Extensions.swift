@@ -134,7 +134,7 @@ extension JSContext {
                         }
                     }
                 }
-
+                
                 var responseDict: [String: Any] = [
                     "status": (response as? HTTPURLResponse)?.statusCode ?? 0,
                     "headers": safeHeaders,
@@ -151,7 +151,7 @@ extension JSContext {
                         }
                         return
                     }
-              
+                    
                     if let text = String(data: data, encoding: .utf8) {
                         responseDict["body"] = text
                         DispatchQueue.main.async {

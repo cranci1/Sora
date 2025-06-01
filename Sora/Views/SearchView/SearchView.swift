@@ -166,14 +166,6 @@ struct SearchView: View {
         .navigationViewStyle(StackNavigationViewStyle())
     }
     
-    private func lockOrientation() {
-        OrientationManager.shared.lockOrientation()
-    }
-    
-    private func unlockOrientation(after delay: TimeInterval = 0.2) {
-        OrientationManager.shared.unlockOrientation(after: delay)
-    }
-    
     private func performSearch() {
         Logger.shared.log("Searching for: \(searchQuery)", type: "General")
         guard !searchQuery.isEmpty, let module = selectedModule else {
@@ -188,8 +180,6 @@ struct SearchView: View {
         hasNoResults = false
         searchItems = []
         
-        lockOrientation()
-        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             Task {
                 do {
@@ -201,7 +191,6 @@ struct SearchView: View {
                                 searchItems = items
                                 hasNoResults = items.isEmpty
                                 isSearching = false
-                                unlockOrientation(after: 3.0)
                             }
                         }
                     } else {
@@ -210,7 +199,6 @@ struct SearchView: View {
                                 searchItems = items
                                 hasNoResults = items.isEmpty
                                 isSearching = false
-                                unlockOrientation(after: 3.0)
                             }
                         }
                     }
@@ -219,7 +207,6 @@ struct SearchView: View {
                     DispatchQueue.main.async {
                         isSearching = false
                         hasNoResults = true
-                        unlockOrientation(after: 3.0)
                     }
                 }
             }
@@ -257,12 +244,6 @@ struct SearchView: View {
     private func clearSearchHistory() {
         searchHistory.removeAll()
         saveSearchHistory()
-    }
-    
-    private func updateOrientation() {
-        DispatchQueue.main.async {
-            isLandscape = UIDevice.current.orientation.isLandscape
-        }
     }
     
     private func determineColumns() -> Int {

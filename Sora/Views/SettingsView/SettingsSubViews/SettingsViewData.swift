@@ -202,35 +202,27 @@ struct SettingsViewData: View {
                         }
                     }
                     
-                    VStack {
+                    HStack {
+                        Image(systemName: "folder.badge.gearshape")
+                            .frame(width: 24, height: 24)
+                            .foregroundStyle(.primary)
+                        
+                        Text("Current Cache Size")
+                            .foregroundStyle(.primary)
+                        
+                        Spacer()
+                        
                         if isCalculatingSize {
                             ProgressView()
                                 .scaleEffect(0.7)
                                 .padding(.trailing, 5)
                         }
                         
-                        HStack {
-                            Image(systemName: "folder.badge.gearshape")
-                                .frame(width: 24, height: 24)
-                                .foregroundStyle(.primary)
-                            
-                            Text("Current Cache Size")
-                                .foregroundStyle(.primary)
-                            
-                            Spacer()
-                            
-                            if isCalculatingSize {
-                                ProgressView()
-                                    .scaleEffect(0.7)
-                                    .padding(.trailing, 5)
-                            }
-                            
-                            Text(cacheSizeText)
-                                .foregroundStyle(.gray)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
+                        Text(cacheSizeText)
+                            .foregroundStyle(.gray)
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
                     
                     Divider().padding(.horizontal, 16)
                     

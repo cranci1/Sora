@@ -22,15 +22,16 @@
 
 ## Features
 
-- [x] iOS/iPadOS 15.0+ support
 - [x] macOS 12.0+ support
-- [x] JavaScript Main Core
+- [x] iOS/iPadOS 15.0+ support
+- [x] JavaScript as main Loader
 - [x] Download support (HLS & MP4)
 - [x] Tracking Services (AniList, Trakt)
 - [x] Apple KeyChain support for auth Tokens
 - [x] Streams support (Jellyfin/Plex like servers)
-- [x] External media player support (VLC, Infuse, Outplayer, nPlayer, SenPlayer, IINA)
+- [x] External Metadata providers (TMDB, AniList)
 - [x] Background playback and Picture-in-Picture (PiP) support
+- [x] External media player support (VLC, Infuse, Outplayer, nPlayer, SenPlayer, IINA)
 
 ## Installation
 

@@ -212,14 +212,14 @@ struct MediaInfoView: View {
                             .fill(Color.gray.opacity(0.3))
                             .shimmering()
                     }
-                    .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1, sharpeningRadius: 1))
+                    .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1.5, sharpeningRadius: 0.8))
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: UIScreen.main.bounds.width, height: 600)
                     .clipped()
                 KFImage(URL(string: imageUrl))
                     .placeholder { EmptyView() }
-                    .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1, sharpeningRadius: 1))
+                    .setProcessor(ImageUpscaler.lanczosProcessor(scale: 3, sharpeningIntensity: 1.5, sharpeningRadius: 0.8))
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: UIScreen.main.bounds.width, height: 600)
@@ -638,41 +638,43 @@ struct MediaInfoView: View {
     private var seasonsEpisodeList: some View {
         let seasons = groupedEpisodes()
         if !seasons.isEmpty, selectedSeason < seasons.count {
-            ForEach(seasons[selectedSeason]) { ep in
-                let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
-                let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
-                let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
-                
-                let defaultBannerImageValue = getBannerImageBasedOnAppearance()
-                
-                EpisodeCell(
-                    episodeIndex: selectedSeason,
-                    episode: ep.href,
-                    episodeID: ep.number - 1,
-                    progress: progress,
-                    itemID: itemID ?? 0,
-                    totalEpisodes: episodeLinks.count,
-                    defaultBannerImage: defaultBannerImageValue,
-                    module: module,
-                    parentTitle: title,
-                    showPosterURL: imageUrl,
-                    isMultiSelectMode: isMultiSelectMode,
-                    isSelected: selectedEpisodes.contains(ep.number),
-                    onSelectionChanged: { isSelected in
-                        if isSelected {
-                            selectedEpisodes.insert(ep.number)
-                        } else {
-                            selectedEpisodes.remove(ep.number)
+            LazyVStack(spacing: 15) {
+                ForEach(seasons[selectedSeason]) { ep in
+                    let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+                    let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+                    let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
+                    
+                    let defaultBannerImageValue = getBannerImageBasedOnAppearance()
+                    
+                    EpisodeCell(
+                        episodeIndex: selectedSeason,
+                        episode: ep.href,
+                        episodeID: ep.number - 1,
+                        progress: progress,
+                        itemID: itemID ?? 0,
+                        totalEpisodes: episodeLinks.count,
+                        defaultBannerImage: defaultBannerImageValue,
+                        module: module,
+                        parentTitle: title,
+                        showPosterURL: imageUrl,
+                        isMultiSelectMode: isMultiSelectMode,
+                        isSelected: selectedEpisodes.contains(ep.number),
+                        onSelectionChanged: { isSelected in
+                            if isSelected {
+                                selectedEpisodes.insert(ep.number)
+                            } else {
+                                selectedEpisodes.remove(ep.number)
+                            }
+                        },
+                        onTap: { imageUrl in
+                            episodeTapAction(ep: ep, imageUrl: imageUrl)
+                        },
+                        onMarkAllPrevious: {
+                            markAllPreviousEpisodesAsWatched(ep: ep, inSeason: true)
                         }
-                    },
-                    onTap: { imageUrl in
-                        episodeTapAction(ep: ep, imageUrl: imageUrl)
-                    },
-                    onMarkAllPrevious: {
-                        markAllPreviousEpisodesAsWatched(ep: ep, inSeason: true)
-                    }
-                )
+                    )
                     .disabled(isFetchingEpisode)
+                }
             }
         } else {
             Text("No episodes available")
@@ -721,42 +723,47 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var flatEpisodeList: some View {
-        ForEach(episodeLinks.indices.filter { selectedRange.contains($0) }, id: \.self) { i in
-            let ep = episodeLinks[i]
-            let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
-            let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
-            let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
-            
-            EpisodeCell(
-                episodeIndex: i,
-                episode: ep.href,
-                episodeID: ep.number - 1,
-                progress: progress,
-                itemID: itemID ?? 0,
-                totalEpisodes: episodeLinks.count,
-                defaultBannerImage: getBannerImageBasedOnAppearance(),
-                module: module,
-                parentTitle: title,
-                showPosterURL: imageUrl,
-                isMultiSelectMode: isMultiSelectMode,
-                isSelected: selectedEpisodes.contains(ep.number),
-                onSelectionChanged: { isSelected in
-                    if isSelected {
-                        selectedEpisodes.insert(ep.number)
-                    } else {
-                        selectedEpisodes.remove(ep.number)
+        LazyVStack(spacing: 15) {
+            ForEach(episodeLinks.indices.filter { selectedRange.contains($0) }, id: \.self) { i in
+                let ep = episodeLinks[i]
+                let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+                let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+                let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
+                
+                let defaultBannerImageValue = getBannerImageBasedOnAppearance()
+                
+                EpisodeCell(
+                    episodeIndex: i,
+                    episode: ep.href,
+                    episodeID: ep.number - 1,
+                    progress: progress,
+                    itemID: itemID ?? 0,
+                    totalEpisodes: episodeLinks.count,
+                    defaultBannerImage: defaultBannerImageValue,
+                    module: module,
+                    parentTitle: title,
+                    showPosterURL: imageUrl,
+                    isMultiSelectMode: isMultiSelectMode,
+                    isSelected: selectedEpisodes.contains(ep.number),
+                    onSelectionChanged: { isSelected in
+                        if isSelected {
+                            selectedEpisodes.insert(ep.number)
+                        } else {
+                            selectedEpisodes.remove(ep.number)
+                        }
+                    },
+                    onTap: { imageUrl in
+                        episodeTapAction(ep: ep, imageUrl: imageUrl)
+                    },
+                    onMarkAllPrevious: {
+                        markAllPreviousEpisodesInFlatList(ep: ep, index: i)
                     }
-                },
-                onTap: { imageUrl in
-                    episodeTapAction(ep: ep, imageUrl: imageUrl)
-                },
-                onMarkAllPrevious: {
-                    markAllPreviousEpisodesInFlatList(ep: ep, index: i)
-                }
-            )
+                )
                 .disabled(isFetchingEpisode)
+            }
         }
     }
+
     
     private func markAllPreviousEpisodesInFlatList(ep: EpisodeLink, index: Int) {
         let userDefaults = UserDefaults.standard

@@ -478,38 +478,154 @@ struct EpisodeCell: View {
             return
         }
         
-        if let streams = result.streams, !streams.isEmpty, let url = URL(string: streams[0]) {
+        // Handle sources with headers first (more complex format)
+        if let sources = result.sources, !sources.isEmpty {
+            if sources.count > 1 {
+                // Multiple sources available - show selection dialog
+                print("[Download] Method #\(methodIndex+1) returned \(sources.count) stream sources, showing selection")
+                showDownloadStreamSelectionAlert(streams: sources, downloadID: downloadID, subtitleURL: result.subtitles?.first)
+                return
+            } else if let streamUrl = sources[0]["streamUrl"] as? String, let url = URL(string: streamUrl) {
+                // Single source - proceed directly
+                print("[Download] Method #\(methodIndex+1) returned valid stream URL with headers: \(streamUrl)")
+                
+                let subtitleURLString = sources[0]["subtitle"] as? String
+                let subtitleURL = subtitleURLString.flatMap { URL(string: $0) }
+                if let subtitleURL = subtitleURL {
+                    print("[Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+                }
+                
+                startActualDownload(url: url, streamUrl: streamUrl, downloadID: downloadID, subtitleURL: subtitleURL)
+                return
+            }
+        }
+        
+        // Handle simple streams array
+        if let streams = result.streams, !streams.isEmpty {
+            // Check for Promise object
             if streams[0] == "[object Promise]" {
                 print("[Download] Method #\(methodIndex+1) returned a Promise object, trying next method")
                 tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
                 return
             }
             
-            print("[Download] Method #\(methodIndex+1) returned valid stream URL: \(streams[0])")
-            
-            let subtitleURL = result.subtitles?.first.flatMap { URL(string: $0) }
-            if let subtitleURL = subtitleURL {
-                print("[Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+            if streams.count > 1 {
+                // Multiple streams available - show selection dialog
+                print("[Download] Method #\(methodIndex+1) returned \(streams.count) streams, showing selection")
+                showDownloadStreamSelectionAlert(streams: streams, downloadID: downloadID, subtitleURL: result.subtitles?.first)
+                return
+            } else if let url = URL(string: streams[0]) {
+                // Single stream - proceed directly
+                print("[Download] Method #\(methodIndex+1) returned valid stream URL: \(streams[0])")
+                
+                let subtitleURL = result.subtitles?.first.flatMap { URL(string: $0) }
+                if let subtitleURL = subtitleURL {
+                    print("[Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+                }
+                
+                startActualDownload(url: url, streamUrl: streams[0], downloadID: downloadID, subtitleURL: subtitleURL)
+                return
             }
-            
-            startActualDownload(url: url, streamUrl: streams[0], downloadID: downloadID, subtitleURL: subtitleURL)
-        } else if let sources = result.sources, !sources.isEmpty,
-                    let streamUrl = sources[0]["streamUrl"] as? String,
-                    let url = URL(string: streamUrl) {
-            
-            print("[Download] Method #\(methodIndex+1) returned valid stream URL with headers: \(streamUrl)")
-            
-            let subtitleURLString = sources[0]["subtitle"] as? String
-            let subtitleURL = subtitleURLString.flatMap { URL(string: $0) }
-            if let subtitleURL = subtitleURL {
-                print("[Download] Found subtitle URL: \(subtitleURL.absoluteString)")
-            }
-            
-            startActualDownload(url: url, streamUrl: streamUrl, downloadID: downloadID, subtitleURL: subtitleURL)
-        } else {
-            print("[Download] Method #\(methodIndex+1) did not return valid streams, trying next method")
-            tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
         }
+        
+        // No valid streams found - try next method
+        print("[Download] Method #\(methodIndex+1) did not return valid streams, trying next method")
+        tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
+    }
+    
+    private func showDownloadStreamSelectionAlert(streams: [Any], downloadID: UUID, subtitleURL: String? = nil) {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "Select Download Server", message: "Choose a server to download from", preferredStyle: .actionSheet)
+            
+            var index = 0
+            var streamIndex = 1
+            
+            while index < streams.count {
+                var title: String = ""
+                var streamUrl: String = ""
+                
+                if let streams = streams as? [String] {
+                    // Parse string array format
+                    if index + 1 < streams.count {
+                        if !streams[index].lowercased().contains("http") {
+                            title = streams[index]      // First element is title
+                            streamUrl = streams[index + 1]  // Second is URL
+                            index += 2
+                        } else {
+                            title = "Server \(streamIndex)"
+                            streamUrl = streams[index]
+                            index += 1
+                        }
+                    } else {
+                        title = "Server \(streamIndex)"
+                        streamUrl = streams[index]
+                        index += 1
+                    }
+                } else if let streams = streams as? [[String: Any]] {
+                    // Parse object array format
+                    if let currTitle = streams[index]["title"] as? String {
+                        title = currTitle
+                    } else {
+                        title = "Server \(streamIndex)"
+                    }
+                    streamUrl = (streams[index]["streamUrl"] as? String) ?? ""
+                    index += 1
+                }
+                
+                alert.addAction(UIAlertAction(title: title, style: .default) { _ in
+                    guard let url = URL(string: streamUrl) else {
+                        DropManager.shared.error("Invalid stream URL selected")
+                        self.isDownloading = false
+                        return
+                    }
+                    
+                    let subtitleURLObj = subtitleURL.flatMap { URL(string: $0) }
+                    self.startActualDownload(url: url, streamUrl: streamUrl, downloadID: downloadID, subtitleURL: subtitleURLObj)
+                })
+                
+                streamIndex += 1
+            }
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                self.isDownloading = false
+            })
+            
+            // Present the alert
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootVC = window.rootViewController {
+                
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    if let popover = alert.popoverPresentationController {
+                        popover.sourceView = window
+                        popover.sourceRect = CGRect(
+                            x: UIScreen.main.bounds.width / 2,
+                            y: UIScreen.main.bounds.height / 2,
+                            width: 0,
+                            height: 0
+                        )
+                        popover.permittedArrowDirections = []
+                    }
+                }
+                
+                self.findTopViewController(rootVC).present(alert, animated: true)
+            }
+        }
+    }
+    
+    private func findTopViewController(_ controller: UIViewController) -> UIViewController {
+        if let navigationController = controller as? UINavigationController {
+            return findTopViewController(navigationController.visibleViewController!)
+        }
+        if let tabController = controller as? UITabBarController {
+            if let selected = tabController.selectedViewController {
+                return findTopViewController(selected)
+            }
+        }
+        if let presented = controller.presentedViewController {
+            return findTopViewController(presented)
+        }
+        return controller
     }
     
     private func startActualDownload(url: URL, streamUrl: String, downloadID: UUID, subtitleURL: URL? = nil) {

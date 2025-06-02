@@ -1159,7 +1159,7 @@ struct MediaInfoView: View {
                 
                 if let sources = result.sources, !sources.isEmpty {
                     if sources.count > 1 {
-                        self.showStreamSelectionAlert(streams: sources, fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
+                        self.showStreamSelectionAlert(sources: sources, fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
                     } else if let streamUrl = sources[0]["streamUrl"] as? String {
                         let headers = sources[0]["headers"] as? [String: String]
                         self.playStream(url: streamUrl, fullURL: href, subtitles: result.subtitles?.first, headers: headers, fetchID: fetchID)
@@ -1168,7 +1168,7 @@ struct MediaInfoView: View {
                     }
                 } else if let streams = result.streams, !streams.isEmpty {
                     if streams.count > 1 {
-                        self.showStreamSelectionAlert(streams: streams, fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
+                        self.showStreamSelectionAlert(sources: streams, fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
                     } else {
                         self.playStream(url: streams[0], fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
                     }
@@ -1217,7 +1217,7 @@ struct MediaInfoView: View {
         }
     }
     
-    func showStreamSelectionAlert(streams: [Any], fullURL: String, subtitles: String? = nil, fetchID: UUID) {
+    func showStreamSelectionAlert(sources: [Any], fullURL: String, subtitles: String? = nil, fetchID: UUID) {
         guard self.activeFetchID == fetchID else {
             return
         }
@@ -1235,41 +1235,41 @@ struct MediaInfoView: View {
             var index = 0
             var streamIndex = 1
             
-            while index < streams.count {
+            while index < sources.count {
                 var title: String = ""
                 var streamUrl: String = ""
                 var headers: [String:String]? = nil
-                if let streams = streams as? [String]
+                if let sources = sources as? [String]
                 {
-                    if index + 1 < streams.count {
-                        if !streams[index].lowercased().contains("http") {
-                            title = streams[index]
-                            streamUrl = streams[index + 1]
+                    if index + 1 < sources.count {
+                        if !sources[index].lowercased().contains("http") {
+                            title = sources[index]
+                            streamUrl = sources[index + 1]
                             index += 2
                         } else {
                             title = "Stream \(streamIndex)"
-                            streamUrl = streams[index]
+                            streamUrl = sources[index]
                             index += 1
                         }
                     } else {
                         title = "Stream \(streamIndex)"
-                        streamUrl = streams[index]
+                        streamUrl = sources[index]
                         index += 1
                     }
                 }
-                else if let streams = streams as? [[String: Any]]
+                else if let sources = sources as? [[String: Any]]
                 {
-                    if let currTitle = streams[index]["title"] as? String
+                    if let currTitle = sources[index]["title"] as? String
                     {
                         title = currTitle
-                        streamUrl = (streams[index]["streamUrl"] as? String) ?? ""
+                        streamUrl = (sources[index]["streamUrl"] as? String) ?? ""
                     }
                     else
                     {
                         title = "Stream \(streamIndex)"
-                        streamUrl = (streams[index]["streamUrl"] as? String)!
+                        streamUrl = (sources[index]["streamUrl"] as? String)!
                     }
-                    headers = streams[index]["headers"] as? [String:String] ?? [:]
+                    headers = sources[index]["headers"] as? [String:String] ?? [:]
                     index += 1
                 }
                 
@@ -1659,39 +1659,149 @@ struct MediaInfoView: View {
     }
     
     private func handleBulkDownloadResult(_ result: (streams: [String]?, subtitles: [String]?, sources: [[String:Any]]?), episode: EpisodeLink, methodIndex: Int, softsub: Bool, continuation: CheckedContinuation<Bool, Never>) {
-        if let streams = result.streams, !streams.isEmpty, let url = URL(string: streams[0]) {
+        
+        // Handle sources with headers first (more complex format)
+        if let sources = result.sources, !sources.isEmpty {
+            if sources.count > 1 {
+                // Multiple sources available - show selection dialog
+                print("[Bulk Download] Method #\(methodIndex+1) returned \(sources.count) stream sources, showing selection")
+                showBulkDownloadStreamSelectionAlert(sources: sources, episode: episode, continuation: continuation)
+                return
+            } else if let streamUrl = sources[0]["streamUrl"] as? String, let url = URL(string: streamUrl) {
+                // Single source - proceed directly
+                print("[Bulk Download] Method #\(methodIndex+1) returned valid stream URL with headers: \(streamUrl)")
+                
+                let subtitleURLString = sources[0]["subtitle"] as? String
+                let subtitleURL = subtitleURLString.flatMap { URL(string: $0) }
+                if let subtitleURL = subtitleURL {
+                    print("[Bulk Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+                }
+                
+                startEpisodeDownloadWithProcessedStream(episode: episode, url: url, streamUrl: streamUrl, subtitleURL: subtitleURL)
+                continuation.resume(returning: true)
+                return
+            }
+        }
+        
+        // Handle simple streams array
+        if let streams = result.streams, !streams.isEmpty {
+            // Check for Promise object
             if streams[0] == "[object Promise]" {
                 print("[Bulk Download] Method #\(methodIndex+1) returned a Promise object, trying next method")
                 tryNextDownloadMethodForBulk(episode: episode, methodIndex: methodIndex + 1, softsub: softsub, continuation: continuation)
                 return
             }
             
-            print("[Bulk Download] Method #\(methodIndex+1) returned valid stream URL: \(streams[0])")
+            if streams.count > 1 {
+                // Multiple streams available - show selection dialog
+                print("[Bulk Download] Method #\(methodIndex+1) returned \(streams.count) streams, showing selection")
+                showBulkDownloadStreamSelectionAlert(sources: streams, episode: episode, continuation: continuation)
+                return
+            } else if let url = URL(string: streams[0]) {
+                // Single stream - proceed directly
+                print("[Bulk Download] Method #\(methodIndex+1) returned valid stream URL: \(streams[0])")
+                
+                let subtitleURL = result.subtitles?.first.flatMap { URL(string: $0) }
+                if let subtitleURL = subtitleURL {
+                    print("[Bulk Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+                }
+                
+                startEpisodeDownloadWithProcessedStream(episode: episode, url: url, streamUrl: streams[0], subtitleURL: subtitleURL)
+                continuation.resume(returning: true)
+                return
+            }
+        }
+        
+        // No valid streams found - try next method
+        print("[Bulk Download] Method #\(methodIndex+1) did not return valid streams, trying next method")
+        tryNextDownloadMethodForBulk(episode: episode, methodIndex: methodIndex + 1, softsub: softsub, continuation: continuation)
+    }
+    
+    private func showBulkDownloadStreamSelectionAlert(sources: [Any], episode: EpisodeLink, continuation: CheckedContinuation<Bool, Never>) {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "Select Download Server", message: "Choose a server to download Episode \(episode.number) from", preferredStyle: .actionSheet)
             
-            let subtitleURL = result.subtitles?.first.flatMap { URL(string: $0) }
-            if let subtitleURL = subtitleURL {
-                print("[Bulk Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+            var index = 0
+            var streamIndex = 1
+            
+            while index < sources.count {
+                var title: String = ""
+                var streamUrl: String = ""
+                var headers: [String:String]? = nil
+                
+                if let sources = sources as? [String] {
+                    // Parse string array format
+                    if index + 1 < sources.count {
+                        if !sources[index].lowercased().contains("http") {
+                            title = sources[index]      // First element is title
+                            streamUrl = sources[index + 1]  // Second is URL
+                            index += 2
+                        } else {
+                            title = "Server \(streamIndex)"
+                            streamUrl = sources[index]
+                            index += 1
+                        }
+                    } else {
+                        title = "Server \(streamIndex)"
+                        streamUrl = sources[index]
+                        index += 1
+                    }
+                } else if let sources = sources as? [[String: Any]] {
+                    // Parse object array format
+                    if let currTitle = sources[index]["title"] as? String {
+                        title = currTitle
+                    } else {
+                        title = "Server \(streamIndex)"
+                    }
+                    streamUrl = (sources[index]["streamUrl"] as? String) ?? ""
+                    index += 1
+                }
+                
+                alert.addAction(UIAlertAction(title: title, style: .default) { _ in
+                    guard let url = URL(string: streamUrl) else {
+                        DropManager.shared.error("Invalid stream URL selected")
+                        continuation.resume(returning: false)
+                        return
+                    }
+                    
+                    // Extract subtitle URL from the sources if available
+                    var subtitleURL: URL? = nil
+                    if let sources = sources as? [[String: Any]], 
+                       let subtitleURLString = sources[index-1]["subtitle"] as? String {
+                        subtitleURL = URL(string: subtitleURLString)
+                    }
+                    
+                    self.startEpisodeDownloadWithProcessedStream(episode: episode, url: url, streamUrl: streamUrl, subtitleURL: subtitleURL)
+                    continuation.resume(returning: true)
+                })
+                
+                streamIndex += 1
             }
             
-            startEpisodeDownloadWithProcessedStream(episode: episode, url: url, streamUrl: streams[0], subtitleURL: subtitleURL)
-            continuation.resume(returning: true)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                continuation.resume(returning: false)
+            })
             
-        } else if let sources = result.sources, !sources.isEmpty, let streamUrl = sources[0]["streamUrl"] as? String, let url = URL(string: streamUrl) {
-            
-            print("[Bulk Download] Method #\(methodIndex+1) returned valid stream URL with headers: \(streamUrl)")
-            
-            let subtitleURLString = sources[0]["subtitle"] as? String
-            let subtitleURL = subtitleURLString.flatMap { URL(string: $0) }
-            if let subtitleURL = subtitleURL {
-                print("[Bulk Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+            // Present the alert
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootVC = window.rootViewController {
+                
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    if let popover = alert.popoverPresentationController {
+                        popover.sourceView = window
+                        popover.sourceRect = CGRect(
+                            x: UIScreen.main.bounds.width / 2,
+                            y: UIScreen.main.bounds.height / 2,
+                            width: 0,
+                            height: 0
+                        )
+                        popover.permittedArrowDirections = []
+                    }
+                }
+                
+                findTopViewController.findViewController(rootVC).present(alert, animated: true)
             }
-            
-            startEpisodeDownloadWithProcessedStream(episode: episode, url: url, streamUrl: streamUrl, subtitleURL: subtitleURL)
-            continuation.resume(returning: true)
-            
-        } else {
-            print("[Bulk Download] Method #\(methodIndex+1) did not return valid streams, trying next method")
-            tryNextDownloadMethodForBulk(episode: episode, methodIndex: methodIndex + 1, softsub: softsub, continuation: continuation)
         }
     }
     

@@ -1358,14 +1358,12 @@ struct MediaInfoView: View {
                 videoPlayerViewController.episodeNumber = selectedEpisodeNumber
                 videoPlayerViewController.episodeImageUrl = selectedEpisodeImage
                 videoPlayerViewController.mediaTitle = title
-                videoPlayerViewController.subtitles = subtitles ?? ""
                 videoPlayerViewController.aniListID = itemID ?? 0
-                videoPlayerViewController.modalPresentationStyle = .overFullScreen
+                videoPlayerViewController.modalPresentationStyle = .fullScreen
                 
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let window = windowScene.windows.first,
-                   let currentVC = window.rootViewController?.presentedViewController ?? window.rootViewController {
-                    currentVC.present(videoPlayerViewController, animated: true, completion: nil)
+                   let rootVC = windowScene.windows.first?.rootViewController {
+                    findTopViewController.findViewController(rootVC).present(videoPlayerViewController, animated: true, completion: nil)
                 }
                 return
             default:
@@ -1401,13 +1399,15 @@ struct MediaInfoView: View {
                     episodeImageUrl: selectedEpisodeImage,
                     headers: headers ?? nil
                 )
-                customMediaPlayer.modalPresentationStyle = .overFullScreen
-                Logger.shared.log("Opening custom media player with stream URL: \(url), and subtitles URL: \(String(describing: subtitles))", type: "Stream")
+                customMediaPlayer.modalPresentationStyle = .fullScreen
+                Logger.shared.log("Opening custom media player with url: \(url)")
                 
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let window = windowScene.windows.first,
-                   let currentVC = window.rootViewController?.presentedViewController ?? window.rootViewController {
-                    currentVC.present(customMediaPlayer, animated: true, completion: nil)
+                   let rootVC = windowScene.windows.first?.rootViewController {
+                    findTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
+                } else {
+                    Logger.shared.log("Failed to find root view controller", type: "Error")
+                    DropManager.shared.showDrop(title: "Error", subtitle: "Failed to present player", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
                 }
             }
         }

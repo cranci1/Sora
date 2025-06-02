@@ -285,15 +285,19 @@ struct MediaInfoView: View {
                         )
                     )
                     .overlay(
-                        LinearGradient(
-                            gradient: Gradient(stops: [
-                                .init(color: .clear, location: 0.0),
-                                .init(color: .clear, location: 0.7),
-                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.9), location: 1.0)
-                            ]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
+                        VStack(spacing: 0) {
+                            Spacer()
+                            LinearGradient(
+                                gradient: Gradient(stops: [
+                                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
+                                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.5), location: 0.5),
+                                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(1.0), location: 1.0)
+                                ]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .frame(height: 150)
+                        }
                     )
                 VStack(spacing: 0) {
                     Rectangle()
@@ -632,20 +636,22 @@ struct MediaInfoView: View {
                         .fill(Color.accentColor.opacity(0.25))
                         .frame(width: width, height: 48)
                     
-                    Capsule()
-                        .fill(Color.accentColor)
-                        .frame(width: max(width * CGFloat(progress), 8), height: 48)
-                        .mask(
-                            HStack {
-                                if progress < 0.05 && progress != 0 {
-                                    RoundedRectangle(cornerRadius: 24)
-                                        .frame(width: 8)
-                                } else {
-                                    RoundedRectangle(cornerRadius: 24)
+                    if progress < 0.9 {
+                        Capsule()
+                            .fill(Color.accentColor)
+                            .frame(width: max(width * CGFloat(progress), 8), height: 48)
+                            .mask(
+                                HStack {
+                                    if progress < 0.05 && progress != 0 {
+                                        RoundedRectangle(cornerRadius: 24)
+                                            .frame(width: 8)
+                                    } else {
+                                        RoundedRectangle(cornerRadius: 24)
+                                    }
+                                    Spacer()
                                 }
-                                Spacer()
-                            }
-                        )
+                            )
+                    }
                 }
                 .frame(height: 48)
                 

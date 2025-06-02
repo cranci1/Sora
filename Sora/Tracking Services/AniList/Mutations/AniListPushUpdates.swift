@@ -203,3 +203,21 @@ class AniListMutation {
         let data: DataField
     }
 }
+
+struct EpisodeMetadataInfo: Codable, Equatable {
+    let title: [String: String]
+    let imageUrl: String
+    let anilistId: Int
+    let episodeNumber: Int
+    
+    var cacheKey: String {
+        return "anilist_\(anilistId)_episode_\(episodeNumber)"
+    }
+}
+
+enum MetadataFetchStatus {
+    case notRequested
+    case fetching
+    case fetched(EpisodeMetadataInfo)
+    case failed(Error)
+}

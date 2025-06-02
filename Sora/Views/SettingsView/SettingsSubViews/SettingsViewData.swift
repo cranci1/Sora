@@ -163,44 +163,6 @@ struct SettingsViewData: View {
                     title: "Cache Settings",
                     footer: "Caching helps reduce network usage and load content faster. You can disable it to save storage space."
                 ) {
-                    SettingsToggleRow(
-                        icon: "doc.text",
-                        title: "Enable Metadata Caching",
-                        isOn: $isMetadataCachingEnabled
-                    )
-                    .onChange(of: isMetadataCachingEnabled) { newValue in
-                        // MetadataCacheManager removed
-                        if !newValue {
-                            calculateCacheSize()
-                        }
-                    }
-                    
-                    SettingsToggleRow(
-                        icon: "photo",
-                        title: "Enable Image Caching",
-                        isOn: $isImageCachingEnabled
-                    )
-                    .onChange(of: isImageCachingEnabled) { newValue in
-                        KingfisherCacheManager.shared.isCachingEnabled = newValue
-                        if !newValue {
-                            calculateCacheSize()
-                        }
-                    }
-                    
-                    if isMetadataCachingEnabled {
-                        SettingsToggleRow(
-                            icon: "memorychip",
-                            title: "Memory-Only Mode",
-                            isOn: $isMemoryOnlyMode
-                        )
-                        .onChange(of: isMemoryOnlyMode) { newValue in
-                            // MetadataCacheManager removed
-                            if newValue {
-                                calculateCacheSize()
-                            }
-                        }
-                    }
-                    
                     HStack {
                         Image(systemName: "folder.badge.gearshape")
                             .frame(width: 24, height: 24)
@@ -225,7 +187,7 @@ struct SettingsViewData: View {
                     
                     Divider().padding(.horizontal, 16)
                     
-                    Button(action: clearAllCaches) {
+                    Button(action: clearCache) {
                         Text("Clear All Caches")
                             .foregroundColor(.red)
                     }
@@ -273,8 +235,6 @@ struct SettingsViewData: View {
             .scrollViewBottomPadding()
             .navigationTitle("App Data")
             .onAppear {
-                isImageCachingEnabled = KingfisherCacheManager.shared.isCachingEnabled
-                calculateCacheSize()
                 updateSizes()
             }
             .alert(isPresented: $showAlert) {
@@ -310,30 +270,6 @@ struct SettingsViewData: View {
             }
         }
         
-        
-        func calculateCacheSize() {
-            isCalculatingSize = true
-            cacheSizeText = "Calculating..."
-            DispatchQueue.global(qos: .background).async {
-                var totalSize: Int64 = 0
-                KingfisherCacheManager.shared.calculateCacheSize { imageSize in
-                    totalSize += Int64(imageSize)
-                    DispatchQueue.main.async {
-                        self.cacheSizeText = KingfisherCacheManager.formatCacheSize(UInt(totalSize))
-                        self.isCalculatingSize = false
-                    }
-                }
-            }
-        }
-        
-        func clearAllCaches() {
-            // MetadataCacheManager removed
-            KingfisherCacheManager.shared.clearCache {
-                calculateCacheSize()
-            }
-            Logger.shared.log("All caches cleared", type: "General")
-        }
-        
         func eraseAppData() {
             if let domain = Bundle.main.bundleIdentifier {
                 UserDefaults.standard.removePersistentDomain(forName: domain)
@@ -345,6 +281,7 @@ struct SettingsViewData: View {
         
         func clearCache() {
             let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+            
             do {
                 if let cacheURL = cacheURL {
                     let filePaths = try FileManager.default.contentsOfDirectory(at: cacheURL, includingPropertiesForKeys: nil, options: [])
@@ -352,7 +289,6 @@ struct SettingsViewData: View {
                         try FileManager.default.removeItem(at: filePath)
                     }
                     Logger.shared.log("Cache cleared successfully!", type: "General")
-                    calculateCacheSize()
                     updateSizes()
                 }
             } catch {
@@ -415,7 +351,7 @@ struct SettingsViewData: View {
             let formatter = ByteCountFormatter()
             formatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB]
             formatter.countStyle = .file
-            return formatter.string(fromByteCount: bytes) ?? "\(bytes) bytes"
+            return formatter.string(fromByteCount: bytes)
         }
         
         func updateSizes() {

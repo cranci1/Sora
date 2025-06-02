@@ -127,8 +127,29 @@ struct MediaInfoView: View {
         return nil
     }
     
-    
-    @State private var continueWatchingText: String = "Start Watching"
+    private var continueWatchingText: String {
+        for ep in episodeLinks {
+            let last = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+            let total = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+            let progress = total > 0 ? last / total : 0
+            
+            if progress > 0 && progress < 0.9 {
+                return "Continue Watching Episode \(ep.number)"
+            }
+        }
+        
+        for ep in episodeLinks {
+            let last = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+            let total = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+            let progress = total > 0 ? last / total : 0
+            
+            if progress < 0.9 {
+                return "Start Watching Episode \(ep.number)"
+            }
+        }
+        
+        return "Start Watching"
+    }
     
     var body: some View {
         ZStack {
@@ -170,7 +191,6 @@ struct MediaInfoView: View {
             }
         }
         .onAppear {
-            updateContinueWatchingText()
             buttonRefreshTrigger.toggle()
             
             let savedID = UserDefaults.standard.integer(forKey: "custom_anilist_id_\(href)")
@@ -278,7 +298,7 @@ struct MediaInfoView: View {
                 VStack(spacing: 0) {
                     Rectangle()
                         .fill(Color.clear)
-                        .frame(height: 400)
+                        .frame(height: 450)
                     VStack(alignment: .leading, spacing: 16) {
                         headerSection
                         if !episodeLinks.isEmpty {
@@ -292,15 +312,16 @@ struct MediaInfoView: View {
                         LinearGradient(
                             gradient: Gradient(stops: [
                                 .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
-                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.5), location: 0.2),
-                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.8), location: 0.5),
+                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.3), location: 0.1),
+                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.6), location: 0.3),
+                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.9), location: 0.7),
                                 .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
                             ]),
                             startPoint: .top,
                             endPoint: .bottom
                         )
                             .clipShape(RoundedRectangle(cornerRadius: 0))
-                            .shadow(color: (colorScheme == .dark ? Color.black : Color.white).opacity(1), radius: 10, x: 0, y: 10)
+                            .shadow(color: (colorScheme == .dark ? Color.black : Color.white).opacity(1), radius: 15, x: 0, y: 15)
                     )
                 }
                 .deviceScaled()
@@ -634,7 +655,7 @@ struct MediaInfoView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "play.fill")
                             .foregroundColor(colorScheme == .dark ? .black : .white)
-                        Text(latestProgressEpisode?.title ?? "Start Watching")
+                        Text(continueWatchingText)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(colorScheme == .dark ? .black : .white)
                     }
@@ -1008,24 +1029,6 @@ struct MediaInfoView: View {
                 .padding(.horizontal)
         }
         .padding(.vertical, 50)
-    }
-    
-    private func updateContinueWatchingText() {
-        for ep in episodeLinks {
-            let last = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
-            let total = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
-            let progress = total > 0 ? last / total : 0
-            
-            if progress == 0 {
-                continueWatchingText = "Start Watching Episode \(ep.number)"
-                return
-            } else if progress < 0.9 {
-                continueWatchingText = "Continue Watching Episode \(ep.number)"
-                return
-            }
-        }
-
-        continueWatchingText = "Start Watching"
     }
     
     private func playFirstUnwatchedEpisode() {

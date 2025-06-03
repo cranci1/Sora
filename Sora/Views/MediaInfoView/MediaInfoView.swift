@@ -5,6 +5,7 @@
 //  Created by Francesco on 05/01/25.
 //
 
+import AVKit
 import SwiftUI
 import Kingfisher
 import SafariServices
@@ -43,6 +44,9 @@ struct MediaInfoView: View {
     @State private var selectedEpisodeNumber: Int = 0
     @State private var selectedEpisodeImage: String = ""
     @State private var selectedSeason: Int = 0
+    
+    @State private var isVideoPlayerPresented: Bool = false
+    @State private var videoPlayerView: VideoPlayerView?
     
     @AppStorage("externalPlayer") private var externalPlayer: String = "Default"
     @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 100
@@ -156,6 +160,11 @@ struct MediaInfoView: View {
             bodyContent
                 .navigationBarHidden(true)
                 .ignoresSafeArea(.container, edges: .top)
+                .fullScreenCover(isPresented: $isVideoPlayerPresented) {
+                    if let playerView = videoPlayerView {
+                        playerView
+                    }
+                }
             
             VStack {
                 HStack {
@@ -1351,19 +1360,19 @@ struct MediaInfoView: View {
             case "IINA":
                 scheme = "iina://weblink?url=\(url)"
             case "Default":
-                let videoPlayerViewController = VideoPlayerViewController(module: module)
-                videoPlayerViewController.headers = headers
-                videoPlayerViewController.streamUrl = url
-                videoPlayerViewController.fullUrl = fullURL
-                videoPlayerViewController.episodeNumber = selectedEpisodeNumber
-                videoPlayerViewController.episodeImageUrl = selectedEpisodeImage
-                videoPlayerViewController.mediaTitle = title
-                videoPlayerViewController.aniListID = itemID ?? 0
-                videoPlayerViewController.modalPresentationStyle = .fullScreen
-                
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene, let rootVC = windowScene.windows.first?.rootViewController {
-                    rootVC.present(videoPlayerViewController, animated: true, completion: nil)
-                }
+                self.videoPlayerView = VideoPlayerView(
+                    module: module,
+                    streamUrl: url,
+                    fullUrl: fullURL,
+                    subtitles: subtitles ?? "",
+                    aniListID: itemID ?? 0,
+                    headers: headers,
+                    totalEpisodes: episodeLinks.count,
+                    episodeNumber: selectedEpisodeNumber,
+                    episodeImageUrl: selectedEpisodeImage,
+                    mediaTitle: title
+                )
+                self.isVideoPlayerPresented = true
                 return
             default:
                 break

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Kingfisher
+import AVKit
 
 fileprivate struct SettingsSection<Content: View>: View {
     let title: String
@@ -60,6 +61,7 @@ fileprivate struct SettingsSection<Content: View>: View {
 
 struct SettingsViewAbout: View {
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "ALPHA"
+    @State private var isAnimating = false
     
     var body: some View {
         ScrollView {
@@ -95,29 +97,51 @@ struct SettingsViewAbout: View {
                             UIApplication.shared.open(url)
                         }
                     }) {
-                        HStack {
-                            KFImage(URL(string: "https://avatars.githubusercontent.com/u/100066266?v=4"))
+                        ZStack(alignment: .trailing) {
+                            KFImage(URL(string: "https://github.com/50n50/assets/blob/main/asset2.png?raw=true")!)
                                 .placeholder {
                                     ProgressView()
                                 }
                                 .resizable()
-                                .frame(width: 40, height: 40)
-                                .clipShape(Circle())
+                                .aspectRatio(contentMode: .fill)
+                                .frame(height: 64)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
                             
-                            VStack(alignment: .leading) {
+                            HStack {
+                                KFImage(URL(string: "https://avatars.githubusercontent.com/u/100066266?v=4"))
+                                    .placeholder {
+                                        ProgressView()
+                                    }
+                                    .resizable()
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(Circle())
+                                
                                 Text("cranci1")
                                     .font(.headline)
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(hexTwo: "#41127b"),
+                                                Color(hexTwo: "#a78bda"),
+                                                Color(hexTwo: "#41127b")
+                                            ],
+                                            startPoint: isAnimating ? .trailing : .leading,
+                                            endPoint: isAnimating ? .leading : .trailing
+                                        )
+                                    )
+                                    .onAppear {
+                                        withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
+                                            isAnimating = true
+                                        }
+                                    }
+                                
+                                Spacer()
+                                Image(systemName: "safari")
                                     .foregroundColor(.indigo)
-                                Text("me frfr")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
                             }
-                            Spacer()
-                            Image(systemName: "safari")
-                                .foregroundColor(.indigo)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
                     }
                 }
                 
@@ -197,6 +221,7 @@ struct ContributorsView: View {
 
 struct ContributorView: View {
     let contributor: Contributor
+    @State private var isAnimating = false
     
     var body: some View {
         Button(action: {
@@ -204,29 +229,62 @@ struct ContributorView: View {
                 UIApplication.shared.open(url)
             }
         }) {
-            HStack {
-                KFImage(URL(string: contributor.avatarUrl))
-                    .placeholder {
-                        ProgressView()
-                    }
-                    .resizable()
-                    .frame(width: 40, height: 40)
-                    .clipShape(Circle())
+            ZStack(alignment: .trailing) {
+                if contributor.login == "50n50" {
+                    KFImage(URL(string: "https://github.com/50n50/assets/raw/refs/heads/main/asset.png")!)
+                        .placeholder {
+                            ProgressView()
+                        }
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(height: 64)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
                 
-                Text(contributor.login)
-                    .font(.headline)
-                    .foregroundColor(
-                        contributor.login == "IBH-RAD" ? Color(hexTwo: "#41127b") :
-                        contributor.login == "50n50" ? Color(hexTwo: "#fa4860") :
-                        .accentColor
-                    )
+                HStack {
+                    KFImage(URL(string: contributor.avatarUrl))
+                        .placeholder {
+                            ProgressView()
+                        }
+                        .resizable()
+                        .frame(width: 40, height: 40)
+                        .clipShape(Circle())
+                    
+                    if contributor.login == "50n50" {
+                        Text(contributor.login)
+                            .font(.headline)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [
+                                        Color(hexTwo: "#fa4860"),
+                                        Color(hexTwo: "#fccdd1"),
+                                        Color(hexTwo: "#fa4860")
+                                    ],
+                                    startPoint: isAnimating ? .trailing : .leading,
+                                    endPoint: isAnimating ? .leading : .trailing
+                                )
+                            )
+                            .onAppear {
+                                withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
+                                    isAnimating = true
+                                }
+                            }
+                    } else {
+                        Text(contributor.login)
+                            .font(.headline)
+                            .foregroundColor(
+                                contributor.login == "IBH-RAD" ? Color(hexTwo: "#41127b") :
+                                .accentColor
+                            )
+                    }
 
-                Spacer()
-                Image(systemName: "safari")
-                    .foregroundColor(.accentColor)
+                    Spacer()
+                    Image(systemName: "safari")
+                        .foregroundColor(.accentColor)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
         }
     }
 }

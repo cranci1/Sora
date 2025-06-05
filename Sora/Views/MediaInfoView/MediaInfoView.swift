@@ -47,6 +47,14 @@ struct MediaInfoView: View {
     @AppStorage("externalPlayer") private var externalPlayer: String = "Default"
     @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 100
     
+    private var selectedRangeKey: String  { "selectedRangeStart_\(href)" }
+    private var selectedSeasonKey: String { "selectedSeason_\(href)" }
+    @State private var selectedRange: Range<Int> = {
+        let size = UserDefaults.standard.integer(forKey: "episodeChunkSize")
+        let chunk = size == 0 ? 100 : size
+        return 0..<chunk
+    }()
+    
     @State private var isModuleSelectorPresented = false
     @State private var isError = false
     @State private var isMatchingPresented = false
@@ -57,7 +65,6 @@ struct MediaInfoView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject var tabBarController: TabBarController
     
-    @State private var selectedRange: Range<Int> = 0..<100
     @State private var showSettingsMenu = false
     @State private var customAniListID: Int?
     @State private var showStreamLoadingView: Bool = false
@@ -127,7 +134,12 @@ struct MediaInfoView: View {
                 }
                 
                 if !hasFetched {
-                    DropManager.shared.showDrop(title: "Fetching Data", subtitle: "Please wait while fetching.", duration: 0.5, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
+                    DropManager.shared.showDrop(
+                        title: "Fetching Data",
+                        subtitle: "Please wait while fetching.",
+                        duration: 0.5,
+                        icon: UIImage(systemName: "arrow.triangle.2.circlepath")
+                    )
                     fetchDetails()
                     
                     if let savedID = UserDefaults.standard.object(forKey: "custom_anilist_id_\(href)") as? Int {
@@ -137,13 +149,21 @@ struct MediaInfoView: View {
                     } else {
                         fetchMetadataIDIfNeeded()
                     }
-                    
-                    selectedRange = 0..<episodeChunkSize
-                    
+                                        
                     hasFetched = true
-                    AnalyticsManager.shared.sendEvent(event: "MediaInfoView", additionalData: ["title": title])
+                    AnalyticsManager.shared.sendEvent(
+                        event: "MediaInfoView",
+                        additionalData: ["title": title]
+                    )
                 }
+                
                 tabBarController.hideTabBar()
+            }
+            .onChange(of: selectedRange) { newValue in
+                UserDefaults.standard.set(newValue.lowerBound, forKey: selectedRangeKey)
+            }
+            .onChange(of: selectedSeason) { newValue in
+                UserDefaults.standard.set(newValue, forKey: selectedSeasonKey)
             }
             .onDisappear(){
                 tabBarController.showTabBar()
@@ -792,6 +812,20 @@ struct MediaInfoView: View {
         }
     }
     
+    private func restoreSelectionState() {
+        if let savedStart = UserDefaults.standard.object(forKey: selectedRangeKey) as? Int,
+           let savedRange = generateRanges().first(where: { $0.lowerBound == savedStart }) {
+            selectedRange = savedRange
+        } else {
+            selectedRange = generateRanges().first ?? 0..<episodeChunkSize
+        }
+
+        if let savedSeason = UserDefaults.standard.object(forKey: selectedSeasonKey) as? Int {
+            let maxIndex = max(0, groupedEpisodes().count - 1)
+            selectedSeason = min(savedSeason, maxIndex)
+        }
+    }
+    
     private func getBannerImageBasedOnAppearance() -> String {
         let isLightMode = selectedAppearance == .light || (selectedAppearance == .system && colorScheme == .light)
         return isLightMode
@@ -1078,6 +1112,7 @@ struct MediaInfoView: View {
                                 self.airdate = item.airdate
                             }
                             self.episodeLinks = episodes
+                            self.restoreSelectionState()
                             self.isLoading = false
                             self.isRefetching = false
                         }
@@ -1089,6 +1124,7 @@ struct MediaInfoView: View {
                                 self.airdate = item.airdate
                             }
                             self.episodeLinks = episodes
+                            self.restoreSelectionState()
                             self.isLoading = false
                             self.isRefetching = false
                         }

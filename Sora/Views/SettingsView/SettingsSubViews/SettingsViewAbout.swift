@@ -8,6 +8,7 @@
 import SwiftUI
 import Kingfisher
 import AVKit
+import WebKit
 
 fileprivate struct SettingsSection<Content: View>: View {
     let title: String
@@ -27,10 +28,8 @@ fileprivate struct SettingsSection<Content: View>: View {
                 .foregroundStyle(.gray)
                 .padding(.horizontal, 20)
             
-            VStack(spacing: 0) {
-                content
-            }
-            .padding(.horizontal, 20)
+            content
+                .padding(.horizontal, 20)
             
             if let footer = footer {
                 Text(footer)
@@ -73,6 +72,22 @@ struct SettingsViewAbout: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                        .init(color: Color.accentColor.opacity(0), location: 1)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 0.5
+                            )
+                    )
                 }
                 
                 SettingsSection(title: "Main Developer") {
@@ -114,6 +129,22 @@ struct SettingsViewAbout: View {
                             .padding(.vertical, 12)
                         }
                     }
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                        .init(color: Color.accentColor.opacity(0), location: 1)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 0.5
+                            )
+                    )
                 }
                 
                 SettingsSection(title: "Contributors") {
@@ -155,12 +186,7 @@ struct ContributorsView: View {
                     }) {
                         ZStack(alignment: .trailing) {
                             if contributor.login == "50n50" {
-                                KFImage(URL(string: "https://github.com/50n50/assets/raw/refs/heads/main/asset.png")!)
-                                    .placeholder {
-                                        ProgressView()
-                                    }
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
+                                GifImageView(url: URL(string: "https://raw.githubusercontent.com/50n50/assets/refs/heads/main/asset1.gif")!)
                                     .frame(height: 64)
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                             } else if contributor.login == "xibrox" {
@@ -183,6 +209,35 @@ struct ContributorsView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                             } else if contributor.login == "realdoomsboygaming" {
                                 KFImage(URL(string: "https://raw.githubusercontent.com/50n50/assets/refs/heads/main/asset5.png")!)
+                                    .placeholder {
+                                        ProgressView()
+                                    }
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(height: 64)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            } else if contributor.login == "stormfjeld" {
+                                KFImage(URL(string: "https://raw.githubusercontent.com/50n50/assets/refs/heads/main/asset6.png")!)
+                                    .placeholder {
+                                        ProgressView()
+                                    }
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 64, alignment: .top)
+                                    .clipped()
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            } else if contributor.login == "bshar1865" {
+                                KFImage(URL(string: "https://raw.githubusercontent.com/50n50/assets/refs/heads/main/asset7.png")!)
+                                    .placeholder {
+                                        ProgressView()
+                                    }
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(height: 64)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            } else if contributor.login == "ordzy" {
+                                KFImage(URL(string: "https://raw.githubusercontent.com/50n50/assets/refs/heads/main/asset8.png")!)
                                     .placeholder {
                                         ProgressView()
                                     }
@@ -225,6 +280,24 @@ struct ContributorsView: View {
                                         primaryColor: Color(hexTwo: "#ff0000"),
                                         secondaryColor: Color(hexTwo: "#ffa500")
                                     )
+                                } else if contributor.login == "stormfjeld" {
+                                    AnimatedText(
+                                        text: contributor.login,
+                                        primaryColor: .gray.opacity(0.7),
+                                        secondaryColor: .white
+                                    )
+                                } else if contributor.login == "bshar1865" {
+                                    AnimatedText(
+                                        text: contributor.login,
+                                        primaryColor: .gray.opacity(0.7),
+                                        secondaryColor: .white
+                                    )
+                                } else if contributor.login == "ordzy" {
+                                    AnimatedText(
+                                        text: contributor.login,
+                                        primaryColor: Color(hexTwo: "#cfc4c5"),
+                                        secondaryColor: Color(hexTwo: "#38629d")
+                                    )
                                 } else {
                                     Text(contributor.login)
                                         .font(.headline)
@@ -263,7 +336,9 @@ struct ContributorsView: View {
             }
         }
         .onAppear {
-            loadContributors()
+            if contributors.isEmpty {
+                loadContributors()
+            }
         }
     }
     
@@ -334,6 +409,9 @@ struct AnimatedText: View {
                     isAnimating = true
                 }
             }
+            .onDisappear {
+                isAnimating = false
+            }
     }
 }
 
@@ -360,5 +438,37 @@ extension Color {
             blue:  Double(b) / 255,
             opacity: Double(a) / 255
         )
+    }
+}
+
+struct GifImageView: UIViewRepresentable {
+    let url: URL
+    @State private var cachedURL: URL?
+    
+    func makeUIView(context: Context) -> WKWebView {
+        let webView = WKWebView()
+        webView.scrollView.isScrollEnabled = false
+        webView.isOpaque = false
+        webView.backgroundColor = UIColor.clear
+        return webView
+    }
+    
+    func updateUIView(_ webView: WKWebView, context: Context) {
+        KingfisherManager.shared.retrieveImage(with: url) { result in
+            switch result {
+            case .success(let imageResult):
+                if let cachedURL = imageResult.cacheType == .memory || imageResult.cacheType == .disk ? 
+                    KingfisherManager.shared.cache.cachePath(forKey: url.absoluteString) : nil {
+                    let request = URLRequest(url: URL(fileURLWithPath: cachedURL))
+                    webView.load(request)
+                } else {
+                    let request = URLRequest(url: url)
+                    webView.load(request)
+                }
+            case .failure:
+                let request = URLRequest(url: url)
+                webView.load(request)
+            }
+        }
     }
 }

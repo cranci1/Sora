@@ -83,12 +83,8 @@
 		1E26E9E72DA9577900B9DC02 /* VolumeSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E26E9E62DA9577900B9DC02 /* VolumeSlider.swift */; };
 		1E47859B2DEBC5960095BF2F /* AnilistMatchPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E47859A2DEBC5960095BF2F /* AnilistMatchPopupView.swift */; };
 		1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */; };
-		1EA64DCD2DE5030100AC14BC /* ImageUpscaler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EA64DCC2DE5030100AC14BC /* ImageUpscaler.swift */; };
 		1EAC7A322D888BC50083984D /* MusicProgressSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */; };
 		1EF5C3A92DB988E40032BF07 /* CommunityLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EF5C3A82DB988D70032BF07 /* CommunityLib.swift */; };
-		7205AEDB2DCCEF9500943F3F /* EpisodeMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7205AED72DCCEF9500943F3F /* EpisodeMetadata.swift */; };
-		7205AEDC2DCCEF9500943F3F /* MetadataCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7205AED92DCCEF9500943F3F /* MetadataCacheManager.swift */; };
-		7205AEDD2DCCEF9500943F3F /* KingfisherManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7205AED82DCCEF9500943F3F /* KingfisherManager.swift */; };
 		7222485F2DCBAA2C00CABE2D /* DownloadModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7222485D2DCBAA2C00CABE2D /* DownloadModels.swift */; };
 		722248602DCBAA2C00CABE2D /* M3U8StreamExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7222485E2DCBAA2C00CABE2D /* M3U8StreamExtractor.swift */; };
 		722248632DCBAA4700CABE2D /* JSController-HeaderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722248612DCBAA4700CABE2D /* JSController-HeaderManager.swift */; };
@@ -98,9 +94,6 @@
 		72443C7F2DC8038300A61321 /* SettingsViewDownloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */; };
 		727220712DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7272206F2DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift */; };
 		727220722DD642B100C2A4A2 /* JSController+MP4Download.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727220702DD642B100C2A4A2 /* JSController+MP4Download.swift */; };
-		72AC3A012DD4DAEB00C60B96 /* ImagePrefetchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72AC39FE2DD4DAEA00C60B96 /* ImagePrefetchManager.swift */; };
-		72AC3A022DD4DAEB00C60B96 /* EpisodeMetadataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72AC39FD2DD4DAEA00C60B96 /* EpisodeMetadataManager.swift */; };
-		72AC3A032DD4DAEB00C60B96 /* PerformanceMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72AC39FF2DD4DAEA00C60B96 /* PerformanceMonitor.swift */; };
 		73D164D52D8B5B470011A360 /* JavaScriptCore+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */; };
 /* End PBXBuildFile section */
 
@@ -181,12 +174,8 @@
 		1E26E9E62DA9577900B9DC02 /* VolumeSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeSlider.swift; sourceTree = "<group>"; };
 		1E47859A2DEBC5960095BF2F /* AnilistMatchPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnilistMatchPopupView.swift; sourceTree = "<group>"; };
 		1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewLoggerFilter.swift; sourceTree = "<group>"; };
-		1EA64DCC2DE5030100AC14BC /* ImageUpscaler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUpscaler.swift; sourceTree = "<group>"; };
 		1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicProgressSlider.swift; sourceTree = "<group>"; };
 		1EF5C3A82DB988D70032BF07 /* CommunityLib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityLib.swift; sourceTree = "<group>"; };
-		7205AED72DCCEF9500943F3F /* EpisodeMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeMetadata.swift; sourceTree = "<group>"; };
-		7205AED82DCCEF9500943F3F /* KingfisherManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KingfisherManager.swift; sourceTree = "<group>"; };
-		7205AED92DCCEF9500943F3F /* MetadataCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataCacheManager.swift; sourceTree = "<group>"; };
 		7222485D2DCBAA2C00CABE2D /* DownloadModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadModels.swift; sourceTree = "<group>"; };
 		7222485E2DCBAA2C00CABE2D /* M3U8StreamExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3U8StreamExtractor.swift; sourceTree = "<group>"; };
 		722248612DCBAA4700CABE2D /* JSController-HeaderManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-HeaderManager.swift"; sourceTree = "<group>"; };
@@ -196,9 +185,6 @@
 		72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewDownloads.swift; sourceTree = "<group>"; };
 		7272206F2DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-StreamTypeDownload.swift"; sourceTree = "<group>"; };
 		727220702DD642B100C2A4A2 /* JSController+MP4Download.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController+MP4Download.swift"; sourceTree = "<group>"; };
-		72AC39FD2DD4DAEA00C60B96 /* EpisodeMetadataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeMetadataManager.swift; sourceTree = "<group>"; };
-		72AC39FE2DD4DAEA00C60B96 /* ImagePrefetchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePrefetchManager.swift; sourceTree = "<group>"; };
-		72AC39FF2DD4DAEA00C60B96 /* PerformanceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceMonitor.swift; sourceTree = "<group>"; };
 		73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JavaScriptCore+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -327,7 +313,6 @@
 		133D7C6C2D2BE2500075467E /* Sora */ = {
 			isa = PBXGroup;
 			children = (
-				72AC3A002DD4DAEA00C60B96 /* Managers */,
 				130C6BF82D53A4C200DC1432 /* Sora.entitlements */,
 				13DC0C412D2EC9BA00D0F966 /* Info.plist */,
 				13103E802D589D6C000F0673 /* Tracking Services */,
@@ -395,7 +380,6 @@
 				04F08EE02DE10C22006B29D9 /* Models */,
 				04F08EDD2DE10C05006B29D9 /* TabBar */,
 				04F08EDA2DE10BE3006B29D9 /* ProgressiveBlurView */,
-				7205AEDA2DCCEF9500943F3F /* Cache */,
 				13D842532D45266900EBBFA6 /* Drops */,
 				1399FAD12D3AB33D00E97C31 /* Logger */,
 				133D7C882D2BE2640075467E /* Modules */,
@@ -606,16 +590,6 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
-		7205AEDA2DCCEF9500943F3F /* Cache */ = {
-			isa = PBXGroup;
-			children = (
-				7205AED72DCCEF9500943F3F /* EpisodeMetadata.swift */,
-				7205AED82DCCEF9500943F3F /* KingfisherManager.swift */,
-				7205AED92DCCEF9500943F3F /* MetadataCacheManager.swift */,
-			);
-			path = Cache;
-			sourceTree = "<group>";
-		};
 		72443C832DC8046500A61321 /* DownloadUtils */ = {
 			isa = PBXGroup;
 			children = (
@@ -624,17 +598,6 @@
 				7222485E2DCBAA2C00CABE2D /* M3U8StreamExtractor.swift */,
 			);
 			path = DownloadUtils;
-			sourceTree = "<group>";
-		};
-		72AC3A002DD4DAEA00C60B96 /* Managers */ = {
-			isa = PBXGroup;
-			children = (
-				1EA64DCC2DE5030100AC14BC /* ImageUpscaler.swift */,
-				72AC39FD2DD4DAEA00C60B96 /* EpisodeMetadataManager.swift */,
-				72AC39FE2DD4DAEA00C60B96 /* ImagePrefetchManager.swift */,
-				72AC39FF2DD4DAEA00C60B96 /* PerformanceMonitor.swift */,
-			);
-			path = Managers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -728,10 +691,7 @@
 				132AF1252D9995F900A0140B /* JSController-Search.swift in Sources */,
 				1EF5C3A92DB988E40032BF07 /* CommunityLib.swift in Sources */,
 				13CBEFDA2D5F7D1200D011EE /* String.swift in Sources */,
-				7205AEDB2DCCEF9500943F3F /* EpisodeMetadata.swift in Sources */,
 				04F08EDC2DE10BF3006B29D9 /* ProgressiveBlurView.swift in Sources */,
-				7205AEDC2DCCEF9500943F3F /* MetadataCacheManager.swift in Sources */,
-				7205AEDD2DCCEF9500943F3F /* KingfisherManager.swift in Sources */,
 				1E26E9E72DA9577900B9DC02 /* VolumeSlider.swift in Sources */,
 				136BBE802DB1038000906B5E /* Notification+Name.swift in Sources */,
 				13DB46902D900A38008CBC03 /* URL.swift in Sources */,
@@ -788,15 +748,11 @@
 				727220712DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift in Sources */,
 				727220722DD642B100C2A4A2 /* JSController+MP4Download.swift in Sources */,
 				132FC5B32DE31DAE009A80F7 /* SettingsViewAlternateAppIconPicker.swift in Sources */,
-				1EA64DCD2DE5030100AC14BC /* ImageUpscaler.swift in Sources */,
 				0402DA132DE7B5EC003BB42C /* SearchStateView.swift in Sources */,
 				0402DA142DE7B5EC003BB42C /* SearchResultsGrid.swift in Sources */,
 				0402DA152DE7B5EC003BB42C /* SearchComponents.swift in Sources */,
 				1399FAD42D3AB38C00E97C31 /* SettingsViewLogger.swift in Sources */,
 				04F08EDF2DE10C1D006B29D9 /* TabBar.swift in Sources */,
-				72AC3A012DD4DAEB00C60B96 /* ImagePrefetchManager.swift in Sources */,
-				72AC3A022DD4DAEB00C60B96 /* EpisodeMetadataManager.swift in Sources */,
-				72AC3A032DD4DAEB00C60B96 /* PerformanceMonitor.swift in Sources */,
 				72443C7F2DC8038300A61321 /* SettingsViewDownloads.swift in Sources */,
 				13DB46922D900BCE008CBC03 /* SettingsViewTrackers.swift in Sources */,
 				7222485F2DCBAA2C00CABE2D /* DownloadModels.swift in Sources */,

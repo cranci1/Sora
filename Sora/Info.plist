@@ -125,6 +125,7 @@
 	</array>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
+		<string>tracy</string>
 		<string>iina</string>
 		<string>outplayer</string>
 		<string>infuse</string>

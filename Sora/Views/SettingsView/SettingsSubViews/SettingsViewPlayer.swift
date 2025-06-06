@@ -205,9 +205,7 @@ struct SettingsViewPlayer: View {
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
     @AppStorage("pipButtonVisible") private var pipButtonVisible: Bool = true
     
-    private let mediaPlayers = ["Default", "Sora", "VLC", "OutPlayer", "Infuse", "nPlayer", "SenPlayer", "IINA"]
-    private let inAppPlayers = ["Default", "Sora"]
-    private let externalPlayers = ["VLC", "OutPlayer", "Infuse", "nPlayer", "SenPlayer", "IINA"]
+    private let mediaPlayers = ["Default", "Sora", "VLC", "OutPlayer", "Infuse", "nPlayer", "SenPlayer", "IINA", "TracyPlayer"]
     
     var body: some View {
         ScrollView {

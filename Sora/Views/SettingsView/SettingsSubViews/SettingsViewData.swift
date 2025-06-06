@@ -136,22 +136,14 @@ fileprivate struct SettingsButtonRow: View {
 }
 
 struct SettingsViewData: View {
-    @State private var showEraseAppDataAlert = false
-    @State private var showRemoveDocumentsAlert = false
-    @State private var showSizeAlert = false
+    @State private var showAlert = false
     @State private var cacheSizeText: String = "Calculating..."
     @State private var isCalculatingSize: Bool = false
     @State private var cacheSize: Int64 = 0
     @State private var documentsSize: Int64 = 0
-    @State private var movPkgSize: Int64 = 0
-    @State private var showRemoveMovPkgAlert = false
-    @State private var isMetadataCachingEnabled: Bool = false
-    @State private var isImageCachingEnabled: Bool = true
-    @State private var isMemoryOnlyMode: Bool = false
-    @State private var showAlert = false
     
     enum ActiveAlert {
-        case eraseData, removeDocs, removeMovPkg
+        case eraseData, removeDocs
     }
     
     @State private var activeAlert: ActiveAlert = .eraseData
@@ -160,48 +152,9 @@ struct SettingsViewData: View {
         return ScrollView {
             VStack(spacing: 24) {
                 SettingsSection(
-                    title: "Cache Settings",
+                    title: "Cache",
                     footer: "Caching helps reduce network usage and load content faster. You can disable it to save storage space."
                 ) {
-                    SettingsToggleRow(
-                        icon: "doc.text",
-                        title: "Enable Metadata Caching",
-                        isOn: $isMetadataCachingEnabled
-                    )
-                    .onChange(of: isMetadataCachingEnabled) { newValue in
-                        MetadataCacheManager.shared.isCachingEnabled = newValue
-                        if !newValue {
-                            calculateCacheSize()
-                        }
-                    }
-                    
-                    SettingsToggleRow(
-                        icon: "photo",
-                        title: "Enable Image Caching",
-                        isOn: $isImageCachingEnabled
-                    )
-                    .onChange(of: isImageCachingEnabled) { newValue in
-                        KingfisherCacheManager.shared.isCachingEnabled = newValue
-                        if !newValue {
-                            calculateCacheSize()
-                        }
-                    }
-                    
-                    if isMetadataCachingEnabled {
-                        SettingsToggleRow(
-                            icon: "memorychip",
-                            title: "Memory-Only Mode",
-                            isOn: $isMemoryOnlyMode
-                        )
-                        .onChange(of: isMemoryOnlyMode) { newValue in
-                            MetadataCacheManager.shared.isMemoryOnlyMode = newValue
-                            if newValue {
-                                MetadataCacheManager.shared.clearAllCache()
-                                calculateCacheSize()
-                            }
-                        }
-                    }
-                    
                     HStack {
                         Image(systemName: "folder.badge.gearshape")
                             .frame(width: 24, height: 24)
@@ -251,16 +204,6 @@ struct SettingsViewData: View {
                         Divider().padding(.horizontal, 16)
                         
                         SettingsButtonRow(
-                            icon: "arrow.down.circle",
-                            title: "Remove Downloads",
-                            subtitle: formatSize(movPkgSize),
-                            action: {
-                                showRemoveMovPkgAlert = true
-                            }
-                        )
-                        Divider().padding(.horizontal, 16)
-                        
-                        SettingsButtonRow(
                             icon: "exclamationmark.triangle",
                             title: "Erase all App Data",
                             action: {
@@ -274,9 +217,6 @@ struct SettingsViewData: View {
             .scrollViewBottomPadding()
             .navigationTitle("App Data")
             .onAppear {
-                isMetadataCachingEnabled = MetadataCacheManager.shared.isCachingEnabled
-                isImageCachingEnabled = KingfisherCacheManager.shared.isCachingEnabled
-                isMemoryOnlyMode = MetadataCacheManager.shared.isMemoryOnlyMode
                 calculateCacheSize()
                 updateSizes()
             }
@@ -300,53 +240,44 @@ struct SettingsViewData: View {
                         },
                         secondaryButton: .cancel()
                     )
-                case .removeMovPkg:
-                    return Alert(
-                        title: Text("Remove Downloads"),
-                        message: Text("Are you sure you want to remove all Downloads?"),
-                        primaryButton: .destructive(Text("Remove")) {
-                            removeMovPkgFiles()
-                        },
-                        secondaryButton: .cancel()
-                    )
                 }
             }
         }
         
-        
         func calculateCacheSize() {
             isCalculatingSize = true
             cacheSizeText = "Calculating..."
+            
             DispatchQueue.global(qos: .background).async {
-                var totalSize: Int64 = 0
-                let metadataSize = MetadataCacheManager.shared.getCacheSize()
-                totalSize += metadataSize
-                
-                KingfisherCacheManager.shared.calculateCacheSize { imageSize in
-                    totalSize += Int64(imageSize)
+                if let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first {
+                    let size = calculateDirectorySize(for: cacheURL)
                     DispatchQueue.main.async {
-                        self.cacheSizeText = KingfisherCacheManager.formatCacheSize(UInt(totalSize))
+                        self.cacheSize = size
+                        self.cacheSizeText = formatSize(size)
+                        self.isCalculatingSize = false
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        self.cacheSizeText = "Unknown"
                         self.isCalculatingSize = false
                     }
                 }
             }
         }
         
-        func clearAllCaches() {
-            MetadataCacheManager.shared.clearAllCache()
-            KingfisherCacheManager.shared.clearCache {
-                calculateCacheSize()
+        func updateSizes() {
+            DispatchQueue.global(qos: .background).async {
+                if let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                    let size = calculateDirectorySize(for: documentsURL)
+                    DispatchQueue.main.async {
+                        self.documentsSize = size
+                    }
+                }
             }
-            Logger.shared.log("All caches cleared", type: "General")
         }
         
-        func eraseAppData() {
-            if let domain = Bundle.main.bundleIdentifier {
-                UserDefaults.standard.removePersistentDomain(forName: domain)
-                UserDefaults.standard.synchronize()
-                Logger.shared.log("Cleared app data!", type: "General")
-                exit(0)
-            }
+        func clearAllCaches() {
+            clearCache()
         }
         
         func clearCache() {
@@ -377,30 +308,24 @@ struct SettingsViewData: View {
                     Logger.shared.log("All files in documents folder removed", type: "General")
                     exit(0)
                 } catch {
-                    Logger.shared.log("Error removing files in documents folder: $error)", type: "Error")
+                    Logger.shared.log("Error removing files in documents folder: \(error)", type: "Error")
                 }
             }
         }
         
-        func removeMovPkgFiles() {
-            let fileManager = FileManager.default
-            if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
-                do {
-                    let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
-                    for fileURL in fileURLs where fileURL.pathExtension == "movpkg" {
-                        try fileManager.removeItem(at: fileURL)
-                    }
-                    Logger.shared.log("All Downloads files removed", type: "General")
-                    updateSizes()
-                } catch {
-                    Logger.shared.log("Error removing Downloads files: $error)", type: "Error")
-                }
+        func eraseAppData() {
+            if let domain = Bundle.main.bundleIdentifier {
+                UserDefaults.standard.removePersistentDomain(forName: domain)
+                UserDefaults.standard.synchronize()
+                Logger.shared.log("Cleared app data!", type: "General")
+                exit(0)
             }
         }
         
         func calculateDirectorySize(for url: URL) -> Int64 {
             let fileManager = FileManager.default
             var totalSize: Int64 = 0
+            
             do {
                 let contents = try fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: [.fileSizeKey])
                 for url in contents {
@@ -412,8 +337,9 @@ struct SettingsViewData: View {
                     }
                 }
             } catch {
-                Logger.shared.log("Error calculating directory size: $error)", type: "Error")
+                Logger.shared.log("Error calculating directory size: \(error)", type: "Error")
             }
+            
             return totalSize
         }
         
@@ -422,31 +348,6 @@ struct SettingsViewData: View {
             formatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB]
             formatter.countStyle = .file
             return formatter.string(fromByteCount: bytes)
-        }
-        
-        func updateSizes() {
-            if let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first {
-                cacheSize = calculateDirectorySize(for: cacheURL)
-            }
-            if let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-                documentsSize = calculateDirectorySize(for: documentsURL)
-                movPkgSize = calculateMovPkgSize(in: documentsURL)
-            }
-        }
-        
-        func calculateMovPkgSize(in url: URL) -> Int64 {
-            let fileManager = FileManager.default
-            var totalSize: Int64 = 0
-            do {
-                let contents = try fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: [.fileSizeKey])
-                for url in contents where url.pathExtension == "movpkg" {
-                    let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey])
-                    totalSize += Int64(resourceValues.fileSize ?? 0)
-                }
-            } catch {
-                Logger.shared.log("Error calculating MovPkg size: $error)", type: "Error")
-            }
-            return totalSize
         }
     }
 }

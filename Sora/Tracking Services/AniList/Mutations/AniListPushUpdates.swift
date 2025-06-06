@@ -203,3 +203,10 @@ class AniListMutation {
         let data: DataField
     }
 }
+
+struct EpisodeMetadataInfo: Codable, Equatable {
+    let title: [String: String]
+    let imageUrl: String
+    let anilistId: Int
+    let episodeNumber: Int
+}

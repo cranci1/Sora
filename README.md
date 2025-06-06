@@ -31,7 +31,7 @@
 - [x] Streams support (Jellyfin/Plex like servers)
 - [x] External Metadata providers (TMDB, AniList)
 - [x] Background playback and Picture-in-Picture (PiP) support
-- [x] External media player support (VLC, Infuse, Outplayer, nPlayer, SenPlayer, IINA)
+- [x] External media player support (VLC, Infuse, Outplayer, nPlayer, SenPlayer, IINA, TracyPlayer)
 
 ## Installation
 

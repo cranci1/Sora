@@ -147,7 +147,7 @@ struct SettingsViewAbout: View {
                     )
                 }
                 
-                SettingsSection(title: "Contributors") {
+                SettingsSection(title: "Contributors", footer: "Message Paul for your contributor card image") {
                     ContributorsView()
                 }
             }
@@ -443,7 +443,6 @@ extension Color {
 
 struct GifImageView: UIViewRepresentable {
     let url: URL
-    @State private var cachedURL: URL?
     
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
@@ -454,21 +453,7 @@ struct GifImageView: UIViewRepresentable {
     }
     
     func updateUIView(_ webView: WKWebView, context: Context) {
-        KingfisherManager.shared.retrieveImage(with: url) { result in
-            switch result {
-            case .success(let imageResult):
-                if let cachedURL = imageResult.cacheType == .memory || imageResult.cacheType == .disk ? 
-                    KingfisherManager.shared.cache.cachePath(forKey: url.absoluteString) : nil {
-                    let request = URLRequest(url: URL(fileURLWithPath: cachedURL))
-                    webView.load(request)
-                } else {
-                    let request = URLRequest(url: url)
-                    webView.load(request)
-                }
-            case .failure:
-                let request = URLRequest(url: url)
-                webView.load(request)
-            }
-        }
+        let request = URLRequest(url: url)
+        webView.load(request)
     }
 }

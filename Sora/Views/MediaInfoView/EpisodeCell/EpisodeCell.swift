@@ -47,6 +47,7 @@ struct EpisodeCell: View {
     @State private var swipeOffset: CGFloat = 0
     @State private var isShowingActions: Bool = false
     @State private var actionButtonWidth: CGFloat = 60
+    @State private var dragState: DragState = .inactive
     
     @State private var retryAttempts: Int = 0
     private let maxRetryAttempts: Int = 3
@@ -57,6 +58,39 @@ struct EpisodeCell: View {
     
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
+    
+    enum DragState {
+        case inactive
+        case pressing
+        case dragging(translation: CGSize)
+        
+        var translation: CGSize {
+            switch self {
+            case .inactive, .pressing:
+                return .zero
+            case .dragging(let translation):
+                return translation
+            }
+        }
+        
+        var isActive: Bool {
+            switch self {
+            case .inactive:
+                return false
+            case .pressing, .dragging:
+                return true
+            }
+        }
+        
+        var isDragging: Bool {
+            switch self {
+            case .dragging:
+                return true
+            default:
+                return false
+            }
+        }
+    }
     
     private var downloadStatusString: String {
         switch downloadStatus {
@@ -152,67 +186,26 @@ struct EpisodeCell: View {
                     )
             )
             .clipShape(RoundedRectangle(cornerRadius: 15))
-            .offset(x: swipeOffset)
+            .offset(x: swipeOffset + dragState.translation.width)
             .zIndex(1)
-            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: swipeOffset)
+            .scaleEffect(dragState.isActive ? 0.98 : 1.0)
+            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: swipeOffset)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: dragState.isActive)
             .contextMenu {
                 contextMenuContent
             }
             .simultaneousGesture(
-                DragGesture()
+                DragGesture(coordinateSpace: .local)
                     .onChanged { value in
-                        let horizontalTranslation = value.translation.width
-                        let verticalTranslation = value.translation.height
-                        
-                        let isDefinitelyHorizontalSwipe = abs(horizontalTranslation) > 10 && abs(horizontalTranslation) > abs(verticalTranslation) * 1.5
-                        
-                        if isShowingActions || isDefinitelyHorizontalSwipe {
-                            if horizontalTranslation < 0 {
-                                let maxSwipe = calculateMaxSwipeDistance()
-                                swipeOffset = max(horizontalTranslation, -maxSwipe)
-                            } else if isShowingActions {
-                                let maxSwipe = calculateMaxSwipeDistance()
-                                swipeOffset = max(horizontalTranslation - maxSwipe, -maxSwipe)
-                            }
-                        }
+                        handleDragChanged(value)
                     }
                     .onEnded { value in
-                        let horizontalTranslation = value.translation.width
-                        let verticalTranslation = value.translation.height
-                        
-                        let wasHandlingGesture = abs(horizontalTranslation) > 10 && abs(horizontalTranslation) > abs(verticalTranslation) * 1.5
-                        
-                        if isShowingActions || wasHandlingGesture {
-                            let maxSwipe = calculateMaxSwipeDistance()
-                            let threshold = maxSwipe * 0.2
-                            
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                if horizontalTranslation < -threshold && !isShowingActions {
-                                    swipeOffset = -maxSwipe
-                                    isShowingActions = true
-                                } else if horizontalTranslation > threshold && isShowingActions {
-                                    swipeOffset = 0
-                                    isShowingActions = false
-                                } else {
-                                    swipeOffset = isShowingActions ? -maxSwipe : 0
-                                }
-                            }
-                        }
+                        handleDragEnded(value)
                     }
             )
         }
         .onTapGesture {
-            if isShowingActions {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    swipeOffset = 0
-                    isShowingActions = false
-                }
-            } else if isMultiSelectMode {
-                onSelectionChanged?(!isSelected)
-            } else {
-                let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
-                onTap(imageUrl)
-            }
+            handleTap()
         }
         .onAppear {
             updateProgress()
@@ -961,13 +954,97 @@ struct EpisodeCell: View {
         .padding(.horizontal, 8)
     }
     
+    private func handleDragChanged(_ value: DragGesture.Value) {
+        let translation = value.translation
+        let velocity = value.velocity
+        
+        let isHorizontalGesture = abs(translation.width) > abs(translation.height)
+        let hasSignificantHorizontalMovement = abs(translation.width) > 10
+        
+        if isHorizontalGesture && hasSignificantHorizontalMovement {
+            dragState = .dragging(translation: .zero)
+            
+            let proposedOffset = swipeOffset + translation.width
+            let maxSwipe = calculateMaxSwipeDistance()
+            
+            if translation.width < 0 {
+                let newOffset = max(proposedOffset, -maxSwipe)
+                if proposedOffset < -maxSwipe {
+                    let resistance = abs(proposedOffset + maxSwipe) * 0.15
+                    swipeOffset = -maxSwipe - resistance
+                } else {
+                    swipeOffset = newOffset
+                }
+            } else if isShowingActions {
+                swipeOffset = max(proposedOffset, -maxSwipe)
+            }
+        } else if !hasSignificantHorizontalMovement {
+            dragState = .inactive
+        }
+    }
+    
+    private func handleDragEnded(_ value: DragGesture.Value) {
+        let translation = value.translation
+        let velocity = value.velocity
+        
+        dragState = .inactive
+        
+        let isHorizontalGesture = abs(translation.width) > abs(translation.height)
+        let hasSignificantHorizontalMovement = abs(translation.width) > 10
+        
+        if isHorizontalGesture && hasSignificantHorizontalMovement {
+            let maxSwipe = calculateMaxSwipeDistance()
+            let threshold = maxSwipe * 0.3
+            let velocityThreshold: CGFloat = 500
+            
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                if translation.width < -threshold || velocity.width < -velocityThreshold {
+                    swipeOffset = -maxSwipe
+                    isShowingActions = true
+                } else if translation.width > threshold || velocity.width > velocityThreshold {
+                    swipeOffset = 0
+                    isShowingActions = false
+                } else {
+                    swipeOffset = isShowingActions ? -maxSwipe : 0
+                }
+            }
+        } else {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                swipeOffset = isShowingActions ? -calculateMaxSwipeDistance() : 0
+            }
+        }
+    }
+    
+    private func handleTap() {
+        if isShowingActions {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                swipeOffset = 0
+                isShowingActions = false
+            }
+        } else if isMultiSelectMode {
+            onSelectionChanged?(!isSelected)
+        } else {
+            let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
+            onTap(imageUrl)
+        }
+    }
+    
+    private func closeActionsIfNeeded() {
+        if isShowingActions {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                swipeOffset = 0
+                isShowingActions = false
+            }
+        }
+    }
+    
     private func closeActionsAndPerform(action: @escaping () -> Void) {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
             swipeOffset = 0
             isShowingActions = false
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             action()
         }
     }

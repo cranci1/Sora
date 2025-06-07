@@ -157,13 +157,11 @@ struct SettingsViewGeneral: View {
     @AppStorage("tmdbImageWidth") private var TMDBimageWidht: String = "original"
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
-    @AppStorage("currentAppIcon") private var currentAppIcon = "Default"
     
     private let metadataProvidersList = ["AniList", "TMDB"]
     private let TMDBimageWidhtList = ["300", "500", "780", "1280", "original"]
     private let sortOrderOptions = ["Ascending", "Descending"]
     @EnvironmentObject var settings: Settings
-    @State private var showAppIconPicker = false
     
     var body: some View {
         ScrollView {
@@ -182,28 +180,6 @@ struct SettingsViewGeneral: View {
                         },
                         selection: $settings.selectedAppearance
                     )
-                    
-                    VStack(spacing: 0) {
-                        HStack {
-                            Image(systemName: "app")
-                                .frame(width: 24, height: 24)
-                                .foregroundStyle(.primary)
-                            
-                            Text("App Icon")
-                                .foregroundStyle(.primary)
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                showAppIconPicker = true
-                            }) {
-                                Text(currentAppIcon)
-                                    .foregroundStyle(.gray)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                    }
                 }
                 
                 SettingsSection(
@@ -304,13 +280,5 @@ struct SettingsViewGeneral: View {
         }
         .navigationTitle("General")
         .scrollViewBottomPadding()
-        .sheet(isPresented: $showAppIconPicker) {
-            if #available(iOS 16.0, *) {
-                SettingsViewAlternateAppIconPicker(isPresented: $showAppIconPicker)
-                    .presentationDetents([.height(200)])
-            } else {
-                SettingsViewAlternateAppIconPicker(isPresented: $showAppIconPicker)
-            }
-        }
     }
 }

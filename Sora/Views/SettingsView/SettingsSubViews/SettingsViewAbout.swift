@@ -7,7 +7,6 @@
 
 import SwiftUI
 import Kingfisher
-import AVKit
 
 fileprivate struct SettingsSection<Content: View>: View {
     let title: String
@@ -30,6 +29,22 @@ fileprivate struct SettingsSection<Content: View>: View {
             VStack(spacing: 0) {
                 content
             }
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
             .padding(.horizontal, 20)
             
             if let footer = footer {
@@ -45,7 +60,6 @@ fileprivate struct SettingsSection<Content: View>: View {
 
 struct SettingsViewAbout: View {
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "ALPHA"
-    @State private var isAnimating = false
     
     var body: some View {
         ScrollView {
@@ -81,38 +95,29 @@ struct SettingsViewAbout: View {
                             UIApplication.shared.open(url)
                         }
                     }) {
-                        ZStack(alignment: .trailing) {
-                            KFImage(URL(string: "https://github.com/50n50/assets/blob/main/asset2.png?raw=true")!)
+                        HStack {
+                            KFImage(URL(string: "https://avatars.githubusercontent.com/u/100066266?v=4"))
                                 .placeholder {
                                     ProgressView()
                                 }
                                 .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(height: 64)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .frame(width: 40, height: 40)
+                                .clipShape(Circle())
                             
-                            HStack {
-                                KFImage(URL(string: "https://avatars.githubusercontent.com/u/100066266?v=4"))
-                                    .placeholder {
-                                        ProgressView()
-                                    }
-                                    .resizable()
-                                    .frame(width: 40, height: 40)
-                                    .clipShape(Circle())
-                                
-                                AnimatedText(
-                                    text: "cranci1",
-                                    primaryColor: Color(hexTwo: "#41127b"),
-                                    secondaryColor: Color(hexTwo: "#a78bda")
-                                )
-                                
-                                Spacer()
-                                Image(systemName: "safari")
+                            VStack(alignment: .leading) {
+                                Text("cranci1")
+                                    .font(.headline)
                                     .foregroundColor(.indigo)
+                                Text("me frfr")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
+                            Spacer()
+                            Image(systemName: "safari")
+                                .foregroundColor(.indigo)
                         }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
                 }
                 
@@ -131,8 +136,7 @@ struct ContributorsView: View {
     @State private var contributors: [Contributor] = []
     @State private var isLoading = true
     @State private var error: Error?
-    @State private var isAnimating = false
-
+    
     var body: some View {
         Group {
             if isLoading {
@@ -148,118 +152,12 @@ struct ContributorsView: View {
                     .padding(.vertical, 12)
             } else {
                 ForEach(filteredContributors) { contributor in
-                    Button(action: {
-                        if let url = URL(string: "https://github.com/\(contributor.login)") {
-                            UIApplication.shared.open(url)
-                        }
-                    }) {
-                        ZStack(alignment: .trailing) {
-                            if contributor.login == "50n50" {
-                                KFImage(URL(string: "https://github.com/50n50/assets/raw/refs/heads/main/asset.png")!)
-                                    .placeholder {
-                                        ProgressView()
-                                    }
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(height: 64)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                            } else if contributor.login == "xibrox" {
-                                KFImage(URL(string: "https://raw.githubusercontent.com/50n50/assets/refs/heads/main/asset3.png")!)
-                                    .placeholder {
-                                        ProgressView()
-                                    }
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(height: 64)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                            } else if contributor.login == "Seeike" {
-                                KFImage(URL(string: "https://raw.githubusercontent.com/50n50/assets/refs/heads/main/asset4.png")!)
-                                    .placeholder {
-                                        ProgressView()
-                                    }
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(height: 64)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                            } else if contributor.login == "realdoomsboygaming" {
-                                KFImage(URL(string: "https://raw.githubusercontent.com/50n50/assets/refs/heads/main/asset5.png")!)
-                                    .placeholder {
-                                        ProgressView()
-                                    }
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(height: 64)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                            }
-                            
-                            HStack {
-                                KFImage(URL(string: contributor.avatarUrl))
-                                    .placeholder {
-                                        ProgressView()
-                                    }
-                                    .resizable()
-                                    .frame(width: 40, height: 40)
-                                    .clipShape(Circle())
-                                
-                                if contributor.login == "50n50" {
-                                    AnimatedText(
-                                        text: contributor.login,
-                                        primaryColor: Color(hexTwo: "#fa4860"),
-                                        secondaryColor: Color(hexTwo: "#fccdd1")
-                                    )
-                                } else if contributor.login == "xibrox" {
-                                    AnimatedText(
-                                        text: contributor.login,
-                                        primaryColor: .black,
-                                        secondaryColor: Color(hexTwo: "#ff0000")
-                                    )
-                                } else if contributor.login == "Seeike" {
-                                    AnimatedText(
-                                        text: contributor.login,
-                                        primaryColor: Color(hexTwo: "#34435E"),
-                                        secondaryColor: Color(hexTwo: "#5d77ab")
-                                    )
-                                } else if contributor.login == "realdoomsboygaming" {
-                                    AnimatedText(
-                                        text: contributor.login,
-                                        primaryColor: Color(hexTwo: "#ff0000"),
-                                        secondaryColor: Color(hexTwo: "#ffa500")
-                                    )
-                                } else {
-                                    Text(contributor.login)
-                                        .font(.headline)
-                                        .foregroundColor(
-                                            contributor.login == "IBH-RAD" ? Color(hexTwo: "#41127b") :
-                                            .accentColor
-                                        )
-                                }
-                                
-                                Spacer()
-                                Image(systemName: "safari")
-                                    .foregroundColor(.accentColor)
-                            }
+                    ContributorView(contributor: contributor)
+                    if contributor.id != filteredContributors.last?.id {
+                        Divider()
                             .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                        }
                     }
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .strokeBorder(
-                                LinearGradient(
-                                    gradient: Gradient(stops: [
-                                        .init(color: Color.accentColor.opacity(0.3), location: 0),
-                                        .init(color: Color.accentColor.opacity(0), location: 1)
-                                    ]),
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                ),
-                                lineWidth: 0.5
-                            )
-                    )
                 }
-                .padding(.vertical, 4)
             }
         }
         .onAppear {
@@ -297,6 +195,42 @@ struct ContributorsView: View {
     }
 }
 
+struct ContributorView: View {
+    let contributor: Contributor
+    
+    var body: some View {
+        Button(action: {
+            if let url = URL(string: "https://github.com/\(contributor.login)") {
+                UIApplication.shared.open(url)
+            }
+        }) {
+            HStack {
+                KFImage(URL(string: contributor.avatarUrl))
+                    .placeholder {
+                        ProgressView()
+                    }
+                    .resizable()
+                    .frame(width: 40, height: 40)
+                    .clipShape(Circle())
+                
+                Text(contributor.login)
+                    .font(.headline)
+                    .foregroundColor(
+                        contributor.login == "IBH-RAD" ? Color(hexTwo: "#41127b") :
+                        contributor.login == "50n50" ? Color(hexTwo: "#fa4860") :
+                        .accentColor
+                    )
+
+                Spacer()
+                Image(systemName: "safari")
+                    .foregroundColor(.accentColor)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
+    }
+}
+
 struct Contributor: Identifiable, Decodable {
     let id: Int
     let login: String
@@ -306,34 +240,6 @@ struct Contributor: Identifiable, Decodable {
         case id
         case login
         case avatarUrl = "avatar_url"
-    }
-}
-
-struct AnimatedText: View {
-    let text: String
-    let primaryColor: Color
-    let secondaryColor: Color
-    @State private var isAnimating = false
-    
-    var body: some View {
-        Text(text)
-            .font(.headline)
-            .foregroundStyle(
-                LinearGradient(
-                    colors: [
-                        primaryColor,
-                        secondaryColor,
-                        primaryColor
-                    ],
-                    startPoint: isAnimating ? .trailing : .leading,
-                    endPoint: isAnimating ? .leading : .trailing
-                )
-            )
-            .onAppear {
-                withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
-                    isAnimating = true
-                }
-            }
     }
 }
 

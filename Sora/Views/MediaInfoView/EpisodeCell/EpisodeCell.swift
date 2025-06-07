@@ -268,7 +268,6 @@ struct EpisodeCell: View {
                     .onFailure { error in
                         Logger.shared.log("Failed to load episode image: \(error)", type: "Error")
                     }
-                    .cacheMemoryOnly(!KingfisherCacheManager.shared.isCachingEnabled)
                     .resizable()
                     .aspectRatio(16/9, contentMode: .fill)
                     .frame(width: 100, height: 56)
@@ -713,25 +712,6 @@ struct EpisodeCell: View {
     }
     
     private func fetchEpisodeDetails() {
-        if MetadataCacheManager.shared.isCachingEnabled &&
-            (UserDefaults.standard.object(forKey: "fetchEpisodeMetadata") == nil ||
-             UserDefaults.standard.bool(forKey: "fetchEpisodeMetadata")) {
-            
-            let cacheKey = "anilist_\(itemID)_episode_\(episodeID + 1)"
-            
-            if let cachedData = MetadataCacheManager.shared.getMetadata(forKey: cacheKey),
-               let metadata = EpisodeMetadata.fromData(cachedData) {
-                
-                DispatchQueue.main.async {
-                    self.episodeTitle = metadata.title["en"] ?? ""
-                    self.episodeImageUrl = metadata.imageUrl
-                    self.isLoading = false
-                    self.loadedFromCache = true
-                }
-                return
-            }
-        }
-        
         fetchAnimeEpisodeDetails()
     }
     
@@ -806,22 +786,6 @@ struct EpisodeCell: View {
                 
                 if !missingFields.isEmpty {
                     Logger.shared.log("Episode \(episodeKey) missing fields: \(missingFields.joined(separator: ", "))", type: "Warning")
-                }
-                
-                if MetadataCacheManager.shared.isCachingEnabled && (!title.isEmpty || !image.isEmpty) {
-                    let metadata = EpisodeMetadata(
-                        title: title,
-                        imageUrl: image,
-                        anilistId: self.itemID,
-                        episodeNumber: self.episodeID + 1
-                    )
-                    
-                    if let metadataData = metadata.toData() {
-                        MetadataCacheManager.shared.storeMetadata(
-                            metadataData,
-                            forKey: metadata.cacheKey
-                        )
-                    }
                 }
                 
                 DispatchQueue.main.async {

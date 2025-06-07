@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-/*
+
 struct DeviceScaleModifier: ViewModifier {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -28,13 +28,14 @@ struct DeviceScaleModifier: ViewModifier {
                 .position(x: geo.size.width / 2, y: geo.size.height / 2)
         }
     }
-}*/
+}
 
+/*
 struct DeviceScaleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content // does nothing for now
     }
-}
+}*/
 
 
 extension View {

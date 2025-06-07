@@ -280,7 +280,6 @@ struct MediaInfoView: View {
                             .shadow(color: (colorScheme == .dark ? Color.black : Color.white).opacity(1), radius: 10, x: 0, y: 10)
                     )
                 }
-                .deviceScaled()
             }
         }
         .onAppear {

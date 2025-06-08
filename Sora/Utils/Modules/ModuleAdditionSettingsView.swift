@@ -19,127 +19,183 @@ struct ModuleAdditionSettingsView: View {
     var moduleUrl: String
     
     var body: some View {
-        VStack {
-            ScrollView {
-                VStack {
-                    if let metadata = moduleMetadata {
-                        VStack(spacing: 25) {
-                            VStack(spacing: 15) {
+        ZStack {
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    colorScheme == .dark ? Color.black : Color.white,
+                    Color.accentColor.opacity(0.08)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                HStack {
+                    Spacer()
+                    Capsule()
+                        .frame(width: 40, height: 5)
+                        .foregroundColor(Color(.systemGray4))
+                        .padding(.top, 10)
+                    Spacer()
+                }
+                .padding(.bottom, 8)
+                
+                ScrollView {
+                    VStack(spacing: 24) {
+                        if let metadata = moduleMetadata {
+                            VStack(spacing: 0) {
                                 KFImage(URL(string: metadata.iconUrl))
                                     .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 120, height: 120)
-                                    .clipShape(Circle())
-                                    .shadow(radius: 5)
-                                    .transition(.scale)
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 90, height: 90)
+                                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                                    .shadow(color: Color.accentColor.opacity(0.18), radius: 10, x: 0, y: 6)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 22)
+                                            .stroke(Color.accentColor, lineWidth: 2)
+                                    )
+                                    .padding(.top, 10)
                                 
-                                Text(metadata.sourceName)
-                                    .font(.system(size: 28, weight: .bold))
+                                VStack(spacing: 6) {
+                                    Text(metadata.sourceName)
+                                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                                        .foregroundColor(.primary)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.top, 6)
+                                    
+                                    HStack(spacing: 10) {
+                                        KFImage(URL(string: metadata.author.icon))
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: 32, height: 32)
+                                            .clipShape(Circle())
+                                            .shadow(radius: 2)
+                                        VStack(alignment: .leading, spacing: 0) {
+                                            Text(metadata.author.name)
+                                                .font(.headline)
+                                                .foregroundColor(.primary)
+                                            Text("Author")
+                                                .font(.caption2)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 18)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        Capsule()
+                                            .fill(Color.accentColor.opacity(colorScheme == .dark ? 0.13 : 0.08))
+                                    )
+                                    .padding(.top, 2)
+                                }
+                                
+                                VStack(spacing: 0) {
+                                    HStack(spacing: 0) {
+                                        FancyInfoTile(icon: "globe", label: "Language", value: metadata.language)
+                                        Divider().frame(height: 44)
+                                        FancyInfoTile(icon: "film", label: "Type", value: metadata.type ?? "-")
+                                    }
+                                    Divider()
+                                    HStack(spacing: 0) {
+                                        FancyInfoTile(icon: "arrow.down.circle", label: "Quality", value: metadata.quality)
+                                        Divider().frame(height: 44)
+                                        FancyInfoTile(icon: "waveform", label: "Stream", value: metadata.streamType)
+                                    }
+                                    Divider()
+                                    HStack(spacing: 0) {
+                                        FancyInfoTile(icon: "number", label: "Version", value: metadata.version)
+                                        Divider().frame(height: 44)
+                                        FancyInfoTile(icon: "bolt.horizontal", label: "Async JS", value: metadata.asyncJS == true ? "Yes" : "No")
+                                    }
+                                }
+                                .background(
+                                    RoundedRectangle(cornerRadius: 22)
+                                        .fill(Color(.systemGray6).opacity(colorScheme == .dark ? 0.18 : 0.8))
+                                )
+                                .padding(.top, 18)
+                                .padding(.horizontal, 2)
+                                
+                                VStack(spacing: 0) {
+                                    FancyUrlRow(title: "Base URL", value: metadata.baseUrl)
+                                    Divider().padding(.horizontal, 8)
+                                    if !metadata.searchBaseUrl.isEmpty {
+                                        FancyUrlRow(title: "Search URL", value: metadata.searchBaseUrl)
+                                        Divider().padding(.horizontal, 8)
+                                    }
+                                    FancyUrlRow(title: "Script URL", value: metadata.scriptUrl)
+                                }
+                                .padding(16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 18)
+                                        .fill(Color(.systemGray6).opacity(colorScheme == .dark ? 0.13 : 0.85))
+                                )
+                                .padding(.top, 18)
+                            }
+                            .padding(.horizontal, 18)
+                            .padding(.top, 8)
+                        } else if isLoading {
+                            VStack(spacing: 20) {
+                                ProgressView()
+                                    .scaleEffect(1.5)
+                                Text("Loading module information...")
+                                    .foregroundColor(.secondary)
+                            }
+                            .frame(maxHeight: .infinity)
+                            .padding(.top, 100)
+                        } else if let errorMessage = errorMessage {
+                            VStack(spacing: 20) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.red)
+                                Text(errorMessage)
+                                    .foregroundColor(.red)
                                     .multilineTextAlignment(.center)
                             }
-                            .padding(.top)
-                            
-                            Divider()
-                            
-                            HStack(spacing: 15) {
-                                KFImage(URL(string: metadata.author.icon))
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 60, height: 60)
-                                    .clipShape(Circle())
-                                    .shadow(radius: 3)
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(metadata.author.name)
-                                        .font(.headline)
-                                    Text("Author")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                                Spacer()
-                            }
-                            .padding(.horizontal)
-                            
-                            Divider()
-                            
-                            VStack(alignment: .leading, spacing: 12) {
-                                InfoRow(title: "Version", value: metadata.version)
-                                InfoRow(title: "Language", value: metadata.language)
-                                InfoRow(title: "Quality", value: metadata.quality)
-                                InfoRow(title: "Stream Typed", value: metadata.streamType)
-                                InfoRow(title: "Base URL", value: metadata.baseUrl)
-                                    .onLongPressGesture {
-                                        UIPasteboard.general.string = metadata.baseUrl
-                                        DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
-                                    }
-                                InfoRow(title: "Script URL", value: metadata.scriptUrl)
-                                    .onLongPressGesture {
-                                        UIPasteboard.general.string = metadata.scriptUrl
-                                        DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
-                                    }
-                            }
-                            .padding(.horizontal)
+                            .frame(maxHeight: .infinity)
+                            .padding(.top, 100)
                         }
-                        
-                        Divider()
-                        
-                    } else if isLoading {
-                        VStack(spacing: 20) {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                            Text("Loading module information...")
-                                .foregroundColor(.secondary)
-                        }
-                        .frame(maxHeight: .infinity)
-                        .padding(.top, 100)
-                    } else if let errorMessage = errorMessage {
-                        VStack(spacing: 20) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.system(size: 50))
-                                .foregroundColor(.red)
-                            Text(errorMessage)
-                                .foregroundColor(.red)
-                                .multilineTextAlignment(.center)
-                        }
-                        .frame(maxHeight: .infinity)
-                        .padding(.top, 100)
                     }
+                    .padding(.bottom, 30)
                 }
-            }
-            
-            Spacer()
-            
-            VStack {
-                Button(action: addModule) {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                        Text("Add Module")
-                    }
-                    .font(.headline)
-                    .foregroundColor(colorScheme == .dark ? .black : .white)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(
-                        RoundedRectangle(cornerRadius: 15)
-                            .foregroundColor(colorScheme == .dark ? .white : .black)
-                    )
-
-                    .padding(.horizontal)
-                }
-                .disabled(isLoading)
-                .opacity(isLoading ? 0.6 : 1)
                 
-                Button(action: {
-                    self.presentationMode.wrappedValue.dismiss()
-                }) {
-                    Text("Cancel")
-                        .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
-                        .padding(.top, 10)
+                VStack(spacing: 10) {
+                    Button(action: addModule) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("Add Module")
+                        }
+                        .font(.headline)
+                        .foregroundColor(colorScheme == .dark ? .black : .white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.accentColor.opacity(0.95),
+                                    Color.accentColor.opacity(0.7)
+                                ]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
+                        )
+                        .shadow(color: Color.accentColor.opacity(0.18), radius: 8, x: 0, y: 4)
+                        .padding(.horizontal, 20)
+                    }
+                    .disabled(isLoading || moduleMetadata == nil)
+                    .opacity(isLoading ? 0.6 : 1)
+                    
+                    Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                        Text("Cancel")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .padding(.vertical, 8)
+                    }
                 }
+                .padding(.bottom, 24)
             }
-            .padding(.bottom, 20)
         }
-        .navigationTitle("Add Module")
         .onAppear(perform: fetchModuleMetadata)
     }
     
@@ -197,18 +253,58 @@ struct ModuleAdditionSettingsView: View {
     }
 }
 
-struct InfoRow: View {
+struct FancyInfoTile: View {
+    let icon: String
+    let label: String
+    let value: String
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.accentColor)
+            Text(label)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            Text(value)
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundColor(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .frame(maxWidth: .infinity, minHeight: 54)
+        .padding(.vertical, 6)
+    }
+}
+
+struct FancyUrlRow: View {
     let title: String
     let value: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        HStack(spacing: 8) {
             Text(title)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
+            Spacer()
             Text(value)
-                .font(.body)
+                .font(.footnote.monospaced())
+                .foregroundColor(.accentColor)
                 .lineLimit(1)
+                .truncationMode(.middle)
+                .onLongPressGesture {
+                    UIPasteboard.general.string = value
+                    DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+                }
+            Image(systemName: "doc.on.clipboard")
+                .foregroundColor(.accentColor)
+                .font(.system(size: 14))
+                .onTapGesture {
+                    UIPasteboard.general.string = value
+                    DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+                }
         }
+        .padding(.vertical, 7)
+        .padding(.horizontal, 2)
     }
 }

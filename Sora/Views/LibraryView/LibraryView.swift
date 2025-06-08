@@ -298,7 +298,7 @@ struct ContinueWatchingCell: View {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color.gray.opacity(0.3))
                             .frame(width: 280, height: 157.03)
-                            .shimmering()
+                            .redacted(reason: .placeholder)
                     }
                 }
                 .overlay(
@@ -553,8 +553,8 @@ struct BookmarkItemView: View {
                         } else {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color.gray.opacity(0.3))
-                                .aspectRatio(2 / 3, contentMode: .fit)
-                                .shimmering()
+                                .aspectRatio(2/3, contentMode: .fit)
+                                .redacted(reason: .placeholder)
                         }
                     }
                     .overlay(

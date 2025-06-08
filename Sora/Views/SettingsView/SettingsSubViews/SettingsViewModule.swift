@@ -219,7 +219,7 @@ struct SettingsViewModule: View {
         .navigationTitle("Modules")
         .navigationBarItems(trailing:
             HStack(spacing: 16) {
-                if didReceiveDefaultPageLink && !moduleManager.modules.isEmpty {
+                if didReceiveDefaultPageLink {
                     Button(action: {
                         showLibrary = true
                     }) {

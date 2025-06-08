@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Kingfisher
 
 struct SearchItem: Identifiable {
     let id = UUID()

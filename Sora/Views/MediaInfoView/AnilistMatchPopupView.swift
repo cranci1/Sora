@@ -5,8 +5,8 @@
 //  Created by seiike on 01/06/2025.
 //
 
+import NukeUI
 import SwiftUI
-import Kingfisher
 
 struct AnilistMatchPopupView: View {
     let seriesTitle: String
@@ -32,7 +32,6 @@ struct AnilistMatchPopupView: View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 4) {
-                    // (Optional) A hidden header; can be omitted if empty
                     Text("".uppercased())
                         .font(.footnote)
                         .foregroundStyle(.gray)
@@ -62,11 +61,20 @@ struct AnilistMatchPopupView: View {
                                         HStack(spacing: 12) {
                                             if let cover = result["cover"] as? String,
                                                let url = URL(string: cover) {
-                                                KFImage(url)
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fill)
-                                                    .frame(width: 50, height: 70)
-                                                    .cornerRadius(6)
+                                                LazyImage(source: url) { state in
+                                                    if let uiImage = state.imageContainer?.image {
+                                                        Image(uiImage: uiImage)
+                                                            .resizable()
+                                                            .aspectRatio(contentMode: .fill)
+                                                            .frame(width: 50, height: 70)
+                                                            .cornerRadius(6)
+                                                    } else {
+                                                        Rectangle()
+                                                            .fill(.tertiary)
+                                                            .frame(width: 50, height: 70)
+                                                            .cornerRadius(6)
+                                                    }
+                                                }
                                             }
 
                                             VStack(alignment: .leading, spacing: 2) {

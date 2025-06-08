@@ -5,8 +5,8 @@
 //  Created by paul on 28/05/25.
 //
 
+import NukeUI
 import SwiftUI
-import Kingfisher
 
 struct SearchResultsGrid: View {
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
@@ -32,12 +32,22 @@ struct SearchResultsGrid: View {
             ForEach(items) { item in
                 NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule)) {
                     ZStack {
-                        KFImage(URL(string: item.imageUrl))
-                            .resizable()
-                            .aspectRatio(0.72, contentMode: .fill)
-                            .frame(width: cellWidth, height: cellWidth * 1.5)
-                            .cornerRadius(12)
-                            .clipped()
+                        LazyImage(source: URL(string: item.imageUrl)) { state in
+                            if let uiImage = state.imageContainer?.image {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .aspectRatio(0.72, contentMode: .fill)
+                                    .frame(width: cellWidth, height: cellWidth * 1.5)
+                                    .cornerRadius(12)
+                                    .clipped()
+                            } else {
+                                Rectangle()
+                                    .fill(.tertiary)
+                                    .frame(width: cellWidth, height: cellWidth * 1.5)
+                                    .cornerRadius(12)
+                                    .clipped()
+                            }
+                        }
                         
                         VStack {
                             Spacer()

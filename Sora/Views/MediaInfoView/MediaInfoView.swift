@@ -5,8 +5,8 @@
 //  Created by Francesco on 05/01/25.
 //
 
+import NukeUI
 import SwiftUI
-import Kingfisher
 import SafariServices
 
 private let tmdbFetcher = TMDBFetcher()
@@ -212,46 +212,21 @@ struct MediaInfoView: View {
     private var mainScrollView: some View {
         ScrollView {
             ZStack(alignment: .top) {
-                KFImage(URL(string: imageUrl))
-                    .placeholder {
+                LazyImage(source: URL(string: imageUrl)) { state in
+                    if let uiImage = state.imageContainer?.image {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: UIScreen.main.bounds.width, height: 700)
+                            .clipped()
+                    } else {
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
                             .shimmering()
+                            .frame(width: UIScreen.main.bounds.width, height: 700)
+                            .clipped()
                     }
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: UIScreen.main.bounds.width, height: 700)
-                    .clipped()
-                KFImage(URL(string: imageUrl))
-                    .placeholder { EmptyView() }
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: UIScreen.main.bounds.width, height: 700)
-                    .clipped()
-                    .blur(radius: 30)
-                    .mask(
-                        LinearGradient(
-                            gradient: Gradient(stops: [
-                                .init(color: .clear, location: 0.0),
-                                .init(color: .clear, location: 0.6),
-                                .init(color: .black, location: 0.8),
-                                .init(color: .black, location: 1.0)
-                            ]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .overlay(
-                        LinearGradient(
-                            gradient: Gradient(stops: [
-                                .init(color: .clear, location: 0.0),
-                                .init(color: .clear, location: 0.7),
-                                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.9), location: 1.0)
-                            ]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+                }
                 VStack(spacing: 0) {
                     Rectangle()
                         .fill(Color.clear)

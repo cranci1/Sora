@@ -5,9 +5,9 @@
 //  Created by doomsboygaming on 5/22/25
 //
 
-import SwiftUI
 import AVKit
-import Kingfisher
+import NukeUI
+import SwiftUI
 
 struct DownloadView: View {
     @EnvironmentObject var jsController: JSController
@@ -741,13 +741,16 @@ struct EnhancedActiveDownloadCard: View {
             HStack(spacing: 16) {
                 Group {
                     if let imageURL = download.imageURL {
-                        KFImage(imageURL)
-                            .placeholder {
+                        LazyImage(source: imageURL) { state in
+                            if let uiImage = state.imageContainer?.image {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            } else {
                                 Rectangle()
                                     .fill(.tertiary)
                             }
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
+                        }
                     } else {
                         Rectangle()
                             .fill(.tertiary)
@@ -899,16 +902,18 @@ struct EnhancedDownloadGroupCard: View {
         NavigationLink(destination: EnhancedShowEpisodesView(group: group, onDelete: onDelete, onPlay: onPlay)) {
             VStack(spacing: 0) {
                 HStack(spacing: 16) {
-                    // Poster
                     Group {
                         if let posterURL = group.posterURL {
-                            KFImage(posterURL)
-                                .placeholder {
+                            LazyImage(source: posterURL) { state in
+                                if let uiImage = state.imageContainer?.image {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                } else {
                                     Rectangle()
                                         .fill(.tertiary)
                                 }
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
+                            }
                         } else {
                             Rectangle()
                                 .fill(.tertiary)
@@ -921,7 +926,6 @@ struct EnhancedDownloadGroupCard: View {
                     .frame(width: 56, height: 84)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     
-                    // Content
                     VStack(alignment: .leading, spacing: 8) {
                         Text(group.title)
                             .font(.headline)
@@ -1000,18 +1004,20 @@ struct EnhancedShowEpisodesView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // Header Section
                 VStack(spacing: 20) {
                     HStack(alignment: .top, spacing: 20) {
                         Group {
                             if let posterURL = group.posterURL {
-                                KFImage(posterURL)
-                                    .placeholder {
+                                LazyImage(source: posterURL) { state in
+                                    if let uiImage = state.imageContainer?.image {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                    } else {
                                         Rectangle()
                                             .fill(.tertiary)
                                     }
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
+                                }
                             } else {
                                 Rectangle()
                                     .fill(.tertiary)
@@ -1192,16 +1198,18 @@ struct EnhancedEpisodeRow: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 16) {
-                // Thumbnail
                 Group {
                     if let backdropURL = asset.metadata?.backdropURL ?? asset.metadata?.posterURL {
-                        KFImage(backdropURL)
-                            .placeholder {
+                        LazyImage(source: backdropURL) { state in
+                            if let uiImage = state.imageContainer?.image {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            } else {
                                 Rectangle()
                                     .fill(.tertiary)
                             }
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
+                        }
                     } else {
                         Rectangle()
                             .fill(.tertiary)
@@ -1214,7 +1222,6 @@ struct EnhancedEpisodeRow: View {
                 .frame(width: 100, height: 60)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 
-                // Content
                 VStack(alignment: .leading, spacing: 4) {
                     Text(asset.episodeDisplayName)
                         .font(.headline)

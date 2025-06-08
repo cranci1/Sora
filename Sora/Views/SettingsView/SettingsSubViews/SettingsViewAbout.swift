@@ -5,8 +5,8 @@
 //  Created by Francesco on 26/05/25.
 //
 
+import NukeUI
 import SwiftUI
-import Kingfisher
 
 fileprivate struct SettingsSection<Content: View>: View {
     let title: String
@@ -66,14 +66,18 @@ struct SettingsViewAbout: View {
             VStack(spacing: 24) {
                 SettingsSection(title: "App Info", footer: "Sora/Sulfur will always remain free with no ADs!") {
                     HStack(alignment: .center, spacing: 16) {
-                        KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/Sora/Assets.xcassets/AppIcons/AppIcon_Default.appiconset/darkmode.png"))
-                            .placeholder {
+                        LazyImage(source: URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/Sora/Assets.xcassets/AppIcons/AppIcon_Default.appiconset/darkmode.png")) { state in
+                            if let uiImage = state.imageContainer?.image {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .frame(width: 100, height: 100)
+                                    .cornerRadius(20)
+                                    .shadow(radius: 5)
+                            } else {
                                 ProgressView()
+                                    .frame(width: 40, height: 40)
                             }
-                            .resizable()
-                            .frame(width: 100, height: 100)
-                            .cornerRadius(20)
-                            .shadow(radius: 5)
+                        }
                         
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Sora")
@@ -96,13 +100,17 @@ struct SettingsViewAbout: View {
                         }
                     }) {
                         HStack {
-                            KFImage(URL(string: "https://avatars.githubusercontent.com/u/100066266?v=4"))
-                                .placeholder {
+                            LazyImage(source: URL(string: "https://avatars.githubusercontent.com/u/100066266?v=4")) { state in
+                                if let uiImage = state.imageContainer?.image {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .frame(width: 40, height: 40)
+                                        .clipShape(Circle())
+                                } else {
                                     ProgressView()
+                                        .frame(width: 40, height: 40)
                                 }
-                                .resizable()
-                                .frame(width: 40, height: 40)
-                                .clipShape(Circle())
+                            }
                             
                             VStack(alignment: .leading) {
                                 Text("cranci1")
@@ -205,13 +213,17 @@ struct ContributorView: View {
             }
         }) {
             HStack {
-                KFImage(URL(string: contributor.avatarUrl))
-                    .placeholder {
+                LazyImage(source: URL(string: contributor.avatarUrl)) { state in
+                    if let uiImage = state.imageContainer?.image {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+                    } else {
                         ProgressView()
+                            .frame(width: 40, height: 40)
                     }
-                    .resizable()
-                    .frame(width: 40, height: 40)
-                    .clipShape(Circle())
+                }
                 
                 Text(contributor.login)
                     .font(.headline)

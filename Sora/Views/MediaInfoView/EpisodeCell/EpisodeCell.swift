@@ -5,8 +5,8 @@
 //  Created by Francesco on 18/12/24.
 //
 
+import NukeUI
 import SwiftUI
-import Kingfisher
 import AVFoundation
 
 struct EpisodeCell: View {
@@ -257,14 +257,28 @@ struct EpisodeCell: View {
     private var episodeThumbnail: some View {
         ZStack {
             if let url = URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl) {
-                KFImage(url)
-                    .onFailure { error in
-                        Logger.shared.log("Failed to load episode image: \(error)", type: "Error")
+                LazyImage(source: url) { state in
+                    if let image = state.imageContainer?.image {
+                        Image(uiImage: image)
+                            .resizable()
+                            .aspectRatio(16/9, contentMode: .fill)
+                            .frame(width: 100, height: 56)
+                            .cornerRadius(8)
+                    } else if state.error != nil {
+                        Rectangle()
+                            .fill(.tertiary)
+                            .frame(width: 100, height: 56)
+                            .cornerRadius(8)
+                            .onAppear {
+                                Logger.shared.log("Failed to load episode image: \(state.error?.localizedDescription ?? "Unknown error")", type: "Error")
+                            }
+                    } else {
+                        Rectangle()
+                            .fill(.tertiary)
+                            .frame(width: 100, height: 56)
+                            .cornerRadius(8)
                     }
-                    .resizable()
-                    .aspectRatio(16/9, contentMode: .fill)
-                    .frame(width: 100, height: 56)
-                    .cornerRadius(8)
+                }
             } else {
                 Rectangle()
                     .fill(Color.gray.opacity(0.3))

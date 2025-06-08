@@ -5,9 +5,8 @@
 //  Created by paul on 28/05/25.
 //
 
-import SwiftUI
-import Kingfisher
 import UIKit
+import SwiftUI
 
 struct BookmarksDetailView: View {
     @Environment(\.dismiss) private var dismiss

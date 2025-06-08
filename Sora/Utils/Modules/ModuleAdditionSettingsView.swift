@@ -5,8 +5,8 @@
 //  Created by Francesco on 01/02/25.
 //
 
+import NukeUI
 import SwiftUI
-import Kingfisher
 
 struct ModuleAdditionSettingsView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -22,7 +22,7 @@ struct ModuleAdditionSettingsView: View {
         ZStack {
             LinearGradient(
                 gradient: Gradient(colors: [
-                    colorScheme == .dark ? Color.black : Color.white,
+                    colorScheme == .light ? Color.black : Color.white,
                     Color.accentColor.opacity(0.08)
                 ]),
                 startPoint: .top,
@@ -45,17 +45,24 @@ struct ModuleAdditionSettingsView: View {
                     VStack(spacing: 24) {
                         if let metadata = moduleMetadata {
                             VStack(spacing: 0) {
-                                KFImage(URL(string: metadata.iconUrl))
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 90, height: 90)
-                                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                                    .shadow(color: Color.accentColor.opacity(0.18), radius: 10, x: 0, y: 6)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 22)
-                                            .stroke(Color.accentColor, lineWidth: 2)
-                                    )
-                                    .padding(.top, 10)
+                                LazyImage(source: URL(string: metadata.iconUrl)) { state in
+                                    if let uiImage = state.imageContainer?.image {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                    } else {
+                                        Rectangle()
+                                            .fill(Color(.systemGray5))
+                                    }
+                                }
+                                .frame(width: 90, height: 90)
+                                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                                .shadow(color: Color.accentColor.opacity(0.18), radius: 10, x: 0, y: 6)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 22)
+                                        .stroke(Color.accentColor, lineWidth: 2)
+                                )
+                                .padding(.top, 10)
                                 
                                 VStack(spacing: 6) {
                                     Text(metadata.sourceName)
@@ -65,12 +72,19 @@ struct ModuleAdditionSettingsView: View {
                                         .padding(.top, 6)
                                     
                                     HStack(spacing: 10) {
-                                        KFImage(URL(string: metadata.author.icon))
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(width: 32, height: 32)
-                                            .clipShape(Circle())
-                                            .shadow(radius: 2)
+                                        LazyImage(source: URL(string: metadata.author.icon)) { state in
+                                            if let uiImage = state.imageContainer?.image {
+                                                Image(uiImage: uiImage)
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fill)
+                                            } else {
+                                                Circle()
+                                                    .fill(Color(.systemGray5))
+                                            }
+                                        }
+                                        .frame(width: 32, height: 32)
+                                        .clipShape(Circle())
+                                        .shadow(radius: 2)
                                         VStack(alignment: .leading, spacing: 0) {
                                             Text(metadata.author.name)
                                                 .font(.headline)
@@ -166,7 +180,7 @@ struct ModuleAdditionSettingsView: View {
                             Text("Add Module")
                         }
                         .font(.headline)
-                        .foregroundColor(colorScheme == .dark ? .black : .white)
+                        .foregroundColor(colorScheme == .light ? .black : .white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(

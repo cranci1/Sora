@@ -5,8 +5,8 @@
 //  Created by Francesco on 05/01/25.
 //
 
+import NukeUI
 import SwiftUI
-import Kingfisher
 
 fileprivate struct SettingsSection<Content: View>: View {
     let title: String
@@ -67,11 +67,19 @@ fileprivate struct ModuleListItemView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                KFImage(URL(string: module.metadata.iconUrl))
-                    .resizable()
-                    .frame(width: 40, height: 40)
-                    .clipShape(Circle())
-                    .padding(.trailing, 10)
+                LazyImage(source: URL(string: module.metadata.iconUrl)) { state in
+                    if let uiImage = state.imageContainer?.image {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+                            .padding(.trailing, 10)
+                    } else {
+                        Circle()
+                            .frame(width: 40, height: 40)
+                            .padding(.trailing, 10)
+                    }
+                }
                 
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(alignment: .bottom, spacing: 4) {

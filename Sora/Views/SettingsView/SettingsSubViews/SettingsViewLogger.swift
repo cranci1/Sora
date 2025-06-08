@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Kingfisher
 
 fileprivate struct SettingsSection<Content: View>: View {
     let title: String

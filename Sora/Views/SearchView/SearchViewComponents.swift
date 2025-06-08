@@ -5,8 +5,8 @@
 //  Created by Francesco on 27/01/25.
 //
 
+import NukeUI
 import SwiftUI
-import Kingfisher
 
 struct ModuleSelectorMenu: View {
     let selectedModule: ScrapingModule?
@@ -27,11 +27,19 @@ struct ModuleSelectorMenu: View {
                             onModuleSelected(module.id.uuidString)
                         } label: {
                             HStack {
-                                KFImage(URL(string: module.metadata.iconUrl))
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 20, height: 20)
-                                    .cornerRadius(4)
+                                LazyImage(source: URL(string: module.metadata.iconUrl)) { state in
+                                    if let uiImage = state.imageContainer?.image {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 20, height: 20)
+                                            .cornerRadius(4)
+                                    } else {
+                                        Circle()
+                                            .fill(Color(.systemGray5))
+                                    }
+                                }
+                                
                                 Text(module.metadata.sourceName)
                                 if module.id.uuidString == selectedModuleId {
                                     Image(systemName: "checkmark")
@@ -48,29 +56,37 @@ struct ModuleSelectorMenu: View {
                     Text(selectedModule.metadata.sourceName)
                         .font(.headline)
                         .foregroundColor(.primary)
-                    KFImage(URL(string: selectedModule.metadata.iconUrl))
-                        .resizable()
-                        .frame(width: 36, height: 36)
-                        .clipShape(Circle())
-                        .background(
+                    LazyImage(source: URL(string: selectedModule.metadata.iconUrl)) { state in
+                        if let uiImage = state.imageContainer?.image {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .frame(width: 36, height: 36)
+                                .clipShape(Circle())
+                        } else {
                             Circle()
                                 .fill(.ultraThinMaterial)
-                                .overlay(
-                                    Circle()
-                                        .stroke(
-                                            LinearGradient(
-                                                gradient: Gradient(stops: [
-                                                    .init(color: Color.accentColor.opacity(gradientOpacity), location: 0),
-                                                    .init(color: Color.accentColor.opacity(0), location: 1)
-                                                ]),
-                                                startPoint: .top,
-                                                endPoint: .bottom
-                                            ),
-                                            lineWidth: 0.5
-                                        )
-                                )
-                                .matchedGeometryEffect(id: "background_circle", in: animation)
-                        )
+                                .frame(width: 36, height: 36)
+                        }
+                    }
+                    .background(
+                        Circle()
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                Circle()
+                                    .stroke(
+                                        LinearGradient(
+                                            gradient: Gradient(stops: [
+                                                .init(color: Color.accentColor.opacity(gradientOpacity), location: 0),
+                                                .init(color: Color.accentColor.opacity(0), location: 1)
+                                            ]),
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        ),
+                                        lineWidth: 0.5
+                                    )
+                            )
+                            .matchedGeometryEffect(id: "background_circle", in: animation)
+                    )
                 } else {
                     Text("Select Module")
                         .font(.headline)

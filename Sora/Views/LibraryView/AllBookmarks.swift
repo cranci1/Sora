@@ -5,9 +5,9 @@
 //  Created by paul on 29/04/2025.
 //
 
-import SwiftUI
-import Kingfisher
 import UIKit
+import NukeUI
+import SwiftUI
 
 extension View {
     func circularGradientOutlineTwo() -> some View {
@@ -59,28 +59,44 @@ struct BookmarkCell: View {
     var body: some View {
         if let module = moduleManager.modules.first(where: { $0.id.uuidString == bookmark.moduleId }) {
             ZStack {
-                KFImage(URL(string: bookmark.imageUrl))
-                    .resizable()
-                    .aspectRatio(0.72, contentMode: .fill)
-                    .frame(width: 162, height: 243)
-                    .cornerRadius(12)
-                    .clipped()
-                    .overlay(
-                        ZStack {
-                            Circle()
-                                .fill(Color.black.opacity(0.5))
-                                .frame(width: 28, height: 28)
-                                .overlay(
-                                    KFImage(URL(string: module.metadata.iconUrl))
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 32, height: 32)
-                                        .clipShape(Circle())
-                                )
-                        }
-                        .padding(8),
-                        alignment: .topLeading
-                    )
+                LazyImage(source: URL(string: bookmark.imageUrl)) { state in
+                    if let uiImage = state.imageContainer?.image {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(0.72, contentMode: .fill)
+                            .frame(width: 162, height: 243)
+                            .cornerRadius(12)
+                            .clipped()
+                    } else {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 162, height: 243)
+                    }
+                }
+                .overlay(
+                    ZStack {
+                        Circle()
+                            .fill(Color.black.opacity(0.5))
+                            .frame(width: 28, height: 28)
+                            .overlay(
+                                LazyImage(source: URL(string: module.metadata.iconUrl)) { state in
+                                    if let uiImage = state.imageContainer?.image {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 32, height: 32)
+                                            .clipShape(Circle())
+                                    } else {
+                                        Circle()
+                                            .fill(Color.gray.opacity(0.3))
+                                            .frame(width: 32, height: 32)
+                                    }
+                                }
+                            )
+                    }
+                    .padding(8),
+                    alignment: .topLeading
+                )
                 
                 VStack {
                     Spacer()

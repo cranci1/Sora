@@ -5,9 +5,9 @@
 //  Created by Francesco on 23/03/25.
 //
 
+import NukeUI
 import SwiftUI
 import Security
-import Kingfisher
 
 fileprivate struct SettingsSection<Content: View>: View {
     let title: String
@@ -120,18 +120,21 @@ struct SettingsViewTrackers: View {
                 SettingsSection(title: "AniList") {
                     VStack(spacing: 0) {
                         HStack(alignment: .center, spacing: 10) {
-                            KFImage(URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png"))
-                                .placeholder {
+                            LazyImage(source: URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png")) { state in
+                                if let uiImage = state.imageContainer?.image {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .frame(width: 60, height: 60)
+                                        .clipShape(Rectangle())
+                                        .cornerRadius(10)
+                                        .padding(.trailing, 10)
+                                } else {
                                     RoundedRectangle(cornerRadius: 10)
                                         .fill(Color.gray.opacity(0.3))
                                         .frame(width: 60, height: 60)
                                         .shimmering()
                                 }
-                                .resizable()
-                                .frame(width: 60, height: 60)
-                                .clipShape(Rectangle())
-                                .cornerRadius(10)
-                                .padding(.trailing, 10)
+                            }
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("AniList.co")
@@ -212,18 +215,21 @@ struct SettingsViewTrackers: View {
                 SettingsSection(title: "Trakt") {
                     VStack(spacing: 0) {
                         HStack(alignment: .center, spacing: 10) {
-                            KFImage(URL(string: "https://static-00.iconduck.com/assets.00/trakt-icon-2048x2048-2633ksxg.png"))
-                                .placeholder {
+                            LazyImage(source: URL(string: "https://static-00.iconduck.com/assets.00/trakt-icon-2048x2048-2633ksxg.png")) { state in
+                                if let uiImage = state.imageContainer?.image {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .frame(width: 60, height: 60)
+                                        .clipShape(Rectangle())
+                                        .cornerRadius(10)
+                                        .padding(.trailing, 10)
+                                } else {
                                     RoundedRectangle(cornerRadius: 10)
                                         .fill(Color.gray.opacity(0.3))
                                         .frame(width: 60, height: 60)
                                         .shimmering()
                                 }
-                                .resizable()
-                                .frame(width: 60, height: 60)
-                                .clipShape(Rectangle())
-                                .cornerRadius(10)
-                                .padding(.trailing, 10)
+                            }
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Trakt.tv")

@@ -48,7 +48,6 @@
 		1359ED142D76F49900C13034 /* finTopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1359ED132D76F49900C13034 /* finTopView.swift */; };
 		135CCBE22D4D1138008B9C0E /* SettingsViewPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135CCBE12D4D1138008B9C0E /* SettingsViewPlayer.swift */; };
 		13637B8A2DE0EA1100BDA2FC /* UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13637B892DE0EA1100BDA2FC /* UserDefaults.swift */; };
-		13637B8D2DE0ECCC00BDA2FC /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 13637B8C2DE0ECCC00BDA2FC /* Kingfisher */; };
 		13637B902DE0ECD200BDA2FC /* Drops in Frameworks */ = {isa = PBXBuildFile; productRef = 13637B8F2DE0ECD200BDA2FC /* Drops */; };
 		13637B932DE0ECDB00BDA2FC /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = 13637B922DE0ECDB00BDA2FC /* MarqueeLabel */; };
 		136BBE802DB1038000906B5E /* Notification+Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136BBE7F2DB1038000906B5E /* Notification+Name.swift */; };
@@ -61,6 +60,7 @@
 		1399FAD62D3AB3DB00E97C31 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1399FAD52D3AB3DB00E97C31 /* Logger.swift */; };
 		13B77E202DA457AA00126FDF /* AniListPushUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B77E1F2DA457AA00126FDF /* AniListPushUpdates.swift */; };
 		13B7F4C12D58FFDD0045714A /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B7F4C02D58FFDD0045714A /* Shimmer.swift */; };
+		13BC689F2DF61327009A0651 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 13BC689E2DF61327009A0651 /* NukeUI */; };
 		13C0E5EA2D5F85EA00E7F619 /* ContinueWatchingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0E5E92D5F85EA00E7F619 /* ContinueWatchingManager.swift */; };
 		13C0E5EC2D5F85F800E7F619 /* ContinueWatchingItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0E5EB2D5F85F800E7F619 /* ContinueWatchingItem.swift */; };
 		13CBA0882D60F19C00EFE70A /* VTTSubtitlesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CBA0872D60F19C00EFE70A /* VTTSubtitlesLoader.swift */; };
@@ -191,9 +191,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13637B8D2DE0ECCC00BDA2FC /* Kingfisher in Frameworks */,
 				13637B902DE0ECD200BDA2FC /* Drops in Frameworks */,
 				13637B932DE0ECDB00BDA2FC /* MarqueeLabel in Frameworks */,
+				13BC689F2DF61327009A0651 /* NukeUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -614,9 +614,9 @@
 			);
 			name = Sulfur;
 			packageProductDependencies = (
-				13637B8C2DE0ECCC00BDA2FC /* Kingfisher */,
 				13637B8F2DE0ECD200BDA2FC /* Drops */,
 				13637B922DE0ECDB00BDA2FC /* MarqueeLabel */,
+				13BC689E2DF61327009A0651 /* NukeUI */,
 			);
 			productName = Sora;
 			productReference = 133D7C6A2D2BE2500075467E /* Sulfur.app */;
@@ -646,9 +646,9 @@
 			);
 			mainGroup = 133D7C612D2BE2500075467E;
 			packageReferences = (
-				13637B8B2DE0ECCC00BDA2FC /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				13637B8E2DE0ECD200BDA2FC /* XCRemoteSwiftPackageReference "Drops" */,
 				13637B912DE0ECDB00BDA2FC /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
+				13BC689D2DF61327009A0651 /* XCRemoteSwiftPackageReference "NukeUI" */,
 			);
 			productRefGroup = 133D7C6B2D2BE2500075467E /* Products */;
 			projectDirPath = "";
@@ -994,14 +994,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		13637B8B2DE0ECCC00BDA2FC /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
-			requirement = {
-				kind = exactVersion;
-				version = 7.9.1;
-			};
-		};
 		13637B8E2DE0ECD200BDA2FC /* XCRemoteSwiftPackageReference "Drops" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/omaralbeik/Drops.git";
@@ -1018,14 +1010,17 @@
 				version = 4.2.1;
 			};
 		};
+		13BC689D2DF61327009A0651 /* XCRemoteSwiftPackageReference "NukeUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/NukeUI";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		13637B8C2DE0ECCC00BDA2FC /* Kingfisher */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 13637B8B2DE0ECCC00BDA2FC /* XCRemoteSwiftPackageReference "Kingfisher" */;
-			productName = Kingfisher;
-		};
 		13637B8F2DE0ECD200BDA2FC /* Drops */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 13637B8E2DE0ECD200BDA2FC /* XCRemoteSwiftPackageReference "Drops" */;
@@ -1035,6 +1030,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 13637B912DE0ECDB00BDA2FC /* XCRemoteSwiftPackageReference "MarqueeLabel" */;
 			productName = MarqueeLabel;
+		};
+		13BC689E2DF61327009A0651 /* NukeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 13BC689D2DF61327009A0651 /* XCRemoteSwiftPackageReference "NukeUI" */;
+			productName = NukeUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

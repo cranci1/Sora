@@ -74,14 +74,12 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var pipController: AVPictureInPictureController?
     private var pipButton: UIButton!
     
-    
     var portraitButtonVisibleConstraints: [NSLayoutConstraint] = []
     var portraitButtonHiddenConstraints: [NSLayoutConstraint] = []
     var landscapeButtonVisibleConstraints: [NSLayoutConstraint] = []
     var landscapeButtonHiddenConstraints: [NSLayoutConstraint] = []
     var currentMarqueeConstraints: [NSLayoutConstraint] = []
     private var currentMenuButtonTrailing: NSLayoutConstraint!
-    
     
     var subtitleForegroundColor: String = "white"
     var subtitleBackgroundEnabled: Bool = true
@@ -179,8 +177,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         watchNextButton,
         volumeSliderHostingView,
         pipButton,
-        airplayButton,
-        audioTrackButton
+        airplayButton
     ].compactMap { $0 }
     
     private var originalHiddenStates: [UIView: Bool] = [:]
@@ -198,10 +195,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var wasPlayingBeforeBackground = false
     private var backgroundToken: Any?
     private var foregroundToken: Any?
-    
-    private var audioTracks: [(name: String, groupID: String, uri: String)] = []
-    private var audioTrackButton: UIButton!
-    private var lastSelectedAudioTrack: String?
     
     init(module: ScrapingModule,
          urlString: String,
@@ -275,7 +268,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupDimButton()
         setupSpeedButton()
         setupQualityButton()
-        setupAudioMenuButton()
         setupMenuButton()
         setupMarqueeLabel()
         setupSkip85Button()
@@ -430,20 +422,70 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     deinit {
-        playerRateObserver?.invalidate()
         inactivityTimer?.invalidate()
+        inactivityTimer = nil
         updateTimer?.invalidate()
+        updateTimer = nil
         lockButtonTimer?.invalidate()
+        lockButtonTimer = nil
         dimButtonTimer?.invalidate()
-        loadedTimeRangesObservation?.invalidate()
-        playerTimeControlStatusObserver?.invalidate()
-        volumeObserver?.invalidate()
+        dimButtonTimer = nil
         
-        player.replaceCurrentItem(with: nil)
-        player.pause()
+        playerRateObserver?.invalidate()
+        playerRateObserver = nil
+        loadedTimeRangesObservation?.invalidate()
+        loadedTimeRangesObservation = nil
+        playerTimeControlStatusObserver?.invalidate()
+        playerTimeControlStatusObserver = nil
+        volumeObserver?.invalidate()
+        volumeObserver = nil
+        
+        NotificationCenter.default.removeObserver(self)
+        if let token = timeObserverToken {
+            player?.removeTimeObserver(token)
+            timeObserverToken = nil
+        }
+        
+        player?.replaceCurrentItem(with: nil)
+        player?.pause()
+        player = nil
+        
+        if let playerVC = playerViewController {
+            playerVC.willMove(toParent: nil)
+            playerVC.view.removeFromSuperview()
+            playerVC.removeFromParent()
+        }
+        
+        if let sliderHost = sliderHostingController {
+            sliderHost.willMove(toParent: nil)
+            sliderHost.view.removeFromSuperview()
+            sliderHost.removeFromParent()
+        }
         
         playerViewController = nil
         sliderHostingController = nil
+        volumeSliderHostingView = nil
+        
+        volumeSliderHostingView?.removeFromSuperview()
+        hiddenVolumeView.removeFromSuperview()
+        subtitleStackView?.removeFromSuperview()
+        marqueeLabel?.removeFromSuperview()
+        controlsContainerView?.removeFromSuperview()
+        blackCoverView?.removeFromSuperview()
+        skipIntroButton?.removeFromSuperview()
+        skipOutroButton?.removeFromSuperview()
+        skip85Button?.removeFromSuperview()
+        pipButton?.removeFromSuperview()
+        airplayButton?.removeFromSuperview()
+        menuButton?.removeFromSuperview()
+        speedButton?.removeFromSuperview()
+        qualityButton?.removeFromSuperview()
+        holdSpeedIndicator?.removeFromSuperview()
+        lockButton?.removeFromSuperview()
+        dimButton?.removeFromSuperview()
+        dismissButton?.removeFromSuperview()
+        watchNextButton?.removeFromSuperview()
+        
         try? AVAudioSession.sharedInstance().setActive(false)
     }
     
@@ -456,7 +498,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         if keyPath == "loadedTimeRanges" {
         }
     }
-    
     
     @objc private func playerItemDidChange() {
         DispatchQueue.main.async { [weak self] in
@@ -1307,7 +1348,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         )
     }
     
-    
     func setupMenuButton() {
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
         let image = UIImage(systemName: "text.bubble", withConfiguration: config)
@@ -1378,7 +1418,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         watchNextButton.tintColor = .white
         watchNextButton.setTitleColor(.white, for: .normal)
         
-        // The shadow:
         watchNextButton.layer.shadowColor = UIColor.black.cgColor
         watchNextButton.layer.shadowOffset = CGSize(width: 0, height: 2)
         watchNextButton.layer.shadowOpacity = 0.6
@@ -1464,34 +1503,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         ])
     }
     
-    func setupAudioMenuButton() {
-        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
-        let image = UIImage(systemName: "waveform.circle", withConfiguration: config)
-        
-        audioTrackButton = UIButton(type: .system)
-        audioTrackButton.setImage(image, for: .normal)
-        audioTrackButton.tintColor = .white
-        audioTrackButton.showsMenuAsPrimaryAction = true
-        audioTrackButton.menu = audioTrackSelectionMenu()
-        audioTrackButton.isHidden = true
-        
-        audioTrackButton.layer.shadowColor = UIColor.black.cgColor
-        audioTrackButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        audioTrackButton.layer.shadowOpacity = 0.6
-        audioTrackButton.layer.shadowRadius = 4
-        audioTrackButton.layer.masksToBounds = false
-        
-        controlsContainerView.addSubview(audioTrackButton)
-        audioTrackButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            audioTrackButton.topAnchor.constraint(equalTo: qualityButton.topAnchor),
-            audioTrackButton.trailingAnchor.constraint(equalTo: qualityButton.leadingAnchor, constant: -6),
-            audioTrackButton.widthAnchor.constraint(equalToConstant: 40),
-            audioTrackButton.heightAnchor.constraint(equalToConstant: 40)
-        ])
-    }
-    
     func updateSubtitleLabelAppearance() {
         for subtitleLabel in subtitleLabels {
             subtitleLabel.font = UIFont.systemFont(ofSize: CGFloat(subtitleFontSize))
@@ -1510,9 +1521,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     func addTimeObserver() {
         let interval = CMTime(seconds: 1.0, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-        timeObserverToken = player.addPeriodicTimeObserver(forInterval: interval,
-                                                           queue: .main)
-        { [weak self] time in
+        timeObserverToken = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
             guard let self = self,
                   let currentItem = self.player.currentItem,
                   currentItem.duration.seconds.isFinite else { return }
@@ -1559,7 +1568,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             
             let segmentsColor = self.getSegmentsColor()
             
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 if let currentItem = self.player.currentItem, currentItem.duration.seconds > 0 {
                     let progress = min(max(self.currentTimeVal / self.duration, 0), 1.0)
                     
@@ -1579,7 +1589,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     )
                     ContinueWatchingManager.shared.save(item: item)
                 }
-                
                 
                 let remainingPercentage = (self.duration - self.currentTimeVal) / self.duration
                 
@@ -1641,7 +1650,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
         }
     }
-    
     
     func startUpdateTimer() {
         updateTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
@@ -2051,91 +2059,64 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             
             let lines = content.components(separatedBy: .newlines)
             var qualities: [(String, String)] = []
-            var audioTracks: [(name: String, groupID: String, uri: String)] = []
             
-            func getQualityName(from line: String, url: String) -> String? {
-                if let resRange = line.range(of: "RESOLUTION=") {
-                    let afterRes = line[resRange.upperBound...]
-                    let resString = afterRes.split(separator: ",").first ?? ""
-                    if let heightStr = resString.split(separator: "x").last,
-                       let height = Int(heightStr) {
-                        switch height {
-                        case 1080...: return "\(height)p (FHD)"
-                        case 720..<1080: return "\(height)p (HD)"
-                        case 480..<720: return "\(height)p (SD)"
-                        default: return "\(height)p"
-                        }
-                    }
+            qualities.append(("Auto (Recommended)", url.absoluteString))
+            
+            func getQualityName(for height: Int) -> String {
+                switch height {
+                case 1080...: return "\(height)p (FHD)"
+                case 720..<1080: return "\(height)p (HD)"
+                case 480..<720: return "\(height)p (SD)"
+                default: return "\(height)p"
                 }
-                if let match = url.range(of: "rendition=([0-9]+p)", options: .regularExpression) {
-                    let rendition = String(url[match]).replacingOccurrences(of: "rendition=", with: "")
-                    return rendition
-                }
-                return nil
             }
             
             for (index, line) in lines.enumerated() {
-                if line.hasPrefix("#EXT-X-MEDIA:") && line.contains("TYPE=AUDIO") {
-                    let name = line.components(separatedBy: "NAME=\"").last?.components(separatedBy: "\"").first ?? "Unknown"
-                    let groupID = line.components(separatedBy: "GROUP-ID=\"").last?.components(separatedBy: "\"").first ?? ""
-                    let uri = line.components(separatedBy: "URI=\"").last?.components(separatedBy: "\"").first ?? ""
-                    audioTracks.append((name: name, groupID: groupID, uri: uri))
-                }
                 if line.contains("#EXT-X-STREAM-INF"), index + 1 < lines.count {
-                    let nextLine = lines[index + 1].trimmingCharacters(in: .whitespacesAndNewlines)
-                    let qualityName = getQualityName(from: line, url: nextLine) ?? "Unknown"
-                    var qualityURL = nextLine
-                    if !nextLine.hasPrefix("http") {
-                        if let baseURL = self.baseM3U8URL {
-                            let baseURLString = baseURL.deletingLastPathComponent().absoluteString
-                            qualityURL = URL(string: nextLine, relativeTo: baseURL)?.absoluteString
-                            ?? baseURLString + "/" + nextLine
+                    if let resolutionRange = line.range(of: "RESOLUTION="),
+                       let resolutionEndRange = line[resolutionRange.upperBound...].range(of: ",")
+                        ?? line[resolutionRange.upperBound...].range(of: "\n") {
+                        
+                        let resolutionPart = String(line[resolutionRange.upperBound..<resolutionEndRange.lowerBound])
+                        if let heightStr = resolutionPart.components(separatedBy: "x").last,
+                           let height = Int(heightStr) {
+                            
+                            let nextLine = lines[index + 1].trimmingCharacters(in: .whitespacesAndNewlines)
+                            let qualityName = getQualityName(for: height)
+                            
+                            var qualityURL = nextLine
+                            if !nextLine.hasPrefix("http") && nextLine.contains(".m3u8") {
+                                if let baseURL = self.baseM3U8URL {
+                                    let baseURLString = baseURL.deletingLastPathComponent().absoluteString
+                                    qualityURL = URL(string: nextLine, relativeTo: baseURL)?.absoluteString
+                                    ?? baseURLString + "/" + nextLine
+                                }
+                            }
+                            
+                            if !qualities.contains(where: { $0.0 == qualityName }) {
+                                qualities.append((qualityName, qualityURL))
+                            }
                         }
-                    }
-                    if !qualities.contains(where: { $0.0 == qualityName }) {
-                        qualities.append((qualityName, qualityURL))
                     }
                 }
             }
             
             DispatchQueue.main.async {
-                let sortedQualities = qualities.sorted { first, second in
+                let autoQuality = qualities.first
+                var sortedQualities = qualities.dropFirst().sorted { first, second in
                     let firstHeight = Int(first.0.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
                     let secondHeight = Int(second.0.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
                     return firstHeight > secondHeight
                 }
+                
+                if let auto = autoQuality {
+                    sortedQualities.insert(auto, at: 0)
+                }
+                
                 self.qualities = sortedQualities
-                self.audioTracks = audioTracks
-                self.audioTrackButton.isHidden = self.audioTracks.isEmpty
-                self.audioTrackButton.menu = self.audioTrackSelectionMenu()
                 completion()
             }
         }.resume()
-    }
-    
-    private func audioTrackSelectionMenu() -> UIMenu {
-        var menuItems: [UIMenuElement] = []
-        if audioTracks.isEmpty {
-            let unavailable = UIAction(title: "No alternate audio", attributes: .disabled) { _ in }
-            menuItems.append(unavailable)
-        } else {
-            for (name, _, _) in audioTracks {
-                let action = UIAction(title: name, state: (lastSelectedAudioTrack == name ? .on : .off)) { [weak self] _ in
-                    self?.switchToAudioTrack(named: name)
-                }
-                menuItems.append(action)
-            }
-        }
-        return UIMenu(title: "Audio Track", children: menuItems)
-    }
-    
-    private func switchToAudioTrack(named name: String) {
-        lastSelectedAudioTrack = name
-        guard let playerItem = player.currentItem else { return }
-        guard let group = playerItem.asset.mediaSelectionGroup(forMediaCharacteristic: .audible) else { return }
-        guard let option = group.options.first(where: { $0.displayName == name }) else { return }
-        playerItem.select(option, in: group)
-        audioTrackButton.menu = audioTrackSelectionMenu()
     }
     
     private func switchToQuality(urlString: String) {
@@ -2144,9 +2125,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         let currentTime = player.currentTime()
         let wasPlaying = player.rate > 0
-        let audioTrackToApply = lastSelectedAudioTrack
-        
-        player.pause()
         
         var request = URLRequest(url: url)
         if let mydict = headers, !mydict.isEmpty {
@@ -2162,44 +2140,25 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": request.allHTTPHeaderFields ?? [:]])
         let playerItem = AVPlayerItem(asset: asset)
         
-        asset.loadValuesAsynchronously(forKeys: ["playable"]) { [weak self] in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                let observer = playerItem.observe(\.status, options: [.new]) { [weak self] item, _ in
-                    guard let self = self else { return }
-                    
-                    if item.status == .readyToPlay {
-                        if let audioTrackName = audioTrackToApply,
-                           let group = item.asset.mediaSelectionGroup(forMediaCharacteristic: .audible),
-                           let option = group.options.first(where: { $0.displayName == audioTrackName }) {
-                            item.select(option, in: group)
-                        }
-                        
-                        self.player.seek(to: currentTime)
-                        if wasPlaying {
-                            self.player.play()
-                        }
-                    }
-                }
-                self.player.replaceCurrentItem(with: playerItem)
-                
-                self.currentQualityURL = url
-                UserDefaults.standard.set(urlString, forKey: "lastSelectedQuality")
-                self.qualityButton.menu = self.qualitySelectionMenu()
-                
-                if let selectedQuality = self.qualities.first(where: { $0.1 == urlString })?.0 {
-                    DropManager.shared.showDrop(title: "Quality: \(selectedQuality)", subtitle: "", duration: 0.5, icon: UIImage(systemName: "eye"))
-                }
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    observer.invalidate()
-                }
-            }
+        player.replaceCurrentItem(with: playerItem)
+        player.seek(to: currentTime)
+        if wasPlaying {
+            player.play()
+        }
+        
+        currentQualityURL = url
+        
+        UserDefaults.standard.set(urlString, forKey: "lastSelectedQuality")
+        qualityButton.menu = qualitySelectionMenu()
+        
+        if let selectedQuality = qualities.first(where: { $0.1 == urlString })?.0 {
+            DropManager.shared.showDrop(title: "Quality: \(selectedQuality)", subtitle: "", duration: 0.5, icon: UIImage(systemName: "eye"))
         }
     }
     
     private func qualitySelectionMenu() -> UIMenu {
         var menuItems: [UIMenuElement] = []
+        
         if isHLSStream {
             if qualities.isEmpty {
                 let loadingAction = UIAction(title: "Loading qualities...", attributes: .disabled) { _ in }
@@ -2210,8 +2169,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                    let selectedQuality = qualities.first(where: { $0.1 == currentURL })?.0 {
                     menuTitle = "Quality: \(selectedQuality)"
                 }
+                
                 for (name, urlString) in qualities {
                     let isCurrentQuality = currentQualityURL?.absoluteString == urlString
+                    
                     let action = UIAction(
                         title: name,
                         state: isCurrentQuality ? .on : .off,
@@ -2221,12 +2182,14 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     )
                     menuItems.append(action)
                 }
+                
                 return UIMenu(title: menuTitle, children: menuItems)
             }
         } else {
             let unavailableAction = UIAction(title: "Quality selection unavailable", attributes: .disabled) { _ in }
             menuItems.append(unavailableAction)
         }
+        
         return UIMenu(title: "Video Quality", children: menuItems)
     }
     
@@ -2234,7 +2197,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         guard let url = URL(string: streamURL) else { return }
         let streamType = module.metadata.streamType.lowercased()
         
-        if url.absoluteString.contains(".m3u8") || url.absoluteString.contains(".m3u") || streamType.contains("hls") {
+        if url.absoluteString.contains(".m3u8") || url.absoluteString.contains(".m3u") {
             isHLSStream = true
             baseM3U8URL = url
             currentQualityURL = url

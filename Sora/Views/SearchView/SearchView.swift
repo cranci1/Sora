@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Kingfisher
 
 struct ModuleButtonModifier: ViewModifier {
     func body(content: Content) -> some View {

@@ -70,7 +70,7 @@ Frameworks:
 
 Misc:
 - [50/50](https://github.com/50n50) for the app icon
-- Ciro for the episode banner images
+- [Ciro](https://github.com/CiroHoodLove) for the episodes banners
 
 ## License
 

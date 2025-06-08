@@ -11,12 +11,12 @@
         }
       },
       {
-        "package": "Kingfisher",
-        "repositoryURL": "https://github.com/onevcat/Kingfisher.git",
+        "package": "Gifu",
+        "repositoryURL": "https://github.com/kaishin/Gifu",
         "state": {
           "branch": null,
-          "revision": "b6f62758f21a8c03cd64f4009c037cfa580a256e",
-          "version": "7.9.1"
+          "revision": "82da0086dea14ca9afc9801234ad8dc4cd9e2738",
+          "version": "3.4.1"
         }
       },
       {
@@ -26,6 +26,24 @@
           "branch": null,
           "revision": "cffb6938940d3242882e6a2f9170b7890a4729ea",
           "version": "4.2.1"
+        }
+      },
+      {
+        "package": "Nuke",
+        "repositoryURL": "https://github.com/kean/Nuke.git",
+        "state": {
+          "branch": null,
+          "revision": "a002b7fd786f2df2ed4333fe73a9727499fd9d97",
+          "version": "10.11.2"
+        }
+      },
+      {
+        "package": "NukeUI",
+        "repositoryURL": "https://github.com/kean/NukeUI",
+        "state": {
+          "branch": "main",
+          "revision": "7338ed8ea76de18598bfafbca0cbdc74300a6b10",
+          "version": null
         }
       }
     ]

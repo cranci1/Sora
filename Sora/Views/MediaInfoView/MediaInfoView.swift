@@ -60,7 +60,7 @@ struct MediaInfoView: View {
     @State private var isMatchingPresented = false
     @State private var matchedTitle: String? = nil
     
-    @StateObject private var jsController = JSController.shared
+    @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject var tabBarController: TabBarController
@@ -165,6 +165,34 @@ struct MediaInfoView: View {
             }
             .onDisappear(){
                 tabBarController.showTabBar()
+            }
+            .task {
+                guard !hasFetched else { return }
+                
+                let savedCustomID = UserDefaults.standard.integer(forKey: "custom_anilist_id_\(href)")
+                if savedCustomID != 0 { customAniListID = savedCustomID }
+                if let savedPoster = UserDefaults.standard.string(forKey: "tmdbPosterURL_\(href)") {
+                    imageUrl = savedPoster
+                }
+                DropManager.shared.showDrop(
+                    title: "Fetching Data",
+                    subtitle: "Please wait while fetching.",
+                    duration: 0.5,
+                    icon: UIImage(systemName: "arrow.triangle.2.circlepath")
+                )
+                fetchDetails()
+
+                if savedCustomID != 0 {
+                    itemID = savedCustomID
+                } else {
+                    fetchMetadataIDIfNeeded()
+                }
+                
+                hasFetched = true
+                AnalyticsManager.shared.sendEvent(
+                    event: "MediaInfoView",
+                    additionalData: ["title": title]
+                )
             }
             .alert("Loading Stream", isPresented: $showLoadingAlert) {
                 Button("Cancel", role: .cancel) {

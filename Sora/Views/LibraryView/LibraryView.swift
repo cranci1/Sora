@@ -12,6 +12,7 @@ import SwiftUI
 struct LibraryView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
+    @Environment(\.scenePhase) private var scenePhase
     
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
@@ -165,6 +166,11 @@ struct LibraryView: View {
                 .onAppear {
                     fetchContinueWatching()
                 }
+                .onChange(of: scenePhase) { newPhase in
+                    if newPhase == .active {
+                        fetchContinueWatching()
+                    }
+                }
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
@@ -237,8 +243,8 @@ struct ContinueWatchingCell: View {
     var markAsWatched: () -> Void
     var removeItem: () -> Void
     
-    @State private
-    var currentProgress: Double = 0.0
+    @State private var currentProgress: Double = 0.0
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some View {
         Button(action: {
@@ -388,11 +394,11 @@ struct ContinueWatchingCell: View {
         .onAppear {
             updateProgress()
         }
-        .onReceive(NotificationCenter.default.publisher(
-            for: UIApplication.didBecomeActiveNotification)) {
-                _ in
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .active {
                 updateProgress()
             }
+        }
     }
     
     private func updateProgress() {

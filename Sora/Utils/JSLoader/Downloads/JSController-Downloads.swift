@@ -366,6 +366,11 @@ extension JSController {
     private func cleanupDownloadTask(_ task: URLSessionTask) {
         guard let downloadID = activeDownloadMap[task] else { return }
         
+        // Clean up MP4 progress observations if this is an MP4 download
+        if task is AVAssetDownloadTask {
+            cleanupMP4ProgressObservation(for: downloadID)
+        }
+        
         activeDownloads.removeAll { $0.id == downloadID }
         activeDownloadMap.removeValue(forKey: task)
         

@@ -58,7 +58,6 @@
 		139935662D468C450065CEFF /* ModuleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139935652D468C450065CEFF /* ModuleManager.swift */; };
 		1399FAD42D3AB38C00E97C31 /* SettingsViewLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1399FAD32D3AB38C00E97C31 /* SettingsViewLogger.swift */; };
 		1399FAD62D3AB3DB00E97C31 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1399FAD52D3AB3DB00E97C31 /* Logger.swift */; };
-		13AF34B12DF6CB1C00C77880 /* OnBoardingKit in Frameworks */ = {isa = PBXBuildFile; productRef = 13AF34B02DF6CB1C00C77880 /* OnBoardingKit */; };
 		13AF34B42DF6CB5900C77880 /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = 13AF34B32DF6CB5900C77880 /* Nuke */; };
 		13AF34B62DF6CB5900C77880 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 13AF34B52DF6CB5900C77880 /* NukeUI */; };
 		13B77E202DA457AA00126FDF /* AniListPushUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B77E1F2DA457AA00126FDF /* AniListPushUpdates.swift */; };
@@ -194,7 +193,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				13AF34B62DF6CB5900C77880 /* NukeUI in Frameworks */,
-				13AF34B12DF6CB1C00C77880 /* OnBoardingKit in Frameworks */,
 				13637B902DE0ECD200BDA2FC /* Drops in Frameworks */,
 				13637B932DE0ECDB00BDA2FC /* MarqueeLabel in Frameworks */,
 				13AF34B42DF6CB5900C77880 /* Nuke in Frameworks */,
@@ -620,7 +618,6 @@
 			packageProductDependencies = (
 				13637B8F2DE0ECD200BDA2FC /* Drops */,
 				13637B922DE0ECDB00BDA2FC /* MarqueeLabel */,
-				13AF34B02DF6CB1C00C77880 /* OnBoardingKit */,
 				13AF34B32DF6CB5900C77880 /* Nuke */,
 				13AF34B52DF6CB5900C77880 /* NukeUI */,
 			);
@@ -655,7 +652,6 @@
 			packageReferences = (
 				13637B8E2DE0ECD200BDA2FC /* XCRemoteSwiftPackageReference "Drops" */,
 				13637B912DE0ECDB00BDA2FC /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
-				13AF34AF2DF6CB1C00C77880 /* XCRemoteSwiftPackageReference "OnBoardingKit" */,
 				13AF34B22DF6CB5900C77880 /* XCRemoteSwiftPackageReference "Nuke" */,
 			);
 			productRefGroup = 133D7C6B2D2BE2500075467E /* Products */;
@@ -1020,14 +1016,6 @@
 				kind = branch;
 			};
 		};
-		13AF34AF2DF6CB1C00C77880 /* XCRemoteSwiftPackageReference "OnBoardingKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/mlbonniec/OnBoardingKit.git";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
 		13AF34B22DF6CB5900C77880 /* XCRemoteSwiftPackageReference "Nuke" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kean/Nuke.git";
@@ -1048,11 +1036,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 13637B912DE0ECDB00BDA2FC /* XCRemoteSwiftPackageReference "MarqueeLabel" */;
 			productName = MarqueeLabel;
-		};
-		13AF34B02DF6CB1C00C77880 /* OnBoardingKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 13AF34AF2DF6CB1C00C77880 /* XCRemoteSwiftPackageReference "OnBoardingKit" */;
-			productName = OnBoardingKit;
 		};
 		13AF34B32DF6CB5900C77880 /* Nuke */ = {
 			isa = XCSwiftPackageProductDependency;

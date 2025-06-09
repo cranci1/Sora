@@ -26,15 +26,6 @@
         "branch" : "main",
         "revision" : "c7ba4833b1b38f09e9708858aeaf91babc69f65c"
       }
-    },
-    {
-      "identity" : "onboardingkit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mlbonniec/OnBoardingKit.git",
-      "state" : {
-        "branch" : "master",
-        "revision" : "8d41dfac726156ac65f29fd0a0aed4bf7028db65"
-      }
     }
   ],
   "version" : 2

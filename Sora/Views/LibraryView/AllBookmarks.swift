@@ -59,7 +59,7 @@ struct BookmarkCell: View {
     var body: some View {
         if let module = moduleManager.modules.first(where: { $0.id.uuidString == bookmark.moduleId }) {
             ZStack {
-                LazyImage(source: URL(string: bookmark.imageUrl)) { state in
+                LazyImage(url: URL(string: bookmark.imageUrl)) { state in
                     if let uiImage = state.imageContainer?.image {
                         Image(uiImage: uiImage)
                             .resizable()
@@ -79,7 +79,7 @@ struct BookmarkCell: View {
                             .fill(Color.black.opacity(0.5))
                             .frame(width: 28, height: 28)
                             .overlay(
-                                LazyImage(source: URL(string: module.metadata.iconUrl)) { state in
+                                LazyImage(url: URL(string: module.metadata.iconUrl)) { state in
                                     if let uiImage = state.imageContainer?.image {
                                         Image(uiImage: uiImage)
                                             .resizable()

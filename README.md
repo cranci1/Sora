@@ -64,8 +64,8 @@ Sora does not include any modules by default. You will need to find and add the 
 ## Acknowledgements
 
 Frameworks:
-- [KingFisher](https://github.com/onevcat/Kingfisher) - MIT License
 - [Drops](https://github.com/omaralbeik/Drops) - MIT License
+- [NukeUI](https://github.com/kean/NukeUI) - MIT License
 - [MarqueeLabel](https://github.com/cbpowell/MarqueeLabel) - MIT License
 
 Misc:

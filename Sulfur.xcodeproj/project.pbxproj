@@ -32,6 +32,9 @@
 		132AF1212D99951700A0140B /* JSController-Streams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132AF1202D99951700A0140B /* JSController-Streams.swift */; };
 		132AF1232D9995C300A0140B /* JSController-Details.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132AF1222D9995C300A0140B /* JSController-Details.swift */; };
 		132AF1252D9995F900A0140B /* JSController-Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132AF1242D9995F900A0140B /* JSController-Search.swift */; };
+		13367ECC2DF70698009CB33F /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = 13367ECB2DF70698009CB33F /* Nuke */; };
+		13367ECE2DF70698009CB33F /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 13367ECD2DF70698009CB33F /* NukeUI */; };
+		13367ED02DF70819009CB33F /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 13367ECF2DF70819009CB33F /* Localizable.xcstrings */; };
 		133D7C6E2D2BE2500075467E /* SoraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6D2D2BE2500075467E /* SoraApp.swift */; };
 		133D7C702D2BE2500075467E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6F2D2BE2500075467E /* ContentView.swift */; };
 		133D7C722D2BE2520075467E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 133D7C712D2BE2520075467E /* Assets.xcassets */; };
@@ -60,7 +63,6 @@
 		1399FAD62D3AB3DB00E97C31 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1399FAD52D3AB3DB00E97C31 /* Logger.swift */; };
 		13B77E202DA457AA00126FDF /* AniListPushUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B77E1F2DA457AA00126FDF /* AniListPushUpdates.swift */; };
 		13B7F4C12D58FFDD0045714A /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B7F4C02D58FFDD0045714A /* Shimmer.swift */; };
-		13BC689F2DF61327009A0651 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 13BC689E2DF61327009A0651 /* NukeUI */; };
 		13C0E5EA2D5F85EA00E7F619 /* ContinueWatchingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0E5E92D5F85EA00E7F619 /* ContinueWatchingManager.swift */; };
 		13C0E5EC2D5F85F800E7F619 /* ContinueWatchingItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0E5EB2D5F85F800E7F619 /* ContinueWatchingItem.swift */; };
 		13CBA0882D60F19C00EFE70A /* VTTSubtitlesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CBA0872D60F19C00EFE70A /* VTTSubtitlesLoader.swift */; };
@@ -123,6 +125,7 @@
 		132AF1202D99951700A0140B /* JSController-Streams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Streams.swift"; sourceTree = "<group>"; };
 		132AF1222D9995C300A0140B /* JSController-Details.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Details.swift"; sourceTree = "<group>"; };
 		132AF1242D9995F900A0140B /* JSController-Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Search.swift"; sourceTree = "<group>"; };
+		13367ECF2DF70819009CB33F /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		133D7C6A2D2BE2500075467E /* Sulfur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sulfur.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		133D7C6D2D2BE2500075467E /* SoraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoraApp.swift; sourceTree = "<group>"; };
 		133D7C6F2D2BE2500075467E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -191,9 +194,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				13367ECC2DF70698009CB33F /* Nuke in Frameworks */,
 				13637B902DE0ECD200BDA2FC /* Drops in Frameworks */,
 				13637B932DE0ECDB00BDA2FC /* MarqueeLabel in Frameworks */,
-				13BC689F2DF61327009A0651 /* NukeUI in Frameworks */,
+				13367ECE2DF70698009CB33F /* NukeUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -320,6 +324,7 @@
 				133D7C6F2D2BE2500075467E /* ContentView.swift */,
 				133D7C712D2BE2520075467E /* Assets.xcassets */,
 				133D7C732D2BE2520075467E /* Preview Content */,
+				13367ECF2DF70819009CB33F /* Localizable.xcstrings */,
 			);
 			path = Sora;
 			sourceTree = "<group>";
@@ -616,7 +621,8 @@
 			packageProductDependencies = (
 				13637B8F2DE0ECD200BDA2FC /* Drops */,
 				13637B922DE0ECDB00BDA2FC /* MarqueeLabel */,
-				13BC689E2DF61327009A0651 /* NukeUI */,
+				13367ECB2DF70698009CB33F /* Nuke */,
+				13367ECD2DF70698009CB33F /* NukeUI */,
 			);
 			productName = Sora;
 			productReference = 133D7C6A2D2BE2500075467E /* Sulfur.app */;
@@ -648,7 +654,7 @@
 			packageReferences = (
 				13637B8E2DE0ECD200BDA2FC /* XCRemoteSwiftPackageReference "Drops" */,
 				13637B912DE0ECDB00BDA2FC /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
-				13BC689D2DF61327009A0651 /* XCRemoteSwiftPackageReference "NukeUI" */,
+				13367ECA2DF70698009CB33F /* XCRemoteSwiftPackageReference "Nuke" */,
 			);
 			productRefGroup = 133D7C6B2D2BE2500075467E /* Products */;
 			projectDirPath = "";
@@ -666,6 +672,7 @@
 			files = (
 				133D7C752D2BE2520075467E /* Preview Assets.xcassets in Resources */,
 				133D7C722D2BE2520075467E /* Assets.xcassets in Resources */,
+				13367ED02DF70819009CB33F /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -994,6 +1001,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		13367ECA2DF70698009CB33F /* XCRemoteSwiftPackageReference "Nuke" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/Nuke.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		13637B8E2DE0ECD200BDA2FC /* XCRemoteSwiftPackageReference "Drops" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/omaralbeik/Drops.git";
@@ -1006,21 +1021,23 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/cbpowell/MarqueeLabel";
 			requirement = {
-				kind = exactVersion;
-				version = 4.2.1;
-			};
-		};
-		13BC689D2DF61327009A0651 /* XCRemoteSwiftPackageReference "NukeUI" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kean/NukeUI";
-			requirement = {
-				branch = main;
+				branch = master;
 				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		13367ECB2DF70698009CB33F /* Nuke */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 13367ECA2DF70698009CB33F /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = Nuke;
+		};
+		13367ECD2DF70698009CB33F /* NukeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 13367ECA2DF70698009CB33F /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeUI;
+		};
 		13637B8F2DE0ECD200BDA2FC /* Drops */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 13637B8E2DE0ECD200BDA2FC /* XCRemoteSwiftPackageReference "Drops" */;
@@ -1030,11 +1047,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 13637B912DE0ECDB00BDA2FC /* XCRemoteSwiftPackageReference "MarqueeLabel" */;
 			productName = MarqueeLabel;
-		};
-		13BC689E2DF61327009A0651 /* NukeUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 13BC689D2DF61327009A0651 /* XCRemoteSwiftPackageReference "NukeUI" */;
-			productName = NukeUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

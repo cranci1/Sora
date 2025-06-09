@@ -60,7 +60,7 @@ struct MediaInfoView: View {
     @State private var isMatchingPresented = false
     @State private var matchedTitle: String? = nil
     
-    @StateObject private var jsController = JSController.shared
+    @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject var tabBarController: TabBarController
@@ -123,38 +123,6 @@ struct MediaInfoView: View {
             .ignoresSafeArea(.container, edges: .top)
             .onAppear {
                 buttonRefreshTrigger.toggle()
-                
-                let savedID = UserDefaults.standard.integer(forKey: "custom_anilist_id_\(href)")
-                if savedID != 0 { customAniListID = savedID }
-                
-                if let savedPoster = UserDefaults.standard.string(forKey: "tmdbPosterURL_\(href)") {
-                    self.imageUrl = savedPoster
-                }
-                
-                if !hasFetched {
-                    DropManager.shared.showDrop(
-                        title: "Fetching Data",
-                        subtitle: "Please wait while fetching.",
-                        duration: 0.5,
-                        icon: UIImage(systemName: "arrow.triangle.2.circlepath")
-                    )
-                    fetchDetails()
-                    
-                    if let savedID = UserDefaults.standard.object(forKey: "custom_anilist_id_\(href)") as? Int {
-                        customAniListID = savedID
-                        itemID = savedID
-                        Logger.shared.log("Using custom AniList ID: \(savedID)", type: "Debug")
-                    } else {
-                        fetchMetadataIDIfNeeded()
-                    }
-                                        
-                    hasFetched = true
-                    AnalyticsManager.shared.sendEvent(
-                        event: "MediaInfoView",
-                        additionalData: ["title": title]
-                    )
-                }
-                
                 tabBarController.hideTabBar()
             }
             .onChange(of: selectedRange) { newValue in
@@ -165,6 +133,30 @@ struct MediaInfoView: View {
             }
             .onDisappear(){
                 tabBarController.showTabBar()
+            }
+            .task {
+                guard !hasFetched else { return }
+                
+                let savedCustomID = UserDefaults.standard.integer(forKey: "custom_anilist_id_\(href)")
+                if savedCustomID != 0 { customAniListID = savedCustomID }
+                if let savedPoster = UserDefaults.standard.string(forKey: "tmdbPosterURL_\(href)") {
+                    imageUrl = savedPoster
+                }
+                
+                DropManager.shared.showDrop(title: "Fetching Data", subtitle: "Please wait while fetching.", duration: 0.5, icon: UIImage(systemName: "arrow.triangle.2.circlepath"))
+                fetchDetails()
+
+                if savedCustomID != 0 {
+                    itemID = savedCustomID
+                } else {
+                    fetchMetadataIDIfNeeded()
+                }
+                
+                hasFetched = true
+                AnalyticsManager.shared.sendEvent(
+                    event: "MediaInfoView",
+                    additionalData: ["title": title]
+                )
             }
             .alert("Loading Stream", isPresented: $showLoadingAlert) {
                 Button("Cancel", role: .cancel) {
@@ -212,7 +204,7 @@ struct MediaInfoView: View {
     private var mainScrollView: some View {
         ScrollView {
             ZStack(alignment: .top) {
-                LazyImage(source: URL(string: imageUrl)) { state in
+                LazyImage(url: URL(string: imageUrl)) { state in
                     if let uiImage = state.imageContainer?.image {
                         Image(uiImage: uiImage)
                             .resizable()
@@ -227,11 +219,12 @@ struct MediaInfoView: View {
                             .clipped()
                     }
                 }
+                
                 VStack(spacing: 0) {
                     Rectangle()
                         .fill(Color.clear)
                         .frame(height: 400)
-                    VStack(alignment: .leading, spacing: 16) {
+                    LazyVStack(alignment: .leading, spacing: 16) {
                         headerSection
                         if !episodeLinks.isEmpty {
                             episodesSection
@@ -260,12 +253,11 @@ struct MediaInfoView: View {
         .onAppear {
             UIScrollView.appearance().bounces = false
         }
-        .ignoresSafeArea(.container, edges: .top)
     }
     
     @ViewBuilder
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        LazyVStack(alignment: .leading, spacing: 8) {
             Spacer()
             HStack(spacing: 16) {
                 
@@ -420,7 +412,7 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var contentSection: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        LazyVStack(alignment: .leading, spacing: 20) {
             playAndBookmarkSection
             
             if !episodeLinks.isEmpty {
@@ -1299,12 +1291,16 @@ struct MediaInfoView: View {
                 videoPlayerViewController.mediaTitle = title
                 videoPlayerViewController.subtitles = subtitles ?? ""
                 videoPlayerViewController.aniListID = itemID ?? 0
-                videoPlayerViewController.modalPresentationStyle = .overFullScreen
+                videoPlayerViewController.modalPresentationStyle = .fullScreen
                 
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootVC = windowScene.windows.first?.rootViewController {
                     findTopViewController.findViewController(rootVC).present(videoPlayerViewController, animated: true, completion: nil)
+                } else {
+                    Logger.shared.log("Failed to find root view controller", type: "Error")
+                    DropManager.shared.showDrop(title: "Error", subtitle: "Failed to present player", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
                 }
+                
                 return
             default:
                 break
@@ -1339,7 +1335,7 @@ struct MediaInfoView: View {
                     episodeImageUrl: selectedEpisodeImage,
                     headers: headers ?? nil
                 )
-                customMediaPlayer.modalPresentationStyle = .overFullScreen
+                customMediaPlayer.modalPresentationStyle = .fullScreen
                 Logger.shared.log("Opening custom media player with url: \(url)")
                 
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,

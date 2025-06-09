@@ -78,7 +78,7 @@ extension JSContext {
     }
     
     func setupFetchV2() {
-        let fetchV2NativeFunction: @convention(block) (String, [String: String]?, String?, String?, ObjCBool, JSValue, JSValue) -> Void = { urlString, headers, method, body, redirect, resolve, reject in
+        let fetchV2NativeFunction: @convention(block) (String, [String: String]?, String?, String?, ObjCBool, String?, JSValue, JSValue) -> Void = { urlString, headers, method, body, redirect, encoding, resolve, reject in
             guard let url = URL(string: urlString) else {
                 Logger.shared.log("Invalid URL", type: "Error")
                 DispatchQueue.main.async {
@@ -91,7 +91,33 @@ extension JSContext {
             var request = URLRequest(url: url)
             request.httpMethod = httpMethod
             
-            Logger.shared.log("FetchV2 Request: URL=\(url), Method=\(httpMethod), Body=\(body ?? "nil")", type: "Debug")
+            Logger.shared.log("FetchV2 Request: URL=\(url), Method=\(httpMethod), Body=\(body ?? "nil"), Encoding=\(encoding ?? "utf-8")", type: "Debug")
+            
+            func getEncoding(from encodingString: String?) -> String.Encoding {
+                guard let encodingString = encodingString?.lowercased() else {
+                    return .utf8
+                }
+                
+                switch encodingString {
+                case "utf-8", "utf8":
+                    return .utf8
+                case "windows-1251", "cp1251":
+                    return .windowsCP1251
+                case "windows-1252", "cp1252":
+                    return .windowsCP1252
+                case "iso-8859-1", "latin1":
+                    return .isoLatin1
+                case "ascii":
+                    return .ascii
+                case "utf-16", "utf16":
+                    return .utf16
+                default:
+                    Logger.shared.log("Unknown encoding '\(encodingString)', defaulting to UTF-8", type: "Warning")
+                    return .utf8
+                }
+            }
+            
+            let textEncoding = getEncoding(from: encoding)
             
             if httpMethod == "GET", let body = body, !body.isEmpty, body != "null", body != "undefined" {
                 Logger.shared.log("GET request must not have a body", type: "Error")
@@ -164,12 +190,18 @@ extension JSContext {
                         return
                     }
                     
-                    if let text = String(data: data, encoding: .utf8) {
+                    if let text = String(data: data, encoding: textEncoding) {
                         responseDict["body"] = text
                         callResolve(responseDict)
                     } else {
-                        Logger.shared.log("Unable to decode data to text", type: "Error")
-                        callResolve(responseDict)
+                        Logger.shared.log("Unable to decode data with encoding \(encoding ?? "utf-8"), trying UTF-8 fallback", type: "Warning")
+                        if let fallbackText = String(data: data, encoding: .utf8) {
+                            responseDict["body"] = fallbackText
+                            callResolve(responseDict)
+                        } else {
+                            Logger.shared.log("Unable to decode data to text with any encoding", type: "Error")
+                            callResolve(responseDict)
+                        }
                     }
                     
                 } catch {
@@ -184,18 +216,19 @@ extension JSContext {
         self.setObject(fetchV2NativeFunction, forKeyedSubscript: "fetchV2Native" as NSString)
         
         let fetchv2Definition = """
-                    function fetchv2(url, headers = {}, method = "GET", body = null, redirect = true ) {
+                    function fetchv2(url, headers = {}, method = "GET", body = null, redirect = true, encoding ) {
                     
                     
                     var processedBody = null;
                     if(method != "GET")
                     {
-                        // Ensure body is properly serialized
                         processedBody = (body && (typeof body === 'object')) ? JSON.stringify(body) : (body || null)
                     }
+                    
+                    var finalEncoding = encoding || "utf-8";
             
                         return new Promise(function(resolve, reject) {
-                            fetchV2Native(url, headers, method, processedBody, redirect, function(rawText) {
+                            fetchV2Native(url, headers, method, processedBody, redirect, finalEncoding, function(rawText) {
                                 const responseObj = {
                                     headers: rawText.headers,
                                     status: rawText.status,

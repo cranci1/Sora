@@ -45,7 +45,7 @@ struct ModuleAdditionSettingsView: View {
                     VStack(spacing: 24) {
                         if let metadata = moduleMetadata {
                             VStack(spacing: 0) {
-                                LazyImage(source: URL(string: metadata.iconUrl)) { state in
+                                LazyImage(url: URL(string: metadata.iconUrl)) { state in
                                     if let uiImage = state.imageContainer?.image {
                                         Image(uiImage: uiImage)
                                             .resizable()
@@ -72,7 +72,7 @@ struct ModuleAdditionSettingsView: View {
                                         .padding(.top, 6)
                                     
                                     HStack(spacing: 10) {
-                                        LazyImage(source: URL(string: metadata.author.icon)) { state in
+                                        LazyImage(url: URL(string: metadata.author.icon)) { state in
                                             if let uiImage = state.imageContainer?.image {
                                                 Image(uiImage: uiImage)
                                                     .resizable()

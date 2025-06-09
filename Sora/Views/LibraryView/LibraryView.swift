@@ -12,6 +12,7 @@ import SwiftUI
 struct LibraryView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
+    @Environment(\.scenePhase) private var scenePhase
     
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
@@ -165,6 +166,11 @@ struct LibraryView: View {
                 .onAppear {
                     fetchContinueWatching()
                 }
+                .onChange(of: scenePhase) { newPhase in
+                    if newPhase == .active {
+                        fetchContinueWatching()
+                    }
+                }
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
@@ -237,8 +243,8 @@ struct ContinueWatchingCell: View {
     var markAsWatched: () -> Void
     var removeItem: () -> Void
     
-    @State private
-    var currentProgress: Double = 0.0
+    @State private var currentProgress: Double = 0.0
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some View {
         Button(action: {
@@ -280,7 +286,7 @@ struct ContinueWatchingCell: View {
             }
         }) {
             ZStack(alignment: .bottomLeading) {
-                LazyImage(source: URL(string: item.imageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : item.imageUrl)) { state in
+                LazyImage(url: URL(string: item.imageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : item.imageUrl)) { state in
                     if let uiImage = state.imageContainer?.image {
                         Image(uiImage: uiImage)
                             .resizable()
@@ -292,7 +298,7 @@ struct ContinueWatchingCell: View {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color.gray.opacity(0.3))
                             .frame(width: 280, height: 157.03)
-                            .shimmering()
+                            .redacted(reason: .placeholder)
                     }
                 }
                 .overlay(
@@ -351,7 +357,7 @@ struct ContinueWatchingCell: View {
                                 .fill(Color.black.opacity(0.5))
                                 .frame(width: 28, height: 28)
                                 .overlay(
-                                    LazyImage(source: URL(string: item.module.metadata.iconUrl)) { state in
+                                    LazyImage(url: URL(string: item.module.metadata.iconUrl)) { state in
                                         if let uiImage = state.imageContainer?.image {
                                             Image(uiImage: uiImage)
                                                 .resizable()
@@ -388,11 +394,11 @@ struct ContinueWatchingCell: View {
         .onAppear {
             updateProgress()
         }
-        .onReceive(NotificationCenter.default.publisher(
-            for: UIApplication.didBecomeActiveNotification)) {
-                _ in
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .active {
                 updateProgress()
             }
+        }
     }
     
     private func updateProgress() {
@@ -536,7 +542,7 @@ struct BookmarkItemView: View {
                 isDetailActive = true
             }) {
                 ZStack {
-                    LazyImage(source: URL(string: item.imageUrl)) { state in
+                    LazyImage(url: URL(string: item.imageUrl)) { state in
                         if let uiImage = state.imageContainer?.image {
                             Image(uiImage: uiImage)
                                 .resizable()
@@ -547,8 +553,8 @@ struct BookmarkItemView: View {
                         } else {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color.gray.opacity(0.3))
-                                .aspectRatio(2 / 3, contentMode: .fit)
-                                .shimmering()
+                                .aspectRatio(2/3, contentMode: .fit)
+                                .redacted(reason: .placeholder)
                         }
                     }
                     .overlay(
@@ -557,7 +563,7 @@ struct BookmarkItemView: View {
                                 .fill(Color.black.opacity(0.5))
                                 .frame(width: 28, height: 28)
                                 .overlay(
-                                    LazyImage(source: URL(string: module.metadata.iconUrl)) { state in
+                                    LazyImage(url: URL(string: module.metadata.iconUrl)) { state in
                                         if let uiImage = state.imageContainer?.image {
                                             Image(uiImage: uiImage)
                                                 .resizable()

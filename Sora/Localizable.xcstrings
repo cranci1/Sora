@@ -1,0 +1,435 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "%lld" : {
+
+    },
+    "%lld Episodes" : {
+
+    },
+    "%lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "%lld-%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld-%2$lld"
+          }
+        }
+      }
+    },
+    "%lld%%" : {
+
+    },
+    "%lld%% seen" : {
+
+    },
+    "•" : {
+
+    },
+    "About" : {
+
+    },
+    "Actively downloading media can be tracked from here." : {
+
+    },
+    "Add Module" : {
+
+    },
+    "AKA Sulfur" : {
+
+    },
+    "All Bookmarks" : {
+
+    },
+    "All Prev" : {
+
+    },
+    "All Watching" : {
+
+    },
+    "AniList ID" : {
+
+    },
+    "AniList Match" : {
+
+    },
+    "AniList.co" : {
+
+    },
+    "App Data" : {
+
+    },
+    "Are you sure you want to delete '%@'?" : {
+
+    },
+    "Are you sure you want to delete all %lld episodes in '%@'?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Are you sure you want to delete all %1$lld episodes in '%2$@'?"
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use." : {
+
+    },
+    "Are you sure you want to erase all app data? This action cannot be undone." : {
+
+    },
+    "Are you sure you want to remove all files in the Documents folder? This will remove all modules." : {
+
+    },
+    "Author" : {
+
+    },
+    "Bookmark items for an easier access later." : {
+
+    },
+    "Bookmarks" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Check out some community modules here!" : {
+
+    },
+    "Clear" : {
+
+    },
+    "Clear All Caches" : {
+
+    },
+    "Clear All Downloads" : {
+
+    },
+    "Clear Library Only" : {
+
+    },
+    "Clear Logs" : {
+
+    },
+    "Click the plus button to add a module!" : {
+
+    },
+    "Continue Watching" : {
+
+    },
+    "Copy to Clipboard" : {
+
+    },
+    "Copy URL" : {
+
+    },
+    "cranci1" : {
+
+    },
+    "Current Cache Size" : {
+
+    },
+    "DATA/LOGS" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete All" : {
+
+    },
+    "Delete All Downloads" : {
+
+    },
+    "Delete All Episodes" : {
+
+    },
+    "Delete Download" : {
+
+    },
+    "Delete Episode" : {
+
+    },
+    "Download" : {
+
+    },
+    "Download Episode" : {
+
+    },
+    "Downloads" : {
+
+    },
+    "Enter the AniList ID for this media" : {
+
+    },
+    "Episode %lld" : {
+
+    },
+    "Episodes" : {
+
+    },
+    "Episodes might not be available yet or there could be an issue with the source." : {
+
+    },
+    "Erase" : {
+
+    },
+    "Erase App Data" : {
+
+    },
+    "Error" : {
+
+    },
+    "Failed to load contributors" : {
+
+    },
+    "Files Downloaded" : {
+
+    },
+    "General" : {
+
+    },
+    "INFOS" : {
+
+    },
+    "LESS" : {
+
+    },
+    "Library" : {
+
+    },
+    "Loading Episode %lld..." : {
+
+    },
+    "Loading logs..." : {
+
+    },
+    "Loading module information..." : {
+
+    },
+    "Loading Stream" : {
+
+    },
+    "Log Debug Info" : {
+
+    },
+    "Log Filters" : {
+
+    },
+    "Log In with AniList" : {
+
+    },
+    "Log In with Trakt" : {
+
+    },
+    "Log Out from AniList" : {
+
+    },
+    "Log Out from Trakt" : {
+
+    },
+    "Logged in as " : {
+
+    },
+    "Logs" : {
+
+    },
+    "MAIN" : {
+
+    },
+    "Mark All Previous Watched" : {
+
+    },
+    "Mark as Watched" : {
+
+    },
+    "Match with AniList" : {
+
+    },
+    "Matched with: %@" : {
+
+    },
+    "Max Concurrent Downloads" : {
+
+    },
+    "me frfr" : {
+
+    },
+    "Modules" : {
+
+    },
+    "MORE" : {
+
+    },
+    "No Active Downloads" : {
+
+    },
+    "No Data Available" : {
+
+    },
+    "No Downloads" : {
+
+    },
+    "No episodes available" : {
+
+    },
+    "No Episodes Available" : {
+
+    },
+    "No items to continue watching." : {
+
+    },
+    "No matches found" : {
+
+    },
+    "No Module Selected" : {
+
+    },
+    "No Modules" : {
+
+    },
+    "No Results Found" : {
+
+    },
+    "OK" : {
+
+    },
+    "Open Community Library" : {
+
+    },
+    "Open in AniList" : {
+
+    },
+    "Play" : {
+
+    },
+    "Player" : {
+
+    },
+    "Please select a module from settings" : {
+
+    },
+    "Queued" : {
+
+    },
+    "Recently watched content will appear here." : {
+
+    },
+    "Refresh Storage Info" : {
+
+    },
+    "Remove" : {
+
+    },
+    "Remove Documents" : {
+
+    },
+    "Remove from Bookmarks" : {
+
+    },
+    "Remove Item" : {
+
+    },
+    "Reset" : {
+
+    },
+    "Reset AniList ID" : {
+
+    },
+    "Reset Progress" : {
+
+    },
+    "Running Sora %@ - cranci1" : {
+
+    },
+    "Save" : {
+
+    },
+    "Search" : {
+
+    },
+    "Search downloads" : {
+
+    },
+    "Search for something..." : {
+
+    },
+    "Search..." : {
+
+    },
+    "Season %lld" : {
+
+    },
+    "Select Module" : {
+
+    },
+    "Set Custom AniList ID" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Show More (%lld more characters)" : {
+
+    },
+    "Sora" : {
+
+    },
+    "Sort" : {
+
+    },
+    "Storage Used" : {
+
+    },
+    "Tap a title to override the current match." : {
+
+    },
+    "The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases." : {
+
+    },
+    "Trackers" : {
+
+    },
+    "Trakt.tv" : {
+
+    },
+    "Try different keywords" : {
+
+    },
+    "Use TMDB Poster Image" : {
+
+    },
+    "v%@" : {
+
+    },
+    "View All" : {
+
+    },
+    "Watched" : {
+
+    },
+    "Why am I not seeing any episodes?" : {
+
+    },
+    "You have no items saved." : {
+
+    },
+    "Your downloaded episodes will appear here" : {
+
+    }
+  },
+  "version" : "1.0"
+}

@@ -741,7 +741,7 @@ struct EnhancedActiveDownloadCard: View {
             HStack(spacing: 16) {
                 Group {
                     if let imageURL = download.imageURL {
-                        LazyImage(source: imageURL) { state in
+                        LazyImage(url: imageURL) { state in
                             if let uiImage = state.imageContainer?.image {
                                 Image(uiImage: uiImage)
                                     .resizable()
@@ -904,7 +904,7 @@ struct EnhancedDownloadGroupCard: View {
                 HStack(spacing: 16) {
                     Group {
                         if let posterURL = group.posterURL {
-                            LazyImage(source: posterURL) { state in
+                            LazyImage(url: posterURL) { state in
                                 if let uiImage = state.imageContainer?.image {
                                     Image(uiImage: uiImage)
                                         .resizable()
@@ -1008,7 +1008,7 @@ struct EnhancedShowEpisodesView: View {
                     HStack(alignment: .top, spacing: 20) {
                         Group {
                             if let posterURL = group.posterURL {
-                                LazyImage(source: posterURL) { state in
+                                LazyImage(url: posterURL) { state in
                                     if let uiImage = state.imageContainer?.image {
                                         Image(uiImage: uiImage)
                                             .resizable()
@@ -1200,7 +1200,7 @@ struct EnhancedEpisodeRow: View {
             HStack(spacing: 16) {
                 Group {
                     if let backdropURL = asset.metadata?.backdropURL ?? asset.metadata?.posterURL {
-                        LazyImage(source: backdropURL) { state in
+                        LazyImage(url: backdropURL) { state in
                             if let uiImage = state.imageContainer?.image {
                                 Image(uiImage: uiImage)
                                     .resizable()

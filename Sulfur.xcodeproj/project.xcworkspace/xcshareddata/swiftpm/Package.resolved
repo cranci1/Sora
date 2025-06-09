@@ -1,52 +1,32 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "Drops",
-        "repositoryURL": "https://github.com/omaralbeik/Drops.git",
-        "state": {
-          "branch": "main",
-          "revision": "5824681795286c36bdc4a493081a63e64e2a064e",
-          "version": null
-        }
-      },
-      {
-        "package": "Gifu",
-        "repositoryURL": "https://github.com/kaishin/Gifu",
-        "state": {
-          "branch": null,
-          "revision": "82da0086dea14ca9afc9801234ad8dc4cd9e2738",
-          "version": "3.4.1"
-        }
-      },
-      {
-        "package": "MarqueeLabel",
-        "repositoryURL": "https://github.com/cbpowell/MarqueeLabel",
-        "state": {
-          "branch": null,
-          "revision": "cffb6938940d3242882e6a2f9170b7890a4729ea",
-          "version": "4.2.1"
-        }
-      },
-      {
-        "package": "Nuke",
-        "repositoryURL": "https://github.com/kean/Nuke.git",
-        "state": {
-          "branch": null,
-          "revision": "a002b7fd786f2df2ed4333fe73a9727499fd9d97",
-          "version": "10.11.2"
-        }
-      },
-      {
-        "package": "NukeUI",
-        "repositoryURL": "https://github.com/kean/NukeUI",
-        "state": {
-          "branch": "main",
-          "revision": "7338ed8ea76de18598bfafbca0cbdc74300a6b10",
-          "version": null
-        }
+  "pins" : [
+    {
+      "identity" : "drops",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/omaralbeik/Drops.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "5824681795286c36bdc4a493081a63e64e2a064e"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "marqueelabel",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/cbpowell/MarqueeLabel",
+      "state" : {
+        "branch" : "master",
+        "revision" : "18e4787f4dc1c26d2d581c4bc9aeae34686eeeae"
+      }
+    },
+    {
+      "identity" : "nuke",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kean/Nuke.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "c7ba4833b1b38f09e9708858aeaf91babc69f65c"
+      }
+    }
+  ],
+  "version" : 2
 }

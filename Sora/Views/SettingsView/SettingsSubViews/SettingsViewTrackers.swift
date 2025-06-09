@@ -120,7 +120,7 @@ struct SettingsViewTrackers: View {
                 SettingsSection(title: "AniList") {
                     VStack(spacing: 0) {
                         HStack(alignment: .center, spacing: 10) {
-                            LazyImage(source: URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png")) { state in
+                            LazyImage(url: URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png")) { state in
                                 if let uiImage = state.imageContainer?.image {
                                     Image(uiImage: uiImage)
                                         .resizable()
@@ -215,7 +215,7 @@ struct SettingsViewTrackers: View {
                 SettingsSection(title: "Trakt") {
                     VStack(spacing: 0) {
                         HStack(alignment: .center, spacing: 10) {
-                            LazyImage(source: URL(string: "https://static-00.iconduck.com/assets.00/trakt-icon-2048x2048-2633ksxg.png")) { state in
+                            LazyImage(url: URL(string: "https://static-00.iconduck.com/assets.00/trakt-icon-2048x2048-2633ksxg.png")) { state in
                                 if let uiImage = state.imageContainer?.image {
                                     Image(uiImage: uiImage)
                                         .resizable()

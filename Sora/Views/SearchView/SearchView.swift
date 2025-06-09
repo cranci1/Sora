@@ -71,59 +71,71 @@ struct SearchView: View {
         return availableWidth / CGFloat(columnsCount)
     }
     
-    var body: some View {
-        NavigationView {
-            VStack(alignment: .leading) {
-                HStack {
-                    Text("Search")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Spacer()
-                    
-                    ModuleSelectorMenu(
-                        selectedModule: selectedModule,
-                        moduleGroups: getModuleLanguageGroups(),
-                        modulesByLanguage: getModulesByLanguage(),
-                        selectedModuleId: selectedModuleId,
-                        onModuleSelected: { moduleId in
-                            selectedModuleId = moduleId
-                        }
-                    )
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
+    private var mainContent: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text("Search")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
                 
-                ScrollView {
-                    SearchContent(
-                        selectedModule: selectedModule,
-                        searchQuery: searchQuery,
-                        searchHistory: searchHistory,
-                        searchItems: searchItems,
-                        isSearching: isSearching,
-                        hasNoResults: hasNoResults,
-                        columns: columns,
-                        columnsCount: columnsCount,
-                        cellWidth: cellWidth,
-                        onHistoryItemSelected: { query in
-                            searchQuery = query
-                        },
-                        onHistoryItemDeleted: { index in
-                            removeFromHistory(at: index)
-                        },
-                        onClearHistory: clearSearchHistory
-                    )
-                }
-                .scrollViewBottomPadding()
-                .simultaneousGesture(
-                    DragGesture().onChanged { _ in
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                Spacer()
+                
+                ModuleSelectorMenu(
+                    selectedModule: selectedModule,
+                    moduleGroups: getModuleLanguageGroups(),
+                    modulesByLanguage: getModulesByLanguage(),
+                    selectedModuleId: selectedModuleId,
+                    onModuleSelected: { moduleId in
+                        selectedModuleId = moduleId
                     }
                 )
             }
-            .navigationBarHidden(true)
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            
+            ScrollView {
+                SearchContent(
+                    selectedModule: selectedModule,
+                    searchQuery: searchQuery,
+                    searchHistory: searchHistory,
+                    searchItems: searchItems,
+                    isSearching: isSearching,
+                    hasNoResults: hasNoResults,
+                    columns: columns,
+                    columnsCount: columnsCount,
+                    cellWidth: cellWidth,
+                    onHistoryItemSelected: { query in
+                        searchQuery = query
+                    },
+                    onHistoryItemDeleted: { index in
+                        removeFromHistory(at: index)
+                    },
+                    onClearHistory: clearSearchHistory
+                )
+            }
+            .scrollViewBottomPadding()
+            .simultaneousGesture(
+                DragGesture().onChanged { _ in
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
+            )
         }
-        .navigationViewStyle(.stack)
+        .navigationBarHidden(true)
+    }
+    
+    var body: some View {
+        Group {
+            if #available(iOS 16.0, *) {
+                NavigationStack {
+                    mainContent
+                }
+            } else {
+                NavigationView {
+                    mainContent
+                }
+                .navigationViewStyle(.stack)
+            }
+        }
         .onAppear {
             loadSearchHistory()
             if !searchQuery.isEmpty {

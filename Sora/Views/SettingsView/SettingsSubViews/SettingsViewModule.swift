@@ -67,7 +67,7 @@ fileprivate struct ModuleListItemView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                LazyImage(source: URL(string: module.metadata.iconUrl)) { state in
+                LazyImage(url: URL(string: module.metadata.iconUrl)) { state in
                     if let uiImage = state.imageContainer?.image {
                         Image(uiImage: uiImage)
                             .resizable()
@@ -219,7 +219,7 @@ struct SettingsViewModule: View {
         .navigationTitle("Modules")
         .navigationBarItems(trailing:
             HStack(spacing: 16) {
-                if didReceiveDefaultPageLink && !moduleManager.modules.isEmpty {
+                if didReceiveDefaultPageLink {
                     Button(action: {
                         showLibrary = true
                     }) {

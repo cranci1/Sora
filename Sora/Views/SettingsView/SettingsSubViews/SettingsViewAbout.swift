@@ -66,7 +66,7 @@ struct SettingsViewAbout: View {
             VStack(spacing: 24) {
                 SettingsSection(title: "App Info", footer: "Sora/Sulfur will always remain free with no ADs!") {
                     HStack(alignment: .center, spacing: 16) {
-                        LazyImage(source: URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/Sora/Assets.xcassets/AppIcons/AppIcon_Default.appiconset/darkmode.png")) { state in
+                        LazyImage(url: URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/Sora/Assets.xcassets/AppIcons/AppIcon_Default.appiconset/darkmode.png")) { state in
                             if let uiImage = state.imageContainer?.image {
                                 Image(uiImage: uiImage)
                                     .resizable()
@@ -100,7 +100,7 @@ struct SettingsViewAbout: View {
                         }
                     }) {
                         HStack {
-                            LazyImage(source: URL(string: "https://avatars.githubusercontent.com/u/100066266?v=4")) { state in
+                            LazyImage(url: URL(string: "https://avatars.githubusercontent.com/u/100066266?v=4")) { state in
                                 if let uiImage = state.imageContainer?.image {
                                     Image(uiImage: uiImage)
                                         .resizable()
@@ -213,7 +213,7 @@ struct ContributorView: View {
             }
         }) {
             HStack {
-                LazyImage(source: URL(string: contributor.avatarUrl)) { state in
+                LazyImage(url: URL(string: contributor.avatarUrl)) { state in
                     if let uiImage = state.imageContainer?.image {
                         Image(uiImage: uiImage)
                             .resizable()

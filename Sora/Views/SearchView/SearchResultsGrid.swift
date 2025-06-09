@@ -32,7 +32,7 @@ struct SearchResultsGrid: View {
             ForEach(items) { item in
                 NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule)) {
                     ZStack {
-                        LazyImage(source: URL(string: item.imageUrl)) { state in
+                        LazyImage(url: URL(string: item.imageUrl)) { state in
                             if let uiImage = state.imageContainer?.image {
                                 Image(uiImage: uiImage)
                                     .resizable()

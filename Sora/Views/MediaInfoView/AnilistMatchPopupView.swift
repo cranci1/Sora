@@ -61,7 +61,7 @@ struct AnilistMatchPopupView: View {
                                         HStack(spacing: 12) {
                                             if let cover = result["cover"] as? String,
                                                let url = URL(string: cover) {
-                                                LazyImage(source: url) { state in
+                                                LazyImage(url: url) { state in
                                                     if let uiImage = state.imageContainer?.image {
                                                         Image(uiImage: uiImage)
                                                             .resizable()

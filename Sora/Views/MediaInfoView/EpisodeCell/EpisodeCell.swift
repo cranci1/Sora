@@ -264,7 +264,7 @@ struct EpisodeCell: View {
     private var episodeThumbnail: some View {
         ZStack {
             if let url = URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl) {
-                LazyImage(source: url) { state in
+                LazyImage(url: url) { state in
                     if let image = state.imageContainer?.image {
                         Image(uiImage: image)
                             .resizable()

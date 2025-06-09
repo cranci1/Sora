@@ -10,15 +10,6 @@
       }
     },
     {
-      "identity" : "gifu",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kaishin/Gifu",
-      "state" : {
-        "revision" : "82da0086dea14ca9afc9801234ad8dc4cd9e2738",
-        "version" : "3.4.1"
-      }
-    },
-    {
       "identity" : "marqueelabel",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/cbpowell/MarqueeLabel",
@@ -32,17 +23,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kean/Nuke.git",
       "state" : {
-        "revision" : "a002b7fd786f2df2ed4333fe73a9727499fd9d97",
-        "version" : "10.11.2"
+        "branch" : "main",
+        "revision" : "c7ba4833b1b38f09e9708858aeaf91babc69f65c"
       }
     },
     {
-      "identity" : "nukeui",
+      "identity" : "onboardingkit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kean/NukeUI",
+      "location" : "https://github.com/mlbonniec/OnBoardingKit.git",
       "state" : {
-        "branch" : "main",
-        "revision" : "7338ed8ea76de18598bfafbca0cbdc74300a6b10"
+        "branch" : "master",
+        "revision" : "8d41dfac726156ac65f29fd0a0aed4bf7028db65"
       }
     }
   ],

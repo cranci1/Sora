@@ -240,7 +240,7 @@ struct MediaInfoView: View {
     private var mainScrollView: some View {
         ScrollView {
             ZStack(alignment: .top) {
-                LazyImage(source: URL(string: imageUrl)) { state in
+                LazyImage(url: URL(string: imageUrl)) { state in
                     if let uiImage = state.imageContainer?.image {
                         Image(uiImage: uiImage)
                             .resizable()

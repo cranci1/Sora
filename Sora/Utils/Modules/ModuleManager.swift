@@ -203,12 +203,6 @@ class ModuleManager: ObservableObject {
         return try String(contentsOf: localUrl, encoding: .utf8)
     }
     
-    func getModule(for episodeUrl: String) -> ScrapingModule {
-        // For now, return the first active module
-        // In the future, we might want to add logic to determine which module to use based on the URL
-        return modules.first(where: { $0.isActive }) ?? modules.first!
-    }
-    
     func refreshModules() async {
         for (index, module) in modules.enumerated() {
             do {
@@ -236,10 +230,8 @@ class ModuleManager: ObservableObject {
                         isActive: module.isActive
                     )
                     
-                    await MainActor.run {
-                        self.modules[index] = updatedModule
-                        self.saveModules()
-                    }
+                    self.modules[index] = updatedModule
+                    self.saveModules()
                     
                     Logger.shared.log("Updated module: \(module.metadata.sourceName) to version \(newMetadata.version)")
                 }

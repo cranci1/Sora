@@ -286,7 +286,7 @@ struct ContinueWatchingCell: View {
             }
         }) {
             ZStack(alignment: .bottomLeading) {
-                LazyImage(source: URL(string: item.imageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : item.imageUrl)) { state in
+                LazyImage(url: URL(string: item.imageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : item.imageUrl)) { state in
                     if let uiImage = state.imageContainer?.image {
                         Image(uiImage: uiImage)
                             .resizable()
@@ -357,7 +357,7 @@ struct ContinueWatchingCell: View {
                                 .fill(Color.black.opacity(0.5))
                                 .frame(width: 28, height: 28)
                                 .overlay(
-                                    LazyImage(source: URL(string: item.module.metadata.iconUrl)) { state in
+                                    LazyImage(url: URL(string: item.module.metadata.iconUrl)) { state in
                                         if let uiImage = state.imageContainer?.image {
                                             Image(uiImage: uiImage)
                                                 .resizable()
@@ -542,7 +542,7 @@ struct BookmarkItemView: View {
                 isDetailActive = true
             }) {
                 ZStack {
-                    LazyImage(source: URL(string: item.imageUrl)) { state in
+                    LazyImage(url: URL(string: item.imageUrl)) { state in
                         if let uiImage = state.imageContainer?.image {
                             Image(uiImage: uiImage)
                                 .resizable()
@@ -563,7 +563,7 @@ struct BookmarkItemView: View {
                                 .fill(Color.black.opacity(0.5))
                                 .frame(width: 28, height: 28)
                                 .overlay(
-                                    LazyImage(source: URL(string: module.metadata.iconUrl)) { state in
+                                    LazyImage(url: URL(string: module.metadata.iconUrl)) { state in
                                         if let uiImage = state.imageContainer?.image {
                                             Image(uiImage: uiImage)
                                                 .resizable()

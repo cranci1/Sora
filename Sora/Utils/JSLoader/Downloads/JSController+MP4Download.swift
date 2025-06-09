@@ -26,13 +26,15 @@ extension JSController {
     func downloadMP4(url: URL, headers: [String: String], title: String? = nil, 
                    imageURL: URL? = nil, isEpisode: Bool = false, 
                    showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
-                   subtitleURL: URL? = nil,
+                   subtitleURL: URL? = nil, showPosterURL: URL? = nil,
                    completionHandler: ((Bool, String) -> Void)? = nil) {
         
         print("---- MP4 DOWNLOAD PROCESS STARTED ----")
         print("MP4 URL: \(url.absoluteString)")
         print("Headers: \(headers)")
         print("Title: \(title ?? "None")")
+        print("Image URL: \(imageURL?.absoluteString ?? "None")")
+        print("Show Poster URL: \(showPosterURL?.absoluteString ?? "None")")
         print("Is Episode: \(isEpisode), Show: \(showTitle ?? "None"), Season: \(season?.description ?? "None"), Episode: \(episode?.description ?? "None")")
         if let subtitle = subtitleURL {
             print("Subtitle URL: \(subtitle.absoluteString)")
@@ -53,7 +55,7 @@ extension JSController {
                 showTitle: showTitle,
                 season: season,
                 episode: episode,
-                showPosterURL: imageURL
+                showPosterURL: showPosterURL ?? imageURL
             )
         }
         

@@ -655,15 +655,15 @@ extension JSController {
                 print("Created persistent download directory at \(persistentDir.path)")
             }
             
-            // Find any .movpkg files in the Documents directory
+            // Find any video files (.movpkg, .mp4) in the Documents directory
             let files = try fileManager.contentsOfDirectory(at: documentsDir, includingPropertiesForKeys: nil)
-            let movpkgFiles = files.filter { $0.pathExtension == "movpkg" }
+            let videoFiles = files.filter { ["movpkg", "mp4"].contains($0.pathExtension.lowercased()) }
             
-            if !movpkgFiles.isEmpty {
-                print("Found \(movpkgFiles.count) .movpkg files in Documents directory to migrate")
+            if !videoFiles.isEmpty {
+                print("Found \(videoFiles.count) video files in Documents directory to migrate")
                 
                 // Migrate each file
-                for fileURL in movpkgFiles {
+                for fileURL in videoFiles {
                     let filename = fileURL.lastPathComponent
                     let destinationURL = persistentDir.appendingPathComponent(filename)
                     
@@ -681,7 +681,7 @@ extension JSController {
                     }
                 }
             } else {
-                print("No .movpkg files found in Documents directory for migration")
+                print("No video files found in Documents directory for migration")
             }
         } catch {
             print("Error during migration: \(error.localizedDescription)")
@@ -815,8 +815,8 @@ extension JSController {
             // Get all files in the directory
             let files = try fileManager.contentsOfDirectory(at: downloadDir, includingPropertiesForKeys: nil)
             
-            // Try to find a file that contains the asset name
-            for file in files where file.pathExtension == "movpkg" {
+            // Try to find a video file that contains the asset name
+            for file in files where ["movpkg", "mp4"].contains(file.pathExtension.lowercased()) {
                 let filename = file.lastPathComponent
                 
                 // If the filename contains the asset name, it's likely our file
@@ -1264,7 +1264,28 @@ extension JSController: AVAssetDownloadDelegate {
             let safeFilename = filename.replacingOccurrences(of: "/", with: "-")
                                       .replacingOccurrences(of: ":", with: "-")
             
-            let destinationURL = downloadDir.appendingPathComponent("\(safeFilename)-\(uniqueID).movpkg")
+            // Determine file extension based on the source location
+            let fileExtension: String
+            if location.pathExtension.isEmpty {
+                // If no extension from the source, check if it's likely an HLS download (which becomes .movpkg)
+                // or preserve original URL extension
+                if safeFilename.contains(".m3u8") || safeFilename.contains("hls") {
+                    fileExtension = "movpkg"
+                    print("Using .movpkg extension for HLS download: \(safeFilename)")
+                } else {
+                    fileExtension = "mp4" // Default for direct video downloads
+                    print("Using .mp4 extension for direct video download: \(safeFilename)")
+                }
+            } else {
+                // Use the extension from the downloaded file
+                let sourceExtension = location.pathExtension.lowercased()
+                fileExtension = (sourceExtension == "movpkg") ? "movpkg" : "mp4"
+                print("Using extension from source file: \(sourceExtension) -> \(fileExtension)")
+            }
+            
+            print("Final destination will be: \(safeFilename)-\(uniqueID).\(fileExtension)")
+            
+            let destinationURL = downloadDir.appendingPathComponent("\(safeFilename)-\(uniqueID).\(fileExtension)")
             
             // Move the file to the persistent location
             try fileManager.moveItem(at: location, to: destinationURL)

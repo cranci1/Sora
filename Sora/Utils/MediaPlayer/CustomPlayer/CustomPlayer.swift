@@ -225,21 +225,46 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             fatalError("Invalid URL string")
         }
         
-        var request = URLRequest(url: url)
-        if let mydict = headers, !mydict.isEmpty {
-            for (key,value) in mydict {
-                request.addValue(value, forHTTPHeaderField: key)
+        let asset: AVURLAsset
+        
+        // Check if this is a local file URL
+        if url.scheme == "file" {
+            // For local files, don't add HTTP headers
+            Logger.shared.log("Loading local file: \(url.absoluteString)", type: "Debug")
+            
+            // Check if file exists
+            if FileManager.default.fileExists(atPath: url.path) {
+                Logger.shared.log("Local file exists at path: \(url.path)", type: "Debug")
+            } else {
+                Logger.shared.log("WARNING: Local file does not exist at path: \(url.path)", type: "Error")
             }
+            
+            asset = AVURLAsset(url: url)
         } else {
-            request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Referer")
-            request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Origin")
+            // For remote URLs, add HTTP headers
+            Logger.shared.log("Loading remote URL: \(url.absoluteString)", type: "Debug")
+            var request = URLRequest(url: url)
+            if let mydict = headers, !mydict.isEmpty {
+                for (key,value) in mydict {
+                    request.addValue(value, forHTTPHeaderField: key)
+                }
+            } else {
+                request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Referer")
+                request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Origin")
+            }
+            
+            request.addValue("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
+            
+            asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": request.allHTTPHeaderFields ?? [:]])
         }
         
-        request.addValue("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
-        
-        let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": request.allHTTPHeaderFields ?? [:]])
         let playerItem = AVPlayerItem(asset: asset)
         self.player = AVPlayer(playerItem: playerItem)
+        
+        // Add error observation
+        playerItem.addObserver(self, forKeyPath: "status", options: [.new], context: &playerItemKVOContext)
+        
+        Logger.shared.log("Created AVPlayerItem with status: \(playerItem.status.rawValue)", type: "Debug")
         
         let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(fullUrl)")
         if lastPlayedTime > 0 {
@@ -446,6 +471,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             timeObserverToken = nil
         }
         
+        // Remove observer from player item if it exists
+        if let currentItem = player?.currentItem {
+            currentItem.removeObserver(self, forKeyPath: "status", context: &playerItemKVOContext)
+        }
+        
         player?.replaceCurrentItem(with: nil)
         player?.pause()
         player = nil
@@ -495,7 +525,28 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             return
         }
         
-        if keyPath == "loadedTimeRanges" {
+        if keyPath == "status" {
+            if let playerItem = object as? AVPlayerItem {
+                switch playerItem.status {
+                case .readyToPlay:
+                    Logger.shared.log("AVPlayerItem status: Ready to play", type: "Debug")
+                case .failed:
+                    if let error = playerItem.error {
+                        Logger.shared.log("AVPlayerItem failed with error: \(error.localizedDescription)", type: "Error")
+                        if let nsError = error as NSError? {
+                            Logger.shared.log("Error domain: \(nsError.domain), code: \(nsError.code), userInfo: \(nsError.userInfo)", type: "Error")
+                        }
+                    } else {
+                        Logger.shared.log("AVPlayerItem failed with unknown error", type: "Error")
+                    }
+                case .unknown:
+                    Logger.shared.log("AVPlayerItem status: Unknown", type: "Debug")
+                @unknown default:
+                    Logger.shared.log("AVPlayerItem status: Unknown default case", type: "Debug")
+                }
+            }
+        } else if keyPath == "loadedTimeRanges" {
+            // Handle loaded time ranges if needed
         }
     }
     
@@ -2034,6 +2085,15 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     
     private func parseM3U8(url: URL, completion: @escaping () -> Void) {
+        // For local file URLs, use a simple data task without custom headers
+        if url.scheme == "file" {
+            URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+                self?.processM3U8Data(data: data, url: url, completion: completion)
+            }.resume()
+            return
+        }
+        
+        // For remote URLs, add HTTP headers
         var request = URLRequest(url: url)
         if let mydict = headers, !mydict.isEmpty {
             for (key,value) in mydict {
@@ -2046,77 +2106,80 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         request.addValue("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
         
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-            guard let self = self,
-                  let data = data,
-                  let content = String(data: data, encoding: .utf8) else {
-                      Logger.shared.log("Failed to load m3u8 file")
-                      DispatchQueue.main.async {
-                          self?.qualities = []
-                          completion()
-                      }
-                      return
+            self?.processM3U8Data(data: data, url: url, completion: completion)
+        }.resume()
+    }
+    
+    private func processM3U8Data(data: Data?, url: URL, completion: @escaping () -> Void) {
+        guard let data = data,
+              let content = String(data: data, encoding: .utf8) else {
+                  Logger.shared.log("Failed to load m3u8 file")
+                  DispatchQueue.main.async {
+                      self.qualities = []
+                      completion()
                   }
-            
-            let lines = content.components(separatedBy: .newlines)
-            var qualities: [(String, String)] = []
-            
-            qualities.append(("Auto (Recommended)", url.absoluteString))
-            
-            func getQualityName(for height: Int) -> String {
-                switch height {
-                case 1080...: return "\(height)p (FHD)"
-                case 720..<1080: return "\(height)p (HD)"
-                case 480..<720: return "\(height)p (SD)"
-                default: return "\(height)p"
-                }
+                  return
+              }
+        
+        let lines = content.components(separatedBy: .newlines)
+        var qualities: [(String, String)] = []
+        
+        qualities.append(("Auto (Recommended)", url.absoluteString))
+        
+        func getQualityName(for height: Int) -> String {
+            switch height {
+            case 1080...: return "\(height)p (FHD)"
+            case 720..<1080: return "\(height)p (HD)"
+            case 480..<720: return "\(height)p (SD)"
+            default: return "\(height)p"
             }
-            
-            for (index, line) in lines.enumerated() {
-                if line.contains("#EXT-X-STREAM-INF"), index + 1 < lines.count {
-                    if let resolutionRange = line.range(of: "RESOLUTION="),
-                       let resolutionEndRange = line[resolutionRange.upperBound...].range(of: ",")
-                        ?? line[resolutionRange.upperBound...].range(of: "\n") {
+        }
+        
+        for (index, line) in lines.enumerated() {
+            if line.contains("#EXT-X-STREAM-INF"), index + 1 < lines.count {
+                if let resolutionRange = line.range(of: "RESOLUTION="),
+                   let resolutionEndRange = line[resolutionRange.upperBound...].range(of: ",")
+                    ?? line[resolutionRange.upperBound...].range(of: "\n") {
+                    
+                    let resolutionPart = String(line[resolutionRange.upperBound..<resolutionEndRange.lowerBound])
+                    if let heightStr = resolutionPart.components(separatedBy: "x").last,
+                       let height = Int(heightStr) {
                         
-                        let resolutionPart = String(line[resolutionRange.upperBound..<resolutionEndRange.lowerBound])
-                        if let heightStr = resolutionPart.components(separatedBy: "x").last,
-                           let height = Int(heightStr) {
-                            
-                            let nextLine = lines[index + 1].trimmingCharacters(in: .whitespacesAndNewlines)
-                            let qualityName = getQualityName(for: height)
-                            
-                            var qualityURL = nextLine
-                            if !nextLine.hasPrefix("http") && nextLine.contains(".m3u8") {
-                                if let baseURL = self.baseM3U8URL {
-                                    let baseURLString = baseURL.deletingLastPathComponent().absoluteString
-                                    qualityURL = URL(string: nextLine, relativeTo: baseURL)?.absoluteString
-                                    ?? baseURLString + "/" + nextLine
-                                }
+                        let nextLine = lines[index + 1].trimmingCharacters(in: .whitespacesAndNewlines)
+                        let qualityName = getQualityName(for: height)
+                        
+                        var qualityURL = nextLine
+                        if !nextLine.hasPrefix("http") && nextLine.contains(".m3u8") {
+                            if let baseURL = self.baseM3U8URL {
+                                let baseURLString = baseURL.deletingLastPathComponent().absoluteString
+                                qualityURL = URL(string: nextLine, relativeTo: baseURL)?.absoluteString
+                                ?? baseURLString + "/" + nextLine
                             }
-                            
-                            if !qualities.contains(where: { $0.0 == qualityName }) {
-                                qualities.append((qualityName, qualityURL))
-                            }
+                        }
+                        
+                        if !qualities.contains(where: { $0.0 == qualityName }) {
+                            qualities.append((qualityName, qualityURL))
                         }
                     }
                 }
             }
-            
-            DispatchQueue.main.async {
-                let autoQuality = qualities.first
-                var sortedQualities = qualities.dropFirst().sorted { first, second in
-                    let firstHeight = Int(first.0.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
-                    let secondHeight = Int(second.0.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
-                    return firstHeight > secondHeight
-                }
-                
-                if let auto = autoQuality {
-                    sortedQualities.insert(auto, at: 0)
-                }
-                
-                self.qualities = sortedQualities
-                completion()
+        }
+        
+        DispatchQueue.main.async {
+            let autoQuality = qualities.first
+            var sortedQualities = qualities.dropFirst().sorted { first, second in
+                let firstHeight = Int(first.0.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
+                let secondHeight = Int(second.0.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
+                return firstHeight > secondHeight
             }
-        }.resume()
+            
+            if let auto = autoQuality {
+                sortedQualities.insert(auto, at: 0)
+            }
+            
+            self.qualities = sortedQualities
+            completion()
+        }
     }
     
     private func switchToQuality(urlString: String) {
@@ -2126,19 +2189,47 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let currentTime = player.currentTime()
         let wasPlaying = player.rate > 0
         
-        var request = URLRequest(url: url)
-        if let mydict = headers, !mydict.isEmpty {
-            for (key,value) in mydict {
-                request.addValue(value, forHTTPHeaderField: key)
-            }
-        } else {
-            request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Referer")
-            request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Origin")
-        }
-        request.addValue("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
+        let asset: AVURLAsset
         
-        let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": request.allHTTPHeaderFields ?? [:]])
+        // Check if this is a local file URL
+        if url.scheme == "file" {
+            // For local files, don't add HTTP headers
+            Logger.shared.log("Switching to local file: \(url.absoluteString)", type: "Debug")
+            
+            // Check if file exists
+            if FileManager.default.fileExists(atPath: url.path) {
+                Logger.shared.log("Local file exists for quality switch: \(url.path)", type: "Debug")
+            } else {
+                Logger.shared.log("WARNING: Local file does not exist for quality switch: \(url.path)", type: "Error")
+            }
+            
+            asset = AVURLAsset(url: url)
+        } else {
+            // For remote URLs, add HTTP headers
+            Logger.shared.log("Switching to remote URL: \(url.absoluteString)", type: "Debug")
+            var request = URLRequest(url: url)
+            if let mydict = headers, !mydict.isEmpty {
+                for (key,value) in mydict {
+                    request.addValue(value, forHTTPHeaderField: key)
+                }
+            } else {
+                request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Referer")
+                request.addValue("\(module.metadata.baseUrl)", forHTTPHeaderField: "Origin")
+            }
+            request.addValue("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36", forHTTPHeaderField: "User-Agent")
+            
+            asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": request.allHTTPHeaderFields ?? [:]])
+        }
+        
         let playerItem = AVPlayerItem(asset: asset)
+        
+        // Add observer for the new player item
+        playerItem.addObserver(self, forKeyPath: "status", options: [.new], context: &playerItemKVOContext)
+        
+        // Remove observer from old item if it exists
+        if let currentItem = player.currentItem {
+            currentItem.removeObserver(self, forKeyPath: "status", context: &playerItemKVOContext)
+        }
         
         player.replaceCurrentItem(with: playerItem)
         player.seek(to: currentTime)

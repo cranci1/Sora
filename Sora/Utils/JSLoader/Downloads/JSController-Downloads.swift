@@ -162,6 +162,7 @@ extension JSController {
             originalURL: url,
             progress: 0,
             task: nil,  // Task will be created when the download starts
+            urlSessionTask: nil,
             queueStatus: .queued,
             type: downloadType,
             metadata: assetMetadata,
@@ -299,6 +300,7 @@ extension JSController {
             originalURL: queuedDownload.originalURL,
             progress: 0,
             task: task,
+            urlSessionTask: nil,
             queueStatus: .downloading,
             type: queuedDownload.type,
             metadata: queuedDownload.metadata,
@@ -1088,21 +1090,14 @@ extension JSController {
         return .notDownloaded
     }
     
-    /// Cancel a queued download that hasn't started yet
+    /// Cancel a queued download
     func cancelQueuedDownload(_ downloadID: UUID) {
-        // Remove from the download queue if it exists there
-        if let index = downloadQueue.firstIndex(where: { $0.id == downloadID }) {
-            let downloadTitle = downloadQueue[index].title ?? downloadQueue[index].originalURL.lastPathComponent
-            downloadQueue.remove(at: index)
-            
-            // Show notification
-            DropManager.shared.info("Download cancelled: \(downloadTitle)")
-            
-            // Notify observers of status change (no cache clearing needed for cancellation)
-            postDownloadNotification(.statusChange)
-            
-            print("Cancelled queued download: \(downloadTitle)")
-        }
+        downloadQueue.removeAll { $0.id == downloadID }
+        
+        // Notify of the cancellation
+        postDownloadNotification(.statusChange)
+        
+        print("Cancelled queued download: \(downloadID)")
     }
     
     /// Cancel an active download that is currently in progress
@@ -1111,18 +1106,62 @@ extension JSController {
         cancelledDownloadIDs.insert(downloadID)
         
         // Find the active download and cancel its task
-        if let activeDownload = activeDownloads.first(where: { $0.id == downloadID }),
-           let task = activeDownload.task {
+        if let activeDownload = activeDownloads.first(where: { $0.id == downloadID }) {
             let downloadTitle = activeDownload.title ?? activeDownload.originalURL.lastPathComponent
             
-            // Cancel the actual download task
-            task.cancel()
+            if let task = activeDownload.task {
+                // M3U8 download - cancel AVAssetDownloadTask
+                task.cancel()
+            } else if let urlTask = activeDownload.urlSessionTask {
+                // MP4 download - cancel URLSessionDownloadTask
+                urlTask.cancel()
+            }
             
             // Show notification
             DropManager.shared.info("Download cancelled: \(downloadTitle)")
             
             print("Cancelled active download: \(downloadTitle)")
         }
+    }
+    
+    /// Pause an MP4 download
+    func pauseMP4Download(_ downloadID: UUID) {
+        guard let index = activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
+            print("MP4 Download not found for pausing: \(downloadID)")
+            return
+        }
+        
+        let download = activeDownloads[index]
+        guard let urlTask = download.urlSessionTask else {
+            print("No URL session task found for MP4 download: \(downloadID)")
+            return
+        }
+        
+        urlTask.suspend()
+        print("Paused MP4 download: \(download.title ?? download.originalURL.lastPathComponent)")
+        
+        // Notify UI of status change
+        postDownloadNotification(.statusChange)
+    }
+    
+    /// Resume an MP4 download
+    func resumeMP4Download(_ downloadID: UUID) {
+        guard let index = activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
+            print("MP4 Download not found for resuming: \(downloadID)")
+            return
+        }
+        
+        let download = activeDownloads[index]
+        guard let urlTask = download.urlSessionTask else {
+            print("No URL session task found for MP4 download: \(downloadID)")
+            return
+        }
+        
+        urlTask.resume()
+        print("Resumed MP4 download: \(download.title ?? download.originalURL.lastPathComponent)")
+        
+        // Notify UI of status change
+        postDownloadNotification(.statusChange)
     }
 }
 
@@ -1458,6 +1497,7 @@ struct JSActiveDownload: Identifiable, Equatable {
     let originalURL: URL
     var progress: Double
     let task: AVAssetDownloadTask?
+    let urlSessionTask: URLSessionDownloadTask?
     let type: DownloadType
     var metadata: AssetMetadata?
     var title: String?
@@ -1467,6 +1507,22 @@ struct JSActiveDownload: Identifiable, Equatable {
     var asset: AVURLAsset?
     var headers: [String: String]
     var module: ScrapingModule?  // Add module property to store ScrapingModule
+    
+    // Computed property to get the current task state
+    var taskState: URLSessionTask.State {
+        if let avTask = task {
+            return avTask.state
+        } else if let urlTask = urlSessionTask {
+            return urlTask.state
+        } else {
+            return .suspended
+        }
+    }
+    
+    // Computed property to get the underlying task for control operations
+    var underlyingTask: URLSessionTask? {
+        return task ?? urlSessionTask
+    }
     
     // Implement Equatable
     static func == (lhs: JSActiveDownload, rhs: JSActiveDownload) -> Bool {
@@ -1485,6 +1541,7 @@ struct JSActiveDownload: Identifiable, Equatable {
         originalURL: URL,
         progress: Double = 0,
         task: AVAssetDownloadTask? = nil,
+        urlSessionTask: URLSessionDownloadTask? = nil,
         queueStatus: DownloadQueueStatus = .queued,
         type: DownloadType = .movie,
         metadata: AssetMetadata? = nil,
@@ -1499,6 +1556,7 @@ struct JSActiveDownload: Identifiable, Equatable {
         self.originalURL = originalURL
         self.progress = progress
         self.task = task
+        self.urlSessionTask = urlSessionTask
         self.type = type
         self.metadata = metadata
         self.title = title

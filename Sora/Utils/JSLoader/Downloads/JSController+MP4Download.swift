@@ -7,6 +7,12 @@
 
 import Foundation
 import SwiftUI
+import AVFoundation
+
+// MARK: - Associated Object Keys for MP4 Downloads
+private var mp4DownloadTasksKey: Void?
+private var mp4ProgressObservationsKey: Void?
+private var mp4CustomSessionsKey: Void?
 
 // Extension for handling MP4 direct video downloads
 extension JSController {
@@ -120,9 +126,21 @@ extension JSController {
                     self.cleanupDownloadResources(for: downloadID)
                 }
                 
+                // Check if download was cancelled before processing
+                if self.cancelledDownloadIDs.contains(downloadID) {
+                    print("MP4 Download: Skipping completion processing for cancelled download")
+                    self.removeActiveDownload(downloadID: downloadID)
+                    return
+                }
+                
                 // Handle error cases - just remove from active downloads
                 if let error = error {
-                    print("MP4 Download Error: \(error.localizedDescription)")
+                    // Check if this is a cancellation error
+                    if let urlError = error as? URLError, urlError.code == .cancelled {
+                        print("MP4 Download: Download was cancelled")
+                    } else {
+                        print("MP4 Download Error: \(error.localizedDescription)")
+                    }
                     self.removeActiveDownload(downloadID: downloadID)
                     completionHandler?(false, "Download failed: \(error.localizedDescription)")
                     return
@@ -205,10 +223,32 @@ extension JSController {
             }
         }
         
+        // Update the active download with the actual download task
+        if let index = activeDownloads.firstIndex(where: { $0.id == downloadID }) {
+            let updatedDownload = JSActiveDownload(
+                id: activeDownload.id,
+                originalURL: activeDownload.originalURL,
+                progress: activeDownload.progress,
+                task: nil,
+                urlSessionTask: downloadTask,
+                queueStatus: activeDownload.queueStatus,
+                type: activeDownload.type,
+                metadata: activeDownload.metadata,
+                title: activeDownload.title,
+                imageURL: activeDownload.imageURL,
+                subtitleURL: activeDownload.subtitleURL,
+                asset: activeDownload.asset,
+                headers: activeDownload.headers,
+                module: activeDownload.module
+            )
+            activeDownloads[index] = updatedDownload
+        }
+        
         // Set up progress observation
         setupProgressObservation(for: downloadTask, downloadID: downloadID)
         
-        // Store session reference
+        // Store download task and session reference
+        storeDownloadTask(task: downloadTask, for: downloadID)
         storeSessionReference(session: customSession, for: downloadID)
         
         // Start download
@@ -245,6 +285,12 @@ extension JSController {
         mp4ProgressObservations?[downloadID] = observation
     }
     
+    // MARK: - MP4 Download Management
+    
+    private func storeDownloadTask(task: URLSessionDownloadTask, for downloadID: UUID) {
+        mp4DownloadTasks[downloadID] = task
+    }
+    
     private func storeSessionReference(session: URLSession, for downloadID: UUID) {
         if mp4CustomSessions == nil {
             mp4CustomSessions = [:]
@@ -253,8 +299,22 @@ extension JSController {
     }
     
     private func cleanupDownloadResources(for downloadID: UUID) {
+        mp4DownloadTasks[downloadID] = nil
         mp4ProgressObservations?[downloadID] = nil
         mp4CustomSessions?[downloadID] = nil
+    }
+    
+    // MARK: - MP4 Download Storage Properties
+    private var mp4DownloadTasks: [UUID: URLSessionDownloadTask] {
+        get {
+            if let tasks = objc_getAssociatedObject(self, &mp4DownloadTasksKey) as? [UUID: URLSessionDownloadTask] {
+                return tasks
+            }
+            return [:]
+        }
+        set {
+            objc_setAssociatedObject(self, &mp4DownloadTasksKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
     }
 }
 

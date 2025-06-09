@@ -733,7 +733,7 @@ struct EnhancedActiveDownloadCard: View {
     init(download: JSActiveDownload) {
         self.download = download
         _currentProgress = State(initialValue: download.progress)
-        _taskState = State(initialValue: download.task?.state ?? .suspended)
+        _taskState = State(initialValue: download.taskState)
     }
     
     var body: some View {
@@ -868,18 +868,30 @@ struct EnhancedActiveDownloadCard: View {
             withAnimation(.easeInOut(duration: 0.1)) {
                 currentProgress = currentDownload.progress
             }
-            if let task = currentDownload.task {
-                taskState = task.state
-            }
+            taskState = currentDownload.taskState
         }
     }
     
     private func toggleDownload() {
         if taskState == .running {
-            download.task?.suspend()
+            // Pause the download
+            if download.task != nil {
+                // M3U8 download - use AVAssetDownloadTask
+                download.underlyingTask?.suspend()
+            } else if download.urlSessionTask != nil {
+                // MP4 download - use dedicated method
+                JSController.shared.pauseMP4Download(download.id)
+            }
             taskState = .suspended
         } else if taskState == .suspended {
-            download.task?.resume()
+            // Resume the download
+            if download.task != nil {
+                // M3U8 download - use AVAssetDownloadTask
+                download.underlyingTask?.resume()
+            } else if download.urlSessionTask != nil {
+                // MP4 download - use dedicated method
+                JSController.shared.resumeMP4Download(download.id)
+            }
             taskState = .running
         }
     }

@@ -54,7 +54,7 @@ class DownloadManager: NSObject, ObservableObject {
                 options: .skipsHiddenFiles
             )
             
-            if let localURL = contents.first(where: { $0.pathExtension == "movpkg" }) {
+            if let localURL = contents.first(where: { ["movpkg", "mp4"].contains($0.pathExtension.lowercased()) }) {
                 localPlaybackURL = localURL
             }
         } catch {

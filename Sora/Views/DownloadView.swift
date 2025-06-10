@@ -240,39 +240,26 @@ struct DownloadView: View {
             metadataUrl: ""
         )
         
-        if streamType == "mp4" {
-            let playerItem = AVPlayerItem(url: asset.localURL)
-            let player = AVPlayer(playerItem: playerItem)
-            let playerController = AVPlayerViewController()
-            playerController.player = player
-            
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let rootViewController = windowScene.windows.first?.rootViewController {
-                rootViewController.present(playerController, animated: true) {
-                    player.play()
-                }
-            }
-        } else {
-            let customPlayer = CustomMediaPlayerViewController(
-                module: dummyModule,
-                urlString: asset.localURL.absoluteString,
-                fullUrl: asset.originalURL.absoluteString,
-                title: asset.metadata?.showTitle ?? asset.name,
-                episodeNumber: asset.metadata?.episode ?? 0,
-                onWatchNext: {},
-                subtitlesURL: asset.localSubtitleURL?.absoluteString,
-                aniListID: 0,
-                totalEpisodes: asset.metadata?.episode ?? 0,
-                episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
-                headers: nil
-            )
-            
-            customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-            
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let rootViewController = windowScene.windows.first?.rootViewController {
-                rootViewController.present(customPlayer, animated: true)
-            }
+        // Always use CustomMediaPlayerViewController for consistency
+        let customPlayer = CustomMediaPlayerViewController(
+            module: dummyModule,
+            urlString: asset.localURL.absoluteString,
+            fullUrl: asset.originalURL.absoluteString,
+            title: asset.metadata?.showTitle ?? asset.name,
+            episodeNumber: asset.metadata?.episode ?? 0,
+            onWatchNext: {},
+            subtitlesURL: asset.localSubtitleURL?.absoluteString,
+            aniListID: 0,
+            totalEpisodes: asset.metadata?.episode ?? 0,
+            episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
+            headers: nil
+        )
+        
+        customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first?.rootViewController {
+            rootViewController.present(customPlayer, animated: true)
         }
     }
 }
@@ -733,7 +720,7 @@ struct EnhancedActiveDownloadCard: View {
     init(download: JSActiveDownload) {
         self.download = download
         _currentProgress = State(initialValue: download.progress)
-        _taskState = State(initialValue: download.task?.state ?? .suspended)
+        _taskState = State(initialValue: download.taskState)
     }
     
     var body: some View {
@@ -868,18 +855,30 @@ struct EnhancedActiveDownloadCard: View {
             withAnimation(.easeInOut(duration: 0.1)) {
                 currentProgress = currentDownload.progress
             }
-            if let task = currentDownload.task {
-                taskState = task.state
-            }
+            taskState = currentDownload.taskState
         }
     }
     
     private func toggleDownload() {
         if taskState == .running {
-            download.task?.suspend()
+            // Pause the download
+            if download.task != nil {
+                // M3U8 download - use AVAssetDownloadTask
+                download.underlyingTask?.suspend()
+            } else if download.urlSessionTask != nil {
+                // MP4 download - use dedicated method
+                JSController.shared.pauseMP4Download(download.id)
+            }
             taskState = .suspended
         } else if taskState == .suspended {
-            download.task?.resume()
+            // Resume the download
+            if download.task != nil {
+                // M3U8 download - use AVAssetDownloadTask
+                download.underlyingTask?.resume()
+            } else if download.urlSessionTask != nil {
+                // MP4 download - use dedicated method
+                JSController.shared.resumeMP4Download(download.id)
+            }
             taskState = .running
         }
     }

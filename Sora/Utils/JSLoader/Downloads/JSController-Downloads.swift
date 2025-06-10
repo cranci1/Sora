@@ -162,6 +162,7 @@ extension JSController {
             originalURL: url,
             progress: 0,
             task: nil,  // Task will be created when the download starts
+            urlSessionTask: nil,
             queueStatus: .queued,
             type: downloadType,
             metadata: assetMetadata,
@@ -299,6 +300,7 @@ extension JSController {
             originalURL: queuedDownload.originalURL,
             progress: 0,
             task: task,
+            urlSessionTask: nil,
             queueStatus: .downloading,
             type: queuedDownload.type,
             metadata: queuedDownload.metadata,
@@ -363,6 +365,11 @@ extension JSController {
     /// Clean up a download task when it's completed or failed
     private func cleanupDownloadTask(_ task: URLSessionTask) {
         guard let downloadID = activeDownloadMap[task] else { return }
+        
+        // Clean up MP4 progress observations if this is an MP4 download
+        if task is AVAssetDownloadTask {
+            cleanupMP4ProgressObservation(for: downloadID)
+        }
         
         activeDownloads.removeAll { $0.id == downloadID }
         activeDownloadMap.removeValue(forKey: task)
@@ -648,15 +655,15 @@ extension JSController {
                 print("Created persistent download directory at \(persistentDir.path)")
             }
             
-            // Find any .movpkg files in the Documents directory
+            // Find any video files (.movpkg, .mp4) in the Documents directory
             let files = try fileManager.contentsOfDirectory(at: documentsDir, includingPropertiesForKeys: nil)
-            let movpkgFiles = files.filter { $0.pathExtension == "movpkg" }
+            let videoFiles = files.filter { ["movpkg", "mp4"].contains($0.pathExtension.lowercased()) }
             
-            if !movpkgFiles.isEmpty {
-                print("Found \(movpkgFiles.count) .movpkg files in Documents directory to migrate")
+            if !videoFiles.isEmpty {
+                print("Found \(videoFiles.count) video files in Documents directory to migrate")
                 
                 // Migrate each file
-                for fileURL in movpkgFiles {
+                for fileURL in videoFiles {
                     let filename = fileURL.lastPathComponent
                     let destinationURL = persistentDir.appendingPathComponent(filename)
                     
@@ -674,7 +681,7 @@ extension JSController {
                     }
                 }
             } else {
-                print("No .movpkg files found in Documents directory for migration")
+                print("No video files found in Documents directory for migration")
             }
         } catch {
             print("Error during migration: \(error.localizedDescription)")
@@ -808,8 +815,8 @@ extension JSController {
             // Get all files in the directory
             let files = try fileManager.contentsOfDirectory(at: downloadDir, includingPropertiesForKeys: nil)
             
-            // Try to find a file that contains the asset name
-            for file in files where file.pathExtension == "movpkg" {
+            // Try to find a video file that contains the asset name
+            for file in files where ["movpkg", "mp4"].contains(file.pathExtension.lowercased()) {
                 let filename = file.lastPathComponent
                 
                 // If the filename contains the asset name, it's likely our file
@@ -1088,21 +1095,14 @@ extension JSController {
         return .notDownloaded
     }
     
-    /// Cancel a queued download that hasn't started yet
+    /// Cancel a queued download
     func cancelQueuedDownload(_ downloadID: UUID) {
-        // Remove from the download queue if it exists there
-        if let index = downloadQueue.firstIndex(where: { $0.id == downloadID }) {
-            let downloadTitle = downloadQueue[index].title ?? downloadQueue[index].originalURL.lastPathComponent
-            downloadQueue.remove(at: index)
-            
-            // Show notification
-            DropManager.shared.info("Download cancelled: \(downloadTitle)")
-            
-            // Notify observers of status change (no cache clearing needed for cancellation)
-            postDownloadNotification(.statusChange)
-            
-            print("Cancelled queued download: \(downloadTitle)")
-        }
+        downloadQueue.removeAll { $0.id == downloadID }
+        
+        // Notify of the cancellation
+        postDownloadNotification(.statusChange)
+        
+        print("Cancelled queued download: \(downloadID)")
     }
     
     /// Cancel an active download that is currently in progress
@@ -1111,18 +1111,62 @@ extension JSController {
         cancelledDownloadIDs.insert(downloadID)
         
         // Find the active download and cancel its task
-        if let activeDownload = activeDownloads.first(where: { $0.id == downloadID }),
-           let task = activeDownload.task {
+        if let activeDownload = activeDownloads.first(where: { $0.id == downloadID }) {
             let downloadTitle = activeDownload.title ?? activeDownload.originalURL.lastPathComponent
             
-            // Cancel the actual download task
-            task.cancel()
+            if let task = activeDownload.task {
+                // M3U8 download - cancel AVAssetDownloadTask
+                task.cancel()
+            } else if let urlTask = activeDownload.urlSessionTask {
+                // MP4 download - cancel URLSessionDownloadTask
+                urlTask.cancel()
+            }
             
             // Show notification
             DropManager.shared.info("Download cancelled: \(downloadTitle)")
             
             print("Cancelled active download: \(downloadTitle)")
         }
+    }
+    
+    /// Pause an MP4 download
+    func pauseMP4Download(_ downloadID: UUID) {
+        guard let index = activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
+            print("MP4 Download not found for pausing: \(downloadID)")
+            return
+        }
+        
+        let download = activeDownloads[index]
+        guard let urlTask = download.urlSessionTask else {
+            print("No URL session task found for MP4 download: \(downloadID)")
+            return
+        }
+        
+        urlTask.suspend()
+        print("Paused MP4 download: \(download.title ?? download.originalURL.lastPathComponent)")
+        
+        // Notify UI of status change
+        postDownloadNotification(.statusChange)
+    }
+    
+    /// Resume an MP4 download
+    func resumeMP4Download(_ downloadID: UUID) {
+        guard let index = activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
+            print("MP4 Download not found for resuming: \(downloadID)")
+            return
+        }
+        
+        let download = activeDownloads[index]
+        guard let urlTask = download.urlSessionTask else {
+            print("No URL session task found for MP4 download: \(downloadID)")
+            return
+        }
+        
+        urlTask.resume()
+        print("Resumed MP4 download: \(download.title ?? download.originalURL.lastPathComponent)")
+        
+        // Notify UI of status change
+        postDownloadNotification(.statusChange)
     }
 }
 
@@ -1220,7 +1264,28 @@ extension JSController: AVAssetDownloadDelegate {
             let safeFilename = filename.replacingOccurrences(of: "/", with: "-")
                                       .replacingOccurrences(of: ":", with: "-")
             
-            let destinationURL = downloadDir.appendingPathComponent("\(safeFilename)-\(uniqueID).movpkg")
+            // Determine file extension based on the source location
+            let fileExtension: String
+            if location.pathExtension.isEmpty {
+                // If no extension from the source, check if it's likely an HLS download (which becomes .movpkg)
+                // or preserve original URL extension
+                if safeFilename.contains(".m3u8") || safeFilename.contains("hls") {
+                    fileExtension = "movpkg"
+                    print("Using .movpkg extension for HLS download: \(safeFilename)")
+                } else {
+                    fileExtension = "mp4" // Default for direct video downloads
+                    print("Using .mp4 extension for direct video download: \(safeFilename)")
+                }
+            } else {
+                // Use the extension from the downloaded file
+                let sourceExtension = location.pathExtension.lowercased()
+                fileExtension = (sourceExtension == "movpkg") ? "movpkg" : "mp4"
+                print("Using extension from source file: \(sourceExtension) -> \(fileExtension)")
+            }
+            
+            print("Final destination will be: \(safeFilename)-\(uniqueID).\(fileExtension)")
+            
+            let destinationURL = downloadDir.appendingPathComponent("\(safeFilename)-\(uniqueID).\(fileExtension)")
             
             // Move the file to the persistent location
             try fileManager.moveItem(at: location, to: destinationURL)
@@ -1458,6 +1523,7 @@ struct JSActiveDownload: Identifiable, Equatable {
     let originalURL: URL
     var progress: Double
     let task: AVAssetDownloadTask?
+    let urlSessionTask: URLSessionDownloadTask?
     let type: DownloadType
     var metadata: AssetMetadata?
     var title: String?
@@ -1467,6 +1533,22 @@ struct JSActiveDownload: Identifiable, Equatable {
     var asset: AVURLAsset?
     var headers: [String: String]
     var module: ScrapingModule?  // Add module property to store ScrapingModule
+    
+    // Computed property to get the current task state
+    var taskState: URLSessionTask.State {
+        if let avTask = task {
+            return avTask.state
+        } else if let urlTask = urlSessionTask {
+            return urlTask.state
+        } else {
+            return .suspended
+        }
+    }
+    
+    // Computed property to get the underlying task for control operations
+    var underlyingTask: URLSessionTask? {
+        return task ?? urlSessionTask
+    }
     
     // Implement Equatable
     static func == (lhs: JSActiveDownload, rhs: JSActiveDownload) -> Bool {
@@ -1485,6 +1567,7 @@ struct JSActiveDownload: Identifiable, Equatable {
         originalURL: URL,
         progress: Double = 0,
         task: AVAssetDownloadTask? = nil,
+        urlSessionTask: URLSessionDownloadTask? = nil,
         queueStatus: DownloadQueueStatus = .queued,
         type: DownloadType = .movie,
         metadata: AssetMetadata? = nil,
@@ -1499,6 +1582,7 @@ struct JSActiveDownload: Identifiable, Equatable {
         self.originalURL = originalURL
         self.progress = progress
         self.task = task
+        self.urlSessionTask = urlSessionTask
         self.type = type
         self.metadata = metadata
         self.title = title

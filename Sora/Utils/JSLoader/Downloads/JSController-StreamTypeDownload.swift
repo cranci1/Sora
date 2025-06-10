@@ -70,12 +70,13 @@ extension JSController {
                 url: url,
                 headers: headers,
                 title: title,
-                imageURL: imageURL ?? showPosterURL,
+                imageURL: imageURL,
                 isEpisode: isEpisode,
                 showTitle: showTitle,
                 season: season,
                 episode: episode,
                 subtitleURL: subtitleURL,
+                showPosterURL: showPosterURL,
                 completionHandler: completionHandler
             )
         }

@@ -348,8 +348,7 @@ struct SubtitleSettingsSection: View {
     private let shadowOptions = [0, 1, 3, 6]
 
     var body: some View {
-        SettingsSection(title: "Subtitle Settings") {
-            
+ SettingsSection(title: "Subtitle Settings") {
             SettingsToggleRow(
                 icon: "captions.bubble",
                 title: "Enable Subtitles",
@@ -372,6 +371,22 @@ struct SubtitleSettingsSection: View {
             .onChange(of: foregroundColor) { newValue in
                 SubtitleSettingsManager.shared.update { settings in
                     settings.foregroundColor = newValue
+                }
+            }
+            
+            SettingsPickerRow(
+                icon: "shadow",
+                title: "Shadow",
+                options: shadowOptions,
+                optionToString: { "\($0)" },
+                selection: Binding(
+                    get: { Int(shadowRadius) },
+                    set: { shadowRadius = Double($0) }
+                )
+            )
+            .onChange(of: shadowRadius) { newValue in
+                SubtitleSettingsManager.shared.update { settings in
+                    settings.shadowRadius = newValue
                 }
             }
             

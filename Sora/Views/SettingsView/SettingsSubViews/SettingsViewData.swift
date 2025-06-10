@@ -157,33 +157,15 @@ struct SettingsViewData: View {
                     footer: "The app cache allow the app to sho immages faster.\n\nClearing the documents folder will remove all the modules.\n\nThe App Data should never be erased if you don't know what that will cause."
                 ) {
                     VStack(spacing: 0) {
-                        HStack {
-                            Button(action: {
+                        SettingsButtonRow(
+                            icon: "trash",
+                            title: "Remove All Cache",
+                            subtitle: cacheSizeText,
+                            action: {
                                 activeAlert = .clearCache
                                 showAlert = true
-                            }) {
-                                HStack {
-                                    Image(systemName: "trash")
-                                        .frame(width: 24, height: 24)
-                                        .foregroundStyle(.red)
-                                    
-                                    Text("Remove All Caches")
-                                        .foregroundStyle(.red)
-                                    
-                                    Spacer()
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 12)
                             }
-                            .buttonStyle(PlainButtonStyle())
-                            
-                            Text(cacheSizeText)
-                                .foregroundStyle(.gray)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        
-                        Divider().padding(.horizontal, 16)
+                        )
                         
                         SettingsButtonRow(
                             icon: "film",

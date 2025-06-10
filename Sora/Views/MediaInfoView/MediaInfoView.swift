@@ -494,10 +494,21 @@ struct MediaInfoView: View {
                 }
             }
             
-            Button(action: {
-                fetchTMDBPosterImageAndSet()
-            }) {
-                Label("Use TMDB Poster Image", systemImage: "photo")
+            if UserDefaults.standard.string(forKey: "originalPoster_\(href)") != nil {
+                Button(action: {
+                    if let originalPoster = UserDefaults.standard.string(forKey: "originalPoster_\(href)") {
+                        imageUrl = originalPoster
+                        UserDefaults.standard.removeObject(forKey: "tmdbPosterURL_\(href)")
+                    }
+                }) {
+                    Label("Revert Module Poster", systemImage: "photo.badge.arrow.down")
+                }
+            } else {
+                Button(action: {
+                    fetchTMDBPosterImageAndSet()
+                }) {
+                    Label("Use TMDB Poster Image", systemImage: "photo")
+                }
             }
             
             Divider()
@@ -841,6 +852,9 @@ struct MediaInfoView: View {
                         imageUrl = "https://image.tmdb.org/t/p/w\(tmdbImageWidth)\(posterPath)"
                     }
                     DispatchQueue.main.async {
+                        let currentPosterKey = "originalPoster_\(self.href)"
+                        let currentPoster = self.imageUrl
+                        UserDefaults.standard.set(currentPoster, forKey: currentPosterKey)
                         self.imageUrl = imageUrl
                         UserDefaults.standard.set(imageUrl, forKey: "tmdbPosterURL_\(self.href)")
                     }
@@ -1216,7 +1230,7 @@ struct MediaInfoView: View {
                     guard self.activeFetchID == fetchID else {
                         return
                     }
-                    self.playStream(url: streamUrl, fullURL: fullURL, subtitles: subtitles, headers: headers, fetchID: fetchID)
+                    self.playStream(url: streamUrl, fullURL: href, subtitles: subtitles, headers: headers, fetchID: fetchID)
                 })
                 
                 streamIndex += 1

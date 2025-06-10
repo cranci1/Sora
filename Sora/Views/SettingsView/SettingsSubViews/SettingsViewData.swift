@@ -137,7 +137,7 @@ fileprivate struct SettingsButtonRow: View {
 
 struct SettingsViewData: View {
     @State private var showAlert = false
-    @State private var cacheSizeText: String = "Calculating..."
+    @State private var cacheSizeText: String = "..."
     @State private var isCalculatingSize: Bool = false
     @State private var cacheSize: Int64 = 0
     @State private var documentsSize: Int64 = 0
@@ -167,7 +167,7 @@ struct SettingsViewData: View {
                                         .frame(width: 24, height: 24)
                                         .foregroundStyle(.red)
                                     
-                                    Text("Clear All Caches")
+                                    Text("Remove All Caches")
                                         .foregroundStyle(.red)
                                     
                                     Spacer()
@@ -199,7 +199,7 @@ struct SettingsViewData: View {
                         
                         SettingsButtonRow(
                             icon: "doc.text",
-                            title: "Remove All Files in Documents",
+                            title: "Remove All Documents",
                             subtitle: formatSize(documentsSize),
                             action: {
                                 activeAlert = .removeDocs
@@ -271,7 +271,7 @@ struct SettingsViewData: View {
         
         func calculateCacheSize() {
             isCalculatingSize = true
-            cacheSizeText = "Calculating..."
+            cacheSizeText = "..."
             
             DispatchQueue.global(qos: .background).async {
                 if let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first {
@@ -283,7 +283,7 @@ struct SettingsViewData: View {
                     }
                 } else {
                     DispatchQueue.main.async {
-                        self.cacheSizeText = "Unknown"
+                        self.cacheSizeText = "N/A"
                         self.isCalculatingSize = false
                     }
                 }

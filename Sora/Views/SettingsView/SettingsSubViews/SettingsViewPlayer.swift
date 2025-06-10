@@ -342,12 +342,25 @@ struct SubtitleSettingsSection: View {
     @State private var backgroundEnabled: Bool = SubtitleSettingsManager.shared.settings.backgroundEnabled
     @State private var bottomPadding: Double = Double(SubtitleSettingsManager.shared.settings.bottomPadding)
     @State private var subtitleDelay: Double = SubtitleSettingsManager.shared.settings.subtitleDelay
+    @AppStorage("subtitlesEnabled") private var subtitlesEnabled: Bool = true
 
     private let colors = ["white", "yellow", "green", "blue", "red", "purple"]
     private let shadowOptions = [0, 1, 3, 6]
 
     var body: some View {
-        SettingsSection(title: "Subtitle Settings") {
+    SettingsSection(title: "Subtitle Settings") {
+            SettingsToggleRow(
+                icon: "captions.bubble",
+                title: "Enable Subtitles",
+                isOn: $subtitlesEnabled,
+                showDivider: false
+            )
+            .onChange(of: subtitlesEnabled) { newValue in
+                SubtitleSettingsManager.shared.update { settings in
+                    settings.enabled = newValue
+                }
+            }
+
             SettingsPickerRow(
                 icon: "paintbrush",
                 title: "Subtitle Color",

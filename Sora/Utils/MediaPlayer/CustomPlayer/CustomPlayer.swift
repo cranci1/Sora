@@ -2700,6 +2700,57 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         default: return .white
         }
     }
+
+    override var canBecomeFirstResponder: Bool {
+        return true
+    }
+
+    override var keyCommands: [UIKeyCommand]? {
+        return [
+            UIKeyCommand(input: " ", modifierFlags: [], action: #selector(handleSpaceKey), discoverabilityTitle: "Play/Pause"),
+            UIKeyCommand(input: UIKeyCommand.inputLeftArrow, modifierFlags: [], action: #selector(handleLeftArrow), discoverabilityTitle: "Seek Backward 10s"),
+            UIKeyCommand(input: UIKeyCommand.inputRightArrow, modifierFlags: [], action: #selector(handleRightArrow), discoverabilityTitle: "Seek Forward 10s"),
+            UIKeyCommand(input: UIKeyCommand.inputUpArrow, modifierFlags: [], action: #selector(handleUpArrow), discoverabilityTitle: "Seek Forward 60s"),
+            UIKeyCommand(input: UIKeyCommand.inputDownArrow, modifierFlags: [], action: #selector(handleDownArrow), discoverabilityTitle: "Seek Backward 60s"),
+            UIKeyCommand(input: UIKeyCommand.inputEscape, modifierFlags: [], action: #selector(handleEscape), discoverabilityTitle: "Dismiss Player")
+        ]
+    }
+
+    @objc private func handleSpaceKey() {
+        togglePlayPause()
+    }
+
+    @objc private func handleLeftArrow() {
+        let skipValue = 10.0
+        currentTimeVal = max(currentTimeVal - skipValue, 0)
+        player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
+        animateButtonRotation(backwardButton, clockwise: false)
+    }
+
+    @objc private func handleRightArrow() {
+        let skipValue = 10.0
+        currentTimeVal = min(currentTimeVal + skipValue, duration)
+        player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
+        animateButtonRotation(forwardButton)
+    }
+
+    @objc private func handleUpArrow() {
+        let skipValue = 60.0
+        currentTimeVal = min(currentTimeVal + skipValue, duration)
+        player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
+        animateButtonRotation(forwardButton)
+    }
+
+    @objc private func handleDownArrow() {
+        let skipValue = 60.0
+        currentTimeVal = max(currentTimeVal - skipValue, 0)
+        player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
+        animateButtonRotation(backwardButton, clockwise: false)
+    }
+
+    @objc private func handleEscape() {
+        dismiss(animated: true, completion: nil)
+    }
 }
 
 class GradientOverlayButton: UIButton {

@@ -72,6 +72,9 @@
     "App Data" : {
 
     },
+    "Are you sure you want to clear all cached data? This will help free up storage space." : {
+
+    },
     "Are you sure you want to delete '%@'?" : {
 
     },
@@ -89,6 +92,9 @@
 
     },
     "Are you sure you want to erase all app data? This action cannot be undone." : {
+
+    },
+    "Are you sure you want to remove all downloaded media files (.mov, .mp4, .pkg)? This action cannot be undone." : {
 
     },
     "Are you sure you want to remove all files in the Documents folder? This will remove all modules." : {
@@ -112,10 +118,10 @@
     "Clear" : {
 
     },
-    "Clear All Caches" : {
+    "Clear All Downloads" : {
 
     },
-    "Clear All Downloads" : {
+    "Clear Cache" : {
 
     },
     "Clear Library Only" : {
@@ -137,9 +143,6 @@
 
     },
     "cranci1" : {
-
-    },
-    "Current Cache Size" : {
 
     },
     "DATA/LOGS" : {
@@ -256,6 +259,9 @@
     "Mark as Watched" : {
 
     },
+    "Mark watched" : {
+
+    },
     "Match with AniList" : {
 
     },
@@ -334,7 +340,13 @@
     "Remove" : {
 
     },
+    "Remove All Caches" : {
+
+    },
     "Remove Documents" : {
+
+    },
+    "Remove Downloaded Media" : {
 
     },
     "Remove from Bookmarks" : {
@@ -349,7 +361,13 @@
     "Reset AniList ID" : {
 
     },
+    "Reset progress" : {
+
+    },
     "Reset Progress" : {
+
+    },
+    "Revert Module Poster" : {
 
     },
     "Running Sora %@ - cranci1" : {
@@ -371,6 +389,9 @@
 
     },
     "Season %lld" : {
+
+    },
+    "Segments Color" : {
 
     },
     "Select Module" : {

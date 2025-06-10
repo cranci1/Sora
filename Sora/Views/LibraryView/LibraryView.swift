@@ -303,8 +303,6 @@ struct ContinueWatchingCell: View {
                 }
                 .overlay(
                     ZStack {
-                        ProgressiveBlurView()
-                            .cornerRadius(10, corners: [.bottomLeft, .bottomRight])
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Spacer()

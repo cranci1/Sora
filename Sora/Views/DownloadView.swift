@@ -293,29 +293,15 @@ struct CustomDownloadHeader: View {
                         Image(systemName: isSearchActive ? "xmark.circle.fill" : "magnifyingglass")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 24, height: 24)
+                            .frame(width: 18, height: 18)
                             .foregroundColor(.accentColor)
-                            .padding(6)
+                            .padding(10)
                             .background(
                                 Circle()
                                     .fill(Color.gray.opacity(0.2))
                                     .shadow(color: .accentColor.opacity(0.2), radius: 2)
                             )
-                            .overlay(
-                                Circle()
-                                    .stroke(
-                                        LinearGradient(
-                                            gradient: Gradient(stops: [
-                                                .init(color: Color.accentColor.opacity(0.25), location: 0),
-                                                .init(color: Color.accentColor.opacity(0), location: 1)
-                                            ]),
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        ),
-                                        lineWidth: 0.5
-                                    )
-                                    .frame(width: 32, height: 32)
-                            )
+                            .circularGradientOutline()
                     }
 
                     if showSortMenu {
@@ -336,28 +322,15 @@ struct CustomDownloadHeader: View {
                             Image(systemName: "arrow.up.arrow.down")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 24, height: 24)
+                                .frame(width: 18, height: 18)
                                 .foregroundColor(.accentColor)
-                                .padding(6)
+                                .padding(10)
                                 .background(
                                     Circle()
                                         .fill(Color.gray.opacity(0.2))
                                         .shadow(color: .accentColor.opacity(0.2), radius: 2)
                                 )
-                                .overlay(
-                                    Circle()
-                                        .stroke(
-                                            LinearGradient(
-                                                gradient: Gradient(stops: [
-                                                    .init(color: Color.accentColor.opacity(0.25), location: 0),
-                                                    .init(color: Color.accentColor.opacity(0), location: 1)
-                                                ]),
-                                                startPoint: .top,
-                                                endPoint: .bottom
-                                            ),
-                                            lineWidth: 0.5
-                                        )
-                                )
+                                .circularGradientOutline()
                         }
                     }
                 }
@@ -370,8 +343,10 @@ struct CustomDownloadHeader: View {
                 HStack(spacing: 12) {
                     HStack(spacing: 12) {
                         Image(systemName: "magnifyingglass")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
                             .foregroundColor(.secondary)
-                            .font(.body)
                         
                         TextField("Search downloads", text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
@@ -382,8 +357,10 @@ struct CustomDownloadHeader: View {
                                 searchText = ""
                             }) {
                                 Image(systemName: "xmark.circle.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 18, height: 18)
                                     .foregroundColor(.secondary)
-                                    .font(.body)
                             }
                         }
                     }

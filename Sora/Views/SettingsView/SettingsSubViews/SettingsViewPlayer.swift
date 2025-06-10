@@ -352,7 +352,7 @@ struct SubtitleSettingsSection: View {
             
             SettingsToggleRow(
                 icon: "captions.bubble",
-                title: "Enable Subtitles by Default",
+                title: "Enable Subtitles",
                 isOn: $subtitlesEnabled,
                 showDivider: false
             )
@@ -373,16 +373,6 @@ struct SubtitleSettingsSection: View {
                 SubtitleSettingsManager.shared.update { settings in
                     settings.foregroundColor = newValue
                 }
-            }
-            
-            SettingsToggleRow(
-                icon: "captions.bubble",
-                title: "Enable Subtitles by Default",
-                isOn: $subtitlesEnabled,
-                showDivider: false
-            )
-            .onChange(of: subtitlesEnabled) { newValue in
-                SubtitleSettingsManager.shared.update { $0.enabled = newValue }
             }
             
             SettingsToggleRow(

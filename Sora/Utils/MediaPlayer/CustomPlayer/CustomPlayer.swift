@@ -307,6 +307,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupPipIfSupported()
         
         view.bringSubviewToFront(subtitleStackView)
+        subtitleStackView.isHidden = !SubtitleSettingsManager.shared.settings.enabled
         
         AniListMutation().fetchMalID(animeId: aniListID) { [weak self] result in
             switch result {

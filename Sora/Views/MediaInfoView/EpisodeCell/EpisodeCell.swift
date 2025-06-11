@@ -9,113 +9,77 @@ import NukeUI
 import SwiftUI
 import AVFoundation
 
+// MARK: - Main EpisodeCell View
 struct EpisodeCell: View {
+    
+    // MARK: - Properties
     let episodeIndex: Int
     let episode: String
     let episodeID: Int
     let progress: Double
     let itemID: Int
-    var totalEpisodes: Int?
-    var defaultBannerImage: String
-    var module: ScrapingModule
-    var parentTitle: String
-    var showPosterURL: String?
+    let totalEpisodes: Int?
+    let defaultBannerImage: String
+    let module: ScrapingModule
+    let parentTitle: String
+    let showPosterURL: String?
+    let tmdbID: Int?
+    let seasonNumber: Int?
     
-    var isMultiSelectMode: Bool = false
-    var isSelected: Bool = false
-    var onSelectionChanged: ((Bool) -> Void)?
+    // Multi-select mode properties
+    let isMultiSelectMode: Bool
+    let isSelected: Bool
+    let onSelectionChanged: ((Bool) -> Void)?
     
-    var onTap: (String) -> Void
-    var onMarkAllPrevious: () -> Void
+    // Action callbacks
+    let onTap: (String) -> Void
+    let onMarkAllPrevious: () -> Void
     
-    @State private var episodeTitle: String = ""
-    @State private var episodeImageUrl: String = ""
-    @State private var isLoading: Bool = true
+    // MARK: - State Variables
+    @State private var episodeTitle = ""
+    @State private var episodeImageUrl = ""
+    @State private var isLoading = true
     @State private var currentProgress: Double = 0.0
-    @State private var showDownloadConfirmation = false
-    @State private var isDownloading: Bool = false
-    @State private var isPlaying = false
-    @State private var loadedFromCache: Bool = false
+    @State private var isDownloading = false
     @State private var downloadStatus: EpisodeDownloadStatus = .notDownloaded
-    @State private var downloadRefreshTrigger: Bool = false
-    @State private var lastUpdateTime: Date = Date()
-    @State private var activeDownloadTask: AVAssetDownloadTask? = nil
-    @State private var lastStatusCheck: Date = Date()
-    @State private var lastLoggedStatus: EpisodeDownloadStatus?
     @State private var downloadAnimationScale: CGFloat = 1.0
+    @State private var activeDownloadTask: AVAssetDownloadTask?
     
-    @State private var isActionsVisible = false
-    @State private var panGesture = UIPanGestureRecognizer()
-    
+    // Swipe gesture states
     @State private var swipeOffset: CGFloat = 0
-    @State private var isShowingActions: Bool = false
+    @State private var isShowingActions = false
     @State private var actionButtonWidth: CGFloat = 60
     
-    @State private var retryAttempts: Int = 0
-    private let maxRetryAttempts: Int = 3
+    // Network retry logic
+    @State private var retryAttempts = 0
+    private let maxRetryAttempts = 3
     private let initialBackoffDelay: TimeInterval = 1.0
     
+    // MARK: - Environment and Observed Objects
     @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
-    
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     
-    enum DragState {
-        case inactive
-        case pressing
-        case dragging(translation: CGSize)
-        
-        var translation: CGSize {
-            switch self {
-            case .inactive, .pressing:
-                return .zero
-            case .dragging(let translation):
-                return translation
-            }
-        }
-        
-        var isActive: Bool {
-            switch self {
-            case .inactive:
-                return false
-            case .pressing, .dragging:
-                return true
-            }
-        }
-        
-        var isDragging: Bool {
-            switch self {
-            case .dragging:
-                return true
-            default:
-                return false
-            }
-        }
-    }
-    
-    private var downloadStatusString: String {
-        switch downloadStatus {
-        case .notDownloaded:
-            return "notDownloaded"
-        case .downloading(let download):
-            return "downloading_\(download.id)"
-        case .downloaded(let asset):
-            return "downloaded_\(asset.id)"
-        }
-    }
-    
-    let tmdbID: Int?
-    let seasonNumber: Int?
-
-    init(episodeIndex: Int, episode: String, episodeID: Int, progress: Double,
-         itemID: Int, totalEpisodes: Int? = nil, defaultBannerImage: String = "",
-         module: ScrapingModule, parentTitle: String, showPosterURL: String? = nil,
-         isMultiSelectMode: Bool = false, isSelected: Bool = false,
-         onSelectionChanged: ((Bool) -> Void)? = nil,
-         onTap: @escaping (String) -> Void, onMarkAllPrevious: @escaping () -> Void,
-         tmdbID: Int? = nil,
-         seasonNumber: Int? = nil
+    // MARK: - Initializer
+    init(
+        episodeIndex: Int,
+        episode: String,
+        episodeID: Int,
+        progress: Double,
+        itemID: Int,
+        totalEpisodes: Int? = nil,
+        defaultBannerImage: String = "",
+        module: ScrapingModule,
+        parentTitle: String,
+        showPosterURL: String? = nil,
+        isMultiSelectMode: Bool = false,
+        isSelected: Bool = false,
+        onSelectionChanged: ((Bool) -> Void)? = nil,
+        onTap: @escaping (String) -> Void,
+        onMarkAllPrevious: @escaping () -> Void,
+        tmdbID: Int? = nil,
+        seasonNumber: Int? = nil
     ) {
         self.episodeIndex = episodeIndex
         self.episode = episode
@@ -123,16 +87,6 @@ struct EpisodeCell: View {
         self.progress = progress
         self.itemID = itemID
         self.totalEpisodes = totalEpisodes
-        
-        let isLightMode = (UserDefaults.standard.string(forKey: "selectedAppearance") == "light") ||
-        ((UserDefaults.standard.string(forKey: "selectedAppearance") == "system") &&
-         UITraitCollection.current.userInterfaceStyle == .light)
-        let defaultLightBanner = "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner1.png"
-        let defaultDarkBanner = "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner2.png"
-        
-        self.defaultBannerImage = defaultBannerImage.isEmpty ?
-        (isLightMode ? defaultLightBanner : defaultDarkBanner) : defaultBannerImage
-        
         self.module = module
         self.parentTitle = parentTitle
         self.showPosterURL = showPosterURL
@@ -143,147 +97,37 @@ struct EpisodeCell: View {
         self.onMarkAllPrevious = onMarkAllPrevious
         self.tmdbID = tmdbID
         self.seasonNumber = seasonNumber
+        
+        // Set default banner based on appearance
+        let isLightMode = (UserDefaults.standard.string(forKey: "selectedAppearance") == "light") ||
+        ((UserDefaults.standard.string(forKey: "selectedAppearance") == "system") &&
+         UITraitCollection.current.userInterfaceStyle == .light)
+        
+        let defaultLightBanner = "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner1.png"
+        let defaultDarkBanner = "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/assets/banner2.png"
+        
+        self.defaultBannerImage = defaultBannerImage.isEmpty ?
+        (isLightMode ? defaultLightBanner : defaultDarkBanner) : defaultBannerImage
     }
     
+    // MARK: - Main Body
     var body: some View {
         ZStack {
-            HStack {
-                Spacer()
-                actionButtons
-            }
-            .zIndex(0)
+            // Background action buttons
+            actionButtonsBackground
             
-            HStack {
-                episodeThumbnail
-                episodeInfo
-                Spacer()
-                CircularProgressBar(progress: currentProgress)
-                    .frame(width: 40, height: 40)
-                    .padding(.trailing, 4)
-            }
-            .contentShape(Rectangle())
-            .padding(.horizontal, 8)
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 15)
-                    .fill(Color(UIColor.systemBackground))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 15)
-                            .fill(Color.gray.opacity(0.2))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 15)
-                            .stroke(
-                                LinearGradient(
-                                    gradient: Gradient(stops: [
-                                        .init(color: Color.accentColor.opacity(0.25), location: 0),
-                                        .init(color: Color.accentColor.opacity(0), location: 1)
-                                    ]),
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                ),
-                                lineWidth: 0.5
-                            )
-                    )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 15))
-            .offset(x: swipeOffset)
-            .zIndex(1)
-            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: swipeOffset)
-            .contextMenu {
-                contextMenuContent
-            }
-            .highPriorityGesture(
-                DragGesture(minimumDistance: 10)
-                    .onChanged { value in
-                        let horizontalTranslation = value.translation.width
-                        let verticalTranslation = value.translation.height
-                        
-                        // Only handle if it's a clear horizontal swipe
-                        if abs(horizontalTranslation) > abs(verticalTranslation) * 1.5 {
-                            if horizontalTranslation < 0 {
-                                let maxSwipe = calculateMaxSwipeDistance()
-                                swipeOffset = max(horizontalTranslation, -maxSwipe)
-                            } else if isShowingActions {
-                                let maxSwipe = calculateMaxSwipeDistance()
-                                swipeOffset = max(horizontalTranslation - maxSwipe, -maxSwipe)
-                            }
-                        }
-                    }
-                    .onEnded { value in
-                        let horizontalTranslation = value.translation.width
-                        let verticalTranslation = value.translation.height
-                        
-                        // Only handle if it was a clear horizontal swipe
-                        if abs(horizontalTranslation) > abs(verticalTranslation) * 1.5 {
-                            let maxSwipe = calculateMaxSwipeDistance()
-                            let threshold = maxSwipe * 0.2
-                            
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                if horizontalTranslation < -threshold && !isShowingActions {
-                                    swipeOffset = -maxSwipe
-                                    isShowingActions = true
-                                } else if horizontalTranslation > threshold && isShowingActions {
-                                    swipeOffset = 0
-                                    isShowingActions = false
-                                } else {
-                                    swipeOffset = isShowingActions ? -maxSwipe : 0
-                                }
-                            }
-                        }
-                    }
-            )
+            // Main episode cell content
+            episodeCellContent
+                .offset(x: swipeOffset)
+                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: swipeOffset)
+                .contextMenu { contextMenuContent }
+                .gesture(swipeGesture)
+                .onTapGesture { handleTap() }
         }
-        .onTapGesture {
-            if isShowingActions {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    swipeOffset = 0
-                    isShowingActions = false
-                }
-            } else if isMultiSelectMode {
-                onSelectionChanged?(!isSelected)
-            } else {
-                let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
-                onTap(imageUrl)
-            }
-        }
-        .onAppear {
-            // Configure the pan gesture
-            panGesture.delegate = nil
-            panGesture.cancelsTouchesInView = false
-            panGesture.delaysTouchesBegan = false
-            panGesture.delaysTouchesEnded = false
-            
-            updateProgress()
-            updateDownloadStatus()
-            if UserDefaults.standard.string(forKey: "metadataProviders") ?? "TMDB" == "TMDB" {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    fetchTMDBEpisodeImage()
-                }
-            } else {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    fetchAnimeEpisodeDetails()
-                }
-            }
-            
-            if let totalEpisodes = totalEpisodes, episodeID + 1 < totalEpisodes {
-                let nextEpisodeStart = episodeID + 1
-                let count = min(5, totalEpisodes - episodeID - 1)
-            }
-        }
-        .onDisappear {
-            activeDownloadTask = nil
-        }
-        .onChange(of: progress) { _ in
-            updateProgress()
-        }
-        .onChange(of: itemID) { newID in
-            loadedFromCache = false
-            isLoading = true
-            retryAttempts = maxRetryAttempts
-            fetchEpisodeDetails()
-        }
+        .onAppear { setupOnAppear() }
+        .onDisappear { activeDownloadTask = nil }
+        .onChange(of: progress) { _ in updateProgress() }
+        .onChange(of: itemID) { _ in handleItemIDChange() }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadProgressChanged"))) { _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 updateDownloadStatus()
@@ -300,38 +144,67 @@ struct EpisodeCell: View {
             updateProgress()
         }
     }
+}
+
+// MARK: - UI Components
+private extension EpisodeCell {
     
-    private var episodeThumbnail: some View {
+    var actionButtonsBackground: some View {
+        HStack {
+            Spacer()
+            actionButtons
+        }
+        .zIndex(0)
+    }
+    
+    var episodeCellContent: some View {
+        HStack {
+            episodeThumbnail
+            episodeInfo
+            Spacer()
+            CircularProgressBar(progress: currentProgress)
+                .frame(width: 40, height: 40)
+                .padding(.trailing, 4)
+        }
+        .contentShape(Rectangle())
+        .padding(.horizontal, 8)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
+        .background(cellBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 15))
+        .zIndex(1)
+    }
+    
+    var cellBackground: some View {
+        RoundedRectangle(cornerRadius: 15)
+            .fill(Color(UIColor.systemBackground))
+            .overlay(
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(Color.gray.opacity(0.2))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 15)
+                    .stroke(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.25), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+    }
+    
+    var episodeThumbnail: some View {
         ZStack {
-            if let url = URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl) {
-                LazyImage(url: url) { state in
-                    if let image = state.imageContainer?.image {
-                        Image(uiImage: image)
-                            .resizable()
-                            .aspectRatio(16/9, contentMode: .fill)
-                            .frame(width: 100, height: 56)
-                            .cornerRadius(8)
-                    } else if state.error != nil {
-                        Rectangle()
-                            .fill(.tertiary)
-                            .frame(width: 100, height: 56)
-                            .cornerRadius(8)
-                            .onAppear {
-                                Logger.shared.log("Failed to load episode image: \(state.error?.localizedDescription ?? "Unknown error")", type: "Error")
-                            }
-                    } else {
-                        Rectangle()
-                            .fill(.tertiary)
-                            .frame(width: 100, height: 56)
-                            .cornerRadius(8)
-                    }
-                }
-            } else {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 100, height: 56)
-                    .cornerRadius(8)
-            }
+            AsyncImageView(
+                url: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl,
+                width: 100,
+                height: 56
+            )
             
             if isLoading {
                 ProgressView()
@@ -340,10 +213,11 @@ struct EpisodeCell: View {
         }
     }
     
-    private var episodeInfo: some View {
+    var episodeInfo: some View {
         VStack(alignment: .leading) {
             Text("Episode \(episodeID + 1)")
                 .font(.system(size: 15))
+            
             if !episodeTitle.isEmpty {
                 Text(episodeTitle)
                     .font(.system(size: 13))
@@ -352,78 +226,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private var downloadStatusView: some View {
-        Group {
-            switch downloadStatus {
-            case .notDownloaded:
-                downloadButton
-            case .downloading(let activeDownload):
-                if activeDownload.queueStatus == .queued {
-                    queuedIndicator
-                } else {
-                    downloadProgressView
-                }
-            case .downloaded:
-                downloadedIndicator
-            }
-        }
-    }
-    
-    private var downloadButton: some View {
-        Button(action: {
-            showDownloadConfirmation = true
-        }) {
-            Image(systemName: "arrow.down.circle")
-                .foregroundColor(.blue)
-                .font(.title3)
-        }
-        .padding(.horizontal, 8)
-    }
-    
-    private var downloadProgressView: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "arrow.down.circle.fill")
-                .foregroundColor(.blue)
-                .font(.title3)
-                .scaleEffect(downloadAnimationScale)
-                .onAppear {
-                    withAnimation(
-                        Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true)
-                    ) {
-                        downloadAnimationScale = 1.2
-                    }
-                }
-                .onDisappear {
-                    downloadAnimationScale = 1.0
-                }
-        }
-        .padding(.horizontal, 8)
-    }
-    
-    private var downloadedIndicator: some View {
-        Image(systemName: "checkmark.circle.fill")
-            .foregroundColor(.green)
-            .font(.title3)
-            .padding(.horizontal, 8)
-            .scaleEffect(1.1)
-            .animation(.default, value: downloadStatusString)
-    }
-    
-    private var queuedIndicator: some View {
-        HStack(spacing: 4) {
-            ProgressView()
-                .progressViewStyle(CircularProgressViewStyle())
-                .scaleEffect(0.8)
-                .accentColor(.orange)
-            
-            Text("Queued")
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .padding(.horizontal, 8)
-    }
-    
-    private var contextMenuContent: some View {
+    var contextMenuContent: some View {
         Group {
             if progress <= 0.9 {
                 Button(action: markAsWatched) {
@@ -449,7 +252,174 @@ struct EpisodeCell: View {
         }
     }
     
-    private func updateDownloadStatus() {
+    var actionButtons: some View {
+        HStack(spacing: 8) {
+            ActionButton(
+                icon: "arrow.down.circle",
+                label: "Download",
+                color: .blue,
+                width: actionButtonWidth
+            ) {
+                closeActionsAndPerform { downloadEpisode() }
+            }
+            
+            if progress <= 0.9 {
+                ActionButton(
+                    icon: "checkmark.circle",
+                    label: "Watched",
+                    color: .green,
+                    width: actionButtonWidth
+                ) {
+                    closeActionsAndPerform { markAsWatched() }
+                }
+            }
+            
+            if progress != 0 {
+                ActionButton(
+                    icon: "arrow.counterclockwise",
+                    label: "Reset",
+                    color: .orange,
+                    width: actionButtonWidth
+                ) {
+                    closeActionsAndPerform { resetProgress() }
+                }
+            }
+            
+            if episodeIndex > 0 {
+                ActionButton(
+                    icon: "checkmark.circle.fill",
+                    label: "All Prev",
+                    color: .purple,
+                    width: actionButtonWidth
+                ) {
+                    closeActionsAndPerform { onMarkAllPrevious() }
+                }
+            }
+        }
+        .padding(.horizontal, 8)
+    }
+}
+
+// MARK: - Gesture Handling
+private extension EpisodeCell {
+    
+    var swipeGesture: some Gesture {
+        DragGesture(minimumDistance: 10)
+            .onChanged { value in
+                handleSwipeChanged(value)
+            }
+            .onEnded { value in
+                handleSwipeEnded(value)
+            }
+    }
+    
+    func handleSwipeChanged(_ value: DragGesture.Value) {
+        let horizontalTranslation = value.translation.width
+        let verticalTranslation = value.translation.height
+        
+        // Only handle clear horizontal swipes
+        guard abs(horizontalTranslation) > abs(verticalTranslation) * 1.5 else { return }
+        
+        if horizontalTranslation < 0 {
+            let maxSwipe = calculateMaxSwipeDistance()
+            swipeOffset = max(horizontalTranslation, -maxSwipe)
+        } else if isShowingActions {
+            let maxSwipe = calculateMaxSwipeDistance()
+            swipeOffset = max(horizontalTranslation - maxSwipe, -maxSwipe)
+        }
+    }
+    
+    func handleSwipeEnded(_ value: DragGesture.Value) {
+        let horizontalTranslation = value.translation.width
+        let verticalTranslation = value.translation.height
+        
+        // Only handle clear horizontal swipes
+        guard abs(horizontalTranslation) > abs(verticalTranslation) * 1.5 else { return }
+        
+        let maxSwipe = calculateMaxSwipeDistance()
+        let threshold = maxSwipe * 0.2
+        
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            if horizontalTranslation < -threshold && !isShowingActions {
+                swipeOffset = -maxSwipe
+                isShowingActions = true
+            } else if horizontalTranslation > threshold && isShowingActions {
+                swipeOffset = 0
+                isShowingActions = false
+            } else {
+                swipeOffset = isShowingActions ? -maxSwipe : 0
+            }
+        }
+    }
+    
+    func handleTap() {
+        if isShowingActions {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                swipeOffset = 0
+                isShowingActions = false
+            }
+        } else if isMultiSelectMode {
+            onSelectionChanged?(!isSelected)
+        } else {
+            let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
+            onTap(imageUrl)
+        }
+    }
+    
+    func calculateMaxSwipeDistance() -> CGFloat {
+        var buttonCount = 1 // Download button always present
+        
+        if progress <= 0.9 { buttonCount += 1 }
+        if progress != 0 { buttonCount += 1 }
+        if episodeIndex > 0 { buttonCount += 1 }
+        
+        var swipeDistance = CGFloat(buttonCount) * actionButtonWidth + 16
+        
+        // Add extra spacing for multiple buttons
+        if buttonCount == 3 { swipeDistance += 12 }
+        else if buttonCount == 4 { swipeDistance += 24 }
+        
+        return swipeDistance
+    }
+}
+
+// MARK: - Action Handling
+private extension EpisodeCell {
+    
+    func closeActionsAndPerform(action: @escaping () -> Void) {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            isShowingActions = false
+            swipeOffset = 0
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            action()
+        }
+    }
+    
+    func markAsWatched() {
+        let userDefaults = UserDefaults.standard
+        let totalTime = 1000.0
+        userDefaults.set(totalTime, forKey: "lastPlayedTime_\(episode)")
+        userDefaults.set(totalTime, forKey: "totalTime_\(episode)")
+        updateProgress()
+    }
+    
+    func resetProgress() {
+        let userDefaults = UserDefaults.standard
+        userDefaults.set(0.0, forKey: "lastPlayedTime_\(episode)")
+        userDefaults.set(0.0, forKey: "totalTime_\(episode)")
+        updateProgress()
+    }
+    
+    func updateProgress() {
+        let userDefaults = UserDefaults.standard
+        let lastPlayedTime = userDefaults.double(forKey: "lastPlayedTime_\(episode)")
+        let totalTime = userDefaults.double(forKey: "totalTime_\(episode)")
+        currentProgress = totalTime > 0 ? min(lastPlayedTime / totalTime, 1.0) : 0
+    }
+    
+    func updateDownloadStatus() {
         let newStatus = jsController.isEpisodeDownloadedOrInProgress(
             showTitle: parentTitle,
             episodeNumber: episodeID + 1
@@ -459,39 +429,77 @@ struct EpisodeCell: View {
             downloadStatus = newStatus
         }
     }
+}
+
+// MARK: - Lifecycle and Setup
+private extension EpisodeCell {
     
-    private func downloadEpisode() {
+    func setupOnAppear() {
+        updateProgress()
         updateDownloadStatus()
         
-        if case .notDownloaded = downloadStatus, !isDownloading {
-            isDownloading = true
-            let downloadID = UUID()
-            
-            DropManager.shared.downloadStarted(episodeNumber: episodeID + 1)
-            
-            Task {
-                do {
-                    let jsContent = try moduleManager.getModuleContent(module)
-                    jsController.loadScript(jsContent)
-                    tryNextDownloadMethod(methodIndex: 0, downloadID: downloadID, softsub: module.metadata.softsub == true)
-                } catch {
-                    DropManager.shared.error("Failed to start download: \(error.localizedDescription)")
-                    isDownloading = false
-                }
-            }
-        } else {
-            if case .downloaded = downloadStatus {
-                DropManager.shared.info("Episode \(episodeID + 1) is already downloaded")
-            } else if case .downloading = downloadStatus {
-                DropManager.shared.info("Episode \(episodeID + 1) is already being downloaded")
+        // Fetch metadata based on provider preference
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if UserDefaults.standard.string(forKey: "metadataProviders") ?? "TMDB" == "TMDB" {
+                fetchTMDBEpisodeImage()
+            } else {
+                fetchAnimeEpisodeDetails()
             }
         }
     }
     
-    private func tryNextDownloadMethod(methodIndex: Int, downloadID: UUID, softsub: Bool) {
-        if !isDownloading {
+    func handleItemIDChange() {
+        isLoading = true
+        retryAttempts = 0
+        fetchEpisodeDetails()
+    }
+    
+    func fetchEpisodeDetails() {
+        fetchAnimeEpisodeDetails()
+    }
+}
+
+// MARK: - Download Functionality
+private extension EpisodeCell {
+    
+    func downloadEpisode() {
+        updateDownloadStatus()
+        
+        guard case .notDownloaded = downloadStatus, !isDownloading else {
+            handleAlreadyDownloadedOrInProgress()
             return
         }
+        
+        isDownloading = true
+        let downloadID = UUID()
+        
+        DropManager.shared.downloadStarted(episodeNumber: episodeID + 1)
+        
+        Task {
+            do {
+                let jsContent = try moduleManager.getModuleContent(module)
+                jsController.loadScript(jsContent)
+                tryNextDownloadMethod(methodIndex: 0, downloadID: downloadID, softsub: module.metadata.softsub == true)
+            } catch {
+                DropManager.shared.error("Failed to start download: \(error.localizedDescription)")
+                isDownloading = false
+            }
+        }
+    }
+    
+    func handleAlreadyDownloadedOrInProgress() {
+        switch downloadStatus {
+        case .downloaded:
+            DropManager.shared.info("Episode \(episodeID + 1) is already downloaded")
+        case .downloading:
+            DropManager.shared.info("Episode \(episodeID + 1) is already being downloaded")
+        case .notDownloaded:
+            break
+        }
+    }
+    
+    func tryNextDownloadMethod(methodIndex: Int, downloadID: UUID, softsub: Bool) {
+        guard isDownloading else { return }
         
         print("[Download] Trying download method #\(methodIndex+1) for Episode \(episodeID + 1)")
         
@@ -499,7 +507,7 @@ struct EpisodeCell: View {
         case 0:
             if module.metadata.asyncJS == true {
                 jsController.fetchStreamUrlJS(episodeUrl: episode, softsub: softsub, module: module) { result in
-                    self.handleSequentialDownloadResult(result, downloadID: downloadID, methodIndex: methodIndex, softsub: softsub)
+                    self.handleDownloadResult(result, downloadID: downloadID, methodIndex: methodIndex, softsub: softsub)
                 }
             } else {
                 tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
@@ -508,7 +516,7 @@ struct EpisodeCell: View {
         case 1:
             if module.metadata.streamAsyncJS == true {
                 jsController.fetchStreamUrlJSSecond(episodeUrl: episode, softsub: softsub, module: module) { result in
-                    self.handleSequentialDownloadResult(result, downloadID: downloadID, methodIndex: methodIndex, softsub: softsub)
+                    self.handleDownloadResult(result, downloadID: downloadID, methodIndex: methodIndex, softsub: softsub)
                 }
             } else {
                 tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
@@ -516,7 +524,7 @@ struct EpisodeCell: View {
             
         case 2:
             jsController.fetchStreamUrl(episodeUrl: episode, softsub: softsub, module: module) { result in
-                self.handleSequentialDownloadResult(result, downloadID: downloadID, methodIndex: methodIndex, softsub: softsub)
+                self.handleDownloadResult(result, downloadID: downloadID, methodIndex: methodIndex, softsub: softsub)
             }
             
         default:
@@ -525,28 +533,28 @@ struct EpisodeCell: View {
         }
     }
     
-    private func handleSequentialDownloadResult(_ result: (streams: [String]?, subtitles: [String]?, sources: [[String:Any]]?), downloadID: UUID, methodIndex: Int, softsub: Bool) {
-        if !isDownloading {
-            return
-        }
+    func handleDownloadResult(
+        _ result: (streams: [String]?, subtitles: [String]?, sources: [[String: Any]]?),
+        downloadID: UUID,
+        methodIndex: Int,
+        softsub: Bool
+    ) {
+        guard isDownloading else { return }
         
+        // Handle sources format
         if let sources = result.sources, !sources.isEmpty {
             if sources.count > 1 {
                 showDownloadStreamSelectionAlert(streams: sources, downloadID: downloadID, subtitleURL: result.subtitles?.first)
                 return
             } else if let streamUrl = sources[0]["streamUrl"] as? String, let url = URL(string: streamUrl) {
-                
                 let subtitleURLString = sources[0]["subtitle"] as? String
                 let subtitleURL = subtitleURLString.flatMap { URL(string: $0) }
-                if let subtitleURL = subtitleURL {
-                    Logger.shared.log("[Download] Found subtitle URL: \(subtitleURL.absoluteString)")
-                }
-                
                 startActualDownload(url: url, streamUrl: streamUrl, downloadID: downloadID, subtitleURL: subtitleURL)
                 return
             }
         }
         
+        // Handle streams format
         if let streams = result.streams, !streams.isEmpty {
             if streams[0] == "[object Promise]" {
                 tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
@@ -558,10 +566,6 @@ struct EpisodeCell: View {
                 return
             } else if let url = URL(string: streams[0]) {
                 let subtitleURL = result.subtitles?.first.flatMap { URL(string: $0) }
-                if let subtitleURL = subtitleURL {
-                    Logger.shared.log("[Download] Found subtitle URL: \(subtitleURL.absoluteString)")
-                }
-                
                 startActualDownload(url: url, streamUrl: streams[0], downloadID: downloadID, subtitleURL: subtitleURL)
                 return
             }
@@ -570,145 +574,13 @@ struct EpisodeCell: View {
         tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
     }
     
-    private func showDownloadStreamSelectionAlert(streams: [Any], downloadID: UUID, subtitleURL: String? = nil) {
-        DispatchQueue.main.async {
-            let alert = UIAlertController(title: "Select Download Server", message: "Choose a server to download from", preferredStyle: .actionSheet)
-            
-            var index = 0
-            var streamIndex = 1
-            
-            while index < streams.count {
-                var title: String = ""
-                var streamUrl: String = ""
-                
-                if let streams = streams as? [String] {
-                    if index + 1 < streams.count {
-                        if !streams[index].lowercased().contains("http") {
-                            title = streams[index]
-                            streamUrl = streams[index + 1]
-                            index += 2
-                        } else {
-                            title = "Server \(streamIndex)"
-                            streamUrl = streams[index]
-                            index += 1
-                        }
-                    } else {
-                        title = "Server \(streamIndex)"
-                        streamUrl = streams[index]
-                        index += 1
-                    }
-                } else if let streams = streams as? [[String: Any]] {
-                    if let currTitle = streams[index]["title"] as? String {
-                        title = currTitle
-                    } else {
-                        title = "Server \(streamIndex)"
-                    }
-                    streamUrl = (streams[index]["streamUrl"] as? String) ?? ""
-                    index += 1
-                }
-                
-                alert.addAction(UIAlertAction(title: title, style: .default) { _ in
-                    guard let url = URL(string: streamUrl) else {
-                        DropManager.shared.error("Invalid stream URL selected")
-                        self.isDownloading = false
-                        return
-                    }
-                    
-                    let subtitleURLObj = subtitleURL.flatMap { URL(string: $0) }
-                    self.startActualDownload(url: url, streamUrl: streamUrl, downloadID: downloadID, subtitleURL: subtitleURLObj)
-                })
-                
-                streamIndex += 1
-            }
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
-                self.isDownloading = false
-            })
-            
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let window = windowScene.windows.first,
-               let rootVC = window.rootViewController {
-                
-                if UIDevice.current.userInterfaceIdiom == .pad {
-                    if let popover = alert.popoverPresentationController {
-                        popover.sourceView = window
-                        popover.sourceRect = CGRect(
-                            x: UIScreen.main.bounds.width / 2,
-                            y: UIScreen.main.bounds.height / 2,
-                            width: 0,
-                            height: 0
-                        )
-                        popover.permittedArrowDirections = []
-                    }
-                }
-                
-                self.findTopViewController(rootVC).present(alert, animated: true)
-            }
-        }
-    }
-    
-    private func findTopViewController(_ controller: UIViewController) -> UIViewController {
-        if let navigationController = controller as? UINavigationController {
-            return findTopViewController(navigationController.visibleViewController!)
-        }
-        if let tabController = controller as? UITabBarController {
-            if let selected = tabController.selectedViewController {
-                return findTopViewController(selected)
-            }
-        }
-        if let presented = controller.presentedViewController {
-            return findTopViewController(presented)
-        }
-        return controller
-    }
-    
-    private func startActualDownload(url: URL, streamUrl: String, downloadID: UUID, subtitleURL: URL? = nil) {
-        var headers: [String: String] = [:]
-        
-        if !module.metadata.baseUrl.isEmpty && !module.metadata.baseUrl.contains("undefined") {
-            print("Using module baseUrl: \(module.metadata.baseUrl)")
-            
-            headers = [
-                "Origin": module.metadata.baseUrl,
-                "Referer": module.metadata.baseUrl,
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
-                "Accept": "*/*",
-                "Accept-Language": "en-US,en;q=0.9",
-                "Sec-Fetch-Dest": "empty",
-                "Sec-Fetch-Mode": "cors",
-                "Sec-Fetch-Site": "same-origin"
-            ]
-        } else {
-            if let scheme = url.scheme, let host = url.host {
-                let baseUrl = scheme + "://" + host
-                
-                headers = [
-                    "Origin": baseUrl,
-                    "Referer": baseUrl,
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
-                    "Accept": "*/*",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Sec-Fetch-Dest": "empty",
-                    "Sec-Fetch-Mode": "cors",
-                    "Sec-Fetch-Site": "same-origin"
-                ]
-            } else {
-                DropManager.shared.error("Invalid stream URL - missing scheme or host")
-                isDownloading = false
-                return
-            }
-        }
-        
-        print("Download headers: \(headers)")
-        
+    func startActualDownload(url: URL, streamUrl: String, downloadID: UUID, subtitleURL: URL? = nil) {
+        let headers = createDownloadHeaders(for: url)
         let episodeThumbnailURL = URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl)
         let showPosterImageURL = URL(string: showPosterURL ?? defaultBannerImage)
         
         let baseTitle = "Episode \(episodeID + 1)"
-        let fullEpisodeTitle = episodeTitle.isEmpty
-            ? baseTitle
-            : "\(baseTitle): \(episodeTitle)"
-        
+        let fullEpisodeTitle = episodeTitle.isEmpty ? baseTitle : "\(baseTitle): \(episodeTitle)"
         let animeTitle = parentTitle.isEmpty ? "Unknown Anime" : parentTitle
         
         jsController.downloadWithStreamTypeSupport(
@@ -722,54 +594,154 @@ struct EpisodeCell: View {
             season: 1,
             episode: episodeID + 1,
             subtitleURL: subtitleURL,
-            showPosterURL: showPosterImageURL,
-            completionHandler: { success, message in
-                if success {
-                    Logger.shared.log("Started download for Episode \(self.episodeID + 1): \(self.episode)", type: "Download")
-                    AnalyticsManager.shared.sendEvent(
-                        event: "download",
-                        additionalData: ["episode": self.episodeID + 1, "url": streamUrl]
-                    )
-                } else {
-                    DropManager.shared.error(message)
-                }
-                self.isDownloading = false
+            showPosterURL: showPosterImageURL
+        ) { success, message in
+            if success {
+                Logger.shared.log("Started download for Episode \(self.episodeID + 1): \(self.episode)", type: "Download")
+                AnalyticsManager.shared.sendEvent(
+                    event: "download",
+                    additionalData: ["episode": self.episodeID + 1, "url": streamUrl]
+                )
+            } else {
+                DropManager.shared.error(message)
             }
-        )
-    }
-    
-    private func markAsWatched() {
-        let userDefaults = UserDefaults.standard
-        let totalTime = 1000.0
-        let watchedTime = totalTime
-        userDefaults.set(watchedTime, forKey: "lastPlayedTime_\(episode)")
-        userDefaults.set(totalTime, forKey: "totalTime_\(episode)")
-        DispatchQueue.main.async {
-            self.updateProgress()
+            self.isDownloading = false
         }
     }
     
-    private func resetProgress() {
-        let userDefaults = UserDefaults.standard
-        userDefaults.set(0.0, forKey: "lastPlayedTime_\(episode)")
-        userDefaults.set(0.0, forKey: "totalTime_\(episode)")
+    func createDownloadHeaders(for url: URL) -> [String: String] {
+        if !module.metadata.baseUrl.isEmpty && !module.metadata.baseUrl.contains("undefined") {
+            return [
+                "Origin": module.metadata.baseUrl,
+                "Referer": module.metadata.baseUrl,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                "Accept": "*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-origin"
+            ]
+        } else if let scheme = url.scheme, let host = url.host {
+            let baseUrl = "\(scheme)://\(host)"
+            return [
+                "Origin": baseUrl,
+                "Referer": baseUrl,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                "Accept": "*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-origin"
+            ]
+        } else {
+            DropManager.shared.error("Invalid stream URL - missing scheme or host")
+            isDownloading = false
+            return [:]
+        }
+    }
+}
+
+// MARK: - Stream Selection Alert
+private extension EpisodeCell {
+    
+    func showDownloadStreamSelectionAlert(streams: [Any], downloadID: UUID, subtitleURL: String? = nil) {
         DispatchQueue.main.async {
-            self.updateProgress()
+            let alert = UIAlertController(
+                title: "Select Download Server",
+                message: "Choose a server to download from",
+                preferredStyle: .actionSheet
+            )
+            
+            addStreamActions(to: alert, streams: streams, downloadID: downloadID, subtitleURL: subtitleURL)
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                self.isDownloading = false
+            })
+            
+            presentAlert(alert)
         }
     }
     
-    private func updateProgress() {
-        let userDefaults = UserDefaults.standard
-        let lastPlayedTime = userDefaults.double(forKey: "lastPlayedTime_\(episode)")
-        let totalTime = userDefaults.double(forKey: "totalTime_\(episode)")
-        currentProgress = totalTime > 0 ? min(lastPlayedTime / totalTime, 1.0) : 0
+    func addStreamActions(to alert: UIAlertController, streams: [Any], downloadID: UUID, subtitleURL: String?) {
+        var index = 0
+        var streamIndex = 1
+        
+        while index < streams.count {
+            let (title, streamUrl, newIndex) = parseStreamInfo(streams: streams, index: index, streamIndex: streamIndex)
+            index = newIndex
+            
+            alert.addAction(UIAlertAction(title: title, style: .default) { _ in
+                guard let url = URL(string: streamUrl) else {
+                    DropManager.shared.error("Invalid stream URL selected")
+                    self.isDownloading = false
+                    return
+                }
+                
+                let subtitleURLObj = subtitleURL.flatMap { URL(string: $0) }
+                self.startActualDownload(url: url, streamUrl: streamUrl, downloadID: downloadID, subtitleURL: subtitleURLObj)
+            })
+            
+            streamIndex += 1
+        }
     }
     
-    private func fetchEpisodeDetails() {
-        fetchAnimeEpisodeDetails()
+    func parseStreamInfo(streams: [Any], index: Int, streamIndex: Int) -> (title: String, streamUrl: String, newIndex: Int) {
+        if let streams = streams as? [String] {
+            if index + 1 < streams.count && !streams[index].lowercased().contains("http") {
+                return (streams[index], streams[index + 1], index + 2)
+            } else {
+                return ("Server \(streamIndex)", streams[index], index + 1)
+            }
+        } else if let streams = streams as? [[String: Any]] {
+            let title = streams[index]["title"] as? String ?? "Server \(streamIndex)"
+            let streamUrl = streams[index]["streamUrl"] as? String ?? ""
+            return (title, streamUrl, index + 1)
+        }
+        
+        return ("Server \(streamIndex)", "", index + 1)
     }
     
-    private func fetchAnimeEpisodeDetails() {
+    func presentAlert(_ alert: UIAlertController) {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first,
+              let rootVC = window.rootViewController else { return }
+        
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            if let popover = alert.popoverPresentationController {
+                popover.sourceView = window
+                popover.sourceRect = CGRect(
+                    x: UIScreen.main.bounds.width / 2,
+                    y: UIScreen.main.bounds.height / 2,
+                    width: 0,
+                    height: 0
+                )
+                popover.permittedArrowDirections = []
+            }
+        }
+        
+        findTopViewController(rootVC).present(alert, animated: true)
+    }
+    
+    func findTopViewController(_ controller: UIViewController) -> UIViewController {
+        if let navigationController = controller as? UINavigationController {
+            return findTopViewController(navigationController.visibleViewController!)
+        }
+        if let tabController = controller as? UITabBarController {
+            if let selected = tabController.selectedViewController {
+                return findTopViewController(selected)
+            }
+        }
+        if let presented = controller.presentedViewController {
+            return findTopViewController(presented)
+        }
+        return controller
+    }
+}
+
+// MARK: - Metadata Fetching
+private extension EpisodeCell {
+    
+    func fetchAnimeEpisodeDetails() {
         guard let url = URL(string: "https://api.ani.zip/mappings?anilist_id=\(itemID)") else {
             isLoading = false
             Logger.shared.log("Invalid URL for itemID: \(itemID)", type: "Error")
@@ -788,129 +760,87 @@ struct EpisodeCell: View {
             }
             
             guard let data = data else {
-                self.handleFetchFailure(error: NSError(domain: "com.sora.episode", code: 1, userInfo: [NSLocalizedDescriptionKey: "No data received"]))
+                self.handleFetchFailure(error: NetworkError.noData)
                 return
             }
             
-            do {
-                let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
-                guard let json = jsonObject as? [String: Any] else {
-                    self.handleFetchFailure(error: NSError(domain: "com.sora.episode", code: 2, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON format"]))
-                    return
-                }
-                
-                guard let episodes = json["episodes"] as? [String: Any] else {
-                    Logger.shared.log("Missing 'episodes' object in response", type: "Error")
-                    DispatchQueue.main.async {
-                        self.isLoading = false
-                        self.retryAttempts = 0
-                    }
-                    return
-                }
-                
-                let episodeKey = "\(episodeID + 1)"
-                guard let episodeDetails = episodes[episodeKey] as? [String: Any] else {
-                    Logger.shared.log("Episode \(episodeKey) not found in response", type: "Error")
-                    DispatchQueue.main.async {
-                        self.isLoading = false
-                        self.retryAttempts = 0
-                    }
-                    return
-                }
-                
-                var title: [String: String] = [:]
-                var image: String = ""
-                var missingFields: [String] = []
-                
-                if let titleData = episodeDetails["title"] as? [String: String], !titleData.isEmpty {
-                    title = titleData
-                    
-                    if title.values.allSatisfy({ $0.isEmpty }) {
-                        missingFields.append("title (all values empty)")
-                    }
-                } else {
-                    missingFields.append("title")
-                }
-                
-                if let imageUrl = episodeDetails["image"] as? String, !imageUrl.isEmpty {
-                    image = imageUrl
-                } else {
-                    missingFields.append("image")
-                }
-                
-                if !missingFields.isEmpty {
-                    Logger.shared.log("Episode \(episodeKey) missing fields: \(missingFields.joined(separator: ", "))", type: "Warning")
-                }
-                
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.retryAttempts = 0
-                    
-                    if UserDefaults.standard.object(forKey: "fetchEpisodeMetadata") == nil
-                        || UserDefaults.standard.bool(forKey: "fetchEpisodeMetadata") {
-                        self.episodeTitle = title["en"] ?? title.values.first ?? ""
-                        
-                        if !image.isEmpty {
-                            self.episodeImageUrl = image
-                        }
-                    }
-                }
-            } catch {
-                Logger.shared.log("JSON parsing error: \(error.localizedDescription)", type: "Error")
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.retryAttempts = 0
-                }
-            }
+            self.processAnimeEpisodeData(data)
         }.resume()
     }
     
-    private func handleFetchFailure(error: Error) {
-        Logger.shared.log("Episode details fetch error: \(error.localizedDescription)", type: "Error")
-        
-        DispatchQueue.main.async {
-            if self.retryAttempts < self.maxRetryAttempts {
-                self.retryAttempts += 1
-                
-                let backoffDelay = self.initialBackoffDelay * pow(2.0, Double(self.retryAttempts - 1))
-                
-                Logger.shared.log("Will retry episode details fetch in \(backoffDelay) seconds", type: "Debug")
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + backoffDelay) {
-                    self.fetchAnimeEpisodeDetails()
+    func processAnimeEpisodeData(_ data: Data) {
+        do {
+            let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
+            guard let json = jsonObject as? [String: Any],
+                  let episodes = json["episodes"] as? [String: Any] else {
+                handleFetchFailure(error: NetworkError.invalidJSON)
+                return
+            }
+            
+            let episodeKey = "\(episodeID + 1)"
+            guard let episodeDetails = episodes[episodeKey] as? [String: Any] else {
+                Logger.shared.log("Episode \(episodeKey) not found in response", type: "Error")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.retryAttempts = 0
                 }
-            } else {
-                Logger.shared.log("Failed to fetch episode details after \(self.maxRetryAttempts) attempts", type: "Error")
+                return
+            }
+            
+            updateEpisodeMetadata(from: episodeDetails)
+            
+        } catch {
+            Logger.shared.log("JSON parsing error: \(error.localizedDescription)", type: "Error")
+            DispatchQueue.main.async {
                 self.isLoading = false
                 self.retryAttempts = 0
             }
         }
     }
     
-    private func fetchTMDBEpisodeImage() {
+    func updateEpisodeMetadata(from episodeDetails: [String: Any]) {
+        let title = episodeDetails["title"] as? [String: String] ?? [:]
+        let image = episodeDetails["image"] as? String ?? ""
+        
+        DispatchQueue.main.async {
+            self.isLoading = false
+            self.retryAttempts = 0
+            
+            if UserDefaults.standard.object(forKey: "fetchEpisodeMetadata") == nil ||
+               UserDefaults.standard.bool(forKey: "fetchEpisodeMetadata") {
+                self.episodeTitle = title["en"] ?? title.values.first ?? ""
+                
+                if !image.isEmpty {
+                    self.episodeImageUrl = image
+                }
+            }
+        }
+    }
+    
+    func fetchTMDBEpisodeImage() {
         guard let tmdbID = tmdbID, let season = seasonNumber else { return }
+        
         let episodeNum = episodeID + 1
         let urlString = "https://api.themoviedb.org/3/tv/\(tmdbID)/season/\(season)/episode/\(episodeNum)?api_key=738b4edd0a156cc126dc4a4b8aea4aca"
+        
         guard let url = URL(string: urlString) else { return }
         
         let tmdbImageWidth = UserDefaults.standard.string(forKey: "tmdbImageWidth") ?? "original"
         
         URLSession.custom.dataTask(with: url) { data, _, error in
             guard let data = data, error == nil else { return }
+            
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
                     let name = json["name"] as? String ?? ""
                     let stillPath = json["still_path"] as? String
-                    let imageUrl: String
-                    if let stillPath = stillPath {
-                        if tmdbImageWidth == "original" {
-                            imageUrl = "https://image.tmdb.org/t/p/original\(stillPath)"
-                        } else {
-                            imageUrl = "https://image.tmdb.org/t/p/w\(tmdbImageWidth)\(stillPath)"
-                        }
-                    } else {
-                        imageUrl = ""
-                    }
+                    
+                    let imageUrl = stillPath.map { path in
+                        tmdbImageWidth == "original" 
+                            ? "https://image.tmdb.org/t/p/original\(path)"
+                            : "https://image.tmdb.org/t/p/w\(tmdbImageWidth)\(path)"
+                    } ?? ""
+                    
                     DispatchQueue.main.async {
                         self.episodeTitle = name
                         self.episodeImageUrl = imageUrl
@@ -926,189 +856,98 @@ struct EpisodeCell: View {
         }.resume()
     }
     
-    private func calculateMaxSwipeDistance() -> CGFloat {
-        var buttonCount = 1
+    func handleFetchFailure(error: Error) {
+        Logger.shared.log("Episode details fetch error: \(error.localizedDescription)", type: "Error")
         
-        if progress <= 0.9 { buttonCount += 1 }
-        if progress != 0 { buttonCount += 1 }
-        if episodeIndex > 0 { buttonCount += 1 }
-        
-        var swipeDistance = CGFloat(buttonCount) * actionButtonWidth + 16
-        
-        if buttonCount == 3 {
-            swipeDistance += 12
-        } else if buttonCount == 4 {
-            swipeDistance += 24
-        }
-        
-        return swipeDistance
-    }
-    
-    private var actionButtons: some View {
-        HStack(spacing: 8) {
-            Button(action: {
-                closeActionsAndPerform {
-                    downloadEpisode()
+        DispatchQueue.main.async {
+            if self.retryAttempts < self.maxRetryAttempts {
+                self.retryAttempts += 1
+                let backoffDelay = self.initialBackoffDelay * pow(2.0, Double(self.retryAttempts - 1))
+                
+                Logger.shared.log("Will retry episode details fetch in \(backoffDelay) seconds", type: "Debug")
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + backoffDelay) {
+                    self.fetchAnimeEpisodeDetails()
                 }
-            }) {
-                VStack(spacing: 2) {
-                    Image(systemName: "arrow.down.circle")
-                        .font(.title3)
-                    Text("Download")
-                        .font(.caption2)
-                }
+            } else {
+                Logger.shared.log("Failed to fetch episode details after \(self.maxRetryAttempts) attempts", type: "Error")
+                self.isLoading = false
+                self.retryAttempts = 0
             }
-            .foregroundColor(.blue)
-            .frame(width: actionButtonWidth)
-            
-            if progress <= 0.9 {
-                Button(action: {
-                    closeActionsAndPerform {
-                        markAsWatched()
-                    }
-                }) {
-                    VStack(spacing: 2) {
-                        Image(systemName: "checkmark.circle")
-                            .font(.title3)
-                        Text("Watched")
-                            .font(.caption2)
-                    }
-                }
-                .foregroundColor(.green)
-                .frame(width: actionButtonWidth)
-            }
-            
-            if progress != 0 {
-                Button(action: {
-                    closeActionsAndPerform {
-                        resetProgress()
-                    }
-                }) {
-                    VStack(spacing: 2) {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.title3)
-                        Text("Reset")
-                            .font(.caption2)
-                    }
-                }
-                .foregroundColor(.orange)
-                .frame(width: actionButtonWidth)
-            }
-            
-            if episodeIndex > 0 {
-                Button(action: {
-                    closeActionsAndPerform {
-                        onMarkAllPrevious()
-                    }
-                }) {
-                    VStack(spacing: 2) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.title3)
-                        Text("All Prev")
-                            .font(.caption2)
-                    }
-                }
-                .foregroundColor(.purple)
-                .frame(width: actionButtonWidth)
-            }
-        }
-        .padding(.horizontal, 8)
-    }
-    
-    private func handleTap() {
-        if isActionsVisible {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                isActionsVisible = false
-            }
-        } else if isMultiSelectMode {
-            onSelectionChanged?(!isSelected)
-        } else {
-            let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
-            onTap(imageUrl)
-        }
-    }
-    
-    private func closeActionsIfNeeded() {
-        if isActionsVisible {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                isActionsVisible = false
-            }
-        }
-    }
-    
-    private func closeActionsAndPerform(action: @escaping () -> Void) {
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-            isActionsVisible = false
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            action()
         }
     }
 }
 
-struct UIViewWrapper: UIViewRepresentable {
-    let panGesture: UIPanGestureRecognizer
-    let onSwipe: (SwipeDirection) -> Void
+// MARK: - Supporting Types and Views
+private enum NetworkError: Error {
+    case noData
+    case invalidJSON
     
-    enum SwipeDirection {
-        case left, right, none
-    }
-    
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        view.isUserInteractionEnabled = true
-        view.backgroundColor = .clear
-        
-        // Remove any existing gesture recognizers
-        if let existingGestures = view.gestureRecognizers {
-            for gesture in existingGestures {
-                view.removeGestureRecognizer(gesture)
-            }
-        }
-        
-        // Add the pan gesture
-        panGesture.addTarget(context.coordinator, action: #selector(Coordinator.handlePan(_:)))
-        view.addGestureRecognizer(panGesture)
-        
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIView, context: Context) {
-        // Ensure the view is user interaction enabled
-        uiView.isUserInteractionEnabled = true
-    }
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(onSwipe: onSwipe)
-    }
-    
-    class Coordinator: NSObject {
-        let onSwipe: (SwipeDirection) -> Void
-        
-        init(onSwipe: @escaping (SwipeDirection) -> Void) {
-            self.onSwipe = onSwipe
-        }
-        
-        @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
-            let translation = gesture.translation(in: gesture.view)
-            let velocity = gesture.velocity(in: gesture.view)
-            
-            if gesture.state == .ended {
-                if abs(velocity.x) > abs(velocity.y) && abs(velocity.x) > 500 {
-                    if velocity.x < 0 {
-                        onSwipe(.left)
-                    } else {
-                        onSwipe(.right)
-                    }
-                } else if abs(translation.x) > abs(translation.y) && abs(translation.x) > 50 {
-                    if translation.x < 0 {
-                        onSwipe(.left)
-                    } else {
-                        onSwipe(.right)
-                    }
-                }
-            }
+    var localizedDescription: String {
+        switch self {
+        case .noData:
+            return "No data received"
+        case .invalidJSON:
+            return "Invalid JSON format"
         }
     }
 }
+
+private struct ActionButton: View {
+    let icon: String
+    let label: String
+    let color: Color
+    let width: CGFloat
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 2) {
+                Image(systemName: icon)
+                    .font(.title3)
+                Text(label)
+                    .font(.caption2)
+            }
+        }
+        .foregroundColor(color)
+        .frame(width: width)
+    }
+}
+
+private struct AsyncImageView: View {
+    let url: String
+    let width: CGFloat
+    let height: CGFloat
+    
+    var body: some View {
+        if let url = URL(string: url) {
+            LazyImage(url: url) { state in
+                if let image = state.imageContainer?.image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(16/9, contentMode: .fill)
+                        .frame(width: width, height: height)
+                        .cornerRadius(8)
+                } else if state.error != nil {
+                    placeholderView
+                        .onAppear {
+                            Logger.shared.log("Failed to load episode image: \(state.error?.localizedDescription ?? "Unknown error")", type: "Error")
+                        }
+                } else {
+                    placeholderView
+                }
+            }
+        } else {
+            placeholderView
+        }
+    }
+    
+    private var placeholderView: some View {
+        Rectangle()
+            .fill(.tertiary)
+            .frame(width: width, height: height)
+            .cornerRadius(8)
+    }
+}
+
+

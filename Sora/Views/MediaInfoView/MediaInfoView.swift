@@ -285,8 +285,6 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Spacer()
-            
             // Airdate section
             if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
                 HStack(spacing: 4) {

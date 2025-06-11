@@ -84,6 +84,7 @@ struct MediaInfoView: View {
     @State private var showRangeInput: Bool = false
     @State private var isBulkDownloading: Bool = false
     @State private var bulkDownloadProgress: String = ""
+    @State private var isSingleEpisodeDownloading: Bool = false
     @State private var tmdbType: TMDBFetcher.MediaType? = nil
     
     private var isGroupedBySeasons: Bool {
@@ -375,8 +376,7 @@ struct MediaInfoView: View {
                                 )
                                 
                                 if downloadStatus == .notDownloaded {
-                                    selectedEpisodeNumber = ep.number
-                                    startBulkDownload()
+                                    downloadSingleEpisodeDirectly(episode: ep)
                                     DropManager.shared.showDrop(title: "Starting Download", subtitle: "", duration: 1.0, icon: UIImage(systemName: "arrow.down.circle"))
                                 } else {
                                     DropManager.shared.showDrop(title: "Already Downloaded", subtitle: "", duration: 1.0, icon: UIImage(systemName: "checkmark.circle"))
@@ -1919,5 +1919,277 @@ struct MediaInfoView: View {
                 completion(nil)
             }
         }.resume()
+    }
+    
+    // MARK: - Single Episode Download (Non-Bulk)
+    
+    private func downloadSingleEpisodeDirectly(episode: EpisodeLink) {
+        if isSingleEpisodeDownloading {
+            return
+        }
+        
+        isSingleEpisodeDownloading = true
+        
+        DropManager.shared.downloadStarted(episodeNumber: episode.number)
+        
+        Task {
+            do {
+                let jsContent = try moduleManager.getModuleContent(module)
+                jsController.loadScript(jsContent)
+                tryNextSingleDownloadMethod(episode: episode, methodIndex: 0, softsub: module.metadata.softsub == true)
+            } catch {
+                DropManager.shared.error("Failed to start download: \(error.localizedDescription)")
+                isSingleEpisodeDownloading = false
+            }
+        }
+    }
+    
+    private func tryNextSingleDownloadMethod(episode: EpisodeLink, methodIndex: Int, softsub: Bool) {
+        if !isSingleEpisodeDownloading {
+            return
+        }
+        
+        print("[Single Download] Trying download method #\(methodIndex+1) for Episode \(episode.number)")
+        
+        switch methodIndex {
+        case 0:
+            if module.metadata.asyncJS == true {
+                jsController.fetchStreamUrlJS(episodeUrl: episode.href, softsub: softsub, module: module) { result in
+                    self.handleSingleDownloadResult(result, episode: episode, methodIndex: methodIndex, softsub: softsub)
+                }
+            } else {
+                tryNextSingleDownloadMethod(episode: episode, methodIndex: methodIndex + 1, softsub: softsub)
+            }
+            
+        case 1:
+            if module.metadata.streamAsyncJS == true {
+                jsController.fetchStreamUrlJSSecond(episodeUrl: episode.href, softsub: softsub, module: module) { result in
+                    self.handleSingleDownloadResult(result, episode: episode, methodIndex: methodIndex, softsub: softsub)
+                }
+            } else {
+                tryNextSingleDownloadMethod(episode: episode, methodIndex: methodIndex + 1, softsub: softsub)
+            }
+            
+        case 2:
+            jsController.fetchStreamUrl(episodeUrl: episode.href, softsub: softsub, module: module) { result in
+                self.handleSingleDownloadResult(result, episode: episode, methodIndex: methodIndex, softsub: softsub)
+            }
+            
+        default:
+            DropManager.shared.error("Failed to find a valid stream for download after trying all methods")
+            isSingleEpisodeDownloading = false
+        }
+    }
+    
+    private func handleSingleDownloadResult(_ result: (streams: [String]?, subtitles: [String]?, sources: [[String:Any]]?), episode: EpisodeLink, methodIndex: Int, softsub: Bool) {
+        if !isSingleEpisodeDownloading {
+            return
+        }
+        
+        if let sources = result.sources, !sources.isEmpty {
+            if sources.count > 1 {
+                showSingleDownloadStreamSelectionAlert(streams: sources, episode: episode, subtitleURL: result.subtitles?.first)
+                return
+            } else if let streamUrl = sources[0]["streamUrl"] as? String, let url = URL(string: streamUrl) {
+                
+                let subtitleURLString = sources[0]["subtitle"] as? String
+                let subtitleURL = subtitleURLString.flatMap { URL(string: $0) }
+                if let subtitleURL = subtitleURL {
+                    Logger.shared.log("[Single Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+                }
+                
+                startSingleEpisodeDownloadWithProcessedStream(episode: episode, url: url, streamUrl: streamUrl, subtitleURL: subtitleURL)
+                return
+            }
+        }
+        
+        if let streams = result.streams, !streams.isEmpty {
+            if streams[0] == "[object Promise]" {
+                tryNextSingleDownloadMethod(episode: episode, methodIndex: methodIndex + 1, softsub: softsub)
+                return
+            }
+            
+            if streams.count > 1 {
+                showSingleDownloadStreamSelectionAlert(streams: streams, episode: episode, subtitleURL: result.subtitles?.first)
+                return
+            } else if let url = URL(string: streams[0]) {
+                let subtitleURL = result.subtitles?.first.flatMap { URL(string: $0) }
+                if let subtitleURL = subtitleURL {
+                    Logger.shared.log("[Single Download] Found subtitle URL: \(subtitleURL.absoluteString)")
+                }
+                
+                startSingleEpisodeDownloadWithProcessedStream(episode: episode, url: url, streamUrl: streams[0], subtitleURL: subtitleURL)
+                return
+            }
+        }
+        
+        tryNextSingleDownloadMethod(episode: episode, methodIndex: methodIndex + 1, softsub: softsub)
+    }
+    
+    private func showSingleDownloadStreamSelectionAlert(streams: [Any], episode: EpisodeLink, subtitleURL: String? = nil) {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "Select Download Server", message: "Choose a server to download Episode \(episode.number) from", preferredStyle: .actionSheet)
+            
+            var index = 0
+            var streamIndex = 1
+            
+            while index < streams.count {
+                var title: String = ""
+                var streamUrl: String = ""
+                
+                if let streams = streams as? [String] {
+                    if index + 1 < streams.count {
+                        if !streams[index].lowercased().contains("http") {
+                            title = streams[index]
+                            streamUrl = streams[index + 1]
+                            index += 2
+                        } else {
+                            title = "Server \(streamIndex)"
+                            streamUrl = streams[index]
+                            index += 1
+                        }
+                    } else {
+                        title = "Server \(streamIndex)"
+                        streamUrl = streams[index]
+                        index += 1
+                    }
+                } else if let streams = streams as? [[String: Any]] {
+                    if let currTitle = streams[index]["title"] as? String {
+                        title = currTitle
+                    } else {
+                        title = "Server \(streamIndex)"
+                    }
+                    streamUrl = (streams[index]["streamUrl"] as? String) ?? ""
+                    index += 1
+                }
+                
+                alert.addAction(UIAlertAction(title: title, style: .default) { _ in
+                    guard let url = URL(string: streamUrl) else {
+                        DropManager.shared.error("Invalid stream URL selected")
+                        self.isSingleEpisodeDownloading = false
+                        return
+                    }
+                    
+                    var subtitleURL: URL? = nil
+                    if let streams = streams as? [[String: Any]],
+                       let subtitleURLString = streams[index-1]["subtitle"] as? String {
+                        subtitleURL = URL(string: subtitleURLString)
+                    }
+                    
+                    self.startSingleEpisodeDownloadWithProcessedStream(episode: episode, url: url, streamUrl: streamUrl, subtitleURL: subtitleURL)
+                })
+                
+                streamIndex += 1
+            }
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                self.isSingleEpisodeDownloading = false
+            })
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootVC = window.rootViewController {
+                
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    if let popover = alert.popoverPresentationController {
+                        popover.sourceView = window
+                        popover.sourceRect = CGRect(
+                            x: UIScreen.main.bounds.width / 2,
+                            y: UIScreen.main.bounds.height / 2,
+                            width: 0,
+                            height: 0
+                        )
+                        popover.permittedArrowDirections = []
+                    }
+                }
+                
+                findTopViewController.findViewController(rootVC).present(alert, animated: true)
+            }
+        }
+    }
+    
+    private func startSingleEpisodeDownloadWithProcessedStream(episode: EpisodeLink, url: URL, streamUrl: String, subtitleURL: URL? = nil) {
+        var headers: [String: String] = [:]
+        
+        if !module.metadata.baseUrl.isEmpty && !module.metadata.baseUrl.contains("undefined") {
+            print("Using module baseUrl: \(module.metadata.baseUrl)")
+            
+            headers = [
+                "Origin": module.metadata.baseUrl,
+                "Referer": module.metadata.baseUrl,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                "Accept": "*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-origin"
+            ]
+        } else {
+            if let scheme = url.scheme, let host = url.host {
+                let baseUrl = scheme + "://" + host
+                
+                headers = [
+                    "Origin": baseUrl,
+                    "Referer": baseUrl,
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                    "Accept": "*/*",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-origin"
+                ]
+            } else {
+                DropManager.shared.error("Invalid stream URL - missing scheme or host")
+                isSingleEpisodeDownloading = false
+                return
+            }
+        }
+        
+        print("Single download headers: \(headers)")
+        
+        fetchEpisodeMetadataForDownload(episode: episode) { metadata in
+            let episodeTitle = metadata?.title["en"] ?? metadata?.title.values.first ?? ""
+            let episodeImageUrl = metadata?.imageUrl ?? ""
+            
+            let episodeName = metadata?.title["en"] ?? "Episode \(episode.number)"
+            let fullEpisodeTitle = episodeName
+            
+            let episodeThumbnailURL: URL?
+            if !episodeImageUrl.isEmpty {
+                episodeThumbnailURL = URL(string: episodeImageUrl)
+            } else {
+                episodeThumbnailURL = URL(string: self.getBannerImageBasedOnAppearance())
+            }
+            
+            let showPosterImageURL = URL(string: self.imageUrl)
+            
+            print("[Single Download] Using episode metadata - Title: '\(fullEpisodeTitle)', Image: '\(episodeImageUrl.isEmpty ? "default banner" : episodeImageUrl)'")
+            
+            self.jsController.downloadWithStreamTypeSupport(
+                url: url,
+                headers: headers,
+                title: fullEpisodeTitle,
+                imageURL: episodeThumbnailURL,
+                module: self.module,
+                isEpisode: true,
+                showTitle: self.title,
+                season: 1,
+                episode: episode.number,
+                subtitleURL: subtitleURL,
+                showPosterURL: showPosterImageURL,
+                completionHandler: { success, message in
+                    if success {
+                        Logger.shared.log("Started download for Episode \(episode.number): \(episode.href)", type: "Download")
+                        AnalyticsManager.shared.sendEvent(
+                            event: "download",
+                            additionalData: ["episode": episode.number, "url": streamUrl]
+                        )
+                    } else {
+                        DropManager.shared.error(message)
+                    }
+                    self.isSingleEpisodeDownloading = false
+                }
+            )
+        }
     }
 }

@@ -297,7 +297,7 @@ struct SettingsViewTrackers: View {
                 
                 SettingsSection(
                     title: "Info",
-                    footer: "Sora and Cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate."
+                    footer: "Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate."
                 ) {}
             }
             .padding(.vertical, 20)

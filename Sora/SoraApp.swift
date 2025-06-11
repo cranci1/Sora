@@ -6,51 +6,9 @@
 //
 
 import SwiftUI
-import UIKit
-
-class OrientationManager: ObservableObject {
-    static let shared = OrientationManager()
-    
-    @Published var isLocked = false
-    private var lockedOrientation: UIInterfaceOrientationMask = .all
-    
-    private init() {}
-    
-    func lockOrientation() {
-        let currentOrientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? .portrait
-        
-        switch currentOrientation {
-        case .portrait, .portraitUpsideDown:
-            lockedOrientation = .portrait
-        case .landscapeLeft, .landscapeRight:
-            lockedOrientation = .landscape
-        default:
-            lockedOrientation = .portrait
-        }
-        
-        isLocked = true
-        
-        UIDevice.current.setValue(currentOrientation.rawValue, forKey: "orientation")
-        UIViewController.attemptRotationToDeviceOrientation()
-    }
-    
-    func unlockOrientation(after delay: TimeInterval = 0.0) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            self.isLocked = false
-            self.lockedOrientation = .all
-            
-            UIViewController.attemptRotationToDeviceOrientation()
-        }
-    }
-    
-    func supportedOrientations() -> UIInterfaceOrientationMask {
-        return isLocked ? lockedOrientation : .all
-    }
-}
 
 @main
 struct SoraApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var settings = Settings()
     @StateObject private var moduleManager = ModuleManager()
     @StateObject private var librarykManager = LibraryManager()
@@ -73,24 +31,30 @@ struct SoraApp: App {
     
     var body: some Scene {
         WindowGroup {
-            SplashScreenView()
-                .environmentObject(moduleManager)
-                .environmentObject(settings)
-                .environmentObject(librarykManager)
-                .environmentObject(downloadManager)
-                .environmentObject(jsController)
-                .accentColor(settings.accentColor)
-                .onAppear {
-                    settings.updateAppearance()
-                    Task {
-                        if UserDefaults.standard.bool(forKey: "refreshModulesOnLaunch") {
-                            await moduleManager.refreshModules()
-                        }
+            Group {
+                if !UserDefaults.standard.bool(forKey: "hideSplashScreen") {
+                    SplashScreenView()
+                } else {
+                    ContentView()
+                }
+            }
+            .environmentObject(moduleManager)
+            .environmentObject(settings)
+            .environmentObject(librarykManager)
+            .environmentObject(downloadManager)
+            .environmentObject(jsController)
+            .accentColor(settings.accentColor)
+            .onAppear {
+                settings.updateAppearance()
+                Task {
+                    if UserDefaults.standard.bool(forKey: "refreshModulesOnLaunch") {
+                        await moduleManager.refreshModules()
                     }
                 }
-                .onOpenURL { url in
-                    handleURL(url)
-                }
+            }
+            .onOpenURL { url in
+                handleURL(url)
+            }
         }
     }
     
@@ -137,21 +101,5 @@ struct SoraApp: App {
         default:
             break
         }
-    }
-}
-
-class AppInfo: NSObject {
-    @objc func getBundleIdentifier() -> String {
-        return Bundle.main.bundleIdentifier ?? "me.cranci.sulfur"
-    }
-    
-    @objc func getDisplayName() -> String {
-        return Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as! String
-    }
-}
-
-class AppDelegate: NSObject, UIApplicationDelegate {
-    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        return OrientationManager.shared.supportedOrientations()
     }
 }

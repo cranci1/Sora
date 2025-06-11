@@ -87,7 +87,7 @@ struct SettingsView: View {
                             Divider().padding(.horizontal, 16)
                             
                             NavigationLink(destination: SettingsViewTrackers()) {
-                                SettingsNavigationRow(icon: "square.stack.3d.up", title: "Trackers")
+                                SettingsNavigationRow(icon: "icloud.and.arrow.up", title: "Syncing")
                             }
                         }
                         .background(.ultraThinMaterial)

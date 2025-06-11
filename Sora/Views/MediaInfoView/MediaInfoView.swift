@@ -39,6 +39,7 @@ struct MediaInfoView: View {
     @State private var itemID: Int?
     @State private var tmdbID: Int?
     @State private var tmdbType: TMDBFetcher.MediaType? = nil
+    @State private var currentFetchTask: Task<Void, Never>? = nil
     
     // MARK: - UI State
     @State private var isLoading: Bool = true
@@ -175,6 +176,9 @@ struct MediaInfoView: View {
             }
             .onDisappear {
                 tabBarController.showTabBar()
+                // Cancel any running tasks to prevent memory leaks
+                currentFetchTask?.cancel()
+                activeFetchID = nil
             }
             .task {
                 await setupInitialData()
@@ -243,8 +247,17 @@ struct MediaInfoView: View {
                     .clipped()
             } else {
                 Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .shimmering()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.gray.opacity(0.2),
+                                Color.gray.opacity(0.3),
+                                Color.gray.opacity(0.2)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .frame(width: UIScreen.main.bounds.width, height: 700)
                     .clipped()
             }

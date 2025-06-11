@@ -89,11 +89,7 @@ struct SoraApp: App {
                     }
                 }
                 .onOpenURL { url in
-                    if let params = url.queryParameters, params["code"] != nil {
-                        Self.handleRedirect(url: url)
-                    } else {
-                        handleURL(url)
-                    }
+                    handleURL(url)
                 }
         }
     }
@@ -142,38 +138,8 @@ struct SoraApp: App {
             break
         }
     }
-    
-    static func handleRedirect(url: URL) {
-        guard let params = url.queryParameters,
-              let code = params["code"] else {
-                  Logger.shared.log("Failed to extract authorization code")
-                  return
-              }
-        
-        switch url.host {
-        case "anilist":
-            AniListToken.exchangeAuthorizationCodeForToken(code: code) { success in
-                if success {
-                    Logger.shared.log("AniList token exchange successful")
-                } else {
-                    Logger.shared.log("AniList token exchange failed", type: "Error")
-                }
-            }
-            
-        case "trakt":
-            TraktToken.exchangeAuthorizationCodeForToken(code: code) { success in
-                if success {
-                    Logger.shared.log("Trakt token exchange successful")
-                } else {
-                    Logger.shared.log("Trakt token exchange failed", type: "Error")
-                }
-            }
-            
-        default:
-            Logger.shared.log("Unknown authentication service", type: "Error")
-        }
-    }
 }
+
 class AppInfo: NSObject {
     @objc func getBundleIdentifier() -> String {
         return Bundle.main.bundleIdentifier ?? "me.cranci.sulfur"

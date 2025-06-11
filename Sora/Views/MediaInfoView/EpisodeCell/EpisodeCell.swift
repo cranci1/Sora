@@ -44,10 +44,12 @@ struct EpisodeCell: View {
     @State private var lastLoggedStatus: EpisodeDownloadStatus?
     @State private var downloadAnimationScale: CGFloat = 1.0
     
+    @State private var isActionsVisible = false
+    @State private var panGesture = UIPanGestureRecognizer()
+    
     @State private var swipeOffset: CGFloat = 0
     @State private var isShowingActions: Bool = false
     @State private var actionButtonWidth: CGFloat = 60
-    @State private var dragState: DragState = .inactive
     
     @State private var retryAttempts: Int = 0
     private let maxRetryAttempts: Int = 3
@@ -186,28 +188,73 @@ struct EpisodeCell: View {
                     )
             )
             .clipShape(RoundedRectangle(cornerRadius: 15))
-            .offset(x: swipeOffset + dragState.translation.width)
+            .offset(x: swipeOffset)
             .zIndex(1)
-            .scaleEffect(dragState.isActive ? 0.98 : 1.0)
-            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: swipeOffset)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: dragState.isActive)
+            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: swipeOffset)
             .contextMenu {
                 contextMenuContent
             }
-            .simultaneousGesture(
-                DragGesture(coordinateSpace: .local)
+            .highPriorityGesture(
+                DragGesture(minimumDistance: 10)
                     .onChanged { value in
-                        handleDragChanged(value)
+                        let horizontalTranslation = value.translation.width
+                        let verticalTranslation = value.translation.height
+                        
+                        // Only handle if it's a clear horizontal swipe
+                        if abs(horizontalTranslation) > abs(verticalTranslation) * 1.5 {
+                            if horizontalTranslation < 0 {
+                                let maxSwipe = calculateMaxSwipeDistance()
+                                swipeOffset = max(horizontalTranslation, -maxSwipe)
+                            } else if isShowingActions {
+                                let maxSwipe = calculateMaxSwipeDistance()
+                                swipeOffset = max(horizontalTranslation - maxSwipe, -maxSwipe)
+                            }
+                        }
                     }
                     .onEnded { value in
-                        handleDragEnded(value)
+                        let horizontalTranslation = value.translation.width
+                        let verticalTranslation = value.translation.height
+                        
+                        // Only handle if it was a clear horizontal swipe
+                        if abs(horizontalTranslation) > abs(verticalTranslation) * 1.5 {
+                            let maxSwipe = calculateMaxSwipeDistance()
+                            let threshold = maxSwipe * 0.2
+                            
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                if horizontalTranslation < -threshold && !isShowingActions {
+                                    swipeOffset = -maxSwipe
+                                    isShowingActions = true
+                                } else if horizontalTranslation > threshold && isShowingActions {
+                                    swipeOffset = 0
+                                    isShowingActions = false
+                                } else {
+                                    swipeOffset = isShowingActions ? -maxSwipe : 0
+                                }
+                            }
+                        }
                     }
             )
         }
         .onTapGesture {
-            handleTap()
+            if isShowingActions {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    swipeOffset = 0
+                    isShowingActions = false
+                }
+            } else if isMultiSelectMode {
+                onSelectionChanged?(!isSelected)
+            } else {
+                let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
+                onTap(imageUrl)
+            }
         }
         .onAppear {
+            // Configure the pan gesture
+            panGesture.delegate = nil
+            panGesture.cancelsTouchesInView = false
+            panGesture.delaysTouchesBegan = false
+            panGesture.delaysTouchesEnded = false
+            
             updateProgress()
             updateDownloadStatus()
             if UserDefaults.standard.string(forKey: "metadataProviders") ?? "TMDB" == "TMDB" {
@@ -968,72 +1015,10 @@ struct EpisodeCell: View {
         .padding(.horizontal, 8)
     }
     
-    private func handleDragChanged(_ value: DragGesture.Value) {
-        let translation = value.translation
-        let velocity = value.velocity
-        
-        let isHorizontalGesture = abs(translation.width) > abs(translation.height)
-        let hasSignificantHorizontalMovement = abs(translation.width) > 10
-        
-        if isHorizontalGesture && hasSignificantHorizontalMovement {
-            dragState = .dragging(translation: .zero)
-            
-            let proposedOffset = swipeOffset + translation.width
-            let maxSwipe = calculateMaxSwipeDistance()
-            
-            if translation.width < 0 {
-                let newOffset = max(proposedOffset, -maxSwipe)
-                if proposedOffset < -maxSwipe {
-                    let resistance = abs(proposedOffset + maxSwipe) * 0.15
-                    swipeOffset = -maxSwipe - resistance
-                } else {
-                    swipeOffset = newOffset
-                }
-            } else if isShowingActions {
-                swipeOffset = max(proposedOffset, -maxSwipe)
-            }
-        } else if !hasSignificantHorizontalMovement {
-            dragState = .inactive
-        }
-    }
-    
-    private func handleDragEnded(_ value: DragGesture.Value) {
-        let translation = value.translation
-        let velocity = value.velocity
-        
-        dragState = .inactive
-        
-        let isHorizontalGesture = abs(translation.width) > abs(translation.height)
-        let hasSignificantHorizontalMovement = abs(translation.width) > 10
-        
-        if isHorizontalGesture && hasSignificantHorizontalMovement {
-            let maxSwipe = calculateMaxSwipeDistance()
-            let threshold = maxSwipe * 0.3
-            let velocityThreshold: CGFloat = 500
-            
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                if translation.width < -threshold || velocity.width < -velocityThreshold {
-                    swipeOffset = -maxSwipe
-                    isShowingActions = true
-                } else if translation.width > threshold || velocity.width > velocityThreshold {
-                    swipeOffset = 0
-                    isShowingActions = false
-                } else {
-                    swipeOffset = isShowingActions ? -maxSwipe : 0
-                }
-            }
-        } else {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                swipeOffset = isShowingActions ? -calculateMaxSwipeDistance() : 0
-            }
-        }
-    }
-    
     private func handleTap() {
-        if isShowingActions {
+        if isActionsVisible {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                swipeOffset = 0
-                isShowingActions = false
+                isActionsVisible = false
             }
         } else if isMultiSelectMode {
             onSelectionChanged?(!isSelected)
@@ -1044,22 +1029,86 @@ struct EpisodeCell: View {
     }
     
     private func closeActionsIfNeeded() {
-        if isShowingActions {
+        if isActionsVisible {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                swipeOffset = 0
-                isShowingActions = false
+                isActionsVisible = false
             }
         }
     }
     
     private func closeActionsAndPerform(action: @escaping () -> Void) {
         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-            swipeOffset = 0
-            isShowingActions = false
+            isActionsVisible = false
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             action()
+        }
+    }
+}
+
+struct UIViewWrapper: UIViewRepresentable {
+    let panGesture: UIPanGestureRecognizer
+    let onSwipe: (SwipeDirection) -> Void
+    
+    enum SwipeDirection {
+        case left, right, none
+    }
+    
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.isUserInteractionEnabled = true
+        view.backgroundColor = .clear
+        
+        // Remove any existing gesture recognizers
+        if let existingGestures = view.gestureRecognizers {
+            for gesture in existingGestures {
+                view.removeGestureRecognizer(gesture)
+            }
+        }
+        
+        // Add the pan gesture
+        panGesture.addTarget(context.coordinator, action: #selector(Coordinator.handlePan(_:)))
+        view.addGestureRecognizer(panGesture)
+        
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {
+        // Ensure the view is user interaction enabled
+        uiView.isUserInteractionEnabled = true
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onSwipe: onSwipe)
+    }
+    
+    class Coordinator: NSObject {
+        let onSwipe: (SwipeDirection) -> Void
+        
+        init(onSwipe: @escaping (SwipeDirection) -> Void) {
+            self.onSwipe = onSwipe
+        }
+        
+        @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
+            let translation = gesture.translation(in: gesture.view)
+            let velocity = gesture.velocity(in: gesture.view)
+            
+            if gesture.state == .ended {
+                if abs(velocity.x) > abs(velocity.y) && abs(velocity.x) > 500 {
+                    if velocity.x < 0 {
+                        onSwipe(.left)
+                    } else {
+                        onSwipe(.right)
+                    }
+                } else if abs(translation.x) > abs(translation.y) && abs(translation.x) > 50 {
+                    if translation.x < 0 {
+                        onSwipe(.left)
+                    } else {
+                        onSwipe(.right)
+                    }
+                }
+            }
         }
     }
 }

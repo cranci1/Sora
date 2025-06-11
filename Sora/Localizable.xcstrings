@@ -319,6 +319,9 @@
     "Open in AniList" : {
 
     },
+    "Original Poster" : {
+
+    },
     "Play" : {
 
     },
@@ -338,9 +341,6 @@
 
     },
     "Remove" : {
-
-    },
-    "Remove All Caches" : {
 
     },
     "Remove Documents" : {
@@ -365,9 +365,6 @@
 
     },
     "Reset Progress" : {
-
-    },
-    "Revert Module Poster" : {
 
     },
     "Running Sora %@ - cranci1" : {

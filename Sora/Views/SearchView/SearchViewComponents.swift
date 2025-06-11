@@ -117,6 +117,10 @@ struct ModuleSelectorMenu: View {
                         )
                 }
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color(.systemGray6).opacity(0))
+            .cornerRadius(12)
         }
     }
 }

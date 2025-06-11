@@ -22,20 +22,20 @@ struct ModuleAdditionSettingsView: View {
         ZStack {
             LinearGradient(
                 gradient: Gradient(colors: [
-                    colorScheme == .light ? Color.black : Color.white,
-                    Color.accentColor.opacity(0.08)
+                    colorScheme == .dark ? Color.black : Color.white,
+                    Color.accentColor.opacity(0.05)
                 ]),
                 startPoint: .top,
                 endPoint: .bottom
             )
-                .ignoresSafeArea()
+            .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 HStack {
                     Spacer()
                     Capsule()
                         .frame(width: 40, height: 5)
-                        .foregroundColor(Color(.systemGray4))
+                        .foregroundColor(Color(.systemGray3))
                         .padding(.top, 10)
                     Spacer()
                 }
@@ -57,17 +57,22 @@ struct ModuleAdditionSettingsView: View {
                                 }
                                 .frame(width: 90, height: 90)
                                 .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                                .shadow(color: Color.accentColor.opacity(0.18), radius: 10, x: 0, y: 6)
+                                .shadow(
+                                    color: colorScheme == .dark
+                                        ? Color.black.opacity(0.3)
+                                        : Color.accentColor.opacity(0.15),
+                                    radius: 10, x: 0, y: 6
+                                )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 22)
-                                        .stroke(Color.accentColor, lineWidth: 2)
+                                        .stroke(Color.accentColor.opacity(0.8), lineWidth: 2)
                                 )
                                 .padding(.top, 10)
                                 
                                 VStack(spacing: 6) {
                                     Text(metadata.sourceName)
                                         .font(.system(size: 28, weight: .bold, design: .rounded))
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(colorScheme == .dark ? .white : .black)
                                         .multilineTextAlignment(.center)
                                         .padding(.top, 6)
                                     
@@ -84,14 +89,19 @@ struct ModuleAdditionSettingsView: View {
                                         }
                                         .frame(width: 32, height: 32)
                                         .clipShape(Circle())
-                                        .shadow(radius: 2)
+                                        .shadow(
+                                            color: colorScheme == .dark
+                                                ? Color.black.opacity(0.4)
+                                                : Color.gray.opacity(0.3),
+                                            radius: 2
+                                        )
                                         VStack(alignment: .leading, spacing: 0) {
                                             Text(metadata.author.name)
                                                 .font(.headline)
-                                                .foregroundColor(.primary)
+                                                .foregroundColor(colorScheme == .dark ? .white : .black)
                                             Text("Author")
                                                 .font(.caption2)
-                                                .foregroundColor(.secondary)
+                                                .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.7) : Color.black.opacity(0.6))
                                         }
                                         Spacer()
                                     }
@@ -99,7 +109,11 @@ struct ModuleAdditionSettingsView: View {
                                     .padding(.vertical, 8)
                                     .background(
                                         Capsule()
-                                            .fill(Color.accentColor.opacity(colorScheme == .dark ? 0.13 : 0.08))
+                                            .fill(
+                                                colorScheme == .dark
+                                                    ? Color.accentColor.opacity(0.15)
+                                                    : Color.accentColor.opacity(0.08)
+                                            )
                                     )
                                     .padding(.top, 2)
                                 }
@@ -125,7 +139,7 @@ struct ModuleAdditionSettingsView: View {
                                 }
                                 .background(
                                     RoundedRectangle(cornerRadius: 22)
-                                        .fill(Color(.systemGray6).opacity(colorScheme == .dark ? 0.18 : 0.8))
+                                        .fill(colorScheme == .dark ? Color.white.opacity(0.1) : Color.black.opacity(0.05))
                                 )
                                 .padding(.top, 18)
                                 .padding(.horizontal, 2)
@@ -142,7 +156,7 @@ struct ModuleAdditionSettingsView: View {
                                 .padding(16)
                                 .background(
                                     RoundedRectangle(cornerRadius: 18)
-                                        .fill(Color(.systemGray6).opacity(colorScheme == .dark ? 0.13 : 0.85))
+                                        .fill(colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.04))
                                 )
                                 .padding(.top, 18)
                             }
@@ -152,8 +166,10 @@ struct ModuleAdditionSettingsView: View {
                             VStack(spacing: 20) {
                                 ProgressView()
                                     .scaleEffect(1.5)
+                                    .tint(.accentColor)
                                 Text("Loading module information...")
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.7) : Color.black.opacity(0.6))
+                                    .font(.body)
                             }
                             .frame(maxHeight: .infinity)
                             .padding(.top, 100)
@@ -165,6 +181,7 @@ struct ModuleAdditionSettingsView: View {
                                 Text(errorMessage)
                                     .foregroundColor(.red)
                                     .multilineTextAlignment(.center)
+                                    .font(.body)
                             }
                             .frame(maxHeight: .infinity)
                             .padding(.top, 100)
@@ -180,21 +197,26 @@ struct ModuleAdditionSettingsView: View {
                             Text("Add Module")
                         }
                         .font(.headline)
-                        .foregroundColor(colorScheme == .light ? .black : .white)
+                        .foregroundColor(Color.accentColor)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(
                             LinearGradient(
                                 gradient: Gradient(colors: [
-                                    Color.accentColor.opacity(0.95),
-                                    Color.accentColor.opacity(0.7)
+                                    colorScheme == .dark ? Color.white : Color.black,
+                                    colorScheme == .dark ? Color.white.opacity(0.9) : Color.black.opacity(0.9)
                                 ]),
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 18))
                         )
-                        .shadow(color: Color.accentColor.opacity(0.18), radius: 8, x: 0, y: 4)
+                        .shadow(
+                            color: colorScheme == .dark
+                                ? Color.black.opacity(0.3)
+                                : Color.accentColor.opacity(0.25),
+                            radius: 8, x: 0, y: 4
+                        )
                         .padding(.horizontal, 20)
                     }
                     .disabled(isLoading || moduleMetadata == nil)
@@ -203,7 +225,7 @@ struct ModuleAdditionSettingsView: View {
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
                         Text("Cancel")
                             .font(.body)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.7) : Color.black.opacity(0.6))
                             .padding(.vertical, 8)
                     }
                 }
@@ -271,18 +293,19 @@ struct FancyInfoTile: View {
     let icon: String
     let label: String
     let value: String
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         VStack(spacing: 4) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.accentColor)
+                .foregroundColor(colorScheme == .dark ? .white : .black)
             Text(label)
                 .font(.caption2)
-                .foregroundColor(.secondary)
+                .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.6) : Color.black.opacity(0.5))
             Text(value)
                 .font(.system(size: 15, weight: .semibold, design: .rounded))
-                .foregroundColor(.primary)
+                .foregroundColor(colorScheme == .dark ? .white : .black)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
@@ -294,16 +317,17 @@ struct FancyInfoTile: View {
 struct FancyUrlRow: View {
     let title: String
     let value: String
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         HStack(spacing: 8) {
             Text(title)
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundColor(colorScheme == .dark ? Color.white.opacity(0.7) : Color.black.opacity(0.6))
             Spacer()
             Text(value)
                 .font(.footnote.monospaced())
-                .foregroundColor(.accentColor)
+                .foregroundColor(colorScheme == .dark ? .white : .black)
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .onLongPressGesture {
@@ -311,7 +335,7 @@ struct FancyUrlRow: View {
                     DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
                 }
             Image(systemName: "doc.on.clipboard")
-                .foregroundColor(.accentColor)
+                .foregroundColor(colorScheme == .dark ? .white : .black)
                 .font(.system(size: 14))
                 .onTapGesture {
                     UIPasteboard.general.string = value

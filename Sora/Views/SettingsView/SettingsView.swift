@@ -71,18 +71,18 @@ struct SettingsView: View {
                             }
                             Divider().padding(.horizontal, 16)
                             
+                             NavigationLink(destination: SettingsViewModule()) {
+                                SettingsNavigationRow(icon: "cube", title: "Modules")
+                            }
+                            Divider().padding(.horizontal, 16)
+                            
                             NavigationLink(destination: SettingsViewPlayer()) {
                                 SettingsNavigationRow(icon: "play.circle", title: "Video Player")
                             }
                             Divider().padding(.horizontal, 16)
                             
                             NavigationLink(destination: SettingsViewDownloads()) {
-                                SettingsNavigationRow(icon: "arrow.down.circle", title: "Download")
-                            }
-                            Divider().padding(.horizontal, 16)
-                            
-                            NavigationLink(destination: SettingsViewModule()) {
-                                SettingsNavigationRow(icon: "cube", title: "Modules")
+                                SettingsNavigationRow(icon: "arrow.down.circle", title: "Downloading")
                             }
                             Divider().padding(.horizontal, 16)
                             
@@ -110,14 +110,14 @@ struct SettingsView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("DATA/LOGS")
+                        Text("DATA")
                             .font(.footnote)
                             .foregroundStyle(.gray)
                             .padding(.horizontal, 20)
                         
                         VStack(spacing: 0) {
                             NavigationLink(destination: SettingsViewData()) {
-                                SettingsNavigationRow(icon: "folder", title: "Data")
+                                SettingsNavigationRow(icon: "externaldrive", title: "Storage")
                             }
                             Divider().padding(.horizontal, 16)
                             
@@ -145,7 +145,7 @@ struct SettingsView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("INFOS")
+                        Text("INFO")
                             .font(.footnote)
                             .foregroundStyle(.gray)
                             .padding(.horizontal, 20)

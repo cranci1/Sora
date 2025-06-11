@@ -124,6 +124,13 @@ struct MediaInfoView: View {
             .onAppear {
                 buttonRefreshTrigger.toggle()
                 tabBarController.hideTabBar()
+                
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let window = windowScene.windows.first,
+                   let navigationController = window.rootViewController?.children.first as? UINavigationController {
+                    navigationController.interactivePopGestureRecognizer?.isEnabled = true
+                    navigationController.interactivePopGestureRecognizer?.delegate = nil
+                }
             }
             .onChange(of: selectedRange) { newValue in
                 UserDefaults.standard.set(newValue.lowerBound, forKey: selectedRangeKey)
@@ -224,16 +231,8 @@ struct MediaInfoView: View {
                     Rectangle()
                         .fill(Color.clear)
                         .frame(height: 400)
-                    VStack(alignment: .leading, spacing: 16) {
-                        headerSection
-                        if !episodeLinks.isEmpty {
-                            episodesSection
-                        } else {
-                            noEpisodesSection
-                        }
-                    }
-                    .padding()
-                    .background(
+                    
+                    ZStack(alignment: .top) {
                         LinearGradient(
                             gradient: Gradient(stops: [
                                 .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
@@ -244,9 +243,20 @@ struct MediaInfoView: View {
                             startPoint: .top,
                             endPoint: .bottom
                         )
-                            .clipShape(RoundedRectangle(cornerRadius: 0))
-                            .shadow(color: (colorScheme == .dark ? Color.black : Color.white).opacity(1), radius: 10, x: 0, y: 10)
-                    )
+                        .frame(height: 300)
+                        .clipShape(RoundedRectangle(cornerRadius: 0))
+                        .shadow(color: (colorScheme == .dark ? Color.black : Color.white).opacity(1), radius: 10, x: 0, y: 10)
+                        
+                        VStack(alignment: .leading, spacing: 16) {
+                            headerSection
+                            if !episodeLinks.isEmpty {
+                                episodesSection
+                            } else {
+                                noEpisodesSection
+                            }
+                        }
+                        .padding()
+                    }
                 }
             }
         }

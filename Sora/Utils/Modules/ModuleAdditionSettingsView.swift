@@ -20,7 +20,6 @@ struct ModuleAdditionSettingsView: View {
     
     var body: some View {
         ZStack {
-            // Improved background gradient
             LinearGradient(
                 gradient: Gradient(colors: [
                     colorScheme == .dark ? Color.black : Color.white,

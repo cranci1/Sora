@@ -18,6 +18,7 @@
 		0457C59F2DE78267000AFBD9 /* BookmarkGridItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C5992DE78267000AFBD9 /* BookmarkGridItemView.swift */; };
 		0457C5A12DE78385000AFBD9 /* BookmarksDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C5A02DE78385000AFBD9 /* BookmarksDetailView.swift */; };
 		04CD76DB2DE20F2200733536 /* AllWatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04CD76DA2DE20F2200733536 /* AllWatching.swift */; };
+		04EAC39A2DF9E0DB00BBD483 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04EAC3992DF9E0DB00BBD483 /* SplashScreenView.swift */; };
 		04F08EDC2DE10BF3006B29D9 /* ProgressiveBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EDB2DE10BEC006B29D9 /* ProgressiveBlurView.swift */; };
 		04F08EDF2DE10C1D006B29D9 /* TabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EDE2DE10C1A006B29D9 /* TabBar.swift */; };
 		04F08EE22DE10C40006B29D9 /* TabItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EE12DE10C27006B29D9 /* TabItem.swift */; };
@@ -111,6 +112,7 @@
 		0457C59B2DE78267000AFBD9 /* BookmarkLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkLink.swift; sourceTree = "<group>"; };
 		0457C5A02DE78385000AFBD9 /* BookmarksDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksDetailView.swift; sourceTree = "<group>"; };
 		04CD76DA2DE20F2200733536 /* AllWatching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllWatching.swift; sourceTree = "<group>"; };
+		04EAC3992DF9E0DB00BBD483 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		04F08EDB2DE10BEC006B29D9 /* ProgressiveBlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressiveBlurView.swift; sourceTree = "<group>"; };
 		04F08EDE2DE10C1A006B29D9 /* TabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBar.swift; sourceTree = "<group>"; };
 		04F08EE12DE10C27006B29D9 /* TabItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabItem.swift; sourceTree = "<group>"; };
@@ -351,6 +353,7 @@
 		133D7C7B2D2BE2630075467E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				04EAC3992DF9E0DB00BBD483 /* SplashScreenView.swift */,
 				72443C7C2DC8036500A61321 /* DownloadView.swift */,
 				0402DA122DE7B5EC003BB42C /* SearchView */,
 				133D7C7F2D2BE2630075467E /* MediaInfoView */,
@@ -730,6 +733,7 @@
 				13EA2BD62D32D97400C1EBD7 /* Double+Extension.swift in Sources */,
 				133D7C8F2D2BE2640075467E /* MediaInfoView.swift in Sources */,
 				04F08EE22DE10C40006B29D9 /* TabItem.swift in Sources */,
+				04EAC39A2DF9E0DB00BBD483 /* SplashScreenView.swift in Sources */,
 				132AF1212D99951700A0140B /* JSController-Streams.swift in Sources */,
 				131845F92D47C62D00CA7A54 /* SettingsViewGeneral.swift in Sources */,
 				04CD76DB2DE20F2200733536 /* AllWatching.swift in Sources */,

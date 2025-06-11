@@ -73,7 +73,7 @@ struct SoraApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SplashScreenView()
                 .environmentObject(moduleManager)
                 .environmentObject(settings)
                 .environmentObject(librarykManager)

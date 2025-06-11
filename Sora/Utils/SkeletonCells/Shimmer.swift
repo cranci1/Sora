@@ -36,7 +36,6 @@ struct Shimmer: ViewModifier {
         var animatableData: CGFloat {
             get { phase }
             set { 
-                // Only update phase if view is visible to prevent memory accumulation
                 if isVisible {
                     phase = newValue
                 }
@@ -46,7 +45,6 @@ struct Shimmer: ViewModifier {
         func body(content: Content) -> some View {
             content
                 .overlay(
-                    // Only create overlay if visible and phase is valid
                     Group {
                         if isVisible && phase > -1 {
                             shimmerOverlay
@@ -62,7 +60,6 @@ struct Shimmer: ViewModifier {
             GeometryReader { geo in
                 let width = geo.size.width
                 
-                // Pre-calculate positions to avoid repeated calculations
                 let shimmerStart = phase - 0.25
                 let shimmerEnd = phase + 0.25
                 
@@ -74,7 +71,6 @@ struct Shimmer: ViewModifier {
             }
         }
         
-        // Pre-create gradient to reuse gradient stops
         private func shimmerGradient(shimmerStart: CGFloat, shimmerEnd: CGFloat) -> LinearGradient {
             LinearGradient(
                 gradient: Gradient(stops: [
@@ -89,7 +85,6 @@ struct Shimmer: ViewModifier {
             )
         }
         
-        // Pre-define static colors to avoid repeated Color object creation
         private let shimmerColor1 = Color.white.opacity(0.05)
         private let shimmerColor2 = Color.white.opacity(0.25)
         private let shimmerColor3 = Color.white.opacity(0.85)

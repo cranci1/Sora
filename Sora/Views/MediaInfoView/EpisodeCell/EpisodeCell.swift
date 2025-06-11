@@ -9,10 +9,10 @@ import NukeUI
 import SwiftUI
 import AVFoundation
 
-// MARK: - Main EpisodeCell View
+
 struct EpisodeCell: View {
     
-    // MARK: - Properties
+
     let episodeIndex: Int
     let episode: String
     let episodeID: Int
@@ -26,16 +26,16 @@ struct EpisodeCell: View {
     let tmdbID: Int?
     let seasonNumber: Int?
     
-    // Multi-select mode properties
+
     let isMultiSelectMode: Bool
     let isSelected: Bool
     let onSelectionChanged: ((Bool) -> Void)?
     
-    // Action callbacks
+
     let onTap: (String) -> Void
     let onMarkAllPrevious: () -> Void
     
-    // MARK: - State Variables
+
     @State private var episodeTitle = ""
     @State private var episodeImageUrl = ""
     @State private var isLoading = true
@@ -45,23 +45,23 @@ struct EpisodeCell: View {
     @State private var downloadAnimationScale: CGFloat = 1.0
     @State private var activeDownloadTask: AVAssetDownloadTask?
     
-    // Swipe gesture states
+
     @State private var swipeOffset: CGFloat = 0
     @State private var isShowingActions = false
     @State private var actionButtonWidth: CGFloat = 60
     
-    // Network retry logic
+
     @State private var retryAttempts = 0
     private let maxRetryAttempts = 3
     private let initialBackoffDelay: TimeInterval = 1.0
     
-    // MARK: - Environment and Observed Objects
+
     @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     
-    // MARK: - Initializer
+
     init(
         episodeIndex: Int,
         episode: String,
@@ -98,7 +98,7 @@ struct EpisodeCell: View {
         self.tmdbID = tmdbID
         self.seasonNumber = seasonNumber
         
-        // Set default banner based on appearance
+
         let isLightMode = (UserDefaults.standard.string(forKey: "selectedAppearance") == "light") ||
         ((UserDefaults.standard.string(forKey: "selectedAppearance") == "system") &&
          UITraitCollection.current.userInterfaceStyle == .light)
@@ -110,13 +110,13 @@ struct EpisodeCell: View {
         (isLightMode ? defaultLightBanner : defaultDarkBanner) : defaultBannerImage
     }
     
-    // MARK: - Main Body
+
     var body: some View {
         ZStack {
-            // Background action buttons
+
             actionButtonsBackground
             
-            // Main episode cell content
+
             episodeCellContent
                 .offset(x: swipeOffset)
                 .animation(.spring(response: 0.3, dampingFraction: 0.8), value: swipeOffset)
@@ -146,7 +146,7 @@ struct EpisodeCell: View {
     }
 }
 
-// MARK: - UI Components
+
 private extension EpisodeCell {
     
     var actionButtonsBackground: some View {
@@ -300,7 +300,7 @@ private extension EpisodeCell {
     }
 }
 
-// MARK: - Gesture Handling
+
 private extension EpisodeCell {
     
     var swipeGesture: some Gesture {
@@ -317,7 +317,6 @@ private extension EpisodeCell {
         let horizontalTranslation = value.translation.width
         let verticalTranslation = value.translation.height
         
-        // Only handle clear horizontal swipes
         guard abs(horizontalTranslation) > abs(verticalTranslation) * 1.5 else { return }
         
         if horizontalTranslation < 0 {
@@ -333,7 +332,6 @@ private extension EpisodeCell {
         let horizontalTranslation = value.translation.width
         let verticalTranslation = value.translation.height
         
-        // Only handle clear horizontal swipes
         guard abs(horizontalTranslation) > abs(verticalTranslation) * 1.5 else { return }
         
         let maxSwipe = calculateMaxSwipeDistance()
@@ -367,7 +365,7 @@ private extension EpisodeCell {
     }
     
     func calculateMaxSwipeDistance() -> CGFloat {
-        var buttonCount = 1 // Download button always present
+        var buttonCount = 1 
         
         if progress <= 0.9 { buttonCount += 1 }
         if progress != 0 { buttonCount += 1 }
@@ -375,7 +373,6 @@ private extension EpisodeCell {
         
         var swipeDistance = CGFloat(buttonCount) * actionButtonWidth + 16
         
-        // Add extra spacing for multiple buttons
         if buttonCount == 3 { swipeDistance += 12 }
         else if buttonCount == 4 { swipeDistance += 24 }
         
@@ -383,7 +380,6 @@ private extension EpisodeCell {
     }
 }
 
-// MARK: - Action Handling
 private extension EpisodeCell {
     
     func closeActionsAndPerform(action: @escaping () -> Void) {
@@ -431,14 +427,12 @@ private extension EpisodeCell {
     }
 }
 
-// MARK: - Lifecycle and Setup
 private extension EpisodeCell {
     
     func setupOnAppear() {
         updateProgress()
         updateDownloadStatus()
         
-        // Fetch metadata based on provider preference
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             if UserDefaults.standard.string(forKey: "metadataProviders") ?? "TMDB" == "TMDB" {
                 fetchTMDBEpisodeImage()
@@ -459,7 +453,6 @@ private extension EpisodeCell {
     }
 }
 
-// MARK: - Download Functionality
 private extension EpisodeCell {
     
     func downloadEpisode() {
@@ -541,7 +534,6 @@ private extension EpisodeCell {
     ) {
         guard isDownloading else { return }
         
-        // Handle sources format
         if let sources = result.sources, !sources.isEmpty {
             if sources.count > 1 {
                 showDownloadStreamSelectionAlert(streams: sources, downloadID: downloadID, subtitleURL: result.subtitles?.first)
@@ -554,7 +546,6 @@ private extension EpisodeCell {
             }
         }
         
-        // Handle streams format
         if let streams = result.streams, !streams.isEmpty {
             if streams[0] == "[object Promise]" {
                 tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
@@ -641,7 +632,6 @@ private extension EpisodeCell {
     }
 }
 
-// MARK: - Stream Selection Alert
 private extension EpisodeCell {
     
     func showDownloadStreamSelectionAlert(streams: [Any], downloadID: UUID, subtitleURL: String? = nil) {
@@ -738,7 +728,6 @@ private extension EpisodeCell {
     }
 }
 
-// MARK: - Metadata Fetching
 private extension EpisodeCell {
     
     func fetchAnimeEpisodeDetails() {
@@ -878,7 +867,6 @@ private extension EpisodeCell {
     }
 }
 
-// MARK: - Supporting Types and Views
 private enum NetworkError: Error {
     case noData
     case invalidJSON

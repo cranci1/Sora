@@ -9,7 +9,6 @@ import NukeUI
 import SwiftUI
 import SafariServices
 
-// MARK: - Models and Constants
 
 private let tmdbFetcher = TMDBFetcher()
 
@@ -22,16 +21,13 @@ struct MediaItem: Identifiable {
 
 
 
-// MARK: - Main View
 
 struct MediaInfoView: View {
-    // MARK: - Properties
     let title: String
     @State var imageUrl: String
     let href: String
     let module: ScrapingModule
     
-    // MARK: - State Variables
     @State private var aliases: String = ""
     @State private var synopsis: String = ""
     @State private var airdate: String = ""
@@ -41,7 +37,6 @@ struct MediaInfoView: View {
     @State private var tmdbType: TMDBFetcher.MediaType? = nil
     @State private var currentFetchTask: Task<Void, Never>? = nil
     
-    // MARK: - UI State
     @State private var isLoading: Bool = true
     @State private var showFullSynopsis: Bool = false
     @State private var hasFetched: Bool = false
@@ -50,7 +45,6 @@ struct MediaInfoView: View {
     @State private var isError = false
     @State private var showLoadingAlert: Bool = false
     
-    // MARK: - Episode Navigation
     @State private var selectedEpisodeNumber: Int = 0
     @State private var selectedEpisodeImage: String = ""
     @State private var selectedSeason: Int = 0
@@ -60,7 +54,6 @@ struct MediaInfoView: View {
         return 0..<chunk
     }()
     
-    // MARK: - Multi-select and Download State
     @State private var isMultiSelectMode: Bool = false
     @State private var selectedEpisodes: Set<Int> = []
     @State private var showRangeInput: Bool = false
@@ -68,7 +61,6 @@ struct MediaInfoView: View {
     @State private var bulkDownloadProgress: String = ""
     @State private var isSingleEpisodeDownloading: Bool = false
     
-    // MARK: - Modal States
     @State private var isModuleSelectorPresented = false
     @State private var isMatchingPresented = false
     @State private var matchedTitle: String? = nil
@@ -78,31 +70,25 @@ struct MediaInfoView: View {
     @State private var currentStreamTitle: String = ""
     @State private var activeFetchID: UUID? = nil
     
-    // MARK: - Refresh Triggers
     @State private var refreshTrigger: Bool = false
     @State private var buttonRefreshTrigger: Bool = false
     
-    // MARK: - User Defaults Keys
     private var selectedRangeKey: String { "selectedRangeStart_\(href)" }
     private var selectedSeasonKey: String { "selectedSeason_\(href)" }
     
-    // MARK: - App Storage
     @AppStorage("externalPlayer") private var externalPlayer: String = "Default"
     @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 100
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     
-    // MARK: - Environment Objects
-    @ObservedObject private var jsController = JSController.shared
+=    @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject var tabBarController: TabBarController
     
-    // MARK: - Environment Values
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     
-    // MARK: - Computed Properties
     private var isGroupedBySeasons: Bool {
         return groupedEpisodes().count > 1
     }
@@ -151,7 +137,6 @@ struct MediaInfoView: View {
         return "Start Watching"
     }
     
-    // MARK: - Body
     
     var body: some View {
         ZStack {
@@ -176,7 +161,6 @@ struct MediaInfoView: View {
             }
             .onDisappear {
                 tabBarController.showTabBar()
-                // Cancel any running tasks to prevent memory leaks
                 currentFetchTask?.cancel()
                 activeFetchID = nil
             }
@@ -1166,7 +1150,6 @@ struct MediaInfoView: View {
         }
     }
     
-    // MARK: - Safari Integration
     
     private func openSafariViewController(with urlString: String) {
         guard let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) else {
@@ -1180,7 +1163,6 @@ struct MediaInfoView: View {
         }
     }
     
-    // MARK: - Data Fetching Methods
     
     func fetchDetails() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -1332,7 +1314,6 @@ struct MediaInfoView: View {
         }.resume()
     }
     
-    // MARK: - Stream Fetching and Playback
     
     func fetchStream(href: String) {
         let fetchID = UUID()
@@ -1570,7 +1551,6 @@ struct MediaInfoView: View {
         }
     }
     
-    // MARK: - Download Functionality
     
     private func downloadSingleEpisodeDirectly(episode: EpisodeLink) {
         if isSingleEpisodeDownloading { return }
@@ -1857,7 +1837,6 @@ struct MediaInfoView: View {
         }.resume()
     }
     
-    // MARK: - Helper Methods
     
     private func presentAlert(_ alert: UIAlertController) {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,

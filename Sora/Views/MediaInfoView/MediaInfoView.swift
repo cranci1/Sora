@@ -19,9 +19,6 @@ struct MediaItem: Identifiable {
     let airdate: String
 }
 
-
-
-
 struct MediaInfoView: View {
     let title: String
     @State var imageUrl: String
@@ -136,7 +133,6 @@ struct MediaInfoView: View {
         
         return "Start Watching"
     }
-    
     
     var body: some View {
         ZStack {
@@ -1055,7 +1051,6 @@ struct MediaInfoView: View {
         )
     }
     
-    
     private func markAllPreviousEpisodesAsWatched(ep: EpisodeLink, inSeason: Bool) {
         let userDefaults = UserDefaults.standard
         var updates = [String: Double]()
@@ -1120,7 +1115,6 @@ struct MediaInfoView: View {
         }
     }
     
-    
     private func openSafariViewController(with urlString: String) {
         guard let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) else {
             Logger.shared.log("Unable to open the webpage", type: "Error")
@@ -1132,7 +1126,6 @@ struct MediaInfoView: View {
             rootVC.present(safariViewController, animated: true, completion: nil)
         }
     }
-    
     
     func fetchDetails() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -1283,7 +1276,6 @@ struct MediaInfoView: View {
             }
         }.resume()
     }
-    
     
     func fetchStream(href: String) {
         let fetchID = UUID()
@@ -1520,7 +1512,6 @@ struct MediaInfoView: View {
             DropManager.shared.showDrop(title: "Error", subtitle: "Failed to present player", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
         }
     }
-    
     
     private func downloadSingleEpisodeDirectly(episode: EpisodeLink) {
         if isSingleEpisodeDownloading { return }
@@ -1806,7 +1797,6 @@ struct MediaInfoView: View {
             }
         }.resume()
     }
-    
     
     private func presentAlert(_ alert: UIAlertController) {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,

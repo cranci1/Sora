@@ -146,7 +146,14 @@
 
     },
     "DATA/LOGS" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data & Logs"
+          }
+        }
+      }
     },
     "Delete" : {
 
@@ -167,7 +174,14 @@
 
     },
     "Download" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Downloads"
+          }
+        }
+      }
     },
     "Download Episode" : {
 
@@ -197,7 +211,14 @@
 
     },
     "Failed to load contributors" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to load contributors. Please try again later."
+          }
+        }
+      }
     },
     "Files Downloaded" : {
 
@@ -206,7 +227,14 @@
 
     },
     "INFOS" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Information"
+          }
+        }
+      }
     },
     "LESS" : {
 
@@ -251,7 +279,14 @@
 
     },
     "MAIN" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main Settings"
+          }
+        }
+      }
     },
     "Mark All Previous Watched" : {
 
@@ -260,7 +295,14 @@
 
     },
     "Mark watched" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Watched"
+          }
+        }
+      }
     },
     "Match with AniList" : {
 
@@ -299,7 +341,14 @@
 
     },
     "No matches found" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No matches found. Try different keywords."
+          }
+        }
+      }
     },
     "No Module Selected" : {
 
@@ -362,7 +411,14 @@
 
     },
     "Reset progress" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset Progress"
+          }
+        }
+      }
     },
     "Reset Progress" : {
 
@@ -380,10 +436,24 @@
 
     },
     "Search for something..." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search for something..."
+          }
+        }
+      }
     },
     "Search..." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search for something..."
+          }
+        }
+      }
     },
     "Season %lld" : {
 
@@ -447,6 +517,46 @@
     },
     "Your downloaded episodes will appear here" : {
 
+    },
+    "Join the Discord" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join Discord Community"
+          }
+        }
+      }
+    },
+    "Report an Issue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report an Issue on GitHub"
+          }
+        }
+      }
+    },
+    "License (GPLv3.0)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View License (GPLv3.0)"
+          }
+        }
+      }
+    },
+    "General Preferences" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General Settings"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

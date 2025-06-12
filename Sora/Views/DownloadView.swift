@@ -145,7 +145,7 @@ struct DownloadView: View {
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)
                 
-                Text("Actively downloading media can be tracked from here.")
+                Text("Your active downloads will appear here.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -167,7 +167,7 @@ struct DownloadView: View {
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)
                 
-                Text("Your downloaded episodes will appear here")
+                Text("Your downloaded content will appear here")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -593,28 +593,6 @@ struct DownloadSummaryCard: View {
         return formatter.string(fromByteCount: size)
     }
 }
-
-    
-    private func formatFileSize(_ size: Int64) -> String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useKB, .useMB, .useGB]
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: size)
-    }
-    
-    private func formatFileSizeWithUnit(_ size: Int64) -> String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useKB, .useMB, .useGB]
-        formatter.countStyle = .file
-
-        let formattedString = formatter.string(fromByteCount: size)
-        let components = formattedString.components(separatedBy: " ")
-        if components.count == 2 {
-            return "Size (\(components[1]))"
-        }
-        return "Size"
-    }
-
 
 struct SummaryItem: View {
     let title: String

@@ -67,8 +67,8 @@ class DropManager {
         let willStartImmediately = JSController.shared.willDownloadStartImmediately()
         
         let message = willStartImmediately 
-            ? "Episode \(episodeNumber) download started"
-            : "Episode \(episodeNumber) queued"
+            ? "Episode \(episodeNumber) is now downloading"
+            : "Episode \(episodeNumber) added to download queue"
         
         showDrop(
             title: willStartImmediately ? "Download Started" : "Download Queued",

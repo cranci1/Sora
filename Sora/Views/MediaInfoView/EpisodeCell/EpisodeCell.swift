@@ -227,24 +227,24 @@ private extension EpisodeCell {
         Group {
             if progress <= 0.9 {
                 Button(action: markAsWatched) {
-                    Label("Mark as Watched", systemImage: "checkmark.circle")
+                    Label("Mark Episode as Watched", systemImage: "checkmark.circle")
                 }
             }
             
             if progress != 0 {
                 Button(action: resetProgress) {
-                    Label("Reset Progress", systemImage: "arrow.counterclockwise")
+                    Label("Reset Episode Progress", systemImage: "arrow.counterclockwise")
                 }
             }
             
             if episodeIndex > 0 {
                 Button(action: onMarkAllPrevious) {
-                    Label("Mark All Previous Watched", systemImage: "checkmark.circle.fill")
+                    Label("Mark Previous Episodes as Watched", systemImage: "checkmark.circle.fill")
                 }
             }
             
             Button(action: downloadEpisode) {
-                Label("Download Episode", systemImage: "arrow.down.circle")
+                Label("Download This Episode", systemImage: "arrow.down.circle")
             }
         }
     }

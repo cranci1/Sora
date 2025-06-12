@@ -27,9 +27,9 @@ struct SearchStateView: View {
                 Image(systemName: "magnifyingglass")
                     .font(.largeTitle)
                     .foregroundColor(.secondary)
-                Text("No Results Found")
+                Text("No Search Results Found")
                     .font(.headline)
-                Text("Try different keywords")
+                Text("Try different search terms")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

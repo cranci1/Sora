@@ -81,7 +81,7 @@ struct SettingsViewAbout: View {
                             Text("Sora")
                                 .font(.title)
                                 .bold()
-                            Text("AKA Sulfur")
+                            Text("Also known as Sulfur")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }

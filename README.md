@@ -24,12 +24,12 @@
 
 - [x] macOS 12.0+ support
 - [x] iOS/iPadOS 15.0+ support
-- [x] JavaScript as main Loader
+- [x] JavaScript as main loader
 - [x] Download support (HLS & MP4)
-- [x] Tracking Services (AniList, Trakt)
-- [x] Apple KeyChain support for auth Tokens
-- [x] Streams support (Jellyfin/Plex like servers)
-- [x] External Metadata providers (TMDB, AniList)
+- [x] Tracking services (AniList, Trakt)
+- [x] Apple Keychain support for auth tokens
+- [x] Streams support (Jellyfin/Plex-like servers)
+- [x] External metadata providers (TMDB, AniList)
 - [x] Background playback and Picture-in-Picture (PiP) support
 - [x] External media player support (VLC, Infuse, Outplayer, nPlayer, SenPlayer, IINA, TracyPlayer)
 
@@ -49,17 +49,17 @@ Additionally, you can install the app using Xcode or using the .ipa file, which 
 
 ## Frequently Asked Questions
 
-1. **What is Sora?**
-Sora is a modular web scraping application designed to work exclusively with custom modules.
+1. **What is Sora?**  
+   Sora is a modular web scraping application designed to work exclusively with custom modules.
 
-2. **Is Sora safe?**
-Yes, Sora is open-source and prioritizes user privacy. It does not store user data on external servers and does not collect crash logs.
+2. **Is Sora safe?**  
+   Yes, Sora is open-source and prioritizes user privacy. It does not store user data on external servers and does not collect crash logs.
 
-3. **Will Sora ever be paid?**
-No, Sora will always remain free without subscriptions, paid content, or any type of login.
+3. **Will Sora ever be paid?**  
+   No, Sora will always remain free without subscriptions, paid content, or any type of login.
 
-4. **How can I get modules?**
-Sora does not include any modules by default. You will need to find and add the necessary modules yourself, or create your own.
+4. **How can I get modules?**  
+   Sora does not include any modules by default. You will need to find and add the necessary modules yourself, or create your own.
 
 ## Acknowledgements
 

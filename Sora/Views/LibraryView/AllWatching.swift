@@ -36,10 +36,10 @@ struct AllWatchingView: View {
     @State private var sortOption: SortOption = .dateAdded
     
     enum SortOption: String, CaseIterable {
-        case dateAdded = "Date Added"
-        case title = "Title"
-        case source = "Source"
-        case progress = "Progress"
+        case dateAdded = "Recently Added"
+        case title = "Series Title"
+        case source = "Content Source"
+        case progress = "Watch Progress"
     }
     
     var sortedItems: [ContinueWatchingItem] {

@@ -43,7 +43,7 @@ struct AnilistMatchPopupView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding()
                         } else if results.isEmpty {
-                            Text("No matches found")
+                            Text("No AniList matches found")
                                 .font(.subheadline)
                                 .foregroundStyle(.gray)
                                 .frame(maxWidth: .infinity)
@@ -161,7 +161,7 @@ struct AnilistMatchPopupView: View {
                     }
                 })
             }, message: {
-                Text("Enter the AniList ID for this media")
+                Text("Enter the AniList ID for this series")
             })
         }
         .onAppear(perform: fetchMatches)

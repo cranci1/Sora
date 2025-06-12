@@ -58,7 +58,7 @@ class DownloadManager: NSObject, ObservableObject {
                 localPlaybackURL = localURL
             }
         } catch {
-            print("Error loading local content: \(error)")
+            Logger.shared.log("Could not load local content: \(error)", type: "Error")
         }
     }
 }
@@ -71,7 +71,7 @@ extension DownloadManager: AVAssetDownloadDelegate {
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard let error = error else { return }
-        print("Download error: \(error.localizedDescription)")
+        Logger.shared.log("Download failed: \(error.localizedDescription)", type: "Error")
         activeDownloadTasks.removeValue(forKey: task)
     }
     

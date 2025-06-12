@@ -378,9 +378,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             self.view.layoutIfNeeded()
         }
         
-        hiddenVolumeView.showsRouteButton = false
         hiddenVolumeView.isHidden = true
         view.addSubview(hiddenVolumeView)
+        
+        // Add AVRoutePickerView for AirPlay functionality
+        let routePickerView = AVRoutePickerView()
+        routePickerView.isHidden = true
+        view.addSubview(routePickerView)
         
         hiddenVolumeView.translatesAutoresizingMaskIntoConstraints = false
         hiddenVolumeView.widthAnchor.constraint(equalToConstant: 1).isActive = true
@@ -572,7 +576,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private func getSegmentsColor() -> Color {
         if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
-           let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
+           let uiColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) {
             return Color(uiColor)
         }
         return .yellow
@@ -1206,12 +1210,20 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let introConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let introImage = UIImage(systemName: "forward.frame", withConfiguration: introConfig)
         skipIntroButton = GradientOverlayButton(type: .system)
-        skipIntroButton.setTitle(" Skip Intro", for: .normal)
-        skipIntroButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
-        skipIntroButton.setImage(introImage, for: .normal)
+        
+        var introButtonConfig = UIButton.Configuration.plain()
+        introButtonConfig.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)
+        introButtonConfig.image = introImage
+        introButtonConfig.title = " Skip Intro"
+        introButtonConfig.imagePlacement = .leading
+        introButtonConfig.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+            return outgoing
+        }
+        skipIntroButton.configuration = introButtonConfig
         
         skipIntroButton.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
-        skipIntroButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         skipIntroButton.tintColor = .white
         skipIntroButton.setTitleColor(.white, for: .normal)
         skipIntroButton.layer.cornerRadius = 21
@@ -1238,12 +1250,20 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let outroConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let outroImage = UIImage(systemName: "forward.frame", withConfiguration: outroConfig)
         skipOutroButton = GradientOverlayButton(type: .system)
-        skipOutroButton.setTitle(" Skip Outro", for: .normal)
-        skipOutroButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
-        skipOutroButton.setImage(outroImage, for: .normal)
+        
+        var outroButtonConfig = UIButton.Configuration.plain()
+        outroButtonConfig.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)
+        outroButtonConfig.image = outroImage
+        outroButtonConfig.title = " Skip Outro"
+        outroButtonConfig.imagePlacement = .leading
+        outroButtonConfig.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+            return outgoing
+        }
+        skipOutroButton.configuration = outroButtonConfig
         
         skipOutroButton.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
-        skipOutroButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         skipOutroButton.tintColor = .white
         skipOutroButton.setTitleColor(.white, for: .normal)
         skipOutroButton.layer.cornerRadius = 21
@@ -1492,12 +1512,19 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let image = UIImage(systemName: "goforward", withConfiguration: config)
         
         skip85Button = GradientOverlayButton(type: .system)
-        skip85Button.setTitle(" Skip 85s", for: .normal)
-        skip85Button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
-        skip85Button.setImage(image, for: .normal)
+        var buttonConfig = UIButton.Configuration.plain()
+        buttonConfig.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)
+        buttonConfig.image = image
+        buttonConfig.title = " Skip 85s"
+        buttonConfig.imagePlacement = .leading
+        buttonConfig.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+            return outgoing
+        }
+        skip85Button.configuration = buttonConfig
         
         skip85Button.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
-        skip85Button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         skip85Button.tintColor = .white
         skip85Button.setTitleColor(.white, for: .normal)
         skip85Button.layer.cornerRadius = 21
@@ -2313,7 +2340,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private func checkForHLSStream() {
         guard let url = URL(string: streamURL) else { return }
-        let streamType = module.metadata.streamType.lowercased()
         
         if url.absoluteString.contains(".m3u8") || url.absoluteString.contains(".m3u") {
             isHLSStream = true
@@ -2734,12 +2760,12 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     override var keyCommands: [UIKeyCommand]? {
         return [
-            UIKeyCommand(input: " ", modifierFlags: [], action: #selector(handleSpaceKey), discoverabilityTitle: "Play/Pause"),
-            UIKeyCommand(input: UIKeyCommand.inputLeftArrow, modifierFlags: [], action: #selector(handleLeftArrow), discoverabilityTitle: "Seek Backward 10s"),
-            UIKeyCommand(input: UIKeyCommand.inputRightArrow, modifierFlags: [], action: #selector(handleRightArrow), discoverabilityTitle: "Seek Forward 10s"),
-            UIKeyCommand(input: UIKeyCommand.inputUpArrow, modifierFlags: [], action: #selector(handleUpArrow), discoverabilityTitle: "Seek Forward 60s"),
-            UIKeyCommand(input: UIKeyCommand.inputDownArrow, modifierFlags: [], action: #selector(handleDownArrow), discoverabilityTitle: "Seek Backward 60s"),
-            UIKeyCommand(input: UIKeyCommand.inputEscape, modifierFlags: [], action: #selector(handleEscape), discoverabilityTitle: "Dismiss Player")
+            UIKeyCommand(title: "Play/Pause", action: #selector(handleSpaceKey), input: " "),
+            UIKeyCommand(title: "Seek Backward 10s", action: #selector(handleLeftArrow), input: UIKeyCommand.inputLeftArrow),
+            UIKeyCommand(title: "Seek Forward 10s", action: #selector(handleRightArrow), input: UIKeyCommand.inputRightArrow),
+            UIKeyCommand(title: "Seek Forward 60s", action: #selector(handleUpArrow), input: UIKeyCommand.inputUpArrow),
+            UIKeyCommand(title: "Seek Backward 60s", action: #selector(handleDownArrow), input: UIKeyCommand.inputDownArrow),
+            UIKeyCommand(title: "Dismiss Player", action: #selector(handleEscape), input: UIKeyCommand.inputEscape)
         ]
     }
     

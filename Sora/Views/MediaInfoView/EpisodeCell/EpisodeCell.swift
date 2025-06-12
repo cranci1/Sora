@@ -334,7 +334,6 @@ private extension EpisodeCell {
     
     func handleDragChanged(_ value: DragGesture.Value) {
         let translation = value.translation
-        let velocity = value.velocity
         
         let isHorizontalGesture = abs(translation.width) > abs(translation.height)
         let hasSignificantHorizontalMovement = abs(translation.width) > 10

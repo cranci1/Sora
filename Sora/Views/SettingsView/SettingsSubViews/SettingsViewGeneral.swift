@@ -192,7 +192,7 @@ struct SettingsViewGeneral: View {
                 
                 SettingsSection(
                     title: "Media View",
-                    footer: "The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers."
+                    footer: "The episode range controls how many episodes appear on each page. Episodes are grouped into sets (e.g., 1–25, 26–50, etc.) for easier navigation.\n\nEpisode metadata includes thumbnails and titles, which may be hidden to prevent spoilers."
                 ) {
                     SettingsPickerRow(
                         icon: "list.number",

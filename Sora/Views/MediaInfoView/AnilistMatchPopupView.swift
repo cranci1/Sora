@@ -206,13 +206,13 @@ struct AnilistMatchPopupView: View {
                 
                 self.results = mediaList.map { media in
                     let titleInfo = media["title"] as? [String: Any]
-                    let cover = (media["coverImage"] as? [String: Any])?["large"] as? String
+                    let cover = (media["coverImage"] as? [String: Any])?["large"]
                     
                     return [
-                        "id": media["id"] ?? 0,
-                        "title": titleInfo?["romaji"] ?? "Unknown",
-                        "title_english": titleInfo?["english"],
-                        "cover": cover
+                        "id": media["id"] ?? NSNull(),
+                        "title": (titleInfo?["romaji"] as? String) ?? "Unknown",
+                        "title_english": (titleInfo?["english"] as? String).map { $0 as Any } ?? NSNull(),
+                        "cover": (cover as? String).map { $0 as Any } ?? NSNull()
                     ]
                 }
             }

@@ -42,7 +42,7 @@ class VideoPlayerViewController: UIViewController {
     }
     
     private func setupSubtitles() {
-        guard !subtitles.isEmpty, UserDefaults.standard.bool(forKey: "subtitlesEnabled"), let subtitleURL = URL(string: subtitles) else {
+        guard !subtitles.isEmpty, UserDefaults.standard.bool(forKey: "subtitlesEnabled") else {
             return
         }
         

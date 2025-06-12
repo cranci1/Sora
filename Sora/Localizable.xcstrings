@@ -43,7 +43,14 @@
 
     },
     "Actively downloading media can be tracked from here." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Track your active media downloads here."
+          }
+        }
+      }
     },
     "Add Module" : {
 
@@ -73,7 +80,14 @@
 
     },
     "Are you sure you want to clear all cached data? This will help free up storage space." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to clear all cached data? This will free up storage space."
+          }
+        }
+      }
     },
     "Are you sure you want to delete '%@'?" : {
 
@@ -185,7 +199,14 @@
 
     },
     "Episodes might not be available yet or there could be an issue with the source." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episodes may not be available yet, or there might be an issue with the source."
+          }
+        }
+      }
     },
     "Erase" : {
 
@@ -416,7 +437,14 @@
 
     },
     "The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This content has only one episode, which likely indicates it's a movie. We use a separate screen layout for movies."
+          }
+        }
+      }
     },
     "Trackers" : {
 
@@ -440,13 +468,27 @@
 
     },
     "Why am I not seeing any episodes?" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Why aren't I seeing any episodes?"
+          }
+        }
+      }
     },
     "You have no items saved." : {
 
     },
     "Your downloaded episodes will appear here" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your downloaded episodes will appear here."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

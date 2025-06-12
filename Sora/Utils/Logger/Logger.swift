@@ -7,10 +7,10 @@
 
 import Foundation
 
-class Logger {
+class Logger: @unchecked Sendable {
     static let shared = Logger()
     
-    struct LogEntry {
+    struct LogEntry: Sendable {
         let message: String
         let type: String
         let timestamp: Date
@@ -34,7 +34,7 @@ class Logger {
         
         let entry = LogEntry(message: message, type: type, timestamp: Date())
         
-        queue.async(flags: .barrier) {
+        queue.async(flags: .barrier) { [self] in
             self.logs.append(entry)
             
             if self.logs.count > self.maxLogEntries {
@@ -58,7 +58,7 @@ class Logger {
     }
     
     func getLogsAsync() async -> String {
-        return await withCheckedContinuation { continuation in
+        return await withCheckedContinuation { [self] continuation in
             queue.async {
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "dd-MM HH:mm:ss"
@@ -70,14 +70,14 @@ class Logger {
     }
     
     func clearLogs() {
-        queue.async(flags: .barrier) {
+        queue.async(flags: .barrier) { [self] in
             self.logs.removeAll()
             try? FileManager.default.removeItem(at: self.logFileURL)
         }
     }
     
     func clearLogsAsync() async {
-        await withCheckedContinuation { continuation in
+        await withCheckedContinuation { [self] continuation in
             queue.async(flags: .barrier) {
                 self.logs.removeAll()
                 try? FileManager.default.removeItem(at: self.logFileURL)

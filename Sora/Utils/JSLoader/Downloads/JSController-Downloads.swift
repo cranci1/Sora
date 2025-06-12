@@ -1370,7 +1370,7 @@ extension JSController: AVAssetDownloadDelegate {
         let downloadTitle = activeDownloads.first { $0.id == downloadID }?.title ?? "Unknown"
         
         // Check if there's a partially downloaded file that needs to be deleted
-        if let assetDownloadTask = task as? AVAssetDownloadTask {
+        if task is AVAssetDownloadTask {
             // For AVAssetDownloadTask, we need to check if any partial files were created
             // and delete them to prevent them from being considered completed downloads
             deletePartiallyDownloadedAsset(downloadID: downloadID)
@@ -1429,7 +1429,7 @@ extension JSController: AVAssetDownloadDelegate {
                     timeRangeExpectedToLoad: CMTimeRange) {
         
         // Do a quick check to see if task is still registered
-        guard let downloadID = activeDownloadMap[assetDownloadTask] else {
+        guard activeDownloadMap[assetDownloadTask] != nil else {
             print("Received progress for unknown download task")
             return
         }

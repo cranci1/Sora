@@ -38,15 +38,6 @@ extension JSController {
         showPosterURL: URL? = nil,
         completionHandler: ((Bool, String) -> Void)? = nil
     ) {
-        print("---- STREAM TYPE DOWNLOAD PROCESS STARTED ----")
-        print("Original URL: \(url.absoluteString)")
-        print("Stream Type: \(module.metadata.streamType)")
-        print("Headers: \(headers)")
-        print("Title: \(title ?? "None")")
-        print("Is Episode: \(isEpisode), Show: \(showTitle ?? "None"), Season: \(season?.description ?? "None"), Episode: \(episode?.description ?? "None")")
-        if let subtitle = subtitleURL {
-            print("Subtitle URL: \(subtitle.absoluteString)")
-        }
         let streamType = module.metadata.streamType.lowercased()
         
         if streamType == "hls" || streamType == "m3u8" || url.absoluteString.contains(".m3u8") {

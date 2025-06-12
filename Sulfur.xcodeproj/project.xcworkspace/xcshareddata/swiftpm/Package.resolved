@@ -1,5 +1,4 @@
 {
-  "originHash" : "e12f82ce5205016ea66a114308acd41450cfe950ccb1aacfe0e26181d2036fa4",
   "pins" : [
     {
       "identity" : "drops",
@@ -27,7 +26,16 @@
         "branch" : "main",
         "revision" : "c7ba4833b1b38f09e9708858aeaf91babc69f65c"
       }
+    },
+    {
+      "identity" : "soracore",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/cranci1/SoraCore",
+      "state" : {
+        "branch" : "main",
+        "revision" : "543fe1c8c1d421201aeb10e7d2438a91c90c8ac5"
+      }
     }
   ],
-  "version" : 3
+  "version" : 2
 }

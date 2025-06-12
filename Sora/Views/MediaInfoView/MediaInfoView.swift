@@ -1173,41 +1173,26 @@ struct MediaInfoView: View {
     private func fetchMetadataIDIfNeeded() {
         let provider = UserDefaults.standard.string(forKey: "metadataProviders") ?? "TMDB"
         let cleaned = cleanTitle(title)
+        itemID = nil
+        tmdbID = nil
         
-        if provider == "TMDB" {
-            tmdbID = nil
-            tmdbFetcher.fetchBestMatchID(for: cleaned) { id, type in
+        tmdbFetcher.fetchBestMatchID(for: cleaned) { id, type in
+            DispatchQueue.main.async {
+                self.tmdbID = id
+                self.tmdbType = type
+                Logger.shared.log("Fetched TMDB ID: \(id ?? -1) (\(type?.rawValue ?? "unknown")) for title: \(cleaned)", type: "Debug")
+            }
+        }
+        
+        fetchItemID(byTitle: cleaned) { result in
+            switch result {
+            case .success(let id):
                 DispatchQueue.main.async {
-                    self.tmdbID = id
-                    self.tmdbType = type
-                    Logger.shared.log("Fetched TMDB ID: \(id ?? -1) (\(type?.rawValue ?? "unknown")) for title: \(cleaned)", type: "Debug")
+                    self.itemID = id
+                    Logger.shared.log("Fetched AniList ID: \(id) for title: \(cleaned)", type: "Debug")
                 }
-            }
-            
-            itemID = nil
-            fetchItemID(byTitle: cleaned) { result in
-                switch result {
-                case .success(let id):
-                    DispatchQueue.main.async {
-                        self.itemID = id
-                        Logger.shared.log("Fetched AniList ID: \(id) for title: \(cleaned)", type: "Debug")
-                    }
-                case .failure(let error):
-                    Logger.shared.log("Failed to fetch AniList ID: \(error)", type: "Error")
-                }
-            }
-        } else if provider == "Anilist" {
-            itemID = nil
-            fetchItemID(byTitle: cleaned) { result in
-                switch result {
-                case .success(let id):
-                    DispatchQueue.main.async {
-                        self.itemID = id
-                        Logger.shared.log("Fetched AniList ID: \(id) for title: \(cleaned)", type: "Debug")
-                    }
-                case .failure(let error):
-                    Logger.shared.log("Failed to fetch AniList ID: \(error)", type: "Error")
-                }
+            case .failure(let error):
+                Logger.shared.log("Failed to fetch AniList ID: \(error)", type: "Error")
             }
         }
     }

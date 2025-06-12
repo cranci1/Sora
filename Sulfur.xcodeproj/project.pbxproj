@@ -59,6 +59,7 @@
 		138AA1B82D2D66FD0021F9DF /* EpisodeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138AA1B62D2D66FD0021F9DF /* EpisodeCell.swift */; };
 		138AA1B92D2D66FD0021F9DF /* CircularProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138AA1B72D2D66FD0021F9DF /* CircularProgressBar.swift */; };
 		138FE1D02DECA00D00936D81 /* TMDB-FetchID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138FE1CF2DECA00D00936D81 /* TMDB-FetchID.swift */; };
+		138FF5642DFB17FF00083087 /* SoraCore in Frameworks */ = {isa = PBXBuildFile; productRef = 138FF5632DFB17FF00083087 /* SoraCore */; };
 		1398FB3F2DE4E161004D3F5F /* SettingsViewAbout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398FB3E2DE4E161004D3F5F /* SettingsViewAbout.swift */; };
 		139935662D468C450065CEFF /* ModuleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139935652D468C450065CEFF /* ModuleManager.swift */; };
 		1399FAD42D3AB38C00E97C31 /* SettingsViewLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1399FAD32D3AB38C00E97C31 /* SettingsViewLogger.swift */; };
@@ -200,6 +201,7 @@
 			files = (
 				13367ECC2DF70698009CB33F /* Nuke in Frameworks */,
 				13637B902DE0ECD200BDA2FC /* Drops in Frameworks */,
+				138FF5642DFB17FF00083087 /* SoraCore in Frameworks */,
 				13637B932DE0ECDB00BDA2FC /* MarqueeLabel in Frameworks */,
 				13367ECE2DF70698009CB33F /* NukeUI in Frameworks */,
 			);
@@ -638,6 +640,7 @@
 				13637B922DE0ECDB00BDA2FC /* MarqueeLabel */,
 				13367ECB2DF70698009CB33F /* Nuke */,
 				13367ECD2DF70698009CB33F /* NukeUI */,
+				138FF5632DFB17FF00083087 /* SoraCore */,
 			);
 			productName = Sora;
 			productReference = 133D7C6A2D2BE2500075467E /* Sulfur.app */;
@@ -664,12 +667,14 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 133D7C612D2BE2500075467E;
 			packageReferences = (
 				13637B8E2DE0ECD200BDA2FC /* XCRemoteSwiftPackageReference "Drops" */,
 				13637B912DE0ECDB00BDA2FC /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
 				13367ECA2DF70698009CB33F /* XCRemoteSwiftPackageReference "Nuke" */,
+				138FF5622DFB17FF00083087 /* XCRemoteSwiftPackageReference "SoraCore" */,
 			);
 			productRefGroup = 133D7C6B2D2BE2500075467E /* Products */;
 			projectDirPath = "";
@@ -1056,6 +1061,14 @@
 				kind = branch;
 			};
 		};
+		138FF5622DFB17FF00083087 /* XCRemoteSwiftPackageReference "SoraCore" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/cranci1/SoraCore";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1078,6 +1091,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 13637B912DE0ECDB00BDA2FC /* XCRemoteSwiftPackageReference "MarqueeLabel" */;
 			productName = MarqueeLabel;
+		};
+		138FF5632DFB17FF00083087 /* SoraCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 138FF5622DFB17FF00083087 /* XCRemoteSwiftPackageReference "SoraCore" */;
+			productName = SoraCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

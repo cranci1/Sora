@@ -277,6 +277,9 @@
     "Modules" : {
 
     },
+    "MODULES" : {
+
+    },
     "MORE" : {
 
     },
@@ -413,6 +416,12 @@
 
     },
     "Tap a title to override the current match." : {
+
+    },
+    "Tap to manage your modules" : {
+
+    },
+    "Tap to select a module" : {
 
     },
     "The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases." : {

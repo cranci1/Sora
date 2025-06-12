@@ -252,7 +252,10 @@ struct MediaInfoView: View {
             ZStack(alignment: .top) {
                 gradientOverlay
                 
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 24) {
+                    Spacer()
+                        .frame(height: 100)
+                    
                     headerSection
                     if !episodeLinks.isEmpty {
                         episodesSection
@@ -260,31 +263,34 @@ struct MediaInfoView: View {
                         noEpisodesSection
                     }
                 }
-                .padding()
+                .padding(.horizontal)
             }
         }
     }
     
     @ViewBuilder
     private var gradientOverlay: some View {
-        LinearGradient(
-            gradient: Gradient(stops: [
-                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
-                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.5), location: 0.2),
-                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.8), location: 0.5),
-                .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
-            ]),
-            startPoint: .top,
-            endPoint: .bottom
-        )
+        ZStack {
+            ProgressiveBlurView()
+                .opacity(0.8)
+            
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
+                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.5), location: 0.5),
+                    .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
         .frame(height: 300)
         .clipShape(RoundedRectangle(cornerRadius: 0))
-        .shadow(color: (colorScheme == .dark ? Color.black : Color.white).opacity(1), radius: 10, x: 0, y: 10)
     }
     
     @ViewBuilder
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
                 HStack(spacing: 4) {
                     Image(systemName: "calendar")
@@ -297,7 +303,7 @@ struct MediaInfoView: View {
             }
             
             Text(title)
-                .font(.system(size: 28, weight: .bold))
+                .font(.system(size: 32, weight: .bold))
                 .foregroundColor(.primary)
                 .lineLimit(3)
                 .onLongPressGesture {

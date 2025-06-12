@@ -1,4 +1,5 @@
 {
+  "originHash" : "07beed18a1a0b5e52eea618e423e9ca1c37c24c4d3d4ec31d68c1664db0f0596",
   "pins" : [
     {
       "identity" : "drops",
@@ -33,9 +34,9 @@
       "location" : "https://github.com/cranci1/SoraCore",
       "state" : {
         "branch" : "main",
-        "revision" : "543fe1c8c1d421201aeb10e7d2438a91c90c8ac5"
+        "revision" : "957207dded41b1db9fbfdabde81ffb2e72e71b31"
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }

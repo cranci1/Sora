@@ -271,11 +271,9 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var gradientOverlay: some View {
         ZStack {
-            // Blurred background
             ProgressiveBlurView()
                 .opacity(0.8)
             
-            // Fade to background color
             LinearGradient(
                 gradient: Gradient(stops: [
                     .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),

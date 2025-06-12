@@ -40,11 +40,12 @@ struct EpisodeCell: View {
     @State private var activeDownloadTask: AVAssetDownloadTask?
     
     @State private var swipeOffset: CGFloat = 0
-    @State private var isShowingActions = false
+    @State private var isShowingActions: Bool = false
     @State private var actionButtonWidth: CGFloat = 60
+    @State private var dragState: DragState = .inactive
     
-    @State private var retryAttempts = 0
-    private let maxRetryAttempts = 3
+    @State private var retryAttempts: Int = 0
+    private let maxRetryAttempts: Int = 3
     private let initialBackoffDelay: TimeInterval = 1.0
     
     @ObservedObject private var jsController = JSController.shared
@@ -105,11 +106,6 @@ struct EpisodeCell: View {
             actionButtonsBackground
             
             episodeCellContent
-                .offset(x: swipeOffset)
-                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: swipeOffset)
-                .contextMenu { contextMenuContent }
-                .gesture(swipeGesture)
-                .onTapGesture { handleTap() }
         }
         .onAppear { setupOnAppear() }
         .onDisappear { activeDownloadTask = nil }
@@ -158,7 +154,22 @@ private extension EpisodeCell {
         .frame(maxWidth: .infinity)
         .background(cellBackground)
         .clipShape(RoundedRectangle(cornerRadius: 15))
+        .offset(x: swipeOffset + dragState.translation.width)
         .zIndex(1)
+        .scaleEffect(dragState.isActive ? 0.98 : 1.0)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: swipeOffset)
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: dragState.isActive)
+        .contextMenu { contextMenuContent }
+        .simultaneousGesture(
+            DragGesture(coordinateSpace: .local)
+                .onChanged { value in
+                    handleDragChanged(value)
+                }
+                .onEnded { value in
+                    handleDragEnded(value)
+                }
+        )
+        .onTapGesture { handleTap() }
     }
     
     var cellBackground: some View {
@@ -286,52 +297,98 @@ private extension EpisodeCell {
     }
 }
 
-
 private extension EpisodeCell {
     
-    var swipeGesture: some Gesture {
-        DragGesture(minimumDistance: 10)
-            .onChanged { value in
-                handleSwipeChanged(value)
-            }
-            .onEnded { value in
-                handleSwipeEnded(value)
-            }
-    }
-    
-    func handleSwipeChanged(_ value: DragGesture.Value) {
-        let horizontalTranslation = value.translation.width
-        let verticalTranslation = value.translation.height
+    enum DragState {
+        case inactive
+        case pressing
+        case dragging(translation: CGSize)
         
-        guard abs(horizontalTranslation) > abs(verticalTranslation) * 1.5 else { return }
+        var translation: CGSize {
+            switch self {
+            case .inactive, .pressing:
+                return .zero
+            case .dragging(let translation):
+                return translation
+            }
+        }
         
-        if horizontalTranslation < 0 {
-            let maxSwipe = calculateMaxSwipeDistance()
-            swipeOffset = max(horizontalTranslation, -maxSwipe)
-        } else if isShowingActions {
-            let maxSwipe = calculateMaxSwipeDistance()
-            swipeOffset = max(horizontalTranslation - maxSwipe, -maxSwipe)
+        var isActive: Bool {
+            switch self {
+            case .inactive:
+                return false
+            case .pressing, .dragging:
+                return true
+            }
+        }
+        
+        var isDragging: Bool {
+            switch self {
+            case .dragging:
+                return true
+            default:
+                return false
+            }
         }
     }
     
-    func handleSwipeEnded(_ value: DragGesture.Value) {
-        let horizontalTranslation = value.translation.width
-        let verticalTranslation = value.translation.height
+    func handleDragChanged(_ value: DragGesture.Value) {
+        let translation = value.translation
+        let velocity = value.velocity
         
-        guard abs(horizontalTranslation) > abs(verticalTranslation) * 1.5 else { return }
+        let isHorizontalGesture = abs(translation.width) > abs(translation.height)
+        let hasSignificantHorizontalMovement = abs(translation.width) > 10
         
-        let maxSwipe = calculateMaxSwipeDistance()
-        let threshold = maxSwipe * 0.2
+        if isHorizontalGesture && hasSignificantHorizontalMovement {
+            dragState = .dragging(translation: .zero)
+            
+            let proposedOffset = swipeOffset + translation.width
+            let maxSwipe = calculateMaxSwipeDistance()
+            
+            if translation.width < 0 {
+                let newOffset = max(proposedOffset, -maxSwipe)
+                if proposedOffset < -maxSwipe {
+                    let resistance = abs(proposedOffset + maxSwipe) * 0.15
+                    swipeOffset = -maxSwipe - resistance
+                } else {
+                    swipeOffset = newOffset
+                }
+            } else if isShowingActions {
+                swipeOffset = max(proposedOffset, -maxSwipe)
+            }
+        } else if !hasSignificantHorizontalMovement {
+            dragState = .inactive
+        }
+    }
+    
+    func handleDragEnded(_ value: DragGesture.Value) {
+        let translation = value.translation
+        let velocity = value.velocity
         
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-            if horizontalTranslation < -threshold && !isShowingActions {
-                swipeOffset = -maxSwipe
-                isShowingActions = true
-            } else if horizontalTranslation > threshold && isShowingActions {
-                swipeOffset = 0
-                isShowingActions = false
-            } else {
-                swipeOffset = isShowingActions ? -maxSwipe : 0
+        dragState = .inactive
+        
+        let isHorizontalGesture = abs(translation.width) > abs(translation.height)
+        let hasSignificantHorizontalMovement = abs(translation.width) > 10
+        
+        if isHorizontalGesture && hasSignificantHorizontalMovement {
+            let maxSwipe = calculateMaxSwipeDistance()
+            let threshold = maxSwipe * 0.3
+            let velocityThreshold: CGFloat = 500
+            
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                if translation.width < -threshold || velocity.width < -velocityThreshold {
+                    swipeOffset = -maxSwipe
+                    isShowingActions = true
+                } else if translation.width > threshold || velocity.width > velocityThreshold {
+                    swipeOffset = 0
+                    isShowingActions = false
+                } else {
+                    swipeOffset = isShowingActions ? -maxSwipe : 0
+                }
+            }
+        } else {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                swipeOffset = isShowingActions ? -calculateMaxSwipeDistance() : 0
             }
         }
     }

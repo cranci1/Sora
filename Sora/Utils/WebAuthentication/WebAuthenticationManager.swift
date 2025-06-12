@@ -21,7 +21,7 @@ class WebAuthenticationManager {
             if let callbackURL = callbackURL {
                 completion(.success(callbackURL))
             } else {
-                completion(.failure(NSError(domain: "WebAuthenticationManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No callback URL received"])))
+                completion(.failure(NSError(domain: "WebAuthenticationManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Authentication callback URL not received"])))
             }
         }
         

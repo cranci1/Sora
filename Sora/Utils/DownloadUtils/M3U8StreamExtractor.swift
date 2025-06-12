@@ -16,13 +16,13 @@ enum M3U8StreamExtractorError: Error {
     var localizedDescription: String {
         switch self {
         case .networkError(let error):
-            return "Network error: \(error.localizedDescription)"
+            return "Connection error: \(error.localizedDescription)"
         case .parsingError(let message):
-            return "Parsing error: \(message)"
+            return "Stream parsing error: \(message)"
         case .noStreamFound:
-            return "No suitable stream found in playlist"
+            return "No compatible stream found in playlist"
         case .invalidURL:
-            return "Invalid stream URL"
+            return "Stream URL is invalid"
         }
     }
 }

@@ -24,12 +24,12 @@
 
 - [x] macOS 12.0+ support
 - [x] iOS/iPadOS 15.0+ support
-- [x] JavaScript as main Loader
+- [x] JavaScript as main loader
 - [x] Download support (HLS & MP4)
-- [x] Tracking Services (AniList, Trakt)
-- [x] Apple KeyChain support for auth Tokens
-- [x] Streams support (Jellyfin/Plex like servers)
-- [x] External Metadata providers (TMDB, AniList)
+- [x] Tracking services (AniList, Trakt)
+- [x] Apple Keychain support for auth tokens
+- [x] Streams support (Jellyfin/Plex-like servers)
+- [x] External metadata providers (TMDB, AniList)
 - [x] Background playback and Picture-in-Picture (PiP) support
 - [x] External media player support (VLC, Infuse, Outplayer, nPlayer, SenPlayer, IINA, TracyPlayer)
 
@@ -49,17 +49,17 @@ Additionally, you can install the app using Xcode or using the .ipa file, which 
 
 ## Frequently Asked Questions
 
-1. **What is Sora?**
-Sora is a modular web scraping application designed to work exclusively with custom modules.
+1. **What is Sora?**  
+   Sora is a modular web scraping application designed to work exclusively with custom modules.
 
-2. **Is Sora safe?**
-Yes, Sora is open-source and prioritizes user privacy. It does not store user data on external servers and does not collect crash logs.
+2. **Is Sora safe?**  
+   Yes, Sora is open-source and prioritizes user privacy. It does not store user data on external servers and does not collect crash logs.
 
-3. **Will Sora ever be paid?**
-No, Sora will always remain free without subscriptions, paid content, or any type of login.
+3. **Will Sora ever be paid?**  
+   No, Sora will always remain free without subscriptions, paid content, or any type of login.
 
-4. **How can I get modules?**
-Sora does not include any modules by default. You will need to find and add the necessary modules yourself, or create your own.
+4. **How can I get modules?**  
+   Sora does not include any modules by default. You will need to find and add the necessary modules yourself, or create your own.
 
 ## Acknowledgements
 
@@ -95,16 +95,16 @@ along with Sora. If not, see <https://www.gnu.org/licenses/>.
 
 ## Legal
 
-**_Sora is not made for Piracy! The Sora project does not condone any form of piracy._**
+**_Sora is not intended for piracy. The Sora project does not endorse or support any form of piracy._**
 
 ### No Liability
 
-The developer(s) of this software assumes no liability for damages, legal claims, or other issues arising from the use or misuse of this software or any third-party modules. Users bear full responsibility for their actions. Use this software and modules at your own risk.
+The developer(s) of this software assume no liability for damages, legal claims, or other issues arising from the use or misuse of this software or any third-party modules. Users bear full responsibility for their actions. Use of this software and its modules is at your own risk.
 
 ### Third-Party Websites and Intellectual Property
 
-This software is not affiliated with or endorsed by any third-party entity. Any references to third-party sites in user-generated modules do not imply endorsement. Users are responsible for verifying that their scraping activities comply with the terms of service and intellectual property rights of the sites they interact with.
+This software is not affiliated with or endorsed by any third-party entities. Any references to third-party sites in user-generated modules do not imply endorsement. Users are responsible for ensuring their scraping activities comply with the terms of service and intellectual property rights of the sites they interact with.
 
 ### DMCA
 
-The developer(s) are not responsible for the misuse of any content inside or outside the app and shall not be responsible for the dissemination of any content within the app. Any violations should be sent to the source website or module creator. The developer is not legally responsible for any module used inside the app.
+The developer(s) are not responsible for the misuse of any content inside or outside the app and shall not be held liable for the dissemination of any content within the app. Any violations should be reported to the source website or module creator. The developer bears no legal responsibility for any module used within the app.

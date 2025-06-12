@@ -208,9 +208,9 @@ class VideoPlayerViewController: UIViewController {
                     aniListMutation.updateAnimeProgress(animeId: self.aniListID, episodeNumber: self.episodeNumber) { result in
                         switch result {
                         case .success:
-                            Logger.shared.log("Successfully updated AniList progress for episode \(self.episodeNumber)", type: "General")
+                            Logger.shared.log("Updated AniList progress for Episode \(self.episodeNumber)", type: "General")
                         case .failure(let error):
-                            Logger.shared.log("Failed to update AniList progress: \(error.localizedDescription)", type: "Error")
+                            Logger.shared.log("Could not update AniList progress: \(error.localizedDescription)", type: "Error")
                         }
                     }
                 }
@@ -222,9 +222,9 @@ class VideoPlayerViewController: UIViewController {
                         traktMutation.markAsWatched(type: "movie", tmdbID: tmdbId) { result in
                             switch result {
                             case .success:
-                                Logger.shared.log("Successfully updated Trakt progress for movie", type: "General")
+                                Logger.shared.log("Updated Trakt progress for movie", type: "General")
                             case .failure(let error):
-                                Logger.shared.log("Failed to update Trakt progress: \(error.localizedDescription)", type: "Error")
+                                Logger.shared.log("Could not update Trakt progress: \(error.localizedDescription)", type: "Error")
                             }
                         }
                     } else {
@@ -236,9 +236,9 @@ class VideoPlayerViewController: UIViewController {
                         ) { result in
                             switch result {
                             case .success:
-                                Logger.shared.log("Successfully updated Trakt progress for episode \(self.episodeNumber)", type: "General")
+                                Logger.shared.log("Updated Trakt progress for Episode \(self.episodeNumber)", type: "General")
                             case .failure(let error):
-                                Logger.shared.log("Failed to update Trakt progress: \(error.localizedDescription)", type: "Error")
+                                Logger.shared.log("Could not update Trakt progress: \(error.localizedDescription)", type: "Error")
                             }
                         }
                     }

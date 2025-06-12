@@ -88,6 +88,7 @@
 		1E47859B2DEBC5960095BF2F /* AnilistMatchPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E47859A2DEBC5960095BF2F /* AnilistMatchPopupView.swift */; };
 		1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */; };
 		1EAC7A322D888BC50083984D /* MusicProgressSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */; };
+		1EDA48F42DFAC374002A4EC3 /* TMDBMatchPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EDA48F32DFAC374002A4EC3 /* TMDBMatchPopupView.swift */; };
 		1EF5C3A92DB988E40032BF07 /* CommunityLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EF5C3A82DB988D70032BF07 /* CommunityLib.swift */; };
 		7222485F2DCBAA2C00CABE2D /* DownloadModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7222485D2DCBAA2C00CABE2D /* DownloadModels.swift */; };
 		722248602DCBAA2C00CABE2D /* M3U8StreamExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7222485E2DCBAA2C00CABE2D /* M3U8StreamExtractor.swift */; };
@@ -181,6 +182,7 @@
 		1E47859A2DEBC5960095BF2F /* AnilistMatchPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnilistMatchPopupView.swift; sourceTree = "<group>"; };
 		1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewLoggerFilter.swift; sourceTree = "<group>"; };
 		1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicProgressSlider.swift; sourceTree = "<group>"; };
+		1EDA48F32DFAC374002A4EC3 /* TMDBMatchPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBMatchPopupView.swift; sourceTree = "<group>"; };
 		1EF5C3A82DB988D70032BF07 /* CommunityLib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityLib.swift; sourceTree = "<group>"; };
 		7222485D2DCBAA2C00CABE2D /* DownloadModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadModels.swift; sourceTree = "<group>"; };
 		7222485E2DCBAA2C00CABE2D /* M3U8StreamExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3U8StreamExtractor.swift; sourceTree = "<group>"; };
@@ -368,6 +370,7 @@
 		133D7C7F2D2BE2630075467E /* MediaInfoView */ = {
 			isa = PBXGroup;
 			children = (
+				1EDA48F32DFAC374002A4EC3 /* TMDBMatchPopupView.swift */,
 				138AA1B52D2D66EC0021F9DF /* EpisodeCell */,
 				133D7C802D2BE2630075467E /* MediaInfoView.swift */,
 				1E47859A2DEBC5960095BF2F /* AnilistMatchPopupView.swift */,
@@ -705,6 +708,7 @@
 			files = (
 				135CCBE22D4D1138008B9C0E /* SettingsViewPlayer.swift in Sources */,
 				131270172DC13A010093AA9C /* DownloadManager.swift in Sources */,
+				1EDA48F42DFAC374002A4EC3 /* TMDBMatchPopupView.swift in Sources */,
 				1327FBA72D758CEA00FC6689 /* Analytics.swift in Sources */,
 				13DC0C462D302C7500D0F966 /* VideoPlayer.swift in Sources */,
 				1359ED142D76F49900C13034 /* finTopView.swift in Sources */,
@@ -940,7 +944,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Sora/Preview Content\"";
-				DEVELOPMENT_TEAM = 399LMK6Q2Y;
+				DEVELOPMENT_TEAM = 385Y24WAN5;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -958,7 +962,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur;
+				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -982,7 +986,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Sora/Preview Content\"";
-				DEVELOPMENT_TEAM = 399LMK6Q2Y;
+				DEVELOPMENT_TEAM = 385Y24WAN5;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1000,7 +1004,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur;
+				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

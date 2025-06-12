@@ -23,7 +23,7 @@ class TMDBFetcher {
         let results: [TMDBResult]
     }
     
-    private let apiKey = "738b4edd0a156cc126dc4a4b8aea4aca"
+     let apiKey = "738b4edd0a156cc126dc4a4b8aea4aca"
     private let session = URLSession.custom
     
     func fetchBestMatchID(for title: String, completion: @escaping (Int?, MediaType?) -> Void) {

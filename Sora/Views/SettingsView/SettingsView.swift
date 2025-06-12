@@ -157,7 +157,7 @@ struct SettingsView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("MAIN")
+                        Text("MAIN SETTINGS")
                             .font(.footnote)
                             .foregroundStyle(.gray)
                             .padding(.horizontal, 20)
@@ -202,7 +202,7 @@ struct SettingsView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("DATA/LOGS")
+                        Text("DATA & LOGS")
                             .font(.footnote)
                             .foregroundStyle(.gray)
                             .padding(.horizontal, 20)
@@ -306,7 +306,7 @@ struct SettingsView: View {
                         .padding(.horizontal, 20)
                     }
 
-                    Text("Running Sora \(version) - cranci1")
+                    Text("Sora \(version) by cranci1")
                         .font(.footnote)
                         .foregroundStyle(.gray)
                         .frame(maxWidth: .infinity, alignment: .center)

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Network
 
 class FetchDelegate: NSObject, URLSessionTaskDelegate {
     private let allowRedirects: Bool
@@ -68,5 +69,58 @@ extension URLSession {
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = ["User-Agent": randomUserAgent]
         return URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
+    }
+}
+
+enum NetworkType {
+    case wifi
+    case cellular
+    case unknown
+}
+
+@available(iOS 14.0, *)
+class NetworkMonitor: ObservableObject {
+    static let shared = NetworkMonitor()
+    
+    private let monitor = NWPathMonitor()
+    private let queue = DispatchQueue(label: "NetworkMonitor")
+    
+    @Published var currentNetworkType: NetworkType = .unknown
+    @Published var isConnected: Bool = false
+    
+    private init() {
+        startMonitoring()
+    }
+    
+    private func startMonitoring() {
+        monitor.pathUpdateHandler = { [weak self] path in
+            DispatchQueue.main.async {
+                self?.isConnected = path.status == .satisfied
+                self?.currentNetworkType = self?.getNetworkType(from: path) ?? .unknown
+            }
+        }
+        monitor.start(queue: queue)
+    }
+    
+    private func getNetworkType(from path: NWPath) -> NetworkType {
+        if path.usesInterfaceType(.wifi) {
+            return .wifi
+        } else if path.usesInterfaceType(.cellular) {
+            return .cellular
+        } else {
+            return .unknown
+        }
+    }
+    
+    static func getCurrentNetworkType() -> NetworkType {
+        if #available(iOS 14.0, *) {
+            return shared.currentNetworkType
+        } else {
+            return .unknown
+        }
+    }
+    
+    deinit {
+        monitor.cancel()
     }
 }

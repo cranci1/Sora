@@ -154,12 +154,17 @@ struct SettingsViewGeneral: View {
     @AppStorage("fetchEpisodeMetadata") private var fetchEpisodeMetadata: Bool = true
     @AppStorage("analyticsEnabled") private var analyticsEnabled: Bool = false
     @AppStorage("hideSplashScreen") private var hideSplashScreenEnable: Bool = false
-    @AppStorage("metadataProviders") private var metadataProviders: String = "TMDB"
+    @AppStorage("metadataProvidersOrder") private var metadataProvidersOrderData: Data = {
+        try! JSONEncoder().encode(["TMDB","AniList"])
+    }()
     @AppStorage("tmdbImageWidth") private var TMDBimageWidht: String = "original"
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     
-    private let metadataProvidersList = ["AniList", "TMDB"]
+    private var metadataProvidersOrder: [String] {
+        get { (try? JSONDecoder().decode([String].self, from: metadataProvidersOrderData)) ?? ["AniList","TMDB"] }
+        set { metadataProvidersOrderData = try! JSONEncoder().encode(newValue) }
+    }
     private let TMDBimageWidhtList = ["300", "500", "780", "1280", "original"]
     private let sortOrderOptions = ["Ascending", "Descending"]
     @EnvironmentObject var settings: Settings
@@ -222,7 +227,24 @@ struct SettingsViewGeneral: View {
                         isOn: $fetchEpisodeMetadata
                     )
                     
-                    if metadataProviders == "TMDB" {
+                    List {
+                        ForEach(metadataProvidersOrder, id: \.self) { prov in
+                            Text(prov)
+                                .padding(.vertical, 8)
+                        }
+                        .onMove { idx, dest in
+                            var arr = metadataProvidersOrder
+                            arr.move(fromOffsets: idx, toOffset: dest)
+                            metadataProvidersOrderData = try! JSONEncoder().encode(arr)
+                        }
+                    }
+                    .environment(\.editMode, .constant(.active))
+                    .frame(height: 140)
+                    
+                    SettingsSection(
+                        title: "Media Grid Layout",
+                        footer: "Adjust the number of media items per row in portrait and landscape modes."
+                    ) {
                         SettingsPickerRow(
                             icon: "server.rack",
                             title: NSLocalizedString("Metadata Provider", comment: ""),
@@ -298,7 +320,8 @@ struct SettingsViewGeneral: View {
                     )
                 }
             }
-            .padding(.vertical, 20)
+            .navigationTitle("General")
+            .scrollViewBottomPadding()
         }
         .navigationTitle(NSLocalizedString("General", comment: ""))
         .scrollViewBottomPadding()

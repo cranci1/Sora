@@ -65,6 +65,8 @@ struct MediaInfoView: View {
     @State private var showStreamLoadingView: Bool = false
     @State private var currentStreamTitle: String = ""
     @State private var activeFetchID: UUID? = nil
+    @State private var activeProvider: String?
+    @State private var isTMDBMatchingPresented = false
     
     @State private var refreshTrigger: Bool = false
     @State private var buttonRefreshTrigger: Bool = false
@@ -84,6 +86,15 @@ struct MediaInfoView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    
+    @AppStorage("metadataProvidersOrder") private var metadataProvidersOrderData: Data = {
+        try! JSONEncoder().encode(["AniList","TMDB"])
+    }()
+    
+    private var metadataProvidersOrder: [String] {
+      get { (try? JSONDecoder().decode([String].self, from: metadataProvidersOrderData)) ?? ["AniList","TMDB"] }
+      set { metadataProvidersOrderData = try! JSONEncoder().encode(newValue) }
+    }
     
     private var isGroupedBySeasons: Bool {
         return groupedEpisodes().count > 1
@@ -261,10 +272,7 @@ struct MediaInfoView: View {
             ZStack(alignment: .top) {
                 gradientOverlay
                 
-                VStack(alignment: .leading, spacing: 24) {
-                    Spacer()
-                        .frame(height: 100)
-                    
+                VStack(alignment: .leading, spacing: 16) {
                     headerSection
                     if !episodeLinks.isEmpty {
                         episodesSection
@@ -272,34 +280,31 @@ struct MediaInfoView: View {
                         noEpisodesSection
                     }
                 }
-                .padding(.horizontal)
+                .padding()
             }
         }
     }
     
     @ViewBuilder
     private var gradientOverlay: some View {
-        ZStack {
-            ProgressiveBlurView()
-                .opacity(0.8)
-            
-            LinearGradient(
-                gradient: Gradient(stops: [
-                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
-                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.5), location: 0.5),
-                    .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        }
+        LinearGradient(
+            gradient: Gradient(stops: [
+                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
+                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.5), location: 0.2),
+                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.8), location: 0.5),
+                .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
+            ]),
+            startPoint: .top,
+            endPoint: .bottom
+        )
         .frame(height: 300)
         .clipShape(RoundedRectangle(cornerRadius: 0))
+        .shadow(color: (colorScheme == .dark ? Color.black : Color.white).opacity(1), radius: 10, x: 0, y: 10)
     }
     
     @ViewBuilder
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
                 HStack(spacing: 4) {
                     Image(systemName: "calendar")
@@ -312,7 +317,7 @@ struct MediaInfoView: View {
             }
             
             Text(title)
-                .font(.system(size: 32, weight: .bold))
+                .font(.system(size: 28, weight: .bold))
                 .foregroundColor(.primary)
                 .lineLimit(3)
                 .onLongPressGesture {
@@ -652,6 +657,13 @@ struct MediaInfoView: View {
         .sheet(isPresented: $isMatchingPresented) {
             AnilistMatchPopupView(seriesTitle: title) { selectedID in
                 handleAniListMatch(selectedID: selectedID)
+                fetchMetadataIDIfNeeded()    // ← use your new async re-try loop
+            }
+        }
+        .sheet(isPresented: $isTMDBMatchingPresented) {
+            TMDBMatchPopupView(seriesTitle: title) { id, type in
+                tmdbID = id; tmdbType = type
+                fetchMetadataIDIfNeeded()
             }
         }
     }
@@ -659,34 +671,44 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var menuContent: some View {
         Group {
-            if let id = itemID ?? customAniListID {
-                let labelText = (matchedTitle?.isEmpty == false ? matchedTitle! : "\(id)")
-                Text("Matched with: \(labelText)")
+            // Show which provider “won”
+            if let active = activeProvider {
+                Text("Provider: \(active)")
                     .font(.caption)
                     .foregroundColor(.gray)
                     .padding(.vertical, 4)
+                Divider()
             }
             
-            Divider()
+
+            Text("Matched ID: \(itemID ?? 0)")
+                .font(.caption2)
+                .foregroundColor(.secondary)
             
-            if let _ = customAniListID {
+            if activeProvider == "AniList" {
+                Button("Match with AniList") {
+                    isMatchingPresented = true
+                }
+                Text("Matched ID: \(itemID ?? 0)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                
                 Button(action: { resetAniListID() }) {
                     Label("Reset AniList ID", systemImage: "arrow.clockwise")
                 }
-            }
-            
-            if let id = itemID ?? customAniListID {
-                Button(action: { openAniListPage(id: id) }) {
+                
+                Button(action: { openAniListPage(id: itemID ?? 0) }) {
                     Label("Open in AniList", systemImage: "link")
                 }
             }
-            
-            if UserDefaults.standard.string(forKey: "metadataProviders") ?? "TMDB" == "AniList" {
-                Button(action: { isMatchingPresented = true }) {
-                    Label("Match with AniList", systemImage: "magnifyingglass")
+            // TMDB branch: only match
+            else if activeProvider == "TMDB" {
+                Button("Match with TMDB") {
+                    isTMDBMatchingPresented = true
                 }
             }
             
+            // Keep all of your existing poster & debug options
             posterMenuOptions
             
             Divider()
@@ -696,6 +718,7 @@ struct MediaInfoView: View {
             }
         }
     }
+
     
     @ViewBuilder
     private var posterMenuOptions: some View {
@@ -1168,30 +1191,60 @@ struct MediaInfoView: View {
     }
     
     private func fetchMetadataIDIfNeeded() {
-        let provider = UserDefaults.standard.string(forKey: "metadataProviders") ?? "TMDB"
-        let cleaned = cleanTitle(title)
+        let order = metadataProvidersOrder
+        let cleanedTitle = cleanTitle(title)
+
         itemID = nil
         tmdbID = nil
-        
-        tmdbFetcher.fetchBestMatchID(for: cleaned) { id, type in
-            DispatchQueue.main.async {
-                self.tmdbID = id
-                self.tmdbType = type
-                Logger.shared.log("Fetched TMDB ID: \(id ?? -1) (\(type?.rawValue ?? "unknown")) for title: \(cleaned)", type: "Debug")
-            }
-        }
-        
-        fetchItemID(byTitle: cleaned) { result in
+        activeProvider = nil
+        isError = false
+
+        fetchItemID(byTitle: cleanedTitle) { result in
             switch result {
             case .success(let id):
-                DispatchQueue.main.async {
-                    self.itemID = id
-                    Logger.shared.log("Fetched AniList ID: \(id) for title: \(cleaned)", type: "Debug")
-                }
+                DispatchQueue.main.async { self.itemID = id }
             case .failure(let error):
-                Logger.shared.log("Failed to fetch AniList ID: \(error)", type: "Error")
+                Logger.shared.log("Failed to fetch AniList ID for tracking: \(error)", type: "Error")
             }
         }
+
+        func tryNext(_ index: Int) {
+            guard index < order.count else {
+                isError = true
+                return
+            }
+            let provider = order[index]
+            if provider == "TMDB" {
+                tmdbFetcher.fetchBestMatchID(for: cleanedTitle) { id, type in
+                    DispatchQueue.main.async {
+                        if let id = id, let type = type {
+                            self.tmdbID = id
+                            self.tmdbType = type
+                            self.activeProvider = "TMDB"
+                            UserDefaults.standard.set("TMDB", forKey: "metadataProviders")
+                        } else {
+                            tryNext(index + 1)
+                        }
+                    }
+                }
+            } else if provider == "AniList" {
+                fetchItemID(byTitle: cleanedTitle) { result in
+                    switch result {
+                    case .success:
+                        DispatchQueue.main.async {
+                            self.activeProvider = "AniList"
+                            UserDefaults.standard.set("AniList", forKey: "metadataProviders")
+                        }
+                    case .failure:
+                        tryNext(index + 1)
+                    }
+                }
+            } else {
+                tryNext(index + 1)
+            }
+        }
+
+        tryNext(0)
     }
     
     private func fetchItemID(byTitle title: String, completion: @escaping (Result<Int, Error>) -> Void) {

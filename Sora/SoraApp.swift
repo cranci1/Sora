@@ -11,7 +11,7 @@ import SwiftUI
 struct SoraApp: App {
     @StateObject private var settings = Settings()
     @StateObject private var moduleManager = ModuleManager()
-    @StateObject private var librarykManager = LibraryManager()
+    @StateObject private var libraryManager = LibraryManager()
     @StateObject private var downloadManager = DownloadManager()
     @StateObject private var jsController = JSController.shared
     
@@ -40,7 +40,7 @@ struct SoraApp: App {
             }
             .environmentObject(moduleManager)
             .environmentObject(settings)
-            .environmentObject(librarykManager)
+            .environmentObject(libraryManager)
             .environmentObject(downloadManager)
             .environmentObject(jsController)
             .accentColor(settings.accentColor)

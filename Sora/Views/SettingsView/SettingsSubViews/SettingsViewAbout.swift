@@ -62,7 +62,7 @@ struct SettingsViewAbout: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                SettingsSection(title: "App Info", footer: "Sora/Sulfur will always remain free with no ADs!") {
+                SettingsSection(title: "App Info", footer: "Sora/Sulfur will always remain free with no ads!") {
                     HStack(alignment: .center, spacing: 16) {
                         LazyImage(url: URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/Sora/Assets.xcassets/AppIcon.appiconset/darkmode.png")) { state in
                             if let uiImage = state.imageContainer?.image {
@@ -81,7 +81,7 @@ struct SettingsViewAbout: View {
                             Text("Sora")
                                 .font(.title)
                                 .bold()
-                            Text("AKA Sulfur")
+                            Text("Also known as Sulfur")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }

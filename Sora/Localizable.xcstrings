@@ -244,6 +244,9 @@
         }
       }
     },
+    "Also known as Sulfur" : {
+
+    },
     "AniList ID" : {
 
     },
@@ -757,7 +760,7 @@
         }
       }
     },
-    "DATA/LOGS" : {
+    "DATA & LOGS" : {
 
     },
     "Debug" : {
@@ -1176,6 +1179,16 @@
         }
       }
     },
+    "Failed to load contributors" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to load contributors. Please try again later."
+          }
+        }
+      }
+    },
     "Files Downloaded" : {
       "localizations" : {
         "en" : {
@@ -1438,6 +1451,28 @@
         }
       }
     },
+    "INFOS" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Information"
+          }
+        }
+      }
+    },
+    "Join the Discord" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join Discord Community"
+          }
+        }
+      }
+    },
     "LESS" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1500,6 +1535,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Licht"
+          }
+        }
+      }
+    },
+    "License (GPLv3.0)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View License (GPLv3.0)"
           }
         }
       }
@@ -1748,7 +1793,15 @@
       }
     },
     "MAIN" : {
-
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main Settings"
+          }
+        }
+      }
     },
     "Main Developer" : {
       "localizations" : {
@@ -1792,6 +1845,19 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Markeer als gezien"
+          }
+        }
+      }
+    },
+    "Mark Previous Episodes as Watched" : {
+
+    },
+    "Mark watched" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Watched"
           }
         }
       }
@@ -1967,6 +2033,9 @@
           }
         }
       }
+    },
+    "No AniList matches found" : {
+
     },
     "No Data Available" : {
       "localizations" : {
@@ -2523,6 +2592,17 @@
         }
       }
     },
+    "Report an Issue" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report an Issue on GitHub"
+          }
+        }
+      }
+    },
     "Reset" : {
       "localizations" : {
         "en" : {
@@ -2554,6 +2634,9 @@
           }
         }
       }
+    },
+    "Reset Episode Progress" : {
+
     },
     "Reset progress" : {
       "extractionState" : "manual",
@@ -3282,6 +3365,9 @@
           }
         }
       }
+    },
+    "TMDB Match" : {
+
     },
     "Trackers" : {
       "localizations" : {

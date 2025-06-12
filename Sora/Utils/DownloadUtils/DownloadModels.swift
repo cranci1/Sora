@@ -32,13 +32,13 @@ enum DownloadQualityPreference: String, CaseIterable {
     var description: String {
         switch self {
         case .best:
-            return "Highest available quality (largest file size)"
+            return "Maximum quality available (largest file size)"
         case .high:
-            return "High quality (720p or higher)"
+            return "High quality (720p or better)"
         case .medium:
-            return "Medium quality (480p-720p)"
+            return "Medium quality (480p to 720p)"
         case .low:
-            return "Lowest available quality (smallest file size)"
+            return "Minimum quality available (smallest file size)"
         }
     }
 }

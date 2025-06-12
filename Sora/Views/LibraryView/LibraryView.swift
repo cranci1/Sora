@@ -91,9 +91,9 @@ struct LibraryView: View {
                                 Image(systemName: "play.circle")
                                     .font(.largeTitle)
                                     .foregroundColor(.secondary)
-                                Text("No items to continue watching.")
+                                Text("Nothing to Continue Watching")
                                     .font(.headline)
-                                Text("Recently watched content will appear here.")
+                                Text("Your recently watched content will appear here")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }

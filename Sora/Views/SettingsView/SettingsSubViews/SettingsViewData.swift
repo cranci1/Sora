@@ -154,22 +154,24 @@ struct SettingsViewData: View {
             VStack(spacing: 24) {
                 SettingsSection(
                     title: "App Storage",
-                    footer: "The app cache allow the app to sho immages faster.\n\nClearing the documents folder will remove all the modules.\n\nThe App Data should never be erased if you don't know what that will cause."
+                    footer: "The app cache allows the app to show images faster, can be cleared to free up storage at any time.\n\nClearing the documents folder will remove all the modules.\n\nErasing all App Data will reset the app to it's original state."
                 ) {
                     VStack(spacing: 0) {
                         SettingsButtonRow(
                             icon: "trash",
-                            title: "Remove All Cache",
+                            title: "Remove all Cache",
                             subtitle: cacheSizeText,
                             action: {
                                 activeAlert = .clearCache
                                 showAlert = true
                             }
                         )
+
+                        Divider().padding(.horizontal, 16)
                         
                         SettingsButtonRow(
-                            icon: "film",
-                            title: "Remove Downloads",
+                            icon: "square.and.arrow.down",
+                            title: "Remove all Downloads",
                             subtitle: formatSize(downloadsSize),
                             action: {
                                 activeAlert = .removeDownloads
@@ -180,8 +182,8 @@ struct SettingsViewData: View {
                         Divider().padding(.horizontal, 16)
                         
                         SettingsButtonRow(
-                            icon: "doc.text",
-                            title: "Remove All Documents",
+                            icon: "cube",
+                            title: "Remove all Documents",
                             subtitle: formatSize(documentsSize),
                             action: {
                                 activeAlert = .removeDocs

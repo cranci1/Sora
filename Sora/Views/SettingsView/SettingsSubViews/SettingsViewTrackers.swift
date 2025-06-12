@@ -117,7 +117,7 @@ struct SettingsViewTrackers: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                SettingsSection(title: "AniList") {
+                SettingsSection(title: NSLocalizedString("AniList", comment: "")) {
                     VStack(spacing: 0) {
                         HStack(alignment: .center, spacing: 10) {
                             LazyImage(url: URL(string: "https://raw.githubusercontent.com/cranci1/Ryu/2f10226aa087154974a70c1ec78aa83a47daced9/Ryu/Assets.xcassets/Listing/Anilist.imageset/anilist.png")) { state in
@@ -137,32 +137,30 @@ struct SettingsViewTrackers: View {
                             }
                             
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("AniList.co")
+                                Text(NSLocalizedString("AniList.co", comment: ""))
                                     .font(.title3)
                                     .fontWeight(.semibold)
                                 
-                                Group {
-                                    if isAnilistLoading {
-                                        ProgressView()
-                                            .scaleEffect(0.8)
-                                            .frame(height: 18)
-                                    } else if isAnilistLoggedIn {
-                                        HStack(spacing: 0) {
-                                            Text("Logged in as ")
-                                                .font(.footnote)
-                                                .foregroundStyle(.gray)
-                                            Text(anilistUsername)
-                                                .font(.footnote)
-                                                .fontWeight(.medium)
-                                                .foregroundStyle(profileColor)
-                                        }
+                                if isAnilistLoading {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
                                         .frame(height: 18)
-                                    } else {
-                                        Text(anilistStatus)
+                                } else if isAnilistLoggedIn {
+                                    HStack(spacing: 0) {
+                                        Text(NSLocalizedString("Logged in as", comment: ""))
                                             .font(.footnote)
                                             .foregroundStyle(.gray)
-                                            .frame(height: 18)
+                                        Text(anilistUsername)
+                                            .font(.footnote)
+                                            .fontWeight(.medium)
+                                            .foregroundStyle(profileColor)
                                     }
+                                    .frame(height: 18)
+                                } else {
+                                    Text(NSLocalizedString("You are not logged in", comment: ""))
+                                        .font(.footnote)
+                                        .foregroundStyle(.gray)
+                                        .frame(height: 18)
                                 }
                             }
                             .frame(height: 60, alignment: .center)
@@ -179,7 +177,7 @@ struct SettingsViewTrackers: View {
                             
                             SettingsToggleRow(
                                 icon: "arrow.triangle.2.circlepath",
-                                title: "Sync anime progress",
+                                title: NSLocalizedString("Sync anime progress", comment: ""),
                                 isOn: $isSendPushUpdates,
                                 showDivider: false
                             )
@@ -200,7 +198,7 @@ struct SettingsViewTrackers: View {
                                     .frame(width: 24, height: 24)
                                     .foregroundStyle(isAnilistLoggedIn ? .red : .accentColor)
                                 
-                                Text(isAnilistLoggedIn ? "Log Out from AniList" : "Log In with AniList")
+                                Text(isAnilistLoggedIn ? NSLocalizedString("Log Out from AniList", comment: "") : NSLocalizedString("Log In with AniList", comment: ""))
                                     .foregroundStyle(isAnilistLoggedIn ? .red : .accentColor)
                                 
                                 Spacer()
@@ -212,7 +210,7 @@ struct SettingsViewTrackers: View {
                     }
                 }
                 
-                SettingsSection(title: "Trakt") {
+                SettingsSection(title: NSLocalizedString("Trakt", comment: "")) {
                     VStack(spacing: 0) {
                         HStack(alignment: .center, spacing: 10) {
                             LazyImage(url: URL(string: "https://static-00.iconduck.com/assets.00/trakt-icon-2048x2048-2633ksxg.png")) { state in
@@ -232,32 +230,30 @@ struct SettingsViewTrackers: View {
                             }
                             
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Trakt.tv")
+                                Text(NSLocalizedString("Trakt.tv", comment: ""))
                                     .font(.title3)
                                     .fontWeight(.semibold)
                                 
-                                Group {
-                                    if isTraktLoading {
-                                        ProgressView()
-                                            .scaleEffect(0.8)
-                                            .frame(height: 18)
-                                    } else if isTraktLoggedIn {
-                                        HStack(spacing: 0) {
-                                            Text("Logged in as ")
-                                                .font(.footnote)
-                                                .foregroundStyle(.gray)
-                                            Text(traktUsername)
-                                                .font(.footnote)
-                                                .fontWeight(.medium)
-                                                .foregroundStyle(.primary)
-                                        }
+                                if isTraktLoading {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
                                         .frame(height: 18)
-                                    } else {
-                                        Text(traktStatus)
+                                } else if isTraktLoggedIn {
+                                    HStack(spacing: 0) {
+                                        Text(NSLocalizedString("Logged in as", comment: ""))
                                             .font(.footnote)
                                             .foregroundStyle(.gray)
-                                            .frame(height: 18)
+                                        Text(traktUsername)
+                                            .font(.footnote)
+                                            .fontWeight(.medium)
+                                            .foregroundStyle(Color.accentColor)
                                     }
+                                    .frame(height: 18)
+                                } else {
+                                    Text(NSLocalizedString("You are not logged in", comment: ""))
+                                        .font(.footnote)
+                                        .foregroundStyle(.gray)
+                                        .frame(height: 18)
                                 }
                             }
                             .frame(height: 60, alignment: .center)
@@ -267,6 +263,18 @@ struct SettingsViewTrackers: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
                         .frame(height: 84)
+                        
+                        if isTraktLoggedIn {
+                            Divider()
+                                .padding(.horizontal, 16)
+                            
+                            SettingsToggleRow(
+                                icon: "arrow.triangle.2.circlepath",
+                                title: NSLocalizedString("Sync TV shows progress", comment: ""),
+                                isOn: $isSendTraktUpdates,
+                                showDivider: false
+                            )
+                        }
                         
                         Divider()
                             .padding(.horizontal, 16)
@@ -283,7 +291,7 @@ struct SettingsViewTrackers: View {
                                     .frame(width: 24, height: 24)
                                     .foregroundStyle(isTraktLoggedIn ? .red : .accentColor)
                                 
-                                Text(isTraktLoggedIn ? "Log Out from Trakt" : "Log In with Trakt")
+                                Text(isTraktLoggedIn ? NSLocalizedString("Log Out from Trakt", comment: "") : NSLocalizedString("Log In with Trakt", comment: ""))
                                     .foregroundStyle(isTraktLoggedIn ? .red : .accentColor)
                                 
                                 Spacer()
@@ -296,14 +304,14 @@ struct SettingsViewTrackers: View {
                 }
                 
                 SettingsSection(
-                    title: "Info",
-                    footer: "Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate."
+                    title: NSLocalizedString("Info", comment: ""),
+                    footer: NSLocalizedString("Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate.", comment: "")
                 ) {}
             }
             .padding(.vertical, 20)
         }
         .scrollViewBottomPadding()
-        .navigationTitle("Trackers")
+        .navigationTitle(NSLocalizedString("Trackers", comment: ""))
         .onAppear {
             updateAniListStatus()
             updateTraktStatus()

@@ -126,24 +126,33 @@ struct MediaInfoView: View {
         
         if episodeLinks.count == 1 {
             if let _ = unfinished {
-                return "Continue Watching"
+                return NSLocalizedString("Continue Watching", comment: "")
             }
-            return "Start Watching"
+            return NSLocalizedString("Start Watching", comment: "")
         }
         
         if let finishedIndex = finished, finishedIndex < episodeLinks.count - 1 {
             let nextEp = episodeLinks[finishedIndex + 1]
-            return "Start Watching Episode \(nextEp.number)"
+            return String(format: NSLocalizedString("Start Watching Episode %d", comment: ""), nextEp.number)
         }
         
         if let unfinishedIndex = unfinished {
             let currentEp = episodeLinks[unfinishedIndex]
-            return "Continue Watching Episode \(currentEp.number)"
+            return String(format: NSLocalizedString("Continue Watching Episode %d", comment: ""), currentEp.number)
         }
         
-        return "Start Watching"
+        return NSLocalizedString("Start Watching", comment: "")
     }
     
+    private var singleEpisodeWatchText: String {
+        if let ep = episodeLinks.first {
+            let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
+            let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
+            let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
+            return progress <= 0.9 ? NSLocalizedString("Mark watched", comment: "") : NSLocalizedString("Reset progress", comment: "")
+        }
+        return NSLocalizedString("Mark watched", comment: "")
+    }
     
     var body: some View {
         ZStack {
@@ -336,7 +345,7 @@ struct MediaInfoView: View {
                 .lineLimit(showFullSynopsis ? nil : 3)
                 .animation(nil, value: showFullSynopsis)
             
-            Text(showFullSynopsis ? "LESS" : "MORE")
+            Text(showFullSynopsis ? NSLocalizedString("LESS", comment: "") : NSLocalizedString("MORE", comment: ""))
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.accentColor)
                 .animation(.easeInOut(duration: 0.3), value: showFullSynopsis)
@@ -405,7 +414,7 @@ struct MediaInfoView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "arrow.down.circle")
                             .foregroundColor(.primary)
-                        Text("Download")
+                        Text(NSLocalizedString("Download", comment: ""))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.primary)
                     }
@@ -420,13 +429,13 @@ struct MediaInfoView: View {
             }
             
             VStack(spacing: 4) {
-                Text("Why am I not seeing any episodes?")
+                Text(NSLocalizedString("Why am I not seeing any episodes?", comment: ""))
                     .font(.caption)
                     .bold()
                     .foregroundColor(.gray)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Text("The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases.")
+                Text(NSLocalizedString("The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases.", comment: ""))
                     .font(.caption)
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.leading)
@@ -451,16 +460,6 @@ struct MediaInfoView: View {
         return "checkmark.circle"
     }
     
-    private var singleEpisodeWatchText: String {
-        if let ep = episodeLinks.first {
-            let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
-            let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
-            let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
-            return progress <= 0.9 ? "Mark watched" : "Reset progress"
-        }
-        return "Mark watched"
-    }
-    
     @ViewBuilder
     private var episodesSection: some View {
         if episodeLinks.count != 1 {
@@ -474,7 +473,7 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var episodesSectionHeader: some View {
         HStack {
-            Text("Episodes")
+            Text(NSLocalizedString("Episodes", comment: ""))
                 .font(.system(size: 22, weight: .bold))
                 .foregroundColor(.primary)
             
@@ -524,7 +523,7 @@ struct MediaInfoView: View {
             Menu {
                 ForEach(0..<seasons.count, id: \.self) { index in
                     Button(action: { selectedSeason = index }) {
-                        Text("Season \(index + 1)")
+                        Text(String(format: NSLocalizedString("Season %d", comment: ""), index + 1))
                     }
                 }
             } label: {
@@ -612,12 +611,12 @@ struct MediaInfoView: View {
                 .font(.system(size: 48))
                 .foregroundColor(.secondary)
             
-            Text("No Episodes Available")
+            Text(NSLocalizedString("No Episodes Available", comment: ""))
                 .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundColor(.primary)
             
-            Text("Episodes might not be available yet or there could be an issue with the source.")
+            Text(NSLocalizedString("Episodes might not be available yet or there could be an issue with the source.", comment: ""))
                 .font(.body)
                 .lineLimit(0)
                 .foregroundColor(.secondary)

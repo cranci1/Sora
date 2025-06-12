@@ -115,11 +115,11 @@ class LogFilterViewModel: ObservableObject {
     
     private let userDefaultsKey = "LogFilterStates"
     private let hardcodedFilters: [(type: String, description: String, defaultState: Bool)] = [
-        ("General", "General events and activities.", true),
-        ("Stream", "Streaming and video playback.", true),
-        ("Error", "Errors and critical issues.", true),
-        ("Debug", "Debugging and troubleshooting.", false),
-        ("Download", "HLS video downloading.", true),
+        (NSLocalizedString("General", comment: ""), NSLocalizedString("General events and activities.", comment: ""), true),
+        (NSLocalizedString("Stream", comment: ""), NSLocalizedString("Streaming and video playback.", comment: ""), true),
+        (NSLocalizedString("Error", comment: ""), NSLocalizedString("Errors and critical issues.", comment: ""), true),
+        (NSLocalizedString("Debug", comment: ""), NSLocalizedString("Debugging and troubleshooting.", comment: ""), false),
+        (NSLocalizedString("Download", comment: ""), NSLocalizedString("HLS video downloading.", comment: ""), true),
         ("HTMLStrings", "", false)
     ]
     
@@ -179,7 +179,7 @@ struct SettingsViewLoggerFilter: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                SettingsSection(title: "Log Types") {
+                SettingsSection(title: NSLocalizedString("Log Types", comment: "")) {
                     ForEach($viewModel.filters) { $filter in
                         SettingsToggleRow(
                             icon: iconForFilter(filter.type),
@@ -192,6 +192,6 @@ struct SettingsViewLoggerFilter: View {
             }
             .padding(.vertical, 20)
         }
-        .navigationTitle("Log Filters")
+        .navigationTitle(NSLocalizedString("Log Filters", comment: ""))
     }
 }

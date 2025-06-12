@@ -10,13 +10,13 @@ import NukeUI
 
 fileprivate struct SettingsNavigationRow: View {
     let icon: String
-    let title: String
+    let titleKey: String
     let isExternal: Bool
     let textColor: Color
     
-    init(icon: String, title: String, isExternal: Bool = false, textColor: Color = .primary) {
+    init(icon: String, titleKey: String, isExternal: Bool = false, textColor: Color = .primary) {
         self.icon = icon
-        self.title = title
+        self.titleKey = titleKey
         self.isExternal = isExternal
         self.textColor = textColor
     }
@@ -27,7 +27,7 @@ fileprivate struct SettingsNavigationRow: View {
                 .frame(width: 24, height: 24)
                 .foregroundStyle(textColor)
             
-            Text(title)
+            Text(NSLocalizedString(titleKey, comment: ""))
                 .foregroundStyle(textColor)
             
             Spacer()
@@ -164,22 +164,22 @@ struct SettingsView: View {
                         
                         VStack(spacing: 0) {
                             NavigationLink(destination: SettingsViewGeneral()) {
-                                SettingsNavigationRow(icon: "gearshape", title: "General Settings")
+                                SettingsNavigationRow(icon: "gearshape", titleKey: "General Preferences")
                             }
                             Divider().padding(.horizontal, 16)
                             
                             NavigationLink(destination: SettingsViewPlayer()) {
-                                SettingsNavigationRow(icon: "play.circle", title: "Player Settings")
+                                SettingsNavigationRow(icon: "play.circle", titleKey: "Video Player")
                             }
                             Divider().padding(.horizontal, 16)
                             
                             NavigationLink(destination: SettingsViewDownloads()) {
-                                SettingsNavigationRow(icon: "arrow.down.circle", title: "Download Settings")
+                                SettingsNavigationRow(icon: "arrow.down.circle", titleKey: "Download")
                             }
                             Divider().padding(.horizontal, 16)
                             
                             NavigationLink(destination: SettingsViewTrackers()) {
-                                SettingsNavigationRow(icon: "square.stack.3d.up", title: "Tracking Services")
+                                SettingsNavigationRow(icon: "square.stack.3d.up", titleKey: "Trackers")
                             }
                         }
                         .background(.ultraThinMaterial)
@@ -209,12 +209,12 @@ struct SettingsView: View {
                         
                         VStack(spacing: 0) {
                             NavigationLink(destination: SettingsViewData()) {
-                                SettingsNavigationRow(icon: "folder", title: "Data")
+                                SettingsNavigationRow(icon: "folder", titleKey: "Data")
                             }
                             Divider().padding(.horizontal, 16)
                             
                             NavigationLink(destination: SettingsViewLogger()) {
-                                SettingsNavigationRow(icon: "doc.text", title: "Logs")
+                                SettingsNavigationRow(icon: "doc.text", titleKey: "Logs")
                             }
                         }
                         .background(.ultraThinMaterial)
@@ -237,21 +237,21 @@ struct SettingsView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("INFORMATION")
+                        Text(NSLocalizedString("INFOS", comment: ""))
                             .font(.footnote)
                             .foregroundStyle(.gray)
                             .padding(.horizontal, 20)
                         
                         VStack(spacing: 0) {
                             NavigationLink(destination: SettingsViewAbout()) {
-                                SettingsNavigationRow(icon: "info.circle", title: "About Sora")
+                                SettingsNavigationRow(icon: "info.circle", titleKey: "About Sora")
                             }
                             Divider().padding(.horizontal, 16)
 
                             Link(destination: URL(string: "https://github.com/cranci1/Sora")!) {
                                 SettingsNavigationRow(
                                     icon: "chevron.left.forwardslash.chevron.right",
-                                    title: "Sora GitHub Repository",
+                                    titleKey: "Sora GitHub Repository",
                                     isExternal: true,
                                     textColor: .gray
                                 )
@@ -261,7 +261,7 @@ struct SettingsView: View {
                             Link(destination: URL(string: "https://discord.gg/x7hppDWFDZ")!) {
                                 SettingsNavigationRow(
                                     icon: "bubble.left.and.bubble.right",
-                                    title: "Join Discord Community",
+                                    titleKey: "Join the Discord",
                                     isExternal: true,
                                     textColor: .gray
                                 )
@@ -271,7 +271,7 @@ struct SettingsView: View {
                             Link(destination: URL(string: "https://github.com/cranci1/Sora/issues")!) {
                                 SettingsNavigationRow(
                                     icon: "exclamationmark.circle",
-                                    title: "Report an Issue on GitHub",
+                                    titleKey: "Report an Issue",
                                     isExternal: true,
                                     textColor: .gray
                                 )
@@ -281,7 +281,7 @@ struct SettingsView: View {
                             Link(destination: URL(string: "https://github.com/cranci1/Sora/blob/dev/LICENSE")!) {
                                 SettingsNavigationRow(
                                     icon: "doc.text",
-                                    title: "License (GPLv3.0)",
+                                    titleKey: "License (GPLv3.0)",
                                     isExternal: true,
                                     textColor: .gray
                                 )
@@ -350,6 +350,12 @@ class Settings: ObservableObject {
             updateAppearance()
         }
     }
+    @Published var selectedLanguage: String {
+        didSet {
+            UserDefaults.standard.set(selectedLanguage, forKey: "selectedLanguage")
+            updateLanguage()
+        }
+    }
     
     init() {
         self.accentColor = .primary
@@ -359,7 +365,9 @@ class Settings: ObservableObject {
         } else {
             self.selectedAppearance = .system
         }
+        self.selectedLanguage = UserDefaults.standard.string(forKey: "selectedLanguage") ?? "English"
         updateAppearance()
+        updateLanguage()
     }
     
     func updateAccentColor(currentColorScheme: ColorScheme? = nil) {
@@ -389,5 +397,11 @@ class Settings: ObservableObject {
         case .dark:
             windowScene.windows.first?.overrideUserInterfaceStyle = .dark
         }
+    }
+    
+    func updateLanguage() {
+        let languageCode = selectedLanguage == "Dutch" ? "nl" : "en"
+        UserDefaults.standard.set([languageCode], forKey: "AppleLanguages")
+        UserDefaults.standard.synchronize()
     }
 }

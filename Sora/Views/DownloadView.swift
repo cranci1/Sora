@@ -57,16 +57,16 @@ struct DownloadView: View {
             }
             .animation(.easeInOut(duration: 0.2), value: selectedTab)
             .navigationBarHidden(true)
-            .alert("Delete Download", isPresented: $showDeleteAlert) {
-                Button("Delete", role: .destructive) {
+            .alert(NSLocalizedString("Delete Download", comment: ""), isPresented: $showDeleteAlert) {
+                Button(NSLocalizedString("Delete", comment: ""), role: .destructive) {
                     if let asset = assetToDelete {
                         jsController.deleteAsset(asset)
                     }
                 }
-                Button("Cancel", role: .cancel) {}
+                Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
             } message: {
                 if let asset = assetToDelete {
-                    Text("Are you sure you want to delete '\(asset.episodeDisplayName)'?")
+                    Text(String(format: NSLocalizedString("Are you sure you want to delete '%@'?", comment: ""), asset.episodeDisplayName))
                 }
             }
         }
@@ -83,7 +83,7 @@ struct DownloadView: View {
                     VStack(spacing: 20) {
                         if !jsController.downloadQueue.isEmpty {
                             DownloadSectionView(
-                                title: "Queue",
+                                title: NSLocalizedString("Queue", comment: ""),
                                 icon: "clock.fill",
                                 downloads: jsController.downloadQueue
                             )
@@ -91,7 +91,7 @@ struct DownloadView: View {
                         
                         if !jsController.activeDownloads.isEmpty {
                             DownloadSectionView(
-                                title: "Active Downloads",
+                                title: NSLocalizedString("Active Downloads", comment: ""),
                                 icon: "arrow.down.circle.fill",
                                 downloads: jsController.activeDownloads
                             )
@@ -140,12 +140,12 @@ struct DownloadView: View {
                 .foregroundStyle(.tertiary)
             
             VStack(spacing: 8) {
-                Text("No Active Downloads")
+                Text(NSLocalizedString("No Active Downloads", comment: ""))
                     .font(.title2)
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)
                 
-                Text("Your active downloads will appear here.")
+                Text(NSLocalizedString("Actively downloading media can be tracked from here.", comment: ""))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -162,12 +162,12 @@ struct DownloadView: View {
                 .foregroundStyle(.tertiary)
             
             VStack(spacing: 8) {
-                Text("No Downloads")
+                Text(NSLocalizedString("No Downloads", comment: ""))
                     .font(.title2)
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)
                 
-                Text("Your downloaded content will appear here")
+                Text(NSLocalizedString("Your downloaded episodes will appear here", comment: ""))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -274,7 +274,7 @@ struct CustomDownloadHeader: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Downloads")
+                Text(NSLocalizedString("Downloads", comment: ""))
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundStyle(.primary)
@@ -348,7 +348,7 @@ struct CustomDownloadHeader: View {
                             .frame(width: 18, height: 18)
                             .foregroundColor(.secondary)
                         
-                        TextField("Search downloads", text: $searchText)
+                        TextField(NSLocalizedString("Search downloads", comment: ""), text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
                             .foregroundColor(.primary)
                         
@@ -371,16 +371,16 @@ struct CustomDownloadHeader: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .strokeBorder(
-                                        LinearGradient(
-                                            gradient: Gradient(stops: [
-                                                .init(color: Color.accentColor.opacity(0.25), location: 0),
-                                                .init(color: Color.accentColor.opacity(0), location: 1)
-                                            ]),
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        ),
-                                        lineWidth: 1.5
-                                    )
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: Color.accentColor.opacity(0.25), location: 0),
+                                        .init(color: Color.accentColor.opacity(0), location: 1)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 1.5
+                            )
                     )
                 }
                 .padding(.horizontal, 20)
@@ -394,14 +394,14 @@ struct CustomDownloadHeader: View {
             VStack(spacing: 0) {
                 HStack(spacing: 0) {
                     TabButton(
-                        title: "Active",
+                        title: NSLocalizedString("Active", comment: ""),
                         icon: "arrow.down.circle",
                         isSelected: selectedTab == 0,
                         action: { selectedTab = 0 }
                     )
                     
                     TabButton(
-                        title: "Downloaded",
+                        title: NSLocalizedString("Downloaded", comment: ""),
                         icon: "checkmark.circle",
                         isSelected: selectedTab == 1,
                         action: { selectedTab = 1 }
@@ -526,7 +526,7 @@ struct DownloadSummaryCard: View {
         HStack {
             Image(systemName: "chart.bar.fill")
                 .foregroundColor(.accentColor)
-            Text("Download Summary".uppercased())
+            Text(NSLocalizedString("Download Summary", comment: "").uppercased())
                 .font(.footnote)
                 .fontWeight(.medium)
                 .foregroundColor(.secondary)
@@ -538,7 +538,7 @@ struct DownloadSummaryCard: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 20) {
                 SummaryItem(
-                    title: "Shows",
+                    title: NSLocalizedString("Shows", comment: ""),
                     value: "\(totalShows)",
                     icon: "tv.fill"
                 )
@@ -546,7 +546,7 @@ struct DownloadSummaryCard: View {
                 Divider().frame(height: 32)
 
                 SummaryItem(
-                    title: "Episodes",
+                    title: NSLocalizedString("Episodes", comment: ""),
                     value: "\(totalEpisodes)",
                     icon: "play.rectangle.fill"
                 )
@@ -559,7 +559,7 @@ struct DownloadSummaryCard: View {
                 let sizeUnit = components.dropFirst().first.map(String.init) ?? ""
 
                 SummaryItem(
-                    title: "Size (\(sizeUnit))",
+                    title: String(format: NSLocalizedString("Size (%@)", comment: ""), sizeUnit),
                     value: sizeValue,
                     icon: "internaldrive.fill"
                 )
@@ -630,7 +630,7 @@ struct DownloadedSection: View {
             HStack {
                 Image(systemName: "folder.fill")
                     .foregroundColor(.accentColor)
-                Text("Downloaded Shows".uppercased())
+                Text(NSLocalizedString("Downloaded Shows", comment: "").uppercased())
                     .font(.footnote)
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)
@@ -715,7 +715,7 @@ struct EnhancedActiveDownloadCard: View {
                     VStack(spacing: 6) {
                         HStack {
                             if download.queueStatus == .queued {
-                                Text("Queued")
+                                Text(NSLocalizedString("Queued", comment: ""))
                                     .font(.caption)
                                     .fontWeight(.medium)
                                     .foregroundStyle(.orange)
@@ -797,11 +797,11 @@ struct EnhancedActiveDownloadCard: View {
     
     private var statusText: String {
         if download.queueStatus == .queued {
-            return "Queued"
+            return NSLocalizedString("Queued", comment: "")
         } else if taskState == .running {
-            return "Downloading"
+            return NSLocalizedString("Downloading", comment: "")
         } else {
-            return "Paused"
+            return NSLocalizedString("Paused", comment: "")
         }
     }
     
@@ -1026,7 +1026,7 @@ struct EnhancedShowEpisodesView: View {
                         HStack {
                             Image(systemName: "list.bullet.rectangle")
                                 .foregroundColor(.accentColor)
-                            Text("Episodes".uppercased())
+                            Text(NSLocalizedString("Episodes", comment: "").uppercased())
                                 .font(.footnote)
                                 .fontWeight(.medium)
                                 .foregroundColor(.secondary)
@@ -1051,7 +1051,7 @@ struct EnhancedShowEpisodesView: View {
                             } label: {
                                 HStack(spacing: 4) {
                                     Image(systemName: episodeSortOption.systemImage)
-                                    Text("Sort")
+                                    Text(NSLocalizedString("Sort", comment: ""))
                                 }
                                 .font(.subheadline)
                                 .foregroundColor(.accentColor)
@@ -1062,7 +1062,7 @@ struct EnhancedShowEpisodesView: View {
                             }) {
                                 HStack(spacing: 4) {
                                     Image(systemName: "trash")
-                                    Text("Delete All")
+                                    Text(NSLocalizedString("Delete All", comment: ""))
                                 }
                                 .font(.subheadline)
                                 .foregroundColor(.red)
@@ -1073,7 +1073,7 @@ struct EnhancedShowEpisodesView: View {
                     
                     // Episodes List
                     if group.assets.isEmpty {
-                        Text("No episodes available")
+                        Text(NSLocalizedString("No episodes available", comment: ""))
                             .foregroundColor(.secondary)
                             .italic()
                             .padding(40)
@@ -1086,7 +1086,7 @@ struct EnhancedShowEpisodesView: View {
                                 )
                                 .contextMenu {
                                     Button(action: { onPlay(asset) }) {
-                                        Label("Play", systemImage: "play.fill")
+                                        Label(NSLocalizedString("Play", comment: ""), systemImage: "play.fill")
                                     }
                                     .disabled(!asset.fileExists)
                                     
@@ -1094,7 +1094,7 @@ struct EnhancedShowEpisodesView: View {
                                         assetToDelete = asset
                                         showDeleteAlert = true
                                     }) {
-                                        Label("Delete", systemImage: "trash")
+                                        Label(NSLocalizedString("Delete", comment: ""), systemImage: "trash")
                                     }
                                 }
                                 .onTapGesture {
@@ -1107,27 +1107,27 @@ struct EnhancedShowEpisodesView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("Episodes")
+        .navigationTitle(NSLocalizedString("Episodes", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
-        .alert("Delete Episode", isPresented: $showDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+        .alert(NSLocalizedString("Delete Episode", comment: ""), isPresented: $showDeleteAlert) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Delete", comment: ""), role: .destructive) {
                 if let asset = assetToDelete {
                     onDelete(asset)
                 }
             }
         } message: {
             if let asset = assetToDelete {
-                Text("Are you sure you want to delete '\(asset.episodeDisplayName)'?")
+                Text(String(format: NSLocalizedString("Are you sure you want to delete '%@'?", comment: ""), asset.episodeDisplayName))
             }
         }
-        .alert("Delete All Episodes", isPresented: $showDeleteAllAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete All", role: .destructive) {
+        .alert(NSLocalizedString("Delete All Episodes", comment: ""), isPresented: $showDeleteAllAlert) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Delete All", comment: ""), role: .destructive) {
                 deleteAllAssets()
             }
         } message: {
-            Text("Are you sure you want to delete all \(group.assetCount) episodes in '\(group.title)'?")
+            Text(String(format: NSLocalizedString("Are you sure you want to delete all %d episodes in '%@'?", comment: ""), group.assetCount, group.title))
         }
     }
     

@@ -119,16 +119,16 @@ fileprivate struct ModuleListItemView: View {
             .contextMenu {
                 Button(action: {
                     UIPasteboard.general.string = module.metadataUrl
-                    DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+                    DropManager.shared.showDrop(title: NSLocalizedString("Copied to Clipboard", comment: ""), subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
                 }) {
-                    Label("Copy URL", systemImage: "doc.on.doc")
+                    Label(NSLocalizedString("Copy URL", comment: ""), systemImage: "doc.on.doc")
                 }
                 Button(role: .destructive) {
                     if selectedModuleId != module.id.uuidString {
                         onDelete()
                     }
                 } label: {
-                    Label("Delete", systemImage: "trash")
+                    Label(NSLocalizedString("Delete", comment: ""), systemImage: "trash")
                 }
                 .disabled(selectedModuleId == module.id.uuidString)
             }
@@ -137,7 +137,7 @@ fileprivate struct ModuleListItemView: View {
                     Button(role: .destructive) {
                         onDelete()
                     } label: {
-                        Label("Delete", systemImage: "trash")
+                        Label(NSLocalizedString("Delete", comment: ""), systemImage: "trash")
                     }
                 }
             }
@@ -163,25 +163,25 @@ struct SettingsViewModule: View {
         ScrollView {
             VStack(spacing: 24) {
                 if moduleManager.modules.isEmpty {
-                    SettingsSection(title: "Modules") {
+                    SettingsSection(title: NSLocalizedString("Modules", comment: "")) {
                         VStack(spacing: 16) {
                             Image(systemName: "plus.app")
                                 .font(.largeTitle)
                                 .foregroundColor(.secondary)
-                            Text("No Modules")
+                            Text(NSLocalizedString("No Modules", comment: ""))
                                 .font(.headline)
 
                             if didReceiveDefaultPageLink {
                                 NavigationLink(destination: CommunityLibraryView()
                                                 .environmentObject(moduleManager)) {
-                                    Text("Check out some community modules here!")
+                                    Text(NSLocalizedString("Check out some community modules here!", comment: ""))
                                         .font(.caption)
                                         .foregroundColor(.accentColor)
                                         .frame(maxWidth: .infinity)
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             } else {
-                                Text("Click the plus button to add a module!")
+                                Text(NSLocalizedString("Click the plus button to add a module!", comment: ""))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                     .frame(maxWidth: .infinity)
@@ -191,14 +191,14 @@ struct SettingsViewModule: View {
                         .frame(maxWidth: .infinity)
                     }
                 } else {
-                    SettingsSection(title: "Installed Modules") {
+                    SettingsSection(title: NSLocalizedString("Installed Modules", comment: "")) {
                         ForEach(moduleManager.modules) { module in
                             ModuleListItemView(
                                 module: module,
                                 selectedModuleId: selectedModuleId,
                                 onDelete: {
                                     moduleManager.deleteModule(module)
-                                    DropManager.shared.showDrop(title: "Module Removed", subtitle: "", duration: 1.0, icon: UIImage(systemName: "trash"))
+                                    DropManager.shared.showDrop(title: NSLocalizedString("Module Removed", comment: ""), subtitle: "", duration: 1.0, icon: UIImage(systemName: "trash"))
                                 },
                                 onSelect: {
                                     selectedModuleId = module.id.uuidString
@@ -216,7 +216,7 @@ struct SettingsViewModule: View {
             .padding(.vertical, 20)
         }
         .scrollViewBottomPadding()
-        .navigationTitle("Modules")
+        .navigationTitle(NSLocalizedString("Modules", comment: ""))
         .navigationBarItems(trailing:
             HStack(spacing: 16) {
                 if didReceiveDefaultPageLink {
@@ -228,7 +228,7 @@ struct SettingsViewModule: View {
                             .frame(width: 20, height: 20)
                             .padding(5)
                     }
-                    .accessibilityLabel("Open Community Library")
+                    .accessibilityLabel(NSLocalizedString("Open Community Library", comment: ""))
                 }
 
                 Button(action: {
@@ -239,7 +239,7 @@ struct SettingsViewModule: View {
                         .frame(width: 20, height: 20)
                         .padding(5)
                 }
-                .accessibilityLabel("Add Module")
+                .accessibilityLabel(NSLocalizedString("Add Module", comment: ""))
             }
         )
         .background(

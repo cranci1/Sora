@@ -247,9 +247,9 @@ struct SettingsViewGeneral: View {
                             .padding(.horizontal, 16)
                         
                         List {
-                            ForEach(metadataProvidersOrder, id: \.self) { provider in
+                            ForEach(Array(metadataProvidersOrder.enumerated()), id: \.element) { index, provider in
                                 HStack {
-                                    Image(systemName: "network")
+                                    Text("\(index + 1)")
                                         .frame(width: 24, height: 24)
                                         .foregroundStyle(.gray)
                                     

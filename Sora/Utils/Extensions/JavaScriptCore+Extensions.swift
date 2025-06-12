@@ -11,9 +11,6 @@ extension JSContext {
     func setupConsoleLogging() {
         let consoleObject = JSValue(newObjectIn: self)
         
-        let appInfoBridge = AppInfo()
-        consoleObject?.setObject(appInfoBridge, forKeyedSubscript: "AppInfo" as NSString)
-        
         let consoleLogFunction: @convention(block) (String) -> Void = { message in
             Logger.shared.log(message, type: "Debug")
         }
@@ -275,10 +272,33 @@ extension JSContext {
         self.setObject(atobFunction, forKeyedSubscript: "atob" as NSString)
     }
     
+    func setupAppInfo() {
+        let bundle = Bundle.main
+        let appInfo = JSValue(newObjectIn: self)
+        
+        appInfo?.setValue(bundle.bundleIdentifier ?? "", forProperty: "bundleId")
+        appInfo?.setValue(
+            bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String 
+            ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String 
+            ?? "", 
+            forProperty: "displayName"
+        )
+        
+        let isValidApp: @convention(block) () -> Bool = {
+            guard let app = appInfo else { return false }
+            return !(app.forProperty("bundleId").toString().isEmpty || 
+                    app.forProperty("displayName").toString().isEmpty)
+        }
+        
+        appInfo?.setObject(isValidApp, forKeyedSubscript: "isValidApp" as NSString)
+        self.setObject(appInfo, forKeyedSubscript: "AppInfo" as NSString)
+    }
+    
     func setupJavaScriptEnvironment() {
         setupConsoleLogging()
         setupNativeFetch()
         setupFetchV2()
         setupBase64Functions()
+        setupAppInfo()
     }
 }

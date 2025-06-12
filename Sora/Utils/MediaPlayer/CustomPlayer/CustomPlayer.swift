@@ -24,6 +24,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     let onWatchNext: () -> Void
     let aniListID: Int
     var headers: [String:String]? = nil
+    var tmdbID: Int? = nil
+    var isMovie: Bool = false
+    var seasonNumber: Int = 1
     
     private var aniListUpdatedSuccessfully = false
     private var aniListUpdateImpossible: Bool = false
@@ -1644,12 +1647,39 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 
                 let remainingPercentage = (self.duration - self.currentTimeVal) / self.duration
                 
-                if remainingPercentage < 0.1 &&
-                    self.aniListID != 0 &&
-                    !self.aniListUpdatedSuccessfully &&
-                    !self.aniListUpdateImpossible
-                {
-                    self.tryAniListUpdate()
+                if remainingPercentage < 0.1 {
+                    if self.aniListID != 0 && !self.aniListUpdatedSuccessfully && !self.aniListUpdateImpossible {
+                        self.tryAniListUpdate()
+                    }
+                    
+                    if let tmdbId = self.tmdbID {
+                        let traktMutation = TraktMutation()
+                        
+                        if self.isMovie {
+                            traktMutation.markAsWatched(type: "movie", tmdbID: tmdbId) { result in
+                                switch result {
+                                case .success:
+                                    Logger.shared.log("Successfully updated Trakt progress for movie", type: "General")
+                                case .failure(let error):
+                                    Logger.shared.log("Failed to update Trakt progress: \(error.localizedDescription)", type: "Error")
+                                }
+                            }
+                        } else {
+                            traktMutation.markAsWatched(
+                                type: "episode",
+                                tmdbID: tmdbId,
+                                episodeNumber: self.episodeNumber,
+                                seasonNumber: self.seasonNumber
+                            ) { result in
+                                switch result {
+                                case .success:
+                                    Logger.shared.log("Successfully updated Trakt progress for episode \(self.episodeNumber)", type: "General")
+                                case .failure(let error):
+                                    Logger.shared.log("Failed to update Trakt progress: \(error.localizedDescription)", type: "Error")
+                                }
+                            }
+                        }
+                    }
                 }
                 
                 self.sliderHostingController?.rootView = MusicProgressSlider(
@@ -1796,6 +1826,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     @objc func seekBackward() {
         let skipValue = UserDefaults.standard.double(forKey: "skipIncrement")
         let finalSkip = skipValue > 0 ? skipValue : 10
+        
         currentTimeVal = max(currentTimeVal - finalSkip, 0)
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
             guard self != nil else { return }
@@ -1865,8 +1896,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         guard isPipAutoEnabled,
               let pip = pipController,
               !pip.isPictureInPictureActive else {
-                  return
-              }
+            return
+        }
         pip.startPictureInPicture()
     }
     
@@ -2114,13 +2145,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private func processM3U8Data(data: Data?, url: URL, completion: @escaping () -> Void) {
         guard let data = data,
               let content = String(data: data, encoding: .utf8) else {
-                  Logger.shared.log("Failed to load m3u8 file")
-                  DispatchQueue.main.async {
-                      self.qualities = []
-                      completion()
-                  }
-                  return
-              }
+            Logger.shared.log("Failed to load m3u8 file")
+            DispatchQueue.main.async {
+                self.qualities = []
+                completion()
+            }
+            return
+        }
         
         let lines = content.components(separatedBy: .newlines)
         var qualities: [(String, String)] = []
@@ -2686,7 +2717,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 height: 10,
                 onEditingChanged: { _ in }
             )
-                .shadow(color: Color.black.opacity(0.6), radius: 4, x: 0, y: 2)
+            .shadow(color: Color.black.opacity(0.6), radius: 4, x: 0, y: 2)
         }
     }
     
@@ -2701,11 +2732,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         default: return .white
         }
     }
-
+    
     override var canBecomeFirstResponder: Bool {
         return true
     }
-
+    
     override var keyCommands: [UIKeyCommand]? {
         return [
             UIKeyCommand(input: " ", modifierFlags: [], action: #selector(handleSpaceKey), discoverabilityTitle: "Play/Pause"),
@@ -2716,39 +2747,39 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             UIKeyCommand(input: UIKeyCommand.inputEscape, modifierFlags: [], action: #selector(handleEscape), discoverabilityTitle: "Dismiss Player")
         ]
     }
-
+    
     @objc private func handleSpaceKey() {
         togglePlayPause()
     }
-
+    
     @objc private func handleLeftArrow() {
         let skipValue = 10.0
         currentTimeVal = max(currentTimeVal - skipValue, 0)
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
         animateButtonRotation(backwardButton, clockwise: false)
     }
-
+    
     @objc private func handleRightArrow() {
         let skipValue = 10.0
         currentTimeVal = min(currentTimeVal + skipValue, duration)
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
         animateButtonRotation(forwardButton)
     }
-
+    
     @objc private func handleUpArrow() {
         let skipValue = 60.0
         currentTimeVal = min(currentTimeVal + skipValue, duration)
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
         animateButtonRotation(forwardButton)
     }
-
+    
     @objc private func handleDownArrow() {
         let skipValue = 60.0
         currentTimeVal = max(currentTimeVal - skipValue, 0)
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
         animateButtonRotation(backwardButton, clockwise: false)
     }
-
+    
     @objc private func handleEscape() {
         dismiss(animated: true, completion: nil)
     }

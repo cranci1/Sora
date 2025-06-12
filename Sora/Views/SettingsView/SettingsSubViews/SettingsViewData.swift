@@ -154,7 +154,9 @@ struct SettingsViewData: View {
             VStack(spacing: 24) {
                 SettingsSection(
                     title: "App Storage",
-                    footer: "The app cache allows the app to show images faster, can be cleared to free up storage at any time.\n\nClearing the documents folder will remove all the modules.\n\nErasing all App Data will reset the app to it's original state."
+
+                    footer: "The app cache helps the app to show previously loaded (cached) images faster App cache can be cleared at any time to free up storage.\n\nClearing the documents folder will remove all the modules.\n\nErasing all App Data will reset the app to it's original state."
+
                 ) {
                     VStack(spacing: 0) {
                         SettingsButtonRow(
@@ -167,6 +169,8 @@ struct SettingsViewData: View {
                             }
                         )
 
+                        Divider().padding(.horizontal, 16)
+                        
                         Divider().padding(.horizontal, 16)
                         
                         SettingsButtonRow(

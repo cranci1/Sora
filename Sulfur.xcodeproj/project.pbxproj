@@ -18,10 +18,12 @@
 		0457C59F2DE78267000AFBD9 /* BookmarkGridItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C5992DE78267000AFBD9 /* BookmarkGridItemView.swift */; };
 		0457C5A12DE78385000AFBD9 /* BookmarksDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C5A02DE78385000AFBD9 /* BookmarksDetailView.swift */; };
 		04CD76DB2DE20F2200733536 /* AllWatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04CD76DA2DE20F2200733536 /* AllWatching.swift */; };
+		04EAC39A2DF9E0DB00BBD483 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04EAC3992DF9E0DB00BBD483 /* SplashScreenView.swift */; };
 		04F08EDC2DE10BF3006B29D9 /* ProgressiveBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EDB2DE10BEC006B29D9 /* ProgressiveBlurView.swift */; };
 		04F08EDF2DE10C1D006B29D9 /* TabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EDE2DE10C1A006B29D9 /* TabBar.swift */; };
 		04F08EE22DE10C40006B29D9 /* TabItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EE12DE10C27006B29D9 /* TabItem.swift */; };
 		04F08EE42DE10D6F006B29D9 /* AllBookmarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EE32DE10D6B006B29D9 /* AllBookmarks.swift */; };
+		130326B62DF979AC00AEF610 /* WebAuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130326B52DF979AC00AEF610 /* WebAuthenticationManager.swift */; };
 		130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */; };
 		13103E8B2D58E028000F0673 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8A2D58E028000F0673 /* View.swift */; };
 		13103E8E2D58E04A000F0673 /* SkeletonCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8D2D58E04A000F0673 /* SkeletonCell.swift */; };
@@ -110,10 +112,12 @@
 		0457C59B2DE78267000AFBD9 /* BookmarkLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkLink.swift; sourceTree = "<group>"; };
 		0457C5A02DE78385000AFBD9 /* BookmarksDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksDetailView.swift; sourceTree = "<group>"; };
 		04CD76DA2DE20F2200733536 /* AllWatching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllWatching.swift; sourceTree = "<group>"; };
+		04EAC3992DF9E0DB00BBD483 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		04F08EDB2DE10BEC006B29D9 /* ProgressiveBlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressiveBlurView.swift; sourceTree = "<group>"; };
 		04F08EDE2DE10C1A006B29D9 /* TabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBar.swift; sourceTree = "<group>"; };
 		04F08EE12DE10C27006B29D9 /* TabItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabItem.swift; sourceTree = "<group>"; };
 		04F08EE32DE10D6B006B29D9 /* AllBookmarks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllBookmarks.swift; sourceTree = "<group>"; };
+		130326B52DF979AC00AEF610 /* WebAuthenticationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebAuthenticationManager.swift; sourceTree = "<group>"; };
 		130C6BF82D53A4C200DC1432 /* Sora.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sora.entitlements; sourceTree = "<group>"; };
 		130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
 		13103E8A2D58E028000F0673 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
@@ -260,6 +264,15 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		130326B42DF979A300AEF610 /* WebAuthentication */ = {
+			isa = PBXGroup;
+			children = (
+				130326B52DF979AC00AEF610 /* WebAuthenticationManager.swift */,
+			);
+			name = WebAuthentication;
+			path = Sora/Utils/WebAuthentication;
+			sourceTree = SOURCE_ROOT;
+		};
 		13103E802D589D6C000F0673 /* Tracking Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -340,6 +353,7 @@
 		133D7C7B2D2BE2630075467E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				04EAC3992DF9E0DB00BBD483 /* SplashScreenView.swift */,
 				72443C7C2DC8036500A61321 /* DownloadView.swift */,
 				0402DA122DE7B5EC003BB42C /* SearchView */,
 				133D7C7F2D2BE2630075467E /* MediaInfoView */,
@@ -353,8 +367,8 @@
 			isa = PBXGroup;
 			children = (
 				138AA1B52D2D66EC0021F9DF /* EpisodeCell */,
-				1E47859A2DEBC5960095BF2F /* AnilistMatchPopupView.swift */,
 				133D7C802D2BE2630075467E /* MediaInfoView.swift */,
+				1E47859A2DEBC5960095BF2F /* AnilistMatchPopupView.swift */,
 			);
 			path = MediaInfoView;
 			sourceTree = "<group>";
@@ -378,6 +392,7 @@
 		133D7C852D2BE2640075467E /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				130326B42DF979A300AEF610 /* WebAuthentication */,
 				0457C5962DE7712A000AFBD9 /* ViewModifiers */,
 				04F08EE02DE10C22006B29D9 /* Models */,
 				04F08EDD2DE10C05006B29D9 /* TabBar */,
@@ -699,6 +714,7 @@
 				1E26E9E72DA9577900B9DC02 /* VolumeSlider.swift in Sources */,
 				136BBE802DB1038000906B5E /* Notification+Name.swift in Sources */,
 				13DB46902D900A38008CBC03 /* URL.swift in Sources */,
+				130326B62DF979AC00AEF610 /* WebAuthenticationManager.swift in Sources */,
 				04F08EE42DE10D6F006B29D9 /* AllBookmarks.swift in Sources */,
 				138FE1D02DECA00D00936D81 /* TMDB-FetchID.swift in Sources */,
 				130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */,
@@ -717,6 +733,7 @@
 				13EA2BD62D32D97400C1EBD7 /* Double+Extension.swift in Sources */,
 				133D7C8F2D2BE2640075467E /* MediaInfoView.swift in Sources */,
 				04F08EE22DE10C40006B29D9 /* TabItem.swift in Sources */,
+				04EAC39A2DF9E0DB00BBD483 /* SplashScreenView.swift in Sources */,
 				132AF1212D99951700A0140B /* JSController-Streams.swift in Sources */,
 				131845F92D47C62D00CA7A54 /* SettingsViewGeneral.swift in Sources */,
 				04CD76DB2DE20F2200733536 /* AllWatching.swift in Sources */,
@@ -935,7 +952,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.3.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -977,7 +994,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.3.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

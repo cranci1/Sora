@@ -20,7 +20,9 @@ class VideoPlayerViewController: UIViewController {
     var aniListID: Int = 0
     var headers: [String:String]? = nil
     var totalEpisodes: Int = 0
-    
+    var tmdbID: Int? = nil
+    var isMovie: Bool = false
+    var seasonNumber: Int = 1
     var episodeNumber: Int = 0
     var episodeImageUrl: String = ""
     var mediaTitle: String = ""
@@ -30,6 +32,9 @@ class VideoPlayerViewController: UIViewController {
     init(module: ScrapingModule) {
         self.module = module
         super.init(nibName: nil, bundle: nil)
+        if UserDefaults.standard.object(forKey: "subtitlesEnabled") == nil {
+            UserDefaults.standard.set(true, forKey: "subtitlesEnabled")
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -37,8 +42,7 @@ class VideoPlayerViewController: UIViewController {
     }
     
     private func setupSubtitles() {
-        guard !subtitles.isEmpty && UserDefaults.standard.bool(forKey: "subtitlesEnabled"),
-              let subtitleURL = URL(string: subtitles) else {
+        guard !subtitles.isEmpty, UserDefaults.standard.bool(forKey: "subtitlesEnabled"), let subtitleURL = URL(string: subtitles) else {
             return
         }
         
@@ -198,14 +202,45 @@ class VideoPlayerViewController: UIViewController {
             
             let remainingPercentage = (duration - currentTime) / duration
             
-            if remainingPercentage < 0.1 && self.aniListID != 0 {
-                let aniListMutation = AniListMutation()
-                aniListMutation.updateAnimeProgress(animeId: self.aniListID, episodeNumber: self.episodeNumber) { result in
-                    switch result {
-                    case .success:
-                        Logger.shared.log("Successfully updated AniList progress for episode \(self.episodeNumber)", type: "General")
-                    case .failure(let error):
-                        Logger.shared.log("Failed to update AniList progress: \(error.localizedDescription)", type: "Error")
+            if remainingPercentage < 0.1 {
+                if self.aniListID != 0 {
+                    let aniListMutation = AniListMutation()
+                    aniListMutation.updateAnimeProgress(animeId: self.aniListID, episodeNumber: self.episodeNumber) { result in
+                        switch result {
+                        case .success:
+                            Logger.shared.log("Successfully updated AniList progress for episode \(self.episodeNumber)", type: "General")
+                        case .failure(let error):
+                            Logger.shared.log("Failed to update AniList progress: \(error.localizedDescription)", type: "Error")
+                        }
+                    }
+                }
+                
+                if let tmdbId = self.tmdbID {
+                    let traktMutation = TraktMutation()
+                    
+                    if self.isMovie {
+                        traktMutation.markAsWatched(type: "movie", tmdbID: tmdbId) { result in
+                            switch result {
+                            case .success:
+                                Logger.shared.log("Successfully updated Trakt progress for movie", type: "General")
+                            case .failure(let error):
+                                Logger.shared.log("Failed to update Trakt progress: \(error.localizedDescription)", type: "Error")
+                            }
+                        }
+                    } else {
+                        traktMutation.markAsWatched(
+                            type: "episode",
+                            tmdbID: tmdbId,
+                            episodeNumber: self.episodeNumber,
+                            seasonNumber: self.seasonNumber
+                        ) { result in
+                            switch result {
+                            case .success:
+                                Logger.shared.log("Successfully updated Trakt progress for episode \(self.episodeNumber)", type: "General")
+                            case .failure(let error):
+                                Logger.shared.log("Failed to update Trakt progress: \(error.localizedDescription)", type: "Error")
+                            }
+                        }
                     }
                 }
             }

@@ -59,14 +59,12 @@ fileprivate struct SettingsSection<Content: View>: View {
 }
 
 struct SettingsViewAbout: View {
-    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "ALPHA"
-    
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
                 SettingsSection(title: "App Info", footer: "Sora/Sulfur will always remain free with no ADs!") {
                     HStack(alignment: .center, spacing: 16) {
-                        LazyImage(url: URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/Sora/Assets.xcassets/AppIcons/AppIcon_Default.appiconset/darkmode.png")) { state in
+                        LazyImage(url: URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/dev/Sora/Assets.xcassets/AppIcon.appiconset/darkmode.png")) { state in
                             if let uiImage = state.imageContainer?.image {
                                 Image(uiImage: uiImage)
                                     .resizable()
@@ -182,7 +180,7 @@ struct ContributorsView: View {
     private func loadContributors() {
         let url = URL(string: "https://api.github.com/repos/cranci1/Sora/contributors")!
         
-        URLSession.shared.dataTask(with: url) { data, response, error in
+        URLSession.custom.dataTask(with: url) { data, response, error in
             DispatchQueue.main.async {
                 isLoading = false
                 

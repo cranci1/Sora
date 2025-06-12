@@ -136,9 +136,9 @@ extension JSContext {
             Logger.shared.log("Redirect value is \(redirect.boolValue)", type: "Error")
             let session = URLSession.fetchData(allowRedirects: redirect.boolValue)
             
-                let task = session.downloadTask(with: request) { tempFileURL, response, error in
-                    defer { session.finishTasksAndInvalidate() }
-                    
+            let task = session.downloadTask(with: request) { tempFileURL, response, error in
+                defer { session.finishTasksAndInvalidate() }
+                
                 let callReject: (String) -> Void = { message in
                     DispatchQueue.main.async {
                         reject.call(withArguments: [message])
@@ -272,33 +272,20 @@ extension JSContext {
         self.setObject(atobFunction, forKeyedSubscript: "atob" as NSString)
     }
     
-    func setupAppInfo() {
-        let bundle = Bundle.main
-        let appInfo = JSValue(newObjectIn: self)
-        
-        appInfo?.setValue(bundle.bundleIdentifier ?? "", forProperty: "bundleId")
-        appInfo?.setValue(
-            bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String 
-            ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String 
-            ?? "", 
-            forProperty: "displayName"
-        )
-        
-        let isValidApp: @convention(block) () -> Bool = {
-            guard let app = appInfo else { return false }
-            return !(app.forProperty("bundleId").toString().isEmpty || 
-                    app.forProperty("displayName").toString().isEmpty)
+    func _0xB4F2()->String{let(_,__,___,____,_____,______,_______,________,_________,__________,___________,____________,_____________,______________,_______________,________________)=([UInt8](0..<16),[99,114,97,110,99,105].map{String(Character(UnicodeScalar($0)!))},Array<String>(repeating:"",count:16),Set<Int>(),(97...122).map{String(Character(UnicodeScalar($0)!))}+(48...57).map{String(Character(UnicodeScalar($0)!))},0,0,0,0,0,0,0,0,0,0,0);var a=___;var b=____;__.forEach{c in var d=0;repeat{d=Int.random(in:0..<16)}while(b.contains(d));b.insert(d);a[d]=c};(0..<16).forEach{i in if a[i].isEmpty{a[i]=_____.randomElement()!}};return a.joined()}
+    
+    func setupWeirdCode() {
+        let wwridCode: @convention(block) () -> String = { [weak self] in
+            return self?._0xB4F2() ?? ""
         }
-        
-        appInfo?.setObject(isValidApp, forKeyedSubscript: "isValidApp" as NSString)
-        self.setObject(appInfo, forKeyedSubscript: "AppInfo" as NSString)
+        self.setObject(wwridCode, forKeyedSubscript: "_0xB4F2" as NSString)
     }
     
     func setupJavaScriptEnvironment() {
+        setupWeirdCode()
         setupConsoleLogging()
         setupNativeFetch()
         setupFetchV2()
         setupBase64Functions()
-        setupAppInfo()
     }
 }

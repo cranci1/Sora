@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NukeUI
 
 fileprivate struct SettingsNavigationRow: View {
     let icon: String
@@ -43,10 +44,93 @@ fileprivate struct SettingsNavigationRow: View {
         .padding(.vertical, 12)
     }
 }
+
+fileprivate struct ModulePreviewRow: View {
+    @EnvironmentObject var moduleManager: ModuleManager
+    @AppStorage("selectedModuleId") private var selectedModuleId: String?
+    
+    private var selectedModule: ScrapingModule? {
+        guard let id = selectedModuleId else { return nil }
+        return moduleManager.modules.first { $0.id.uuidString == id }
+    }
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            if let module = selectedModule {
+                LazyImage(url: URL(string: module.metadata.iconUrl)) { state in
+                    if let uiImage = state.imageContainer?.image {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 60, height: 60)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    } else {
+                        Image(systemName: "cube")
+                            .font(.system(size: 36))
+                            .foregroundStyle(Color.accentColor)
+                    }
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(module.metadata.sourceName)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    
+                    Text("Tap to manage your modules")
+                        .font(.subheadline)
+                        .foregroundStyle(.gray)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Image(systemName: "cube")
+                    .font(.system(size: 36))
+                    .foregroundStyle(Color.accentColor)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("No Module Selected")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    
+                    Text("Tap to select a module")
+                        .font(.subheadline)
+                        .foregroundStyle(.gray)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            
+            Image(systemName: "chevron.right")
+                .foregroundStyle(.gray)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(
+                    LinearGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: Color.accentColor.opacity(0.3), location: 0),
+                            .init(color: Color.accentColor.opacity(0), location: 1)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 0.5
+                )
+        )
+    }
+}
+
 struct SettingsView: View {
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "ALPHA"
     @Environment(\.colorScheme) var colorScheme
     @StateObject var settings = Settings()
+    @EnvironmentObject var moduleManager: ModuleManager
     
     var body: some View {
         NavigationView {
@@ -58,6 +142,19 @@ struct SettingsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 20)
                         .padding(.top, 16)
+                    
+                    // Modules Section at the top
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("MODULES")
+                            .font(.footnote)
+                            .foregroundStyle(.gray)
+                            .padding(.horizontal, 20)
+                        
+                        NavigationLink(destination: SettingsViewModule()) {
+                            ModulePreviewRow()
+                        }
+                        .padding(.horizontal, 20)
+                    }
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("MAIN")
@@ -78,11 +175,6 @@ struct SettingsView: View {
                             
                             NavigationLink(destination: SettingsViewDownloads()) {
                                 SettingsNavigationRow(icon: "arrow.down.circle", title: "Download")
-                            }
-                            Divider().padding(.horizontal, 16)
-                            
-                            NavigationLink(destination: SettingsViewModule()) {
-                                SettingsNavigationRow(icon: "cube", title: "Modules")
                             }
                             Divider().padding(.horizontal, 16)
                             

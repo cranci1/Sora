@@ -228,6 +228,23 @@
         }
       }
     },
+    "AniList" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AniList"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AniList"
+          }
+        }
+      }
+    },
     "Also known as Sulfur" : {
 
     },
@@ -1049,8 +1066,21 @@
         }
       }
     },
-    "Enter the AniList ID for this series" : {
-
+    "Enter the AniList ID for this media" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Enter the AniList ID for this media"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Voer de AniList ID in voor deze media"
+          }
+        }
+      }
     },
     "Episode %lld" : {
       "localizations" : {
@@ -1171,8 +1201,54 @@
         }
       }
     },
-    "Error Fetching Results" : {
-
+    "Errors and critical issues." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Errors and critical issues."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fouten en kritieke problemen."
+          }
+        }
+      }
+    },
+    "Failed to load contributors" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Failed to load contributors"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Laden van bijdragers mislukt"
+          }
+        }
+      }
+    },
+    "Fetch Episode metadata" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Fetch Episode metadata"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Haal Aflevering Metadata op"
+          }
+        }
+      }
     },
     "Errors and critical issues." : {
       "extractionState" : "manual",
@@ -1551,6 +1627,71 @@
         }
       }
     },
+    "License (GPLv3.0)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LESS"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MINDER"
+          }
+        }
+      }
+    },
+    "Library" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Library"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bibliotheek"
+          }
+        }
+      }
+    },
+    "License (GPLv3.0)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "License (GPLv3.0)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licentie (GPLv3.0)"
+          }
+        }
+      }
+    },
+    "Light" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Light"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Licht"
+          }
+        }
+      }
+    },
     "Loading Episode %lld..." : {
       "localizations" : {
         "en" : {
@@ -1821,8 +1962,15 @@
         }
       }
     },
-    "MAIN SETTINGS" : {
-
+    "Mark All Previous Watched" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Markeer alles als gezien\n"
+          }
+        }
+      }
     },
     "Mark All Previous Watched" : {
       "extractionState" : "stale",
@@ -1845,8 +1993,15 @@
         }
       }
     },
-    "Mark Episode as Watched" : {
-
+    "Mark watched" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Markeer als gezien"
+          }
+        }
+      }
     },
     "Mark Previous Episodes as Watched" : {
 
@@ -1864,11 +2019,15 @@
     "Match with AniList" : {
 
     },
-    "Match with TMDB" : {
-
-    },
-    "Matched ID: %lld" : {
-
+    "Matched with: %@" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Match met: %@"
+          }
+        }
+      }
     },
     "Matched with: %@" : {
       "extractionState" : "stale",
@@ -1972,8 +2131,22 @@
         }
       }
     },
-    "Metadata Providers Order" : {
-
+    "Module Removed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Module Removed"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Module Verwijderd"
+          }
+        }
+      }
     },
     "Module Removed" : {
       "extractionState" : "manual",
@@ -2178,7 +2351,6 @@
       }
     },
     "No Results Found" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2193,9 +2365,6 @@
           }
         }
       }
-    },
-    "No Search Results Found" : {
-
     },
     "Note that the modules will be replaced only if there is a different version string inside the JSON file." : {
       "localizations" : {
@@ -2379,7 +2548,39 @@
         }
       }
     },
-    "Provider: %@" : {
+    "Portrait Columns" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Portrait Columns"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Staande Kolommen"
+          }
+        }
+      }
+    },
+    "Progress bar Marker Color" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Progress bar Marker Color"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Voortgangsbalk Markeerkleur"
+          }
+        }
+      }
+    },
+    "Queue" : {
 
     },
     "Queue" : {
@@ -2402,6 +2603,218 @@
       }
     },
     "Recently watched content will appear here." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Recently watched content will appear here."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Recent bekeken inhoud verschijnt hier."
+          }
+        }
+      }
+    },
+    "Refresh Modules on Launch" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Refresh Modules on Launch"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Ververs Modules bij Opstarten"
+          }
+        }
+      }
+    },
+    "Refresh Storage Info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Refresh Storage Info"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Opslaginformatie Vernieuwen"
+          }
+        }
+      }
+    },
+    "Remember Playback speed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Remember Playback speed"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Onthoud Afspeelsnelheid"
+          }
+        }
+      }
+    },
+    "Remove" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Remove"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Verwijderen"
+          }
+        }
+      }
+    },
+    "Remove All Cache" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove All Cache"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder Alle Cache"
+          }
+        }
+      }
+    },
+    "Remove All Documents" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove All Documents"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder Alle Documenten"
+          }
+        }
+      }
+    },
+    "Remove Documents" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Remove Documents"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Documenten Verwijderen"
+          }
+        }
+      }
+    },
+    "Remove Downloaded Media" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Remove Downloaded Media"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Gedownloade Media Verwijderen"
+          }
+        }
+      }
+    },
+    "Remove Downloads" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Downloads"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder Downloads"
+          }
+        }
+      }
+    },
+    "Remove from Bookmarks" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Remove from Bookmarks"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Verwijderen uit Bladwijzers"
+          }
+        }
+      }
+    },
+    "Remove Item" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Remove Item"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Item Verwijderen"
+          }
+        }
+      }
+    },
+    "Report an Issue" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report an Issue"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rapporteer een Probleem"
+          }
+        }
+      }
+    },
+    "Report an Issue" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
@@ -3001,8 +3414,55 @@
     "Sora" : {
 
     },
-    "Sora %@ by cranci1" : {
-
+    "Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sora en cranci1 zijn op geen enkele manier verbonden met AniList of Trakt.\n\nHoud er ook rekening mee dat voortgangsupdates mogelijk niet 100% nauwkeurig zijn."
+          }
+        }
+      }
+    },
+    "Sora GitHub Repository" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sora GitHub Repository"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sora GitHub Repository"
+          }
+        }
+      }
+    },
+    "Sora/Sulfur will always remain free with no ADs!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Sora/Sulfur will always remain free with no ADs!"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Sora/Sulfur blijft altijd gratis zonder advertenties!"
+          }
+        }
+      }
     },
     "Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate." : {
       "extractionState" : "manual",
@@ -3627,8 +4087,69 @@
         }
       }
     },
-    "Your recently watched content will appear here" : {
-
+    "Video Quality Preferences" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Video Quality Preferences"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Video Kwaliteit Voorkeuren"
+          }
+        }
+      }
+    },
+    "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Kies de gewenste videoresolutie voor WiFi en mobiele verbindingen. Hogere resoluties gebruiken meer data maar bieden betere kwaliteit. Als de exacte kwaliteit niet beschikbaar is, wordt automatisch de dichtstbijzijnde optie geselecteerd.\n\nLet op: Niet alle videobronnen en spelers ondersteunen kwaliteitsselectie. Deze functie werkt het beste met HLS-streams met de Sora-speler."
+          }
+        }
+      }
+    },
+    "WiFi Quality" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "WiFi Quality"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "WiFi Kwaliteit"
+          }
+        }
+      }
+    },
+    "Cellular Quality" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cellular Quality"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mobiele Kwaliteit"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

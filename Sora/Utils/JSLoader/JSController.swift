@@ -62,9 +62,7 @@ class JSController: NSObject, ObservableObject {
     }
     
     func updateMaxConcurrentDownloads(_ newLimit: Int) {
-        print("Updating max concurrent downloads from \(maxConcurrentDownloads) to \(newLimit)")
         if !downloadQueue.isEmpty && !isProcessingQueue {
-            print("Processing download queue due to increased concurrent limit. Queue has \(downloadQueue.count) items.")
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -75,7 +73,7 @@ class JSController: NSObject, ObservableObject {
                 }
             }
         } else {
-            print("No queued downloads to process or queue is already being processed")
+            Logger.shared.log("No queued downloads to process or queue is already being processed")
         }
     }
 }

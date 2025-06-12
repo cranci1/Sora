@@ -252,7 +252,10 @@ struct MediaInfoView: View {
             ZStack(alignment: .top) {
                 gradientOverlay
                 
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 24) {
+                    Spacer()
+                        .frame(height: 100)
+                    
                     headerSection
                     if !episodeLinks.isEmpty {
                         episodesSection
@@ -260,31 +263,34 @@ struct MediaInfoView: View {
                         noEpisodesSection
                     }
                 }
-                .padding()
+                .padding(.horizontal)
             }
         }
     }
     
     @ViewBuilder
     private var gradientOverlay: some View {
-        LinearGradient(
-            gradient: Gradient(stops: [
-                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
-                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.5), location: 0.2),
-                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.8), location: 0.5),
-                .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
-            ]),
-            startPoint: .top,
-            endPoint: .bottom
-        )
+        ZStack {
+            ProgressiveBlurView()
+                .opacity(0.8)
+            
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
+                    .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.5), location: 0.5),
+                    .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
         .frame(height: 300)
         .clipShape(RoundedRectangle(cornerRadius: 0))
-        .shadow(color: (colorScheme == .dark ? Color.black : Color.white).opacity(1), radius: 10, x: 0, y: 10)
     }
     
     @ViewBuilder
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
                 HStack(spacing: 4) {
                     Image(systemName: "calendar")
@@ -297,7 +303,7 @@ struct MediaInfoView: View {
             }
             
             Text(title)
-                .font(.system(size: 28, weight: .bold))
+                .font(.system(size: 32, weight: .bold))
                 .foregroundColor(.primary)
                 .lineLimit(3)
                 .onLongPressGesture {
@@ -1165,41 +1171,26 @@ struct MediaInfoView: View {
     private func fetchMetadataIDIfNeeded() {
         let provider = UserDefaults.standard.string(forKey: "metadataProviders") ?? "TMDB"
         let cleaned = cleanTitle(title)
+        itemID = nil
+        tmdbID = nil
         
-        if provider == "TMDB" {
-            tmdbID = nil
-            tmdbFetcher.fetchBestMatchID(for: cleaned) { id, type in
+        tmdbFetcher.fetchBestMatchID(for: cleaned) { id, type in
+            DispatchQueue.main.async {
+                self.tmdbID = id
+                self.tmdbType = type
+                Logger.shared.log("Fetched TMDB ID: \(id ?? -1) (\(type?.rawValue ?? "unknown")) for title: \(cleaned)", type: "Debug")
+            }
+        }
+        
+        fetchItemID(byTitle: cleaned) { result in
+            switch result {
+            case .success(let id):
                 DispatchQueue.main.async {
-                    self.tmdbID = id
-                    self.tmdbType = type
-                    Logger.shared.log("Fetched TMDB ID: \(id ?? -1) (\(type?.rawValue ?? "unknown")) for title: \(cleaned)", type: "Debug")
+                    self.itemID = id
+                    Logger.shared.log("Fetched AniList ID: \(id) for title: \(cleaned)", type: "Debug")
                 }
-            }
-            
-            itemID = nil
-            fetchItemID(byTitle: cleaned) { result in
-                switch result {
-                case .success(let id):
-                    DispatchQueue.main.async {
-                        self.itemID = id
-                        Logger.shared.log("Fetched AniList ID: \(id) for title: \(cleaned)", type: "Debug")
-                    }
-                case .failure(let error):
-                    Logger.shared.log("Failed to fetch AniList ID: \(error)", type: "Error")
-                }
-            }
-        } else if provider == "Anilist" {
-            itemID = nil
-            fetchItemID(byTitle: cleaned) { result in
-                switch result {
-                case .success(let id):
-                    DispatchQueue.main.async {
-                        self.itemID = id
-                        Logger.shared.log("Fetched AniList ID: \(id) for title: \(cleaned)", type: "Debug")
-                    }
-                case .failure(let error):
-                    Logger.shared.log("Failed to fetch AniList ID: \(error)", type: "Error")
-                }
+            case .failure(let error):
+                Logger.shared.log("Failed to fetch AniList ID: \(error)", type: "Error")
             }
         }
     }

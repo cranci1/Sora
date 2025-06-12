@@ -471,7 +471,6 @@ private extension EpisodeCell {
 }
 
 private extension EpisodeCell {
-    
     func setupOnAppear() {
         updateProgress()
         updateDownloadStatus()
@@ -536,8 +535,6 @@ private extension EpisodeCell {
     
     func tryNextDownloadMethod(methodIndex: Int, downloadID: UUID, softsub: Bool) {
         guard isDownloading else { return }
-        
-        print("[Download] Trying download method #\(methodIndex+1) for Episode \(episodeID + 1)")
         
         switch methodIndex {
         case 0:

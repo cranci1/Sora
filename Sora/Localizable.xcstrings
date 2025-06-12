@@ -42,13 +42,7 @@
     "About" : {
 
     },
-    "Actively downloading media can be tracked from here." : {
-
-    },
     "Add Module" : {
-
-    },
-    "AKA Sulfur" : {
 
     },
     "All Bookmarks" : {
@@ -58,6 +52,9 @@
 
     },
     "All Watching" : {
+
+    },
+    "Also known as Sulfur" : {
 
     },
     "AniList ID" : {
@@ -145,7 +142,11 @@
     "cranci1" : {
 
     },
+    "DATA & LOGS" : {
+
+    },
     "DATA/LOGS" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -183,13 +184,13 @@
         }
       }
     },
-    "Download Episode" : {
+    "Download This Episode" : {
 
     },
     "Downloads" : {
 
     },
-    "Enter the AniList ID for this media" : {
+    "Enter the AniList ID for this series" : {
 
     },
     "Episode %lld" : {
@@ -226,7 +227,22 @@
     "General" : {
 
     },
+    "General Preferences" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General Settings"
+          }
+        }
+      }
+    },
+    "INFORMATION" : {
+
+    },
     "INFOS" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -236,11 +252,32 @@
         }
       }
     },
+    "Join the Discord" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join Discord Community"
+          }
+        }
+      }
+    },
     "LESS" : {
 
     },
     "Library" : {
 
+    },
+    "License (GPLv3.0)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View License (GPLv3.0)"
+          }
+        }
+      }
     },
     "Loading Episode %lld..." : {
 
@@ -279,6 +316,7 @@
 
     },
     "MAIN" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -288,10 +326,16 @@
         }
       }
     },
-    "Mark All Previous Watched" : {
+    "MAIN SETTINGS" : {
 
     },
     "Mark as Watched" : {
+
+    },
+    "Mark Episode as Watched" : {
+
+    },
+    "Mark Previous Episodes as Watched" : {
 
     },
     "Mark watched" : {
@@ -325,6 +369,9 @@
     "No Active Downloads" : {
 
     },
+    "No AniList matches found" : {
+
+    },
     "No Data Available" : {
 
     },
@@ -337,10 +384,8 @@
     "No Episodes Available" : {
 
     },
-    "No items to continue watching." : {
-
-    },
     "No matches found" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -356,7 +401,10 @@
     "No Modules" : {
 
     },
-    "No Results Found" : {
+    "No Search Results Found" : {
+
+    },
+    "Nothing to Continue Watching" : {
 
     },
     "OK" : {
@@ -383,9 +431,6 @@
     "Queued" : {
 
     },
-    "Recently watched content will appear here." : {
-
-    },
     "Refresh Storage Info" : {
 
     },
@@ -404,10 +449,24 @@
     "Remove Item" : {
 
     },
+    "Report an Issue" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report an Issue on GitHub"
+          }
+        }
+      }
+    },
     "Reset" : {
 
     },
     "Reset AniList ID" : {
+
+    },
+    "Reset Episode Progress" : {
 
     },
     "Reset progress" : {
@@ -419,12 +478,6 @@
           }
         }
       }
-    },
-    "Reset Progress" : {
-
-    },
-    "Running Sora %@ - cranci1" : {
-
     },
     "Save" : {
 
@@ -476,6 +529,9 @@
     "Sora" : {
 
     },
+    "Sora %@ by cranci1" : {
+
+    },
     "Sort" : {
 
     },
@@ -494,7 +550,7 @@
     "Trakt.tv" : {
 
     },
-    "Try different keywords" : {
+    "Try different search terms" : {
 
     },
     "Use TMDB Poster Image" : {
@@ -515,48 +571,14 @@
     "You have no items saved." : {
 
     },
-    "Your downloaded episodes will appear here" : {
+    "Your active downloads will appear here." : {
 
     },
-    "Join the Discord" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Join Discord Community"
-          }
-        }
-      }
+    "Your downloaded content will appear here" : {
+
     },
-    "Report an Issue" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Report an Issue on GitHub"
-          }
-        }
-      }
-    },
-    "License (GPLv3.0)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View License (GPLv3.0)"
-          }
-        }
-      }
-    },
-    "General Preferences" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "General Settings"
-          }
-        }
-      }
+    "Your recently watched content will appear here" : {
+
     }
   },
   "version" : "1.0"

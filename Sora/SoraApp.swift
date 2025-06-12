@@ -40,7 +40,7 @@ struct SoraApp: App {
             }
             .environmentObject(moduleManager)
             .environmentObject(settings)
-            .environmentObject(librarykManager)
+            .environmentObject(libraryManager)
             .environmentObject(downloadManager)
             .environmentObject(jsController)
             .accentColor(settings.accentColor)

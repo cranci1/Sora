@@ -160,6 +160,7 @@ struct SettingsViewGeneral: View {
     @AppStorage("tmdbImageWidth") private var TMDBimageWidht: String = "original"
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
+    @AppStorage("metadataProviders") private var metadataProviders: String = "TMDB"
     
     private var metadataProvidersOrder: [String] {
         get { (try? JSONDecoder().decode([String].self, from: metadataProvidersOrderData)) ?? ["AniList","TMDB"] }
@@ -167,6 +168,7 @@ struct SettingsViewGeneral: View {
     }
     private let TMDBimageWidhtList = ["300", "500", "780", "1280", "original"]
     private let sortOrderOptions = ["Ascending", "Descending"]
+    private let metadataProvidersList = ["TMDB", "AniList"]
     @EnvironmentObject var settings: Settings
     @State private var showRestartAlert = false
     
@@ -227,51 +229,54 @@ struct SettingsViewGeneral: View {
                         isOn: $fetchEpisodeMetadata
                     )
                     
-                    List {
-                        ForEach(metadataProvidersOrder, id: \.self) { prov in
-                            Text(prov)
-                                .padding(.vertical, 8)
+                    VStack(spacing: 0) {
+                        HStack {
+                            Image(systemName: "arrow.up.arrow.down")
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(.primary)
+                            
+                            Text(NSLocalizedString("Metadata Providers Order", comment: ""))
+                                .foregroundStyle(.primary)
+                            
+                            Spacer()
                         }
-                        .onMove { idx, dest in
-                            var arr = metadataProvidersOrder
-                            arr.move(fromOffsets: idx, toOffset: dest)
-                            metadataProvidersOrderData = try! JSONEncoder().encode(arr)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        
+                        Divider()
+                            .padding(.horizontal, 16)
+                        
+                        List {
+                            ForEach(Array(metadataProvidersOrder.enumerated()), id: \.element) { index, provider in
+                                HStack {
+                                    Text("\(index + 1)")
+                                        .frame(width: 24, height: 24)
+                                        .foregroundStyle(.gray)
+                                    
+                                    Text(provider)
+                                        .foregroundStyle(.primary)
+                                    
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.visible)
+                                .listRowSeparatorTint(.gray.opacity(0.3))
+                                .listRowInsets(EdgeInsets())
+                            }
+                            .onMove { from, to in
+                                var arr = metadataProvidersOrder
+                                arr.move(fromOffsets: from, toOffset: to)
+                                metadataProvidersOrderData = try! JSONEncoder().encode(arr)
+                            }
                         }
+                        .listStyle(.plain)
+                        .frame(height: CGFloat(metadataProvidersOrder.count * 48))
+                        .background(Color.clear)
+                        .padding(.bottom, 8)
                     }
                     .environment(\.editMode, .constant(.active))
-                    .frame(height: 140)
-                    
-                    SettingsSection(
-                        title: "Media Grid Layout",
-                        footer: "Adjust the number of media items per row in portrait and landscape modes."
-                    ) {
-                        SettingsPickerRow(
-                            icon: "server.rack",
-                            title: NSLocalizedString("Metadata Provider", comment: ""),
-                            options: metadataProvidersList,
-                            optionToString: { $0 },
-                            selection: $metadataProviders,
-                            showDivider: true
-                        )
-                        
-                        SettingsPickerRow(
-                            icon: "square.stack.3d.down.right",
-                            title: NSLocalizedString("Thumbnails Width", comment: ""),
-                            options: TMDBimageWidhtList,
-                            optionToString: { $0 },
-                            selection: $TMDBimageWidht,
-                            showDivider: false
-                        )
-                    } else {
-                        SettingsPickerRow(
-                            icon: "server.rack",
-                            title: NSLocalizedString("Metadata Provider", comment: ""),
-                            options: metadataProvidersList,
-                            optionToString: { $0 },
-                            selection: $metadataProviders,
-                            showDivider: false
-                        )
-                    }
                 }
                 
                 SettingsSection(

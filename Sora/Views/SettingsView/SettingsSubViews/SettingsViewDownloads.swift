@@ -164,12 +164,12 @@ struct SettingsViewDownloads: View {
         ScrollView {
             VStack(spacing: 24) {
                 SettingsSection(
-                    title: "Download Settings",
-                    footer: "Max concurrent downloads controls how many episodes can download simultaneously. Higher values may use more bandwidth and device resources."
+                    title: String(localized: "Download Settings"),
+                    footer: String(localized: "Max concurrent downloads controls how many episodes can download simultaneously. Higher values may use more bandwidth and device resources.")
                 ) {
                     SettingsPickerRow(
                         icon: "4k.tv",
-                        title: "Quality",
+                        title: String(localized: "Quality"),
                         options: DownloadQualityPreference.allCases.map { $0.rawValue },
                         optionToString: { $0 },
                         selection: $downloadQuality
@@ -181,7 +181,7 @@ struct SettingsViewDownloads: View {
                                 .frame(width: 24, height: 24)
                                 .foregroundStyle(.primary)
                             
-                            Text("Max Concurrent Downloads")
+                            Text(String(localized: "Max Concurrent Downloads"))
                                 .foregroundStyle(.primary)
                             
                             Spacer()
@@ -200,14 +200,14 @@ struct SettingsViewDownloads: View {
                     
                     SettingsToggleRow(
                         icon: "antenna.radiowaves.left.and.right",
-                        title: "Allow Cellular Downloads",
+                        title: String(localized: "Allow Cellular Downloads"),
                         isOn: $allowCellularDownloads,
                         showDivider: false
                     )
                 }
                 
                 SettingsSection(
-                    title: "Quality Information"
+                    title: String(localized: "Quality Information")
                 ) {
                     if let preferenceDescription = DownloadQualityPreference(rawValue: downloadQuality)?.description {
                         HStack {
@@ -222,7 +222,7 @@ struct SettingsViewDownloads: View {
                 }
                 
                 SettingsSection(
-                    title: "Storage Management"
+                    title: String(localized: "Storage Management")
                 ) {
                     VStack(spacing: 0) {
                         HStack {
@@ -230,7 +230,7 @@ struct SettingsViewDownloads: View {
                                 .frame(width: 24, height: 24)
                                 .foregroundStyle(.primary)
                             
-                            Text("Storage Used")
+                            Text(String(localized: "Storage Used"))
                                 .foregroundStyle(.primary)
                             
                             Spacer()
@@ -255,7 +255,7 @@ struct SettingsViewDownloads: View {
                                 .frame(width: 24, height: 24)
                                 .foregroundStyle(.primary)
                             
-                            Text("Files Downloaded")
+                            Text(String(localized: "Files Downloaded"))
                                 .foregroundStyle(.primary)
                             
                             Spacer()
@@ -277,7 +277,7 @@ struct SettingsViewDownloads: View {
                                     .frame(width: 24, height: 24)
                                     .foregroundStyle(.primary)
                                 
-                                Text("Refresh Storage Info")
+                                Text(String(localized: "Refresh Storage Info"))
                                     .foregroundStyle(.primary)
                                 
                                 Spacer()
@@ -297,7 +297,7 @@ struct SettingsViewDownloads: View {
                                     .frame(width: 24, height: 24)
                                     .foregroundStyle(.red)
                                 
-                                Text("Clear All Downloads")
+                                Text(String(localized: "Clear All Downloads"))
                                     .foregroundStyle(.red)
                                 
                                 Spacer()
@@ -310,18 +310,18 @@ struct SettingsViewDownloads: View {
             }
             .padding(.vertical, 20)
         }
-        .navigationTitle("Downloads")
+        .navigationTitle(String(localized: "Downloads"))
         .scrollViewBottomPadding()
-        .alert("Delete All Downloads", isPresented: $showClearConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete All", role: .destructive) {
+        .alert(String(localized: "Delete All Downloads"), isPresented: $showClearConfirmation) {
+            Button(String(localized: "Cancel"), role: .cancel) { }
+            Button(String(localized: "Delete All"), role: .destructive) {
                 clearAllDownloads(preservePersistentDownloads: false)
             }
-            Button("Clear Library Only", role: .destructive) {
+            Button(String(localized: "Clear Library Only"), role: .destructive) {
                 clearAllDownloads(preservePersistentDownloads: true)
             }
         } message: {
-            Text("Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use.")
+            Text(String(localized: "Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use."))
         }
         .onAppear {
             calculateTotalStorage()
@@ -370,9 +370,9 @@ struct SettingsViewDownloads: View {
         
         DispatchQueue.main.async {
             if preservePersistentDownloads {
-                DropManager.shared.success("Library cleared successfully")
+                DropManager.shared.success(String(localized: "Library cleared successfully"))
             } else {
-                DropManager.shared.success("All downloads deleted successfully")
+                DropManager.shared.success(String(localized: "All downloads deleted successfully"))
             }
         }
     }

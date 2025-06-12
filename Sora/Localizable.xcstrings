@@ -170,6 +170,7 @@
       }
     },
     "AKA Sulfur" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -227,6 +228,9 @@
         }
       }
     },
+    "Also known as Sulfur" : {
+
+    },
     "AniList" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -243,9 +247,6 @@
           }
         }
       }
-    },
-    "Also known as Sulfur" : {
-
     },
     "AniList ID" : {
 
@@ -541,6 +542,22 @@
         }
       }
     },
+    "Cellular Quality" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cellular Quality"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mobiele Kwaliteit"
+          }
+        }
+      }
+    },
     "Check out some community modules here!" : {
       "localizations" : {
         "en" : {
@@ -553,6 +570,22 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Bekijk hier enkele community modules!"
+          }
+        }
+      }
+    },
+    "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Kies de gewenste videoresolutie voor WiFi en mobiele verbindingen. Hogere resoluties gebruiken meer data maar bieden betere kwaliteit. Als de exacte kwaliteit niet beschikbaar is, wordt automatisch de dichtstbijzijnde optie geselecteerd.\n\nLet op: Niet alle videobronnen en spelers ondersteunen kwaliteitsselectie. Deze functie werkt het beste met HLS-streams met de Sora-speler."
           }
         }
       }
@@ -913,6 +946,7 @@
       }
     },
     "Download Episode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "nl" : {
           "stringUnit" : {
@@ -923,6 +957,9 @@
       }
     },
     "Download Summary" : {
+
+    },
+    "Download This Episode" : {
 
     },
     "Downloaded" : {
@@ -996,6 +1033,7 @@
       }
     },
     "Enter the AniList ID for this media" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1010,6 +1048,9 @@
           }
         }
       }
+    },
+    "Enter the AniList ID for this series" : {
+
     },
     "Episode %lld" : {
       "localizations" : {
@@ -1130,6 +1171,9 @@
         }
       }
     },
+    "Error Fetching Results" : {
+
+    },
     "Errors and critical issues." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1175,16 +1219,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Haal Aflevering Metadata op"
-          }
-        }
-      }
-    },
-    "Failed to load contributors" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to load contributors. Please try again later."
           }
         }
       }
@@ -1451,28 +1485,6 @@
         }
       }
     },
-    "INFOS" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Information"
-          }
-        }
-      }
-    },
-    "Join the Discord" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Join Discord Community"
-          }
-        }
-      }
-    },
     "LESS" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1535,16 +1547,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Licht"
-          }
-        }
-      }
-    },
-    "License (GPLv3.0)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View License (GPLv3.0)"
           }
         }
       }
@@ -1819,7 +1821,11 @@
         }
       }
     },
+    "MAIN SETTINGS" : {
+
+    },
     "Mark All Previous Watched" : {
+      "extractionState" : "stale",
       "localizations" : {
         "nl" : {
           "stringUnit" : {
@@ -1839,6 +1845,12 @@
         }
       }
     },
+    "Mark Episode as Watched" : {
+
+    },
+    "Mark Previous Episodes as Watched" : {
+
+    },
     "Mark watched" : {
       "localizations" : {
         "nl" : {
@@ -1849,23 +1861,17 @@
         }
       }
     },
-    "Mark Previous Episodes as Watched" : {
-
-    },
-    "Mark watched" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mark as Watched"
-          }
-        }
-      }
-    },
     "Match with AniList" : {
 
     },
+    "Match with TMDB" : {
+
+    },
+    "Matched ID: %lld" : {
+
+    },
     "Matched with: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "nl" : {
           "stringUnit" : {
@@ -1950,6 +1956,7 @@
       }
     },
     "Metadata Provider" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1964,6 +1971,9 @@
           }
         }
       }
+    },
+    "Metadata Providers Order" : {
+
     },
     "Module Removed" : {
       "extractionState" : "manual",
@@ -2103,6 +2113,7 @@
       }
     },
     "No items to continue watching." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2167,6 +2178,7 @@
       }
     },
     "No Results Found" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2181,6 +2193,9 @@
           }
         }
       }
+    },
+    "No Search Results Found" : {
+
     },
     "Note that the modules will be replaced only if there is a different version string inside the JSON file." : {
       "localizations" : {
@@ -2197,6 +2212,9 @@
           }
         }
       }
+    },
+    "Nothing to Continue Watching" : {
+
     },
     "OK" : {
       "localizations" : {
@@ -2361,6 +2379,9 @@
         }
       }
     },
+    "Provider: %@" : {
+
+    },
     "Queue" : {
 
     },
@@ -2381,6 +2402,7 @@
       }
     },
     "Recently watched content will appear here." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2592,17 +2614,6 @@
         }
       }
     },
-    "Report an Issue" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Report an Issue on GitHub"
-          }
-        }
-      }
-    },
     "Reset" : {
       "localizations" : {
         "en" : {
@@ -2656,6 +2667,7 @@
       }
     },
     "Reset Progress" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2688,6 +2700,7 @@
       }
     },
     "Running Sora %@ - cranci1" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2988,6 +3001,9 @@
     "Sora" : {
 
     },
+    "Sora %@ by cranci1" : {
+
+    },
     "Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3023,6 +3039,7 @@
       }
     },
     "Sora/Sulfur will always remain free with no ADs!" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3351,6 +3368,7 @@
       }
     },
     "Thumbnails Width" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3406,6 +3424,7 @@
 
     },
     "Try different keywords" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3420,6 +3439,9 @@
           }
         }
       }
+    },
+    "Try different search terms" : {
+
     },
     "Two Finger Hold for Pause" : {
       "localizations" : {
@@ -3436,6 +3458,9 @@
           }
         }
       }
+    },
+    "Unable to fetch matches. Please try again later." : {
+
     },
     "Use TMDB Poster Image" : {
       "localizations" : {
@@ -3468,6 +3493,22 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Videospeler"
+          }
+        }
+      }
+    },
+    "Video Quality Preferences" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Video Quality Preferences"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Video Kwaliteit Voorkeuren"
           }
         }
       }
@@ -3521,6 +3562,22 @@
         }
       }
     },
+    "WiFi Quality" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "WiFi Quality"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "WiFi Kwaliteit"
+          }
+        }
+      }
+    },
     "You are not logged in" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3570,69 +3627,8 @@
         }
       }
     },
-    "Video Quality Preferences" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Video Quality Preferences"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Video Kwaliteit Voorkeuren"
-          }
-        }
-      }
-    },
-    "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Kies de gewenste videoresolutie voor WiFi en mobiele verbindingen. Hogere resoluties gebruiken meer data maar bieden betere kwaliteit. Als de exacte kwaliteit niet beschikbaar is, wordt automatisch de dichtstbijzijnde optie geselecteerd.\n\nLet op: Niet alle videobronnen en spelers ondersteunen kwaliteitsselectie. Deze functie werkt het beste met HLS-streams met de Sora-speler."
-          }
-        }
-      }
-    },
-    "WiFi Quality" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "WiFi Quality"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "WiFi Kwaliteit"
-          }
-        }
-      }
-    },
-    "Cellular Quality" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Cellular Quality"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Mobiele Kwaliteit"
-          }
-        }
-      }
+    "Your recently watched content will appear here" : {
+
     }
   },
   "version" : "1.0"

@@ -76,12 +76,12 @@ struct SettingsViewLogger: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                SettingsSection(title: "Logs") {
+                SettingsSection(title: NSLocalizedString("Logs", comment: "")) {
                     if isLoading {
                         HStack {
                             ProgressView()
                                 .scaleEffect(0.8)
-                            Text("Loading logs...")
+                            Text(NSLocalizedString("Loading logs...", comment: ""))
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
                         }
@@ -99,7 +99,7 @@ struct SettingsViewLogger: View {
                                 Button(action: {
                                     showFullLogs = true
                                 }) {
-                                    Text("Show More (\(logs.count - displayCharacterLimit) more characters)")
+                                    Text(NSLocalizedString("Show More (%lld more characters)", comment: "").replacingOccurrences(of: "%lld", with: "\(logs.count - displayCharacterLimit)"))
                                         .font(.footnote)
                                         .foregroundColor(.accentColor)
                                 }
@@ -113,7 +113,7 @@ struct SettingsViewLogger: View {
             }
             .padding(.vertical, 20)
         }
-        .navigationTitle("Logs")
+        .navigationTitle(NSLocalizedString("Logs", comment: ""))
         .onAppear {
             loadLogsAsync()
         }
@@ -123,14 +123,14 @@ struct SettingsViewLogger: View {
                     Menu {
                         Button(action: {
                             UIPasteboard.general.string = logs
-                            DropManager.shared.showDrop(title: "Copied to Clipboard", subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
+                            DropManager.shared.showDrop(title: NSLocalizedString("Copied to Clipboard", comment: ""), subtitle: "", duration: 1.0, icon: UIImage(systemName: "doc.on.clipboard.fill"))
                         }) {
-                            Label("Copy to Clipboard", systemImage: "doc.on.doc")
+                            Label(NSLocalizedString("Copy to Clipboard", comment: ""), systemImage: "doc.on.doc")
                         }
                         Button(role: .destructive, action: {
                             clearLogsAsync()
                         }) {
-                            Label("Clear Logs", systemImage: "trash")
+                            Label(NSLocalizedString("Clear Logs", comment: ""), systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")

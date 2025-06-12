@@ -211,12 +211,12 @@ struct SettingsViewPlayer: View {
         ScrollView {
             VStack(spacing: 24) {
                 SettingsSection(
-                    title: "Media Player",
-                    footer: "Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments."
+                    title: NSLocalizedString("Media Player", comment: ""),
+                    footer: NSLocalizedString("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.", comment: "")
                 ) {
                     SettingsPickerRow(
                         icon: "play.circle",
-                        title: "Media Player",
+                        title: NSLocalizedString("Media Player", comment: ""),
                         options: mediaPlayers,
                         optionToString: { $0 },
                         selection: $externalPlayer
@@ -224,35 +224,35 @@ struct SettingsViewPlayer: View {
                     
                     SettingsToggleRow(
                         icon: "rotate.right",
-                        title: "Force Landscape",
+                        title: NSLocalizedString("Force Landscape", comment: ""),
                         isOn: $isAlwaysLandscape
                     )
                     
                     SettingsToggleRow(
                         icon: "hand.tap",
-                        title: "Two Finger Hold for Pause",
+                        title: NSLocalizedString("Two Finger Hold for Pause", comment: ""),
                         isOn: $holdForPauseEnabled,
                         showDivider: true
                     )
                     
                     SettingsToggleRow(
                         icon: "pip",
-                        title: "Show PiP Button",
+                        title: NSLocalizedString("Show PiP Button", comment: ""),
                         isOn: $pipButtonVisible,
                         showDivider: false
                     )
                 }
                 
-                SettingsSection(title: "Speed Settings") {
+                SettingsSection(title: NSLocalizedString("Speed Settings", comment: "")) {
                     SettingsToggleRow(
                         icon: "speedometer",
-                        title: "Remember Playback speed",
+                        title: NSLocalizedString("Remember Playback speed", comment: ""),
                         isOn: $isRememberPlaySpeed
                     )
                     
                     SettingsStepperRow(
                         icon: "forward.fill",
-                        title: "Hold Speed",
+                        title: NSLocalizedString("Hold Speed", comment: ""),
                         value: $holdSpeedPlayer,
                         range: 0.25...2.5,
                         step: 0.25,
@@ -261,8 +261,8 @@ struct SettingsViewPlayer: View {
                     )
                 }
                 
-                SettingsSection(title: "Progress bar Marker Color") {
-                    ColorPicker("Segments Color", selection: Binding(
+                SettingsSection(title: NSLocalizedString("Progress bar Marker Color", comment: "")) {
+                    ColorPicker(NSLocalizedString("Segments Color", comment: ""), selection: Binding(
                         get: {
                             if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
                                let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
@@ -285,12 +285,12 @@ struct SettingsViewPlayer: View {
                 }
                 
                 SettingsSection(
-                    title: "Skip Settings",
-                    footer: "Double tapping the screen on it's sides will skip with the short tap setting."
+                    title: NSLocalizedString("Skip Settings", comment: ""),
+                    footer: NSLocalizedString("Double tapping the screen on it's sides will skip with the short tap setting.", comment: "")
                 ) {
                     SettingsStepperRow(
                         icon: "goforward",
-                        title: "Tap Skip",
+                        title: NSLocalizedString("Tap Skip", comment: ""),
                         value: $skipIncrement,
                         range: 5...300,
                         step: 5,
@@ -299,7 +299,7 @@ struct SettingsViewPlayer: View {
                     
                     SettingsStepperRow(
                         icon: "goforward.plus",
-                        title: "Long press Skip",
+                        title: NSLocalizedString("Long press Skip", comment: ""),
                         value: $skipIncrementHold,
                         range: 5...300,
                         step: 5,
@@ -308,19 +308,19 @@ struct SettingsViewPlayer: View {
                     
                     SettingsToggleRow(
                         icon: "hand.tap.fill",
-                        title: "Double Tap to Seek",
+                        title: NSLocalizedString("Double Tap to Seek", comment: ""),
                         isOn: $doubleTapSeekEnabled
                     )
                     
                     SettingsToggleRow(
                         icon: "forward.end",
-                        title: "Show Skip 85s Button",
+                        title: NSLocalizedString("Show Skip 85s Button", comment: ""),
                         isOn: $skip85Visible
                     )
                     
                     SettingsToggleRow(
                         icon: "forward.frame",
-                        title: "Show Skip Intro / Outro Buttons",
+                        title: NSLocalizedString("Show Skip Intro / Outro Buttons", comment: ""),
                         isOn: $skipIntroOutroVisible,
                         showDivider: false
                     )
@@ -331,7 +331,7 @@ struct SettingsViewPlayer: View {
             .padding(.vertical, 20)
         }
         .scrollViewBottomPadding()
-        .navigationTitle("Player")
+        .navigationTitle(NSLocalizedString("Player", comment: ""))
     }
 }
 
@@ -348,10 +348,10 @@ struct SubtitleSettingsSection: View {
     private let shadowOptions = [0, 1, 3, 6]
 
     var body: some View {
-    SettingsSection(title: "Subtitle Settings") {
+        SettingsSection(title: NSLocalizedString("Subtitle Settings", comment: "")) {
             SettingsToggleRow(
                 icon: "captions.bubble",
-                title: "Enable Subtitles",
+                title: NSLocalizedString("Enable Subtitles", comment: ""),
                 isOn: $subtitlesEnabled,
                 showDivider: false
             )
@@ -363,7 +363,7 @@ struct SubtitleSettingsSection: View {
 
             SettingsPickerRow(
                 icon: "paintbrush",
-                title: "Subtitle Color",
+                title: NSLocalizedString("Subtitle Color", comment: ""),
                 options: colors,
                 optionToString: { $0.capitalized },
                 selection: $foregroundColor
@@ -376,7 +376,7 @@ struct SubtitleSettingsSection: View {
             
             SettingsPickerRow(
                 icon: "shadow",
-                title: "Shadow",
+                title: NSLocalizedString("Shadow", comment: ""),
                 options: shadowOptions,
                 optionToString: { "\($0)" },
                 selection: Binding(
@@ -392,7 +392,7 @@ struct SubtitleSettingsSection: View {
             
             SettingsToggleRow(
                 icon: "rectangle.fill",
-                title: "Background Enabled",
+                title: NSLocalizedString("Background Enabled", comment: ""),
                 isOn: $backgroundEnabled
             )
             .onChange(of: backgroundEnabled) { newValue in
@@ -403,7 +403,7 @@ struct SubtitleSettingsSection: View {
             
             SettingsStepperRow(
                 icon: "textformat.size",
-                title: "Font Size",
+                title: NSLocalizedString("Font Size", comment: ""),
                 value: $fontSize,
                 range: 12...36,
                 step: 1
@@ -416,7 +416,7 @@ struct SubtitleSettingsSection: View {
             
             SettingsStepperRow(
                 icon: "arrow.up.and.down",
-                title: "Bottom Padding",
+                title: NSLocalizedString("Bottom Padding", comment: ""),
                 value: $bottomPadding,
                 range: 0...50,
                 step: 1,

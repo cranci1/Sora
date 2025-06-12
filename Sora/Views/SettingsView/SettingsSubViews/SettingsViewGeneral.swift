@@ -163,20 +163,21 @@ struct SettingsViewGeneral: View {
     private let TMDBimageWidhtList = ["300", "500", "780", "1280", "original"]
     private let sortOrderOptions = ["Ascending", "Descending"]
     @EnvironmentObject var settings: Settings
+    @State private var showRestartAlert = false
     
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                SettingsSection(title: "Interface") {
+                SettingsSection(title: NSLocalizedString("Interface", comment: "")) {
                     SettingsPickerRow(
                         icon: "paintbrush",
-                        title: "Appearance",
+                        title: NSLocalizedString("Appearance", comment: ""),
                         options: [Appearance.system, .light, .dark],
                         optionToString: { appearance in
                             switch appearance {
-                            case .system: return "System"
-                            case .light: return "Light"
-                            case .dark: return "Dark"
+                            case .system: return NSLocalizedString("System", comment: "")
+                            case .light: return NSLocalizedString("Light", comment: "")
+                            case .dark: return NSLocalizedString("Dark", comment: "")
                             }
                         },
                         selection: $settings.selectedAppearance
@@ -184,19 +185,32 @@ struct SettingsViewGeneral: View {
                     
                     SettingsToggleRow(
                         icon: "wand.and.rays.inverse",
-                        title: "Hide Splash Screen",
+                        title: NSLocalizedString("Hide Splash Screen", comment: ""),
                         isOn: $hideSplashScreenEnable,
                         showDivider: false
                     )
                 }
                 
+                SettingsSection(title: NSLocalizedString("Language", comment: "")) {
+                    SettingsPickerRow(
+                        icon: "globe",
+                        title: NSLocalizedString("App Language", comment: ""),
+                        options: ["English", "Dutch"],
+                        optionToString: { $0 },
+                        selection: $settings.selectedLanguage
+                    )
+                    .onChange(of: settings.selectedLanguage) { _ in
+                        showRestartAlert = true
+                    }
+                }
+                
                 SettingsSection(
-                    title: "Media View",
-                    footer: "The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers."
+                    title: NSLocalizedString("Media View", comment: ""),
+                    footer: NSLocalizedString("The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers.", comment: "")
                 ) {
                     SettingsPickerRow(
                         icon: "list.number",
-                        title: "Episodes Range",
+                        title: NSLocalizedString("Episodes Range", comment: ""),
                         options: [25, 50, 75, 100],
                         optionToString: { "\($0)" },
                         selection: $episodeChunkSize
@@ -204,14 +218,14 @@ struct SettingsViewGeneral: View {
                     
                     SettingsToggleRow(
                         icon: "info.circle",
-                        title: "Fetch Episode metadata",
+                        title: NSLocalizedString("Fetch Episode metadata", comment: ""),
                         isOn: $fetchEpisodeMetadata
                     )
                     
                     if metadataProviders == "TMDB" {
                         SettingsPickerRow(
                             icon: "server.rack",
-                            title: "Metadata Provider",
+                            title: NSLocalizedString("Metadata Provider", comment: ""),
                             options: metadataProvidersList,
                             optionToString: { $0 },
                             selection: $metadataProviders,
@@ -220,7 +234,7 @@ struct SettingsViewGeneral: View {
                         
                         SettingsPickerRow(
                             icon: "square.stack.3d.down.right",
-                            title: "Thumbnails Width",
+                            title: NSLocalizedString("Thumbnails Width", comment: ""),
                             options: TMDBimageWidhtList,
                             optionToString: { $0 },
                             selection: $TMDBimageWidht,
@@ -229,7 +243,7 @@ struct SettingsViewGeneral: View {
                     } else {
                         SettingsPickerRow(
                             icon: "server.rack",
-                            title: "Metadata Provider",
+                            title: NSLocalizedString("Metadata Provider", comment: ""),
                             options: metadataProvidersList,
                             optionToString: { $0 },
                             selection: $metadataProviders,
@@ -239,12 +253,12 @@ struct SettingsViewGeneral: View {
                 }
                 
                 SettingsSection(
-                    title: "Media Grid Layout",
-                    footer: "Adjust the number of media items per row in portrait and landscape modes."
+                    title: NSLocalizedString("Media Grid Layout", comment: ""),
+                    footer: NSLocalizedString("Adjust the number of media items per row in portrait and landscape modes.", comment: "")
                 ) {
                     SettingsPickerRow(
                         icon: "rectangle.portrait",
-                        title: "Portrait Columns",
+                        title: NSLocalizedString("Portrait Columns", comment: ""),
                         options: UIDevice.current.userInterfaceIdiom == .pad ? Array(1...5) : Array(1...4),
                         optionToString: { "\($0)" },
                         selection: $mediaColumnsPortrait
@@ -252,7 +266,7 @@ struct SettingsViewGeneral: View {
                     
                     SettingsPickerRow(
                         icon: "rectangle",
-                        title: "Landscape Columns",
+                        title: NSLocalizedString("Landscape Columns", comment: ""),
                         options: UIDevice.current.userInterfaceIdiom == .pad ? Array(2...8) : Array(2...5),
                         optionToString: { "\($0)" },
                         selection: $mediaColumnsLandscape,
@@ -261,24 +275,24 @@ struct SettingsViewGeneral: View {
                 }
                 
                 SettingsSection(
-                    title: "Modules",
-                    footer: "Note that the modules will be replaced only if there is a different version string inside the JSON file."
+                    title: NSLocalizedString("Modules", comment: ""),
+                    footer: NSLocalizedString("Note that the modules will be replaced only if there is a different version string inside the JSON file.", comment: "")
                 ) {
                     SettingsToggleRow(
                         icon: "arrow.clockwise",
-                        title: "Refresh Modules on Launch",
+                        title: NSLocalizedString("Refresh Modules on Launch", comment: ""),
                         isOn: $refreshModulesOnLaunch,
                         showDivider: false
                     )
                 }
                 
                 SettingsSection(
-                    title: "Advanced",
-                    footer: "Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time."
+                    title: NSLocalizedString("Advanced", comment: ""),
+                    footer: NSLocalizedString("Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time.", comment: "")
                 ) {
                     SettingsToggleRow(
                         icon: "chart.bar",
-                        title: "Enable Analytics",
+                        title: NSLocalizedString("Enable Analytics", comment: ""),
                         isOn: $analyticsEnabled,
                         showDivider: false
                     )
@@ -286,7 +300,14 @@ struct SettingsViewGeneral: View {
             }
             .padding(.vertical, 20)
         }
-        .navigationTitle("General")
+        .navigationTitle(NSLocalizedString("General", comment: ""))
         .scrollViewBottomPadding()
+        .alert(isPresented: $showRestartAlert) {
+            Alert(
+                title: Text(NSLocalizedString("Restart Required", comment: "")),
+                message: Text(NSLocalizedString("Please restart the app to apply the language change.", comment: "")),
+                dismissButton: .default(Text("OK"))
+            )
+        }
     }
 }

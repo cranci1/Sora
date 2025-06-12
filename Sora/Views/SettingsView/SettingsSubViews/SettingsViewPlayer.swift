@@ -205,7 +205,11 @@ struct SettingsViewPlayer: View {
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
     @AppStorage("pipButtonVisible") private var pipButtonVisible: Bool = true
     
+    @AppStorage("videoQualityWiFi") private var wifiQuality: String = VideoQualityPreference.defaultWiFiPreference.rawValue
+    @AppStorage("videoQualityCellular") private var cellularQuality: String = VideoQualityPreference.defaultCellularPreference.rawValue
+    
     private let mediaPlayers = ["Default", "Sora", "VLC", "OutPlayer", "Infuse", "nPlayer", "SenPlayer", "IINA", "TracyPlayer"]
+    private let qualityOptions = VideoQualityPreference.allCases.map { $0.rawValue }
     
     var body: some View {
         ScrollView {
@@ -257,6 +261,28 @@ struct SettingsViewPlayer: View {
                         range: 0.25...2.5,
                         step: 0.25,
                         formatter: { String(format: "%.2f", $0) },
+                        showDivider: false
+                    )
+                }
+                
+                SettingsSection(
+                    title: "Video Quality Preferences",
+                    footer: "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player."
+                ) {
+                    SettingsPickerRow(
+                        icon: "wifi",
+                        title: "WiFi Quality",
+                        options: qualityOptions,
+                        optionToString: { $0 },
+                        selection: $wifiQuality
+                    )
+                    
+                    SettingsPickerRow(
+                        icon: "antenna.radiowaves.left.and.right",
+                        title: "Cellular Quality",
+                        options: qualityOptions,
+                        optionToString: { $0 },
+                        selection: $cellularQuality,
                         showDivider: false
                     )
                 }

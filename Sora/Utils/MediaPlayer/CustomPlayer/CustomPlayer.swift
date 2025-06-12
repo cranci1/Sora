@@ -2211,7 +2211,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private func switchToQuality(urlString: String) {
         guard let url = URL(string: urlString),
-              currentQualityURL?.absoluteString != urlString else { return }
+              currentQualityURL?.absoluteString != urlString else { 
+            Logger.shared.log("Quality Selection: Switch cancelled - same quality already selected", type: "General")
+            return 
+        }
+        
+        let qualityName = qualities.first(where: { $0.1 == urlString })?.0 ?? "Unknown"
+        Logger.shared.log("Quality Selection: Switching to quality: \(qualityName) (\(urlString))", type: "General")
         
         let currentTime = player.currentTime()
         let wasPlaying = player.rate > 0
@@ -2270,7 +2276,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         qualityButton.menu = qualitySelectionMenu()
         
         if let selectedQuality = qualities.first(where: { $0.1 == urlString })?.0 {
+            Logger.shared.log("Quality Selection: Successfully switched to: \(selectedQuality)", type: "General")
             DropManager.shared.showDrop(title: "Quality: \(selectedQuality)", subtitle: "", duration: 0.5, icon: UIImage(systemName: "eye"))
+        } else {
+            Logger.shared.log("Quality Selection: Switch completed but quality name not found in list", type: "General")
         }
     }
     
@@ -2320,11 +2329,34 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             baseM3U8URL = url
             currentQualityURL = url
             
+            let networkType = NetworkMonitor.getCurrentNetworkType()
+            let networkTypeString = networkType == .wifi ? "WiFi" : networkType == .cellular ? "Cellular" : "Unknown"
+            Logger.shared.log("Quality Selection: Detected network type: \(networkTypeString)", type: "General")
+            
             parseM3U8(url: url) { [weak self] in
                 guard let self = self else { return }
-                if let last = UserDefaults.standard.string(forKey: "lastSelectedQuality"),
-                   self.qualities.contains(where: { $0.1 == last }) {
-                    self.switchToQuality(urlString: last)
+                
+                Logger.shared.log("Quality Selection: Found \(self.qualities.count) available qualities", type: "General")
+                for (index, quality) in self.qualities.enumerated() {
+                    Logger.shared.log("Quality Selection: Available [\(index + 1)]: \(quality.0) - \(quality.1)", type: "General")
+                }
+                
+                let preferredQuality = UserDefaults.getVideoQualityPreference()
+                Logger.shared.log("Quality Selection: User preference for \(networkTypeString): \(preferredQuality.rawValue)", type: "General")
+                
+                if let selectedQuality = VideoQualityPreference.findClosestQuality(preferred: preferredQuality, availableQualities: self.qualities) {
+                    Logger.shared.log("Quality Selection: Selected quality: \(selectedQuality.0) (URL: \(selectedQuality.1))", type: "General")
+                    self.switchToQuality(urlString: selectedQuality.1)
+                } else {
+                    Logger.shared.log("Quality Selection: No matching quality found, using default", type: "General")
+                    if let last = UserDefaults.standard.string(forKey: "lastSelectedQuality"),
+                       self.qualities.contains(where: { $0.1 == last }) {
+                        Logger.shared.log("Quality Selection: Falling back to last selected quality", type: "General")
+                        self.switchToQuality(urlString: last)
+                    } else if let firstQuality = self.qualities.first {
+                        Logger.shared.log("Quality Selection: Falling back to first available quality: \(firstQuality.0)", type: "General")
+                        self.switchToQuality(urlString: firstQuality.1)
+                    }
                 }
                 
                 self.qualityButton.isHidden = false
@@ -2338,6 +2370,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             isHLSStream = false
             qualityButton.isHidden = true
             updateMenuButtonConstraints()
+            Logger.shared.log("Quality Selection: Non-HLS stream detected, quality selection unavailable", type: "General")
         }
     }
     

@@ -3569,6 +3569,70 @@
           }
         }
       }
+    },
+    "Video Quality Preferences" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Video Quality Preferences"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Video Kwaliteit Voorkeuren"
+          }
+        }
+      }
+    },
+    "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Kies de gewenste videoresolutie voor WiFi en mobiele verbindingen. Hogere resoluties gebruiken meer data maar bieden betere kwaliteit. Als de exacte kwaliteit niet beschikbaar is, wordt automatisch de dichtstbijzijnde optie geselecteerd.\n\nLet op: Niet alle videobronnen en spelers ondersteunen kwaliteitsselectie. Deze functie werkt het beste met HLS-streams met de Sora-speler."
+          }
+        }
+      }
+    },
+    "WiFi Quality" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "WiFi Quality"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "WiFi Kwaliteit"
+          }
+        }
+      }
+    },
+    "Cellular Quality" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cellular Quality"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mobiele Kwaliteit"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

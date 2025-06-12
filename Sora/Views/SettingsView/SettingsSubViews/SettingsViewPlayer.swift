@@ -265,12 +265,12 @@ struct SettingsViewPlayer: View {
                     )
                 }
                 SettingsSection(
-                    title: "Video Quality Preferences",
-                    footer: "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player."
+                    title: String(localized: "Video Quality Preferences"),
+                    footer: String(localized: "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player.")
                 ) {
                     SettingsPickerRow(
                         icon: "wifi",
-                        title: "WiFi Quality",
+                        title: String(localized: "WiFi Quality"),
                         options: qualityOptions,
                         optionToString: { $0 },
                         selection: $wifiQuality
@@ -278,7 +278,7 @@ struct SettingsViewPlayer: View {
                     
                     SettingsPickerRow(
                         icon: "antenna.radiowaves.left.and.right",
-                        title: "Cellular Quality",
+                        title: String(localized: "Cellular Quality"),
                         options: qualityOptions,
                         optionToString: { $0 },
                         selection: $cellularQuality,

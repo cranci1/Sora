@@ -126,19 +126,38 @@ extension JSController {
             print("URL is not an M3U8 playlist - downloading directly")
             print("FINAL DOWNLOAD URL (direct): \(url.absoluteString)")
             
-            downloadWithOriginalMethod(
-                url: url,
-                headers: headers,
-                title: title,
-                imageURL: imageURL,
-                isEpisode: isEpisode,
-                showTitle: showTitle,
-                season: season,
-                episode: episode,
-                subtitleURL: subtitleURL,
-                showPosterURL: showPosterURL,
-                completionHandler: completionHandler
-            )
+            // Check if the URL is an MP4 stream
+            let urlString = url.absoluteString.lowercased()
+            if urlString.contains(".mp4") || urlString.contains("mp4") {
+                print("Detected MP4 stream - redirecting to MP4 download method")
+                downloadMP4(
+                    url: url,
+                    headers: headers,
+                    title: title,
+                    imageURL: imageURL,
+                    isEpisode: isEpisode,
+                    showTitle: showTitle,
+                    season: season,
+                    episode: episode,
+                    subtitleURL: subtitleURL,
+                    showPosterURL: showPosterURL,
+                    completionHandler: completionHandler
+                )
+            } else {
+                downloadWithOriginalMethod(
+                    url: url,
+                    headers: headers,
+                    title: title,
+                    imageURL: imageURL,
+                    isEpisode: isEpisode,
+                    showTitle: showTitle,
+                    season: season,
+                    episode: episode,
+                    subtitleURL: subtitleURL,
+                    showPosterURL: showPosterURL,
+                    completionHandler: completionHandler
+                )
+            }
         }
     }
     

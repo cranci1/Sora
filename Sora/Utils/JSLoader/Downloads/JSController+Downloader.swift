@@ -1,17 +1,15 @@
 //
-//  JSController+M3U8Download.swift
+//  JSController+Downloader.swift
 //  Sora
 //
-//  Created by doomsboygaming on 5/22/25
+//  Created by doomsboygaming on 6/13/25
 //
 
 import Foundation
 import SwiftUI
 import AVFoundation
 
-// MARK: - Data Transfer Objects
 
-/// Consolidated download request parameters to reduce code duplication
 struct DownloadRequest {
     let url: URL
     let headers: [String: String]
@@ -40,7 +38,6 @@ struct DownloadRequest {
     }
 }
 
-/// Quality option data structure
 struct QualityOption {
     let name: String
     let url: String
@@ -53,12 +50,8 @@ struct QualityOption {
     }
 }
 
-// MARK: - Main Download Extension
-
-// Extension for integrating M3U8StreamExtractor with JSController for downloads
 extension JSController {
     
-    /// Initiates a download for a given URL, handling M3U8 playlists if necessary
     func downloadWithM3U8Support(url: URL, headers: [String: String], title: String? = nil, 
                                 imageURL: URL? = nil, isEpisode: Bool = false, 
                                 showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
@@ -80,7 +73,6 @@ extension JSController {
         }
     }
     
-    // MARK: - Private Download Handlers
     
     private func handleM3U8Download(request: DownloadRequest, completionHandler: ((Bool, String) -> Void)?) {
         let preferredQuality = DownloadQualityPreference.current.rawValue
@@ -129,7 +121,6 @@ extension JSController {
         }
     }
     
-    // MARK: - MP4 Download Support
     
     func downloadMP4(url: URL, headers: [String: String], title: String? = nil, 
                    imageURL: URL? = nil, isEpisode: Bool = false, 
@@ -188,7 +179,6 @@ extension JSController {
         completionHandler?(true, "Download started")
     }
     
-    // MARK: - M3U8 Parsing
     
     private func parseM3U8(url: URL, headers: [String: String], completion: @escaping ([QualityOption]) -> Void) {
         var request = URLRequest(url: url)
@@ -288,7 +278,6 @@ extension JSController {
         return urlString
     }
     
-    // MARK: - Quality Selection
     
     private func selectQualityBasedOnPreference(qualities: [QualityOption], preferredQuality: String) -> QualityOption {
         guard qualities.count > 1 else {
@@ -350,7 +339,6 @@ extension JSController {
         return Int(qualityName.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
     }
     
-    // MARK: - Helper Methods
     
     private func validateURL(_ url: URL) -> Bool {
         return url.scheme == "http" || url.scheme == "https"
@@ -417,7 +405,6 @@ extension JSController {
         )
     }
     
-    // MARK: - MP4 Progress Observation
     
     private func setupMP4ProgressObservation(for task: AVAssetDownloadTask, downloadID: UUID) {
         let observation = task.progress.observe(\.fractionCompleted, options: [.new]) { [weak self] progress, _ in
@@ -448,7 +435,6 @@ extension JSController {
     }
 }
 
-// MARK: - Logging Extensions
 
 extension JSController {
     private func logDownloadStart(request: DownloadRequest) {

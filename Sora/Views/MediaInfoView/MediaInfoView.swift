@@ -92,8 +92,8 @@ struct MediaInfoView: View {
     }()
     
     private var metadataProvidersOrder: [String] {
-      get { (try? JSONDecoder().decode([String].self, from: metadataProvidersOrderData)) ?? ["AniList","TMDB"] }
-      set { metadataProvidersOrderData = try! JSONEncoder().encode(newValue) }
+        get { (try? JSONDecoder().decode([String].self, from: metadataProvidersOrderData)) ?? ["AniList","TMDB"] }
+        set { metadataProvidersOrderData = try! JSONEncoder().encode(newValue) }
     }
     
     private var isGroupedBySeasons: Bool {
@@ -657,7 +657,7 @@ struct MediaInfoView: View {
         .sheet(isPresented: $isMatchingPresented) {
             AnilistMatchPopupView(seriesTitle: title) { selectedID in
                 handleAniListMatch(selectedID: selectedID)
-                fetchMetadataIDIfNeeded()    // ← use your new async re-try loop
+                fetchMetadataIDIfNeeded()
             }
         }
         .sheet(isPresented: $isTMDBMatchingPresented) {
@@ -671,7 +671,6 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var menuContent: some View {
         Group {
-            // Show which provider “won”
             if let active = activeProvider {
                 Text("Provider: \(active)")
                     .font(.caption)
@@ -680,7 +679,6 @@ struct MediaInfoView: View {
                 Divider()
             }
             
-
             Text("Matched ID: \(itemID ?? 0)")
                 .font(.caption2)
                 .foregroundColor(.secondary)
@@ -697,14 +695,12 @@ struct MediaInfoView: View {
                     Label("Open in AniList", systemImage: "link")
                 }
             }
-            // TMDB branch: only match
             else if activeProvider == "TMDB" {
                 Button("Match with TMDB") {
                     isTMDBMatchingPresented = true
                 }
             }
             
-            // Keep all of your existing poster & debug options
             posterMenuOptions
             
             Divider()
@@ -714,7 +710,6 @@ struct MediaInfoView: View {
             }
         }
     }
-
     
     @ViewBuilder
     private var posterMenuOptions: some View {
@@ -1189,58 +1184,69 @@ struct MediaInfoView: View {
     private func fetchMetadataIDIfNeeded() {
         let order = metadataProvidersOrder
         let cleanedTitle = cleanTitle(title)
-
+        
         itemID = nil
         tmdbID = nil
         activeProvider = nil
         isError = false
-
-        fetchItemID(byTitle: cleanedTitle) { result in
-            switch result {
-            case .success(let id):
-                DispatchQueue.main.async { self.itemID = id }
-            case .failure(let error):
-                Logger.shared.log("Failed to fetch AniList ID for tracking: \(error)", type: "Error")
+        
+        func fetchAniList(completion: @escaping (Bool) -> Void) {
+            fetchItemID(byTitle: cleanedTitle) { result in
+                switch result {
+                case .success(let id):
+                    DispatchQueue.main.async {
+                        self.itemID = id
+                        self.activeProvider = "AniList"
+                        UserDefaults.standard.set("AniList", forKey: "metadataProviders")
+                        completion(true)
+                    }
+                case .failure(let error):
+                    Logger.shared.log("Failed to fetch AniList ID for tracking: \(error)", type: "Error")
+                    completion(false)
+                }
             }
         }
-
-        func tryNext(_ index: Int) {
+        
+        func fetchTMDB(completion: @escaping (Bool) -> Void) {
+            tmdbFetcher.fetchBestMatchID(for: cleanedTitle) { id, type in
+                DispatchQueue.main.async {
+                    if let id = id, let type = type {
+                        self.tmdbID = id
+                        self.tmdbType = type
+                        self.activeProvider = "TMDB"
+                        UserDefaults.standard.set("TMDB", forKey: "metadataProviders")
+                        completion(true)
+                    } else {
+                        completion(false)
+                    }
+                }
+            }
+        }
+        
+        func tryProviders(_ index: Int) {
             guard index < order.count else {
                 isError = true
                 return
             }
             let provider = order[index]
-            if provider == "TMDB" {
-                tmdbFetcher.fetchBestMatchID(for: cleanedTitle) { id, type in
-                    DispatchQueue.main.async {
-                        if let id = id, let type = type {
-                            self.tmdbID = id
-                            self.tmdbType = type
-                            self.activeProvider = "TMDB"
-                            UserDefaults.standard.set("TMDB", forKey: "metadataProviders")
-                        } else {
-                            tryNext(index + 1)
-                        }
+            if provider == "AniList" {
+                fetchAniList { success in
+                    if !success {
+                        tryProviders(index + 1)
                     }
                 }
-            } else if provider == "AniList" {
-                fetchItemID(byTitle: cleanedTitle) { result in
-                    switch result {
-                    case .success:
-                        DispatchQueue.main.async {
-                            self.activeProvider = "AniList"
-                            UserDefaults.standard.set("AniList", forKey: "metadataProviders")
-                        }
-                    case .failure:
-                        tryNext(index + 1)
+            } else if provider == "TMDB" {
+                fetchTMDB { success in
+                    if !success {
+                        tryProviders(index + 1)
                     }
                 }
             } else {
-                tryNext(index + 1)
+                tryProviders(index + 1)
             }
         }
-
-        tryNext(0)
+        
+        tryProviders(0)
     }
     
     private func fetchItemID(byTitle title: String, completion: @escaping (Result<Int, Error>) -> Void) {

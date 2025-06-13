@@ -172,9 +172,28 @@ struct ContributorsView: View {
     }
     
     private var filteredContributors: [Contributor] {
-        contributors.filter { contributor in
+        let realContributors = contributors.filter { contributor in
             !["cranci1", "code-factor"].contains(contributor.login.lowercased())
         }
+        
+        let artificialUsers = createArtificialUsers()
+        
+        return realContributors + artificialUsers
+    }
+    
+    private func createArtificialUsers() -> [Contributor] {
+        return [
+            Contributor(
+                id: 71751652,
+                login: "qooode",
+                avatarUrl: "https://avatars.githubusercontent.com/u/71751652?v=4"
+            ),
+            Contributor(
+                id: 8116188,
+                login: "undeaDD",
+                avatarUrl: "https://avatars.githubusercontent.com/u/8116188?v=4"
+            )
+        ]
     }
     
     private func loadContributors() {

@@ -66,6 +66,7 @@ Additionally, you can install the app using Xcode or using the .ipa file, which 
 Frameworks:
 - [Drops](https://github.com/omaralbeik/Drops) - MIT License
 - [NukeUI](https://github.com/kean/NukeUI) - MIT License
+- [SoraCore](https://github.com/cranci1/SoraCore) - Custom License
 - [MarqueeLabel](https://github.com/cbpowell/MarqueeLabel) - MIT License
 
 Misc:

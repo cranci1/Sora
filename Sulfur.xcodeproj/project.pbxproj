@@ -368,10 +368,9 @@
 		133D7C7F2D2BE2630075467E /* MediaInfoView */ = {
 			isa = PBXGroup;
 			children = (
+				1E0435F02DFCB86800FF6808 /* CustomMatching */,
 				138AA1B52D2D66EC0021F9DF /* EpisodeCell */,
-				1EDA48F32DFAC374002A4EC3 /* TMDBMatchPopupView.swift */,
 				133D7C802D2BE2630075467E /* MediaInfoView.swift */,
-				1E47859A2DEBC5960095BF2F /* AnilistMatchPopupView.swift */,
 			);
 			path = MediaInfoView;
 			sourceTree = "<group>";
@@ -607,6 +606,15 @@
 				1EAC7A312D888BC50083984D /* MusicProgressSlider.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		1E0435F02DFCB86800FF6808 /* CustomMatching */ = {
+			isa = PBXGroup;
+			children = (
+				1EDA48F32DFAC374002A4EC3 /* TMDBMatchPopupView.swift */,
+				1E47859A2DEBC5960095BF2F /* AnilistMatchPopupView.swift */,
+			);
+			path = CustomMatching;
 			sourceTree = "<group>";
 		};
 		72443C832DC8046500A61321 /* DownloadUtils */ = {

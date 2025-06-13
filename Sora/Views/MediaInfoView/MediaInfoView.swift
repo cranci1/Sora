@@ -759,6 +759,8 @@ struct MediaInfoView: View {
         
         if savedCustomID != 0 {
             itemID = savedCustomID
+            activeProvider = "AniList"
+            UserDefaults.standard.set("AniList", forKey: "metadataProviders")
         } else {
             fetchMetadataIDIfNeeded()
         }
@@ -798,29 +800,36 @@ struct MediaInfoView: View {
     }
     
     private func toggleSingleEpisodeWatchStatus() {
-        if let ep = episodeLinks.first {
-            let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(ep.href)")
-            let totalTime = UserDefaults.standard.double(forKey: "totalTime_\(ep.href)")
-            let progress = totalTime > 0 ? lastPlayedTime / totalTime : 0
-            
-            if progress <= 0.9 {
-                UserDefaults.standard.set(99999999.0, forKey: "lastPlayedTime_\(ep.href)")
-                UserDefaults.standard.set(99999999.0, forKey: "totalTime_\(ep.href)")
-                DropManager.shared.showDrop(
-                    title: "Marked as Watched",
-                    subtitle: "",
-                    duration: 1.0,
-                    icon: UIImage(systemName: "checkmark.circle.fill")
-                )
-            } else {
-                UserDefaults.standard.set(0.0, forKey: "lastPlayedTime_\(ep.href)")
-                UserDefaults.standard.set(0.0, forKey: "totalTime_\(ep.href)")
-                DropManager.shared.showDrop(
-                    title: "Progress Reset",
-                    subtitle: "",
-                    duration: 1.0,
-                    icon: UIImage(systemName: "arrow.counterclockwise")
-                )
+        guard let ep = episodeLinks.first else { return }
+        let lastPlayedKey = "lastPlayedTime_\(ep.href)"
+        let totalTimeKey   = "totalTime_\(ep.href)"
+        let last = UserDefaults.standard.double(forKey: lastPlayedKey)
+        let total = UserDefaults.standard.double(forKey: totalTimeKey)
+        let progress = total > 0 ? last/total : 0
+        let watchedEp = ep.number
+
+        if progress <= 0.9 {
+            UserDefaults.standard.set(99999999.0, forKey: lastPlayedKey)
+            UserDefaults.standard.set(99999999.0, forKey: totalTimeKey)
+            DropManager.shared.showDrop(title: "Marked as Watched", subtitle: "", duration: 1.0, icon: UIImage(systemName: "checkmark.circle.fill"))
+
+            if let listID = itemID, listID > 0 {
+                AniListMutation().updateAnimeProgress(animeId: listID, episodeNumber: watchedEp, status: "CURRENT") { result in
+                    switch result {
+                    case .success:
+                        Logger.shared.log("AniList sync: marked ep \(watchedEp) as CURRENT", type: "General")
+                    case .failure(let err):
+                        Logger.shared.log("AniList sync failed: \(err.localizedDescription)", type: "Error")
+                    }
+                }
+            }
+        } else {
+            UserDefaults.standard.set(0.0, forKey: lastPlayedKey)
+            UserDefaults.standard.set(0.0, forKey: totalTimeKey)
+            DropManager.shared.showDrop(title: "Progress Reset", subtitle: "", duration: 1.0, icon: UIImage(systemName: "arrow.counterclockwise"))
+
+            if let listID = itemID, listID > 0 {
+                AniListMutation().updateAnimeProgress(animeId: listID, episodeNumber: 0, status: "CURRENT") { _ in }
             }
         }
     }
@@ -883,6 +892,8 @@ struct MediaInfoView: View {
     private func handleAniListMatch(selectedID: Int) {
         self.customAniListID = selectedID
         self.itemID = selectedID
+        self.activeProvider = "AniList"
+        UserDefaults.standard.set("AniList", forKey: "metadataProviders")
         UserDefaults.standard.set(selectedID, forKey: "custom_anilist_id_\(href)")
         self.fetchDetails()
         isMatchingPresented = false
@@ -1181,15 +1192,48 @@ struct MediaInfoView: View {
         }
     }
     
-    private func fetchMetadataIDIfNeeded() {
+    private func fetchAniListPosterImageAndSet() {
+        guard let listID = itemID, listID > 0 else { return }
+        AniListMutation().fetchCoverImage(animeId: listID) { result in
+            switch result {
+            case .success(let urlString):
+                DispatchQueue.main.async {
+                    let originalKey = "originalPoster_\(self.href)"
+                    UserDefaults.standard.set(self.imageUrl, forKey: originalKey)
+                    self.imageUrl = urlString
+                }
+            case .failure(let err):
+                Logger.shared.log("AniList poster fetch failed: \(err.localizedDescription)", type: "Error")
+            }
+        }
+    }
+
+    
+    private func fetchAniListIDForSync() {
+        let cleaned = cleanTitle(title)
+        fetchItemID(byTitle: cleaned) { result in
+            switch result {
+            case .success(let id):
+                DispatchQueue.main.async {
+                    if customAniListID == nil {
+                        self.itemID = id
+                    }
+                }
+            case .failure(let err):
+                Logger.shared.log("AniList sync‐ID fetch failed: \(err.localizedDescription)", type: "Error")
+            }
+        }
+    }
+    
+    func fetchMetadataIDIfNeeded() {
         let order = metadataProvidersOrder
         let cleanedTitle = cleanTitle(title)
-        
+
         itemID = nil
         tmdbID = nil
         activeProvider = nil
         isError = false
-        
+
         func fetchAniList(completion: @escaping (Bool) -> Void) {
             fetchItemID(byTitle: cleanedTitle) { result in
                 switch result {
@@ -1198,55 +1242,63 @@ struct MediaInfoView: View {
                         self.itemID = id
                         self.activeProvider = "AniList"
                         UserDefaults.standard.set("AniList", forKey: "metadataProviders")
-                        completion(true)
+
+                        tmdbFetcher.fetchBestMatchID(for: cleanedTitle) { tmdbId, tmdbType in
+                            DispatchQueue.main.async {
+                                guard let tmdbId = tmdbId, let tmdbType = tmdbType else {
+                                    completion(true)
+                                    return
+                                }
+                                self.tmdbID = tmdbId
+                                self.tmdbType = tmdbType
+                                self.fetchTMDBPosterImageAndSet()
+                                completion(true)
+                            }
+                        }
                     }
+
                 case .failure(let error):
                     Logger.shared.log("Failed to fetch AniList ID for tracking: \(error)", type: "Error")
                     completion(false)
                 }
             }
         }
-        
-        func fetchTMDB(completion: @escaping (Bool) -> Void) {
-            tmdbFetcher.fetchBestMatchID(for: cleanedTitle) { id, type in
-                DispatchQueue.main.async {
-                    if let id = id, let type = type {
-                        self.tmdbID = id
-                        self.tmdbType = type
-                        self.activeProvider = "TMDB"
-                        UserDefaults.standard.set("TMDB", forKey: "metadataProviders")
-                        completion(true)
-                    } else {
-                        completion(false)
-                    }
-                }
-            }
-        }
-        
+
         func tryProviders(_ index: Int) {
             guard index < order.count else {
                 isError = true
                 return
             }
+
             let provider = order[index]
-            if provider == "AniList" {
+            switch provider {
+            case "AniList":
                 fetchAniList { success in
                     if !success {
                         tryProviders(index + 1)
                     }
                 }
-            } else if provider == "TMDB" {
-                fetchTMDB { success in
-                    if !success {
-                        tryProviders(index + 1)
+            case "TMDB":
+                tmdbFetcher.fetchBestMatchID(for: cleanedTitle) { id, type in
+                    DispatchQueue.main.async {
+                        if let id = id, let type = type {
+                            self.tmdbID = id
+                            self.tmdbType = type
+                            self.activeProvider = "TMDB"
+                            UserDefaults.standard.set("TMDB", forKey: "metadataProviders")
+                            self.fetchTMDBPosterImageAndSet()
+                        } else {
+                            tryProviders(index + 1)
+                        }
                     }
                 }
-            } else {
+            default:
                 tryProviders(index + 1)
             }
         }
-        
+
         tryProviders(0)
+        fetchAniListIDForSync()
     }
     
     private func fetchItemID(byTitle title: String, completion: @escaping (Result<Int, Error>) -> Void) {

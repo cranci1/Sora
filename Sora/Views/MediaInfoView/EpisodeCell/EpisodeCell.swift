@@ -111,6 +111,11 @@ struct EpisodeCell: View {
         .onDisappear { activeDownloadTask = nil }
         .onChange(of: progress) { _ in updateProgress() }
         .onChange(of: itemID) { _ in handleItemIDChange() }
+        .onChange(of: tmdbID) { _ in
+            isLoading = true
+            retryAttempts = 0
+            fetchEpisodeDetails()
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadProgressChanged"))) { _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 updateDownloadStatus()
@@ -437,12 +442,30 @@ private extension EpisodeCell {
     }
     
     func markAsWatched() {
-        let userDefaults = UserDefaults.standard
+        let defaults = UserDefaults.standard
         let totalTime = 1000.0
-        userDefaults.set(totalTime, forKey: "lastPlayedTime_\(episode)")
-        userDefaults.set(totalTime, forKey: "totalTime_\(episode)")
+        defaults.set(totalTime, forKey: "lastPlayedTime_\(episode)")
+        defaults.set(totalTime, forKey: "totalTime_\(episode)")
         updateProgress()
+        
+        if itemID > 0 {
+            let epNum = episodeID + 1
+            let newStatus = (epNum == totalEpisodes) ? "COMPLETED" : "CURRENT"
+            AniListMutation().updateAnimeProgress(
+                animeId: itemID,
+                episodeNumber: epNum,
+                status: newStatus
+            ) { result in
+                switch result {
+                case .success:
+                    Logger.shared.log("AniList sync: marked ep \(epNum) as \(newStatus)", type: "General")
+                case .failure(let err):
+                    Logger.shared.log("AniList sync failed: \(err.localizedDescription)", type: "Error")
+                }
+            }
+        }
     }
+
     
     func resetProgress() {
         let userDefaults = UserDefaults.standard

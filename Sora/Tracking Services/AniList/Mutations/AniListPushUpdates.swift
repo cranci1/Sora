@@ -195,6 +195,50 @@ class AniListMutation {
         }.resume()
     }
     
+    func fetchCoverImage(
+      animeId: Int,
+      completion: @escaping (Result<String, Error>) -> Void
+    ) {
+        let query = """
+      query ($id: Int) {
+        Media(id: $id, type: ANIME) {
+          coverImage { large }
+        }
+      }
+      """
+        let variables = ["id": animeId]
+        let body: [String: Any] = ["query": query, "variables": variables]
+        
+        guard let url = URL(string: "https://graphql.anilist.co"),
+              let httpBody = try? JSONSerialization.data(withJSONObject: body)
+        else {
+            completion(.failure(NSError(domain: "AniList", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL or payload"])))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = httpBody
+        
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            if let error = error {
+                return completion(.failure(error))
+            }
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let dataDict = json["data"] as? [String: Any],
+                  let media = dataDict["Media"] as? [String: Any],
+                  let cover = media["coverImage"] as? [String: Any],
+                  let imageUrl = cover["large"] as? String
+            else {
+                return completion(.failure(NSError(domain: "AniList", code: 1, userInfo: [NSLocalizedDescriptionKey: "Malformed response"])))
+            }
+            completion(.success(imageUrl))
+        }
+        .resume()
+    }
+    
     private struct AniListMediaResponse: Decodable {
         struct DataField: Decodable {
             struct Media: Decodable { let idMal: Int? }

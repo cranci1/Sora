@@ -438,97 +438,90 @@ extension JSController {
 
 extension JSController {
     private func logDownloadStart(request: DownloadRequest) {
-        print("---- DOWNLOAD PROCESS STARTED ----")
-        print("Original URL: \(request.url.absoluteString)")
-        print("Headers: \(request.headers)")
-        print("Title: \(request.title ?? "None")")
-        print("Is Episode: \(request.isEpisode), Show: \(request.showTitle ?? "None"), Season: \(request.season?.description ?? "None"), Episode: \(request.episode?.description ?? "None")")
+        Logger.shared.log("Download process started for URL: \(request.url.absoluteString)", type: "Download")
+        Logger.shared.log("Title: \(request.title ?? "None"), Episode: \(request.isEpisode ? "Yes" : "No")", type: "Debug")
+        if let showTitle = request.showTitle, let episode = request.episode {
+            Logger.shared.log("Show: \(showTitle), Season: \(request.season ?? 1), Episode: \(episode)", type: "Debug")
+        }
         if let subtitle = request.subtitleURL {
-            print("Subtitle URL: \(subtitle.absoluteString)")
+            Logger.shared.log("Subtitle URL provided: \(subtitle.absoluteString)", type: "Debug")
         }
     }
     
     private func logM3U8Detection(preferredQuality: String) {
-        print("URL detected as M3U8 playlist - will select quality based on user preference: \(preferredQuality)")
+        Logger.shared.log("M3U8 playlist detected - quality preference: \(preferredQuality)", type: "Download")
     }
     
     private func logM3U8NoQualities() {
-        print("M3U8 Analysis: No quality options found in M3U8, downloading with original URL")
+        Logger.shared.log("No quality options found in M3U8, using original URL", type: "Warning")
     }
     
     private func logM3U8QualitiesFound(qualities: [QualityOption]) {
-        print("M3U8 Analysis: Found \(qualities.count) quality options")
+        Logger.shared.log("Found \(qualities.count) quality options in M3U8 playlist", type: "Download")
         for (index, quality) in qualities.enumerated() {
-            print("  \(index + 1). \(quality.name) - \(quality.url)")
+            Logger.shared.log("Quality \(index + 1): \(quality.name)", type: "Debug")
         }
     }
     
     private func logM3U8QualitySelected(quality: QualityOption) {
-        print("M3U8 Analysis: Selected quality: \(quality.name)")
-        print("M3U8 Analysis: Selected URL: \(quality.url)")
-        print("FINAL DOWNLOAD URL: \(quality.url)")
-        print("QUALITY SELECTED: \(quality.name)")
+        Logger.shared.log("Selected quality: \(quality.name)", type: "Download")
+        Logger.shared.log("Final download URL: \(quality.url)", type: "Debug")
     }
     
     private func logM3U8InvalidURL() {
-        print("M3U8 Analysis: Invalid quality URL, falling back to original URL")
+        Logger.shared.log("Invalid quality URL detected, falling back to original", type: "Warning")
     }
     
     private func logDirectDownload() {
-        print("URL is not an M3U8 playlist - downloading directly")
+        Logger.shared.log("Direct download initiated (non-M3U8)", type: "Download")
     }
     
     private func logMP4Detection() {
-        print("Detected MP4 stream - redirecting to MP4 download method")
+        Logger.shared.log("MP4 stream detected, using MP4 download method", type: "Download")
     }
     
     private func logM3U8FetchStart(url: URL) {
-        print("M3U8 Parser: Fetching M3U8 content from: \(url.absoluteString)")
+        Logger.shared.log("Fetching M3U8 content from: \(url.absoluteString)", type: "Debug")
     }
     
     private func logHTTPStatus(_ statusCode: Int, for url: URL) {
-        print("M3U8 Parser: HTTP Status: \(statusCode) for \(url.absoluteString)")
-        if statusCode >= 400 {
-            print("M3U8 Parser: HTTP Error: \(statusCode)")
-        }
+        let logType = statusCode >= 400 ? "Error" : "Debug"
+        Logger.shared.log("HTTP \(statusCode) for M3U8 request: \(url.absoluteString)", type: logType)
     }
     
     private func logM3U8FetchError(_ error: Error) {
-        print("M3U8 Parser: Error fetching M3U8: \(error.localizedDescription)")
+        Logger.shared.log("Failed to fetch M3U8 content: \(error.localizedDescription)", type: "Error")
     }
     
     private func logM3U8DecodeError() {
-        print("M3U8 Parser: Failed to load or decode M3U8 file")
+        Logger.shared.log("Failed to decode M3U8 file content", type: "Error")
     }
     
     private func logM3U8FetchSuccess(dataSize: Int) {
-        print("M3U8 Parser: Successfully fetched M3U8 content (\(dataSize) bytes)")
+        Logger.shared.log("Successfully fetched M3U8 content (\(dataSize) bytes)", type: "Debug")
     }
     
     private func logM3U8ParseStart(lineCount: Int) {
-        print("M3U8 Parser: Found \(lineCount) lines in M3U8 file")
-        print("M3U8 Parser: Added 'Auto' quality option with original URL")
-        print("M3U8 Parser: Scanning for quality options...")
+        Logger.shared.log("Parsing M3U8 file with \(lineCount) lines", type: "Debug")
     }
     
     private func logM3U8QualityAdded(quality: QualityOption) {
-        print("M3U8 Parser: Added quality option: \(quality.name) - \(quality.url)")
+        Logger.shared.log("Added quality option: \(quality.name)", type: "Debug")
     }
     
     private func logM3U8ParseComplete(qualityCount: Int) {
-        print("M3U8 Parser: Found \(qualityCount) distinct quality options (plus Auto)")
+        Logger.shared.log("M3U8 parsing complete: \(qualityCount) quality options found", type: "Debug")
     }
     
     private func logQualitySelectionSingle() {
-        print("Quality Selection: Only one quality option available, returning it directly")
+        Logger.shared.log("Only one quality available, using default", type: "Debug")
     }
     
     private func logQualitySelectionStart(preference: String, sortedCount: Int) {
-        print("Quality Selection: Found \(sortedCount) non-Auto quality options")
-        print("Quality Selection: User preference is '\(preference)'")
+        Logger.shared.log("Quality selection: \(sortedCount) options, preference: \(preference)", type: "Debug")
     }
     
     private func logQualitySelectionResult(quality: QualityOption, preference: String) {
-        print("Quality Selection: Selected '\(preference)' quality: \(quality.name)")
+        Logger.shared.log("Quality selected: \(quality.name) (preference: \(preference))", type: "Download")
     }
 }

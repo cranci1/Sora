@@ -9,219 +9,165 @@ import Foundation
 import SwiftUI
 import AVFoundation
 
-// No need to import DownloadQualityPreference as it's in the same module
+// MARK: - Data Transfer Objects
+
+/// Consolidated download request parameters to reduce code duplication
+struct DownloadRequest {
+    let url: URL
+    let headers: [String: String]
+    let title: String?
+    let imageURL: URL?
+    let isEpisode: Bool
+    let showTitle: String?
+    let season: Int?
+    let episode: Int?
+    let subtitleURL: URL?
+    let showPosterURL: URL?
+    
+    init(url: URL, headers: [String: String], title: String? = nil, imageURL: URL? = nil, 
+         isEpisode: Bool = false, showTitle: String? = nil, season: Int? = nil, 
+         episode: Int? = nil, subtitleURL: URL? = nil, showPosterURL: URL? = nil) {
+        self.url = url
+        self.headers = headers
+        self.title = title
+        self.imageURL = imageURL
+        self.isEpisode = isEpisode
+        self.showTitle = showTitle
+        self.season = season
+        self.episode = episode
+        self.subtitleURL = subtitleURL
+        self.showPosterURL = showPosterURL
+    }
+}
+
+/// Quality option data structure
+struct QualityOption {
+    let name: String
+    let url: String
+    let height: Int?
+    
+    init(name: String, url: String, height: Int? = nil) {
+        self.name = name
+        self.url = url
+        self.height = height
+    }
+}
+
+// MARK: - Main Download Extension
 
 // Extension for integrating M3U8StreamExtractor with JSController for downloads
 extension JSController {
     
     /// Initiates a download for a given URL, handling M3U8 playlists if necessary
-    /// - Parameters:
-    ///   - url: The URL to download
-    ///   - headers: HTTP headers to use for the request
-    ///   - title: Title for the download (optional)
-    ///   - imageURL: Image URL for the content (optional)
-    ///   - isEpisode: Whether this is an episode (defaults to false)
-    ///   - showTitle: Title of the show this episode belongs to (optional)
-    ///   - season: Season number (optional)
-    ///   - episode: Episode number (optional)
-    ///   - subtitleURL: Optional subtitle URL to download after video (optional)
-    ///   - completionHandler: Called when the download is initiated or fails
     func downloadWithM3U8Support(url: URL, headers: [String: String], title: String? = nil, 
                                 imageURL: URL? = nil, isEpisode: Bool = false, 
                                 showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
                                 subtitleURL: URL? = nil, showPosterURL: URL? = nil,
                                 completionHandler: ((Bool, String) -> Void)? = nil) {
-        // Use headers passed in from caller rather than generating our own baseUrl
-        // Receiving code should already be setting module.metadata.baseUrl
         
-        print("---- DOWNLOAD PROCESS STARTED ----")
-        print("Original URL: \(url.absoluteString)")
-        print("Headers: \(headers)")
-        print("Title: \(title ?? "None")")
-        print("Is Episode: \(isEpisode), Show: \(showTitle ?? "None"), Season: \(season?.description ?? "None"), Episode: \(episode?.description ?? "None")")
-        if let subtitle = subtitleURL {
-            print("Subtitle URL: \(subtitle.absoluteString)")
-        }
+        let request = DownloadRequest(
+            url: url, headers: headers, title: title, imageURL: imageURL,
+            isEpisode: isEpisode, showTitle: showTitle, season: season, 
+            episode: episode, subtitleURL: subtitleURL, showPosterURL: showPosterURL
+        )
         
-        // Check if the URL is an M3U8 file
+        logDownloadStart(request: request)
+        
         if url.absoluteString.contains(".m3u8") {
-            // Get the user's quality preference
-            let preferredQuality = DownloadQualityPreference.current.rawValue
-            
-            print("URL detected as M3U8 playlist - will select quality based on user preference: \(preferredQuality)")
-            
-            // Parse the M3U8 content to extract available qualities, matching CustomPlayer approach
-            parseM3U8(url: url, baseUrl: url.absoluteString, headers: headers) { [weak self] qualities in
-                DispatchQueue.main.async {
-                    guard let self = self else { return }
-                    
-                    if qualities.isEmpty {
-                        print("M3U8 Analysis: No quality options found in M3U8, downloading with original URL")
-                        self.downloadWithOriginalMethod(
-                            url: url,
-                            headers: headers,
-                            title: title,
-                            imageURL: imageURL,
-                            isEpisode: isEpisode,
-                            showTitle: showTitle,
-                            season: season,
-                            episode: episode,
-                            subtitleURL: subtitleURL,
-                            showPosterURL: showPosterURL,
-                            completionHandler: completionHandler
-                        )
-                        return
-                    }
-                    
-                    print("M3U8 Analysis: Found \(qualities.count) quality options")
-                    for (index, quality) in qualities.enumerated() {
-                        print("  \(index + 1). \(quality.0) - \(quality.1)")
-                    }
-                    
-                    // Select appropriate quality based on user preference
-                    let selectedQuality = self.selectQualityBasedOnPreference(qualities: qualities, preferredQuality: preferredQuality)
-                    
-                    print("M3U8 Analysis: Selected quality: \(selectedQuality.0)")
-                    print("M3U8 Analysis: Selected URL: \(selectedQuality.1)")
-                    
-                    if let qualityURL = URL(string: selectedQuality.1) {
-                        print("FINAL DOWNLOAD URL: \(qualityURL.absoluteString)")
-                        print("QUALITY SELECTED: \(selectedQuality.0)")
-                        
-                        // Download with standard headers that match the player
-                        self.downloadWithOriginalMethod(
-                            url: qualityURL,
-                            headers: headers,
-                            title: title,
-                            imageURL: imageURL,
-                            isEpisode: isEpisode,
-                            showTitle: showTitle,
-                            season: season,
-                            episode: episode,
-                            subtitleURL: subtitleURL,
-                            showPosterURL: showPosterURL,
-                            completionHandler: completionHandler
-                        )
-                    } else {
-                        print("M3U8 Analysis: Invalid quality URL, falling back to original URL")
-                        print("FINAL DOWNLOAD URL (fallback): \(url.absoluteString)")
-                        
-                        self.downloadWithOriginalMethod(
-                            url: url,
-                            headers: headers,
-                            title: title,
-                            imageURL: imageURL,
-                            isEpisode: isEpisode,
-                            showTitle: showTitle,
-                            season: season,
-                            episode: episode,
-                            subtitleURL: subtitleURL,
-                            showPosterURL: showPosterURL,
-                            completionHandler: completionHandler
-                        )
-                    }
+            handleM3U8Download(request: request, completionHandler: completionHandler)
+        } else {
+            handleDirectDownload(request: request, completionHandler: completionHandler)
+        }
+    }
+    
+    // MARK: - Private Download Handlers
+    
+    private func handleM3U8Download(request: DownloadRequest, completionHandler: ((Bool, String) -> Void)?) {
+        let preferredQuality = DownloadQualityPreference.current.rawValue
+        logM3U8Detection(preferredQuality: preferredQuality)
+        
+        parseM3U8(url: request.url, headers: request.headers) { [weak self] qualities in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                
+                if qualities.isEmpty {
+                    self.logM3U8NoQualities()
+                    self.downloadWithOriginalMethod(request: request, completionHandler: completionHandler)
+                    return
+                }
+                
+                self.logM3U8QualitiesFound(qualities: qualities)
+                let selectedQuality = self.selectQualityBasedOnPreference(qualities: qualities, preferredQuality: preferredQuality)
+                self.logM3U8QualitySelected(quality: selectedQuality)
+                
+                if let qualityURL = URL(string: selectedQuality.url) {
+                    let qualityRequest = DownloadRequest(
+                        url: qualityURL, headers: request.headers, title: request.title,
+                        imageURL: request.imageURL, isEpisode: request.isEpisode, 
+                        showTitle: request.showTitle, season: request.season,
+                        episode: request.episode, subtitleURL: request.subtitleURL,
+                        showPosterURL: request.showPosterURL
+                    )
+                    self.downloadWithOriginalMethod(request: qualityRequest, completionHandler: completionHandler)
+                } else {
+                    self.logM3U8InvalidURL()
+                    self.downloadWithOriginalMethod(request: request, completionHandler: completionHandler)
                 }
             }
+        }
+    }
+    
+    private func handleDirectDownload(request: DownloadRequest, completionHandler: ((Bool, String) -> Void)?) {
+        logDirectDownload()
+        
+        let urlString = request.url.absoluteString.lowercased()
+        if urlString.contains(".mp4") || urlString.contains("mp4") {
+            logMP4Detection()
+            downloadMP4(request: request, completionHandler: completionHandler)
         } else {
-            // Not an M3U8 file, use the original download method with standard headers
-            print("URL is not an M3U8 playlist - downloading directly")
-            print("FINAL DOWNLOAD URL (direct): \(url.absoluteString)")
-            
-            // Check if the URL is an MP4 stream
-            let urlString = url.absoluteString.lowercased()
-            if urlString.contains(".mp4") || urlString.contains("mp4") {
-                print("Detected MP4 stream - redirecting to MP4 download method")
-                downloadMP4(
-                    url: url,
-                    headers: headers,
-                    title: title,
-                    imageURL: imageURL,
-                    isEpisode: isEpisode,
-                    showTitle: showTitle,
-                    season: season,
-                    episode: episode,
-                    subtitleURL: subtitleURL,
-                    showPosterURL: showPosterURL,
-                    completionHandler: completionHandler
-                )
-            } else {
-                downloadWithOriginalMethod(
-                    url: url,
-                    headers: headers,
-                    title: title,
-                    imageURL: imageURL,
-                    isEpisode: isEpisode,
-                    showTitle: showTitle,
-                    season: season,
-                    episode: episode,
-                    subtitleURL: subtitleURL,
-                    showPosterURL: showPosterURL,
-                    completionHandler: completionHandler
-                )
-            }
+            downloadWithOriginalMethod(request: request, completionHandler: completionHandler)
         }
     }
     
     // MARK: - MP4 Download Support
     
-    /// Initiates a download for a given MP4 URL using the existing AVAssetDownloadURLSession
-    /// - Parameters:
-    ///   - url: The MP4 URL to download
-    ///   - headers: HTTP headers to use for the request
-    ///   - title: Title for the download (optional)
-    ///   - imageURL: Image URL for the content (optional)
-    ///   - isEpisode: Whether this is an episode (defaults to false)
-    ///   - showTitle: Title of the show this episode belongs to (optional)
-    ///   - season: Season number (optional)
-    ///   - episode: Episode number (optional)
-    ///   - subtitleURL: Optional subtitle URL to download after video (optional)
-    ///   - completionHandler: Called when the download is initiated or fails
     func downloadMP4(url: URL, headers: [String: String], title: String? = nil, 
                    imageURL: URL? = nil, isEpisode: Bool = false, 
                    showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
                    subtitleURL: URL? = nil, showPosterURL: URL? = nil,
                    completionHandler: ((Bool, String) -> Void)? = nil) {
         
-        // Validate URL
-        guard url.scheme == "http" || url.scheme == "https" else {
+        let request = DownloadRequest(
+            url: url, headers: headers, title: title, imageURL: imageURL,
+            isEpisode: isEpisode, showTitle: showTitle, season: season,
+            episode: episode, subtitleURL: subtitleURL, showPosterURL: showPosterURL
+        )
+        
+        downloadMP4(request: request, completionHandler: completionHandler)
+    }
+    
+    private func downloadMP4(request: DownloadRequest, completionHandler: ((Bool, String) -> Void)?) {
+        guard validateURL(request.url) else {
             completionHandler?(false, "Invalid URL scheme")
             return
         }
         
-        // Ensure download session is available
         guard let downloadSession = downloadURLSession else {
             completionHandler?(false, "Download session not available")
             return
         }
         
-        // Create metadata for the download
-        var metadata: AssetMetadata? = nil
-        if let title = title {
-            metadata = AssetMetadata(
-                title: title,
-                posterURL: imageURL,
-                showTitle: showTitle,
-                season: season,
-                episode: episode,
-                showPosterURL: showPosterURL ?? imageURL
-            )
-        }
-        
-        // Determine download type based on isEpisode
-        let downloadType: DownloadType = isEpisode ? .episode : .movie
-        
-        // Generate a unique download ID
+        let metadata = createAssetMetadata(from: request)
+        let downloadType: DownloadType = request.isEpisode ? .episode : .movie
         let downloadID = UUID()
         
-        // Create AVURLAsset with headers passed through AVURLAssetHTTPHeaderFieldsKey
-        let asset = AVURLAsset(url: url, options: [
-            "AVURLAssetHTTPHeaderFieldsKey": headers
+        let asset = AVURLAsset(url: request.url, options: [
+            "AVURLAssetHTTPHeaderFieldsKey": request.headers
         ])
         
-        // Create AVAssetDownloadTask using existing session
         guard let downloadTask = downloadSession.makeAssetDownloadTask(
             asset: asset,
-            assetTitle: title ?? url.lastPathComponent,
+            assetTitle: request.title ?? request.url.lastPathComponent,
             assetArtworkData: nil,
             options: [AVAssetDownloadTaskMinimumRequiredMediaBitrateKey: 2_000_000]
         ) else {
@@ -229,326 +175,374 @@ extension JSController {
             return
         }
         
-        // Create an active download object
-        let activeDownload = JSActiveDownload(
-            id: downloadID,
-            originalURL: url,
-            progress: 0.0,
-            task: downloadTask,
-            urlSessionTask: nil,
-            queueStatus: .downloading,
-            type: downloadType,
-            metadata: metadata,
-            title: title,
-            imageURL: imageURL,
-            subtitleURL: subtitleURL,
-            asset: asset,
-            headers: headers,
-            module: nil
+        let activeDownload = createActiveDownload(
+            id: downloadID, request: request, asset: asset, 
+            downloadTask: downloadTask, downloadType: downloadType, metadata: metadata
         )
         
-        // Add to active downloads and tracking
-        activeDownloads.append(activeDownload)
-        activeDownloadMap[downloadTask] = downloadID
-        
-        // Set up progress observation for MP4 downloads
+        addActiveDownload(activeDownload, task: downloadTask)
         setupMP4ProgressObservation(for: downloadTask, downloadID: downloadID)
-        
-        // Start the download
         downloadTask.resume()
         
-        // Post notification for UI updates using NotificationCenter directly since postDownloadNotification is private
-        DispatchQueue.main.async {
-            NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
-        }
-        
-        // Initial success callback
+        postDownloadNotification()
         completionHandler?(true, "Download started")
     }
     
     // MARK: - M3U8 Parsing
     
-    /// Parses an M3U8 file to extract available quality options, matching CustomPlayer's approach exactly
-    /// - Parameters:
-    ///   - url: The URL of the M3U8 file
-    ///   - baseUrl: The base URL for setting headers
-    ///   - headers: HTTP headers to use for the request
-    ///   - completion: Called with the array of quality options (name, URL)
-    private func parseM3U8(url: URL, baseUrl: String, headers: [String: String], completion: @escaping ([(String, String)]) -> Void) {
+    private func parseM3U8(url: URL, headers: [String: String], completion: @escaping ([QualityOption]) -> Void) {
         var request = URLRequest(url: url)
-        
-        // Add headers from headers passed to downloadWithM3U8Support
-        // This ensures we use the same headers as the player (from module.metadata.baseUrl)
         for (key, value) in headers {
             request.addValue(value, forHTTPHeaderField: key)
         }
         
-        print("M3U8 Parser: Fetching M3U8 content from: \(url.absoluteString)")
+        logM3U8FetchStart(url: url)
         
         URLSession.shared.dataTask(with: request) { data, response, error in
-            // Log HTTP status for debugging
             if let httpResponse = response as? HTTPURLResponse {
-                print("M3U8 Parser: HTTP Status: \(httpResponse.statusCode) for \(url.absoluteString)")
-                
+                self.logHTTPStatus(httpResponse.statusCode, for: url)
                 if httpResponse.statusCode >= 400 {
-                    print("M3U8 Parser: HTTP Error: \(httpResponse.statusCode)")
                     completion([])
                     return
                 }
             }
             
             if let error = error {
-                print("M3U8 Parser: Error fetching M3U8: \(error.localizedDescription)")
+                self.logM3U8FetchError(error)
                 completion([])
                 return
             }
             
             guard let data = data, let content = String(data: data, encoding: .utf8) else {
-                print("M3U8 Parser: Failed to load or decode M3U8 file")
+                self.logM3U8DecodeError()
                 completion([])
                 return
             }
             
-            print("M3U8 Parser: Successfully fetched M3U8 content (\(data.count) bytes)")
-            
-            let lines = content.components(separatedBy: .newlines)
-            print("M3U8 Parser: Found \(lines.count) lines in M3U8 file")
-            
-            var qualities: [(String, String)] = []
-            
-            // Always include the original URL as "Auto" option
-            qualities.append(("Auto (Recommended)", url.absoluteString))
-            print("M3U8 Parser: Added 'Auto' quality option with original URL")
-            
-            func getQualityName(for height: Int) -> String {
-                switch height {
-                case 1080...: return "\(height)p (FHD)"
-                case 720..<1080: return "\(height)p (HD)"
-                case 480..<720: return "\(height)p (SD)"
-                default: return "\(height)p"
-                }
-            }
-            
-            // Parse the M3U8 content to extract available streams - exactly like CustomPlayer
-            print("M3U8 Parser: Scanning for quality options...")
-            var qualitiesFound = 0
-            
-            for (index, line) in lines.enumerated() {
-                if line.contains("#EXT-X-STREAM-INF"), index + 1 < lines.count {
-                    print("M3U8 Parser: Found stream info at line \(index): \(line)")
-                    
-                    if let resolutionRange = line.range(of: "RESOLUTION="),
-                       let resolutionEndRange = line[resolutionRange.upperBound...].range(of: ",")
-                        ?? line[resolutionRange.upperBound...].range(of: "\n") {
-                        
-                        let resolutionPart = String(line[resolutionRange.upperBound..<resolutionEndRange.lowerBound])
-                        print("M3U8 Parser: Extracted resolution: \(resolutionPart)")
-                        
-                        if let heightStr = resolutionPart.components(separatedBy: "x").last,
-                           let height = Int(heightStr) {
-                            
-                            let nextLine = lines[index + 1].trimmingCharacters(in: .whitespacesAndNewlines)
-                            let qualityName = getQualityName(for: height)
-                            
-                            print("M3U8 Parser: Found height \(height)px, quality name: \(qualityName)")
-                            print("M3U8 Parser: Stream URL from next line: \(nextLine)")
-                            
-                            var qualityURL = nextLine
-                            if !nextLine.hasPrefix("http") && nextLine.contains(".m3u8") {
-                                // Handle relative URLs
-                                let baseURLString = url.deletingLastPathComponent().absoluteString
-                                let resolvedURL = URL(string: nextLine, relativeTo: url)?.absoluteString
-                                    ?? baseURLString + "/" + nextLine
-                                
-                                qualityURL = resolvedURL
-                                print("M3U8 Parser: Resolved relative URL to: \(qualityURL)")
-                            }
-                            
-                            if !qualities.contains(where: { $0.0 == qualityName }) {
-                                qualities.append((qualityName, qualityURL))
-                                qualitiesFound += 1
-                                print("M3U8 Parser: Added quality option: \(qualityName) - \(qualityURL)")
-                            } else {
-                                print("M3U8 Parser: Skipped duplicate quality: \(qualityName)")
-                            }
-                        } else {
-                            print("M3U8 Parser: Failed to extract height from resolution: \(resolutionPart)")
-                        }
-                    } else {
-                        print("M3U8 Parser: Failed to extract resolution from line: \(line)")
-                    }
-                }
-            }
-            
-            print("M3U8 Parser: Found \(qualitiesFound) distinct quality options (plus Auto)")
-            print("M3U8 Parser: Total quality options: \(qualities.count)")
+            self.logM3U8FetchSuccess(dataSize: data.count)
+            let qualities = self.parseM3U8Content(content: content, baseURL: url)
             completion(qualities)
         }.resume()
     }
     
-    /// Selects the appropriate quality based on user preference
-    /// - Parameters:
-    ///   - qualities: Available quality options (name, URL)
-    ///   - preferredQuality: User's preferred quality
-    /// - Returns: The selected quality (name, URL)
-    private func selectQualityBasedOnPreference(qualities: [(String, String)], preferredQuality: String) -> (String, String) {
-        // If only one quality is available, return it
-        if qualities.count <= 1 {
-            print("Quality Selection: Only one quality option available, returning it directly")
+    private func parseM3U8Content(content: String, baseURL: URL) -> [QualityOption] {
+        let lines = content.components(separatedBy: .newlines)
+        logM3U8ParseStart(lineCount: lines.count)
+        
+        var qualities: [QualityOption] = []
+        qualities.append(QualityOption(name: "Auto (Recommended)", url: baseURL.absoluteString))
+        
+        for (index, line) in lines.enumerated() {
+            if line.contains("#EXT-X-STREAM-INF"), index + 1 < lines.count {
+                if let qualityOption = parseStreamInfoLine(line: line, nextLine: lines[index + 1], baseURL: baseURL) {
+                    if !qualities.contains(where: { $0.name == qualityOption.name }) {
+                        qualities.append(qualityOption)
+                        logM3U8QualityAdded(quality: qualityOption)
+                    }
+                }
+            }
+        }
+        
+        logM3U8ParseComplete(qualityCount: qualities.count - 1) // -1 for Auto
+        return qualities
+    }
+    
+    private func parseStreamInfoLine(line: String, nextLine: String, baseURL: URL) -> QualityOption? {
+        guard let resolutionRange = line.range(of: "RESOLUTION="),
+              let resolutionEndRange = line[resolutionRange.upperBound...].range(of: ",")
+                ?? line[resolutionRange.upperBound...].range(of: "\n") else {
+            return nil
+        }
+        
+        let resolutionPart = String(line[resolutionRange.upperBound..<resolutionEndRange.lowerBound])
+        guard let heightStr = resolutionPart.components(separatedBy: "x").last,
+              let height = Int(heightStr) else {
+            return nil
+        }
+        
+        let qualityName = getQualityName(for: height)
+        let qualityURL = resolveQualityURL(nextLine.trimmingCharacters(in: .whitespacesAndNewlines), baseURL: baseURL)
+        
+        return QualityOption(name: qualityName, url: qualityURL, height: height)
+    }
+    
+    private func getQualityName(for height: Int) -> String {
+        switch height {
+        case 1080...: return "\(height)p (FHD)"
+        case 720..<1080: return "\(height)p (HD)"
+        case 480..<720: return "\(height)p (SD)"
+        default: return "\(height)p"
+        }
+    }
+    
+    private func resolveQualityURL(_ urlString: String, baseURL: URL) -> String {
+        if urlString.hasPrefix("http") {
+            return urlString
+        }
+        
+        if urlString.contains(".m3u8") {
+            return URL(string: urlString, relativeTo: baseURL)?.absoluteString
+                ?? baseURL.deletingLastPathComponent().absoluteString + "/" + urlString
+        }
+        
+        return urlString
+    }
+    
+    // MARK: - Quality Selection
+    
+    private func selectQualityBasedOnPreference(qualities: [QualityOption], preferredQuality: String) -> QualityOption {
+        guard qualities.count > 1 else {
+            logQualitySelectionSingle()
             return qualities[0]
         }
         
-        // Extract "Auto" quality and the remaining qualities
-        let autoQuality = qualities.first { $0.0.contains("Auto") }
-        let nonAutoQualities = qualities.filter { !$0.0.contains("Auto") }
+        let (autoQuality, sortedQualities) = categorizeQualities(qualities: qualities)
+        logQualitySelectionStart(preference: preferredQuality, sortedCount: sortedQualities.count)
         
-        print("Quality Selection: Found \(nonAutoQualities.count) non-Auto quality options")
-        print("Quality Selection: Auto quality option: \(autoQuality?.0 ?? "None")")
+        let selected = selectQualityByPreference(
+            preference: preferredQuality, 
+            sortedQualities: sortedQualities, 
+            autoQuality: autoQuality, 
+            fallback: qualities[0]
+        )
         
-        // Sort non-auto qualities by resolution (highest first)
+        logQualitySelectionResult(quality: selected, preference: preferredQuality)
+        return selected
+    }
+    
+    private func categorizeQualities(qualities: [QualityOption]) -> (auto: QualityOption?, sorted: [QualityOption]) {
+        let autoQuality = qualities.first { $0.name.contains("Auto") }
+        let nonAutoQualities = qualities.filter { !$0.name.contains("Auto") }
+        
         let sortedQualities = nonAutoQualities.sorted { first, second in
-            let firstHeight = Int(first.0.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
-            let secondHeight = Int(second.0.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
+            let firstHeight = first.height ?? extractHeight(from: first.name)
+            let secondHeight = second.height ?? extractHeight(from: second.name)
             return firstHeight > secondHeight
         }
         
-        print("Quality Selection: Sorted qualities (highest to lowest):")
-        for (index, quality) in sortedQualities.enumerated() {
-            print("  \(index + 1). \(quality.0) - \(quality.1)")
-        }
-        
-        print("Quality Selection: User preference is '\(preferredQuality)'")
-        
-        // Select quality based on preference
-        switch preferredQuality {
+        return (autoQuality, sortedQualities)
+    }
+    
+    private func selectQualityByPreference(preference: String, sortedQualities: [QualityOption], 
+                                         autoQuality: QualityOption?, fallback: QualityOption) -> QualityOption {
+        switch preference {
         case "Best":
-            // Return the highest quality (first in sorted list)
-            let selected = sortedQualities.first ?? qualities[0]
-            print("Quality Selection: Selected 'Best' quality: \(selected.0)")
-            return selected
-            
+            return sortedQualities.first ?? fallback
         case "High":
-            // Look for 720p quality
-            let highQuality = sortedQualities.first {
-                $0.0.contains("720p") || $0.0.contains("HD")
-            }
-            
-            if let high = highQuality {
-                print("Quality Selection: Found specific 'High' (720p/HD) quality: \(high.0)")
-                return high
-            } else if let first = sortedQualities.first {
-                print("Quality Selection: No specific 'High' quality found, using highest available: \(first.0)")
-                return first
-            } else {
-                print("Quality Selection: No non-Auto qualities found, falling back to default: \(qualities[0].0)")
-                return qualities[0]
-            }
-            
+            return findQualityByType(["720p", "HD"], in: sortedQualities) ?? sortedQualities.first ?? fallback
         case "Medium":
-            // Look for 480p quality
-            let mediumQuality = sortedQualities.first {
-                $0.0.contains("480p") || $0.0.contains("SD")
-            }
-            
-            if let medium = mediumQuality {
-                print("Quality Selection: Found specific 'Medium' (480p/SD) quality: \(medium.0)")
-                return medium
-            } else if !sortedQualities.isEmpty {
-                // Return middle quality from sorted list if no exact match
-                let middleIndex = sortedQualities.count / 2
-                print("Quality Selection: No specific 'Medium' quality found, using middle quality: \(sortedQualities[middleIndex].0)")
-                return sortedQualities[middleIndex]
-            } else {
-                print("Quality Selection: No non-Auto qualities found, falling back to default: \(autoQuality?.0 ?? qualities[0].0)")
-                return autoQuality ?? qualities[0]
-            }
-            
+            return findQualityByType(["480p", "SD"], in: sortedQualities) 
+                ?? (sortedQualities.isEmpty ? fallback : sortedQualities[sortedQualities.count / 2])
         case "Low":
-            // Return lowest quality (last in sorted list)
-            if let lowest = sortedQualities.last {
-                print("Quality Selection: Selected 'Low' quality: \(lowest.0)")
-                return lowest
-            } else {
-                print("Quality Selection: No non-Auto qualities found, falling back to default: \(autoQuality?.0 ?? qualities[0].0)")
-                return autoQuality ?? qualities[0]
-            }
-            
+            return sortedQualities.last ?? fallback
         default:
-            // Default to Auto if available, otherwise first quality
-            if let auto = autoQuality {
-                print("Quality Selection: Default case, using Auto quality: \(auto.0)")
-                return auto
-            } else {
-                print("Quality Selection: No Auto quality found, using first available: \(qualities[0].0)")
-                return qualities[0]
-            }
+            return autoQuality ?? fallback
         }
+    }
+    
+    private func findQualityByType(_ types: [String], in qualities: [QualityOption]) -> QualityOption? {
+        return qualities.first { quality in
+            types.contains { quality.name.contains($0) }
+        }
+    }
+    
+    private func extractHeight(from qualityName: String) -> Int {
+        return Int(qualityName.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func validateURL(_ url: URL) -> Bool {
+        return url.scheme == "http" || url.scheme == "https"
+    }
+    
+    private func createAssetMetadata(from request: DownloadRequest) -> AssetMetadata? {
+        guard let title = request.title else { return nil }
+        
+        return AssetMetadata(
+            title: title,
+            posterURL: request.imageURL,
+            showTitle: request.showTitle,
+            season: request.season,
+            episode: request.episode,
+            showPosterURL: request.showPosterURL ?? request.imageURL
+        )
+    }
+    
+    private func createActiveDownload(id: UUID, request: DownloadRequest, asset: AVURLAsset, 
+                                    downloadTask: AVAssetDownloadTask? = nil, urlSessionTask: URLSessionDownloadTask? = nil,
+                                    downloadType: DownloadType, metadata: AssetMetadata?) -> JSActiveDownload {
+        return JSActiveDownload(
+            id: id,
+            originalURL: request.url,
+            progress: 0.0,
+            task: downloadTask,
+            urlSessionTask: urlSessionTask,
+            queueStatus: .downloading,
+            type: downloadType,
+            metadata: metadata,
+            title: request.title,
+            imageURL: request.imageURL,
+            subtitleURL: request.subtitleURL,
+            asset: asset,
+            headers: request.headers,
+            module: nil
+        )
+    }
+    
+    private func addActiveDownload(_ download: JSActiveDownload, task: URLSessionTask) {
+        activeDownloads.append(download)
+        activeDownloadMap[task] = download.id
+    }
+    
+    private func postDownloadNotification() {
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: NSNotification.Name("downloadStatusChanged"), object: nil)
+        }
+    }
+    
+    private func downloadWithOriginalMethod(request: DownloadRequest, completionHandler: ((Bool, String) -> Void)?) {
+        self.startDownload(
+            url: request.url,
+            headers: request.headers,
+            title: request.title,
+            imageURL: request.imageURL,
+            isEpisode: request.isEpisode,
+            showTitle: request.showTitle,
+            season: request.season,
+            episode: request.episode,
+            subtitleURL: request.subtitleURL,
+            showPosterURL: request.showPosterURL,
+            completionHandler: completionHandler
+        )
     }
     
     // MARK: - MP4 Progress Observation
     
-    /// Sets up progress observation for MP4 downloads using AVAssetDownloadTask
-    /// Since AVAssetDownloadTask doesn't provide progress for single MP4 files through delegate methods,
-    /// we observe the task's progress property directly
     private func setupMP4ProgressObservation(for task: AVAssetDownloadTask, downloadID: UUID) {
         let observation = task.progress.observe(\.fractionCompleted, options: [.new]) { [weak self] progress, _ in
             DispatchQueue.main.async {
                 guard let self = self else { return }
-                
-                // Update download progress using existing infrastructure
                 self.updateMP4DownloadProgress(task: task, progress: progress.fractionCompleted)
-                
-                // Post notification for UI updates
                 NotificationCenter.default.post(name: NSNotification.Name("downloadProgressChanged"), object: nil)
             }
         }
         
-        // Store observation for cleanup using existing property from main JSController class
         if mp4ProgressObservations == nil {
             mp4ProgressObservations = [:]
         }
         mp4ProgressObservations?[downloadID] = observation
     }
     
-    /// Updates download progress for a specific MP4 task (avoiding name collision with existing method)
     private func updateMP4DownloadProgress(task: AVAssetDownloadTask, progress: Double) {
         guard let downloadID = activeDownloadMap[task],
               let downloadIndex = activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
             return
         }
-        
-        // Update progress using existing mechanism
         activeDownloads[downloadIndex].progress = progress
     }
     
-    /// Cleans up MP4 progress observation for a specific download
     func cleanupMP4ProgressObservation(for downloadID: UUID) {
         mp4ProgressObservations?[downloadID]?.invalidate()
         mp4ProgressObservations?[downloadID] = nil
     }
+}
+
+// MARK: - Logging Extensions
+
+extension JSController {
+    private func logDownloadStart(request: DownloadRequest) {
+        print("---- DOWNLOAD PROCESS STARTED ----")
+        print("Original URL: \(request.url.absoluteString)")
+        print("Headers: \(request.headers)")
+        print("Title: \(request.title ?? "None")")
+        print("Is Episode: \(request.isEpisode), Show: \(request.showTitle ?? "None"), Season: \(request.season?.description ?? "None"), Episode: \(request.episode?.description ?? "None")")
+        if let subtitle = request.subtitleURL {
+            print("Subtitle URL: \(subtitle.absoluteString)")
+        }
+    }
     
-    // MARK: - Helper Methods
+    private func logM3U8Detection(preferredQuality: String) {
+        print("URL detected as M3U8 playlist - will select quality based on user preference: \(preferredQuality)")
+    }
     
-    /// The original download method (adapted to be called internally)
-    /// This method should match the existing download implementation in JSController-Downloads.swift
-    private func downloadWithOriginalMethod(url: URL, headers: [String: String], title: String? = nil, 
-                                           imageURL: URL? = nil, isEpisode: Bool = false, 
-                                           showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
-                                           subtitleURL: URL? = nil, showPosterURL: URL? = nil,
-                                           completionHandler: ((Bool, String) -> Void)? = nil) {
-        // Call the existing download method
-        self.startDownload(
-            url: url,
-            headers: headers,
-            title: title,
-            imageURL: imageURL,
-            isEpisode: isEpisode,
-            showTitle: showTitle,
-            season: season,
-            episode: episode,
-            subtitleURL: subtitleURL,
-            showPosterURL: showPosterURL,
-            completionHandler: completionHandler
-        )
+    private func logM3U8NoQualities() {
+        print("M3U8 Analysis: No quality options found in M3U8, downloading with original URL")
+    }
+    
+    private func logM3U8QualitiesFound(qualities: [QualityOption]) {
+        print("M3U8 Analysis: Found \(qualities.count) quality options")
+        for (index, quality) in qualities.enumerated() {
+            print("  \(index + 1). \(quality.name) - \(quality.url)")
+        }
+    }
+    
+    private func logM3U8QualitySelected(quality: QualityOption) {
+        print("M3U8 Analysis: Selected quality: \(quality.name)")
+        print("M3U8 Analysis: Selected URL: \(quality.url)")
+        print("FINAL DOWNLOAD URL: \(quality.url)")
+        print("QUALITY SELECTED: \(quality.name)")
+    }
+    
+    private func logM3U8InvalidURL() {
+        print("M3U8 Analysis: Invalid quality URL, falling back to original URL")
+    }
+    
+    private func logDirectDownload() {
+        print("URL is not an M3U8 playlist - downloading directly")
+    }
+    
+    private func logMP4Detection() {
+        print("Detected MP4 stream - redirecting to MP4 download method")
+    }
+    
+    private func logM3U8FetchStart(url: URL) {
+        print("M3U8 Parser: Fetching M3U8 content from: \(url.absoluteString)")
+    }
+    
+    private func logHTTPStatus(_ statusCode: Int, for url: URL) {
+        print("M3U8 Parser: HTTP Status: \(statusCode) for \(url.absoluteString)")
+        if statusCode >= 400 {
+            print("M3U8 Parser: HTTP Error: \(statusCode)")
+        }
+    }
+    
+    private func logM3U8FetchError(_ error: Error) {
+        print("M3U8 Parser: Error fetching M3U8: \(error.localizedDescription)")
+    }
+    
+    private func logM3U8DecodeError() {
+        print("M3U8 Parser: Failed to load or decode M3U8 file")
+    }
+    
+    private func logM3U8FetchSuccess(dataSize: Int) {
+        print("M3U8 Parser: Successfully fetched M3U8 content (\(dataSize) bytes)")
+    }
+    
+    private func logM3U8ParseStart(lineCount: Int) {
+        print("M3U8 Parser: Found \(lineCount) lines in M3U8 file")
+        print("M3U8 Parser: Added 'Auto' quality option with original URL")
+        print("M3U8 Parser: Scanning for quality options...")
+    }
+    
+    private func logM3U8QualityAdded(quality: QualityOption) {
+        print("M3U8 Parser: Added quality option: \(quality.name) - \(quality.url)")
+    }
+    
+    private func logM3U8ParseComplete(qualityCount: Int) {
+        print("M3U8 Parser: Found \(qualityCount) distinct quality options (plus Auto)")
+    }
+    
+    private func logQualitySelectionSingle() {
+        print("Quality Selection: Only one quality option available, returning it directly")
+    }
+    
+    private func logQualitySelectionStart(preference: String, sortedCount: Int) {
+        print("Quality Selection: Found \(sortedCount) non-Auto quality options")
+        print("Quality Selection: User preference is '\(preference)'")
+    }
+    
+    private func logQualitySelectionResult(quality: QualityOption, preference: String) {
+        print("Quality Selection: Selected '\(preference)' quality: \(quality.name)")
     }
 }

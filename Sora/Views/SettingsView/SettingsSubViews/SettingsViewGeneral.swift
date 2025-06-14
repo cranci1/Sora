@@ -204,7 +204,8 @@ struct SettingsViewGeneral: View {
                         title: NSLocalizedString("App Language", comment: ""),
                         options: ["English", "Dutch"],
                         optionToString: { $0 },
-                        selection: $settings.selectedLanguage
+                        selection: $settings.selectedLanguage,
+                        showDivider: false
                     )
                     .onChange(of: settings.selectedLanguage) { _ in
                         showRestartAlert = true

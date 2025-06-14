@@ -655,14 +655,17 @@ struct MediaInfoView: View {
                 .circularGradientOutline()
         }
         .sheet(isPresented: $isMatchingPresented) {
-            AnilistMatchPopupView(seriesTitle: title) { selectedID in
-                handleAniListMatch(selectedID: selectedID)
+            AnilistMatchPopupView(seriesTitle: title) { id, matched in
+                handleAniListMatch(selectedID: id)
+                matchedTitle = matched            // ← now in scope
                 fetchMetadataIDIfNeeded()
             }
         }
         .sheet(isPresented: $isTMDBMatchingPresented) {
-            TMDBMatchPopupView(seriesTitle: title) { id, type in
-                tmdbID = id; tmdbType = type
+            TMDBMatchPopupView(seriesTitle: title) { id, type, matched in
+                tmdbID   = id
+                tmdbType = type
+                matchedTitle = matched            // ← now in scope
                 fetchMetadataIDIfNeeded()
             }
         }
@@ -671,17 +674,11 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var menuContent: some View {
         Group {
-            if let active = activeProvider {
-                Text("Provider: \(active)")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                    .padding(.vertical, 4)
-                Divider()
+            if let provider = activeProvider {
+                Text("Matched \(provider): \(matchedTitle ?? title)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
-            
-            Text("Matched ID: \(itemID ?? 0)")
-                .font(.caption2)
-                .foregroundColor(.secondary)
             
             if activeProvider == "AniList" {
                 Button("Match with AniList") {

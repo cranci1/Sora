@@ -1,16 +1,13 @@
-//
-//  TMDBMatchPopupView.swift
-//  Sulfur
-//
-//  Created by seiike on 12/06/2025.
-//
+// TMDBMatchPopupView.swift
+// Sulfur
+// Created by seiike on 12/06/2025.
 
 import SwiftUI
 import NukeUI
 
 struct TMDBMatchPopupView: View {
     let seriesTitle: String
-    let onSelect: (Int, TMDBFetcher.MediaType) -> Void
+    let onSelect: (Int, TMDBFetcher.MediaType, String) -> Void
 
     @State private var results: [ResultItem] = []
     @State private var isLoading = true
@@ -54,10 +51,10 @@ struct TMDBMatchPopupView: View {
                     } else {
                         LazyVStack(spacing: 15) {
                             ForEach(results) { item in
-                                Button(action: {
-                                    onSelect(item.id, item.mediaType)
+                                Button {
+                                    onSelect(item.id, item.mediaType, item.title)
                                     dismiss()
-                                }) {
+                                } label: {
                                     HStack(spacing: 12) {
                                         if let poster = item.posterURL, let url = URL(string: poster) {
                                             LazyImage(url: url) { state in
@@ -112,9 +109,7 @@ struct TMDBMatchPopupView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
+                    Button("Cancel") { dismiss() }
                 }
             }
             .alert("Error Fetching Results", isPresented: $showingError) {
@@ -129,7 +124,6 @@ struct TMDBMatchPopupView: View {
     private func fetchMatches() {
         isLoading = true
         results = []
-
         let fetcher = TMDBFetcher()
         let apiKey = fetcher.apiKey
         let dispatchGroup = DispatchGroup()
@@ -148,9 +142,10 @@ struct TMDBMatchPopupView: View {
 
             URLSession.shared.dataTask(with: url) { data, _, error in
                 defer { dispatchGroup.leave() }
-
-                guard error == nil, let data = data,
-                      let response = try? JSONDecoder().decode(TMDBSearchResponse.self, from: data) else {
+                guard error == nil,
+                      let data = data,
+                      let response = try? JSONDecoder().decode(TMDBSearchResponse.self, from: data)
+                else {
                     encounteredError = true
                     return
                 }
@@ -165,10 +160,7 @@ struct TMDBMatchPopupView: View {
         }
 
         dispatchGroup.notify(queue: .main) {
-            if encounteredError {
-                showingError = true
-            }
-            // Keep API order (by popularity), limit to top 6 overall
+            if encounteredError { showingError = true }
             results = Array(temp.prefix(6))
             isLoading = false
         }

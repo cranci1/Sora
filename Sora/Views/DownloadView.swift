@@ -1106,6 +1106,7 @@ struct EnhancedShowEpisodesView: View {
                 }
             }
             .padding(.vertical)
+            .scrollViewBottomPadding()
         }
         .navigationTitle(NSLocalizedString("Episodes", comment: ""))
         .navigationBarTitleDisplayMode(.inline)

@@ -216,7 +216,7 @@ struct SettingsViewPlayer: View {
             VStack(spacing: 24) {
                 SettingsSection(
                     title: NSLocalizedString("Media Player", comment: ""),
-                    footer: NSLocalizedString("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.", comment: "")
+                    footer: NSLocalizedString("Some features are only available with the Sora and Default players, such as Force Landscape, Hold Speed, and custom time skip increments.", comment: "Explanation of feature limitations for different media players.")
                 ) {
                     SettingsPickerRow(
                         icon: "play.circle",
@@ -228,20 +228,20 @@ struct SettingsViewPlayer: View {
                     
                     SettingsToggleRow(
                         icon: "rotate.right",
-                        title: NSLocalizedString("Force Landscape", comment: ""),
+                        title: NSLocalizedString("Force Landscape", comment: "Force the player to always use landscape orientation."),
                         isOn: $isAlwaysLandscape
                     )
                     
                     SettingsToggleRow(
                         icon: "hand.tap",
-                        title: NSLocalizedString("Two Finger Hold for Pause", comment: ""),
+                        title: NSLocalizedString("Two Finger Hold for Pause", comment: "Pause playback by holding with two fingers."),
                         isOn: $holdForPauseEnabled,
                         showDivider: true
                     )
                     
                     SettingsToggleRow(
                         icon: "pip",
-                        title: NSLocalizedString("Show PiP Button", comment: ""),
+                        title: NSLocalizedString("Show PiP Button", comment: "Show the Picture-in-Picture button in the player controls."),
                         isOn: $pipButtonVisible,
                         showDivider: false
                     )
@@ -373,10 +373,10 @@ struct SubtitleSettingsSection: View {
     private let shadowOptions = [0, 1, 3, 6]
 
     var body: some View {
-        SettingsSection(title: NSLocalizedString("Subtitle Settings", comment: "")) {
+        SettingsSection(title: NSLocalizedString("Subtitle Settings", comment: "Subtitle customization options.")) {
             SettingsToggleRow(
                 icon: "captions.bubble",
-                title: NSLocalizedString("Enable Subtitles", comment: ""),
+                title: NSLocalizedString("Enable Subtitles", comment: "Toggle subtitles on or off."),
                 isOn: $subtitlesEnabled,
                 showDivider: false
             )
@@ -388,7 +388,7 @@ struct SubtitleSettingsSection: View {
 
             SettingsPickerRow(
                 icon: "paintbrush",
-                title: NSLocalizedString("Subtitle Color", comment: ""),
+                title: NSLocalizedString("Subtitle Color", comment: "Choose the color for subtitles."),
                 options: colors,
                 optionToString: { $0.capitalized },
                 selection: $foregroundColor
@@ -401,7 +401,7 @@ struct SubtitleSettingsSection: View {
             
             SettingsPickerRow(
                 icon: "shadow",
-                title: NSLocalizedString("Shadow", comment: ""),
+                title: NSLocalizedString("Shadow", comment: "Adjust the shadow effect for subtitles."),
                 options: shadowOptions,
                 optionToString: { "\($0)" },
                 selection: Binding(
@@ -417,7 +417,7 @@ struct SubtitleSettingsSection: View {
             
             SettingsToggleRow(
                 icon: "rectangle.fill",
-                title: NSLocalizedString("Background Enabled", comment: ""),
+                title: NSLocalizedString("Background Enabled", comment: "Enable or disable subtitle background."),
                 isOn: $backgroundEnabled
             )
             .onChange(of: backgroundEnabled) { newValue in

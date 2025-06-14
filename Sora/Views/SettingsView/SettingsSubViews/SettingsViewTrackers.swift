@@ -311,7 +311,7 @@ struct SettingsViewTrackers: View {
             .padding(.vertical, 20)
         }
         .scrollViewBottomPadding()
-        .navigationTitle(NSLocalizedString("Trackers", comment: ""))
+        .navigationTitle(NSLocalizedString("Tracking Services", comment: "Title for the tracking services settings screen."))
         .onAppear {
             updateAniListStatus()
             updateTraktStatus()

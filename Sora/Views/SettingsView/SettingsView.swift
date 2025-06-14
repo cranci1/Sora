@@ -145,7 +145,7 @@ struct SettingsView: View {
                     
                     // Modules Section at the top
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("MODULES")
+                        Text(NSLocalizedString("Module Management", comment: "Section for module management settings."))
                             .font(.footnote)
                             .foregroundStyle(.gray)
                             .padding(.horizontal, 20)
@@ -174,12 +174,12 @@ struct SettingsView: View {
                             Divider().padding(.horizontal, 16)
                             
                             NavigationLink(destination: SettingsViewDownloads()) {
-                                SettingsNavigationRow(icon: "arrow.down.circle", titleKey: "Download")
+                                SettingsNavigationRow(icon: "arrow.down.circle", titleKey: "Download Management")
                             }
                             Divider().padding(.horizontal, 16)
                             
                             NavigationLink(destination: SettingsViewTrackers()) {
-                                SettingsNavigationRow(icon: "square.stack.3d.up", titleKey: "Trackers")
+                                SettingsNavigationRow(icon: "square.stack.3d.up", titleKey: "Tracking Services")
                             }
                         }
                         .background(.ultraThinMaterial)

@@ -153,8 +153,8 @@ struct SettingsViewData: View {
         return ScrollView {
             VStack(spacing: 24) {
                 SettingsSection(
-                    title: NSLocalizedString("App Storage", comment: ""),
-                    footer: NSLocalizedString("The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nDo not erase App Data unless you understand the consequences — it may cause the app to malfunction.", comment: "")
+                    title: NSLocalizedString("Storage Management", comment: "Section for app storage management."),
+                    footer: NSLocalizedString("The app cache helps load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nDo not erase App Data unless you understand the consequences — it may cause the app to malfunction.", comment: "Explanation for app storage and cache management.")
                 ) {
                     VStack(spacing: 0) {
                         SettingsButtonRow(
@@ -171,7 +171,7 @@ struct SettingsViewData: View {
                         
                         SettingsButtonRow(
                             icon: "film",
-                            title: NSLocalizedString("Remove Downloads", comment: ""),
+                            title: NSLocalizedString("Remove Downloads", comment: "Remove all downloaded files from the app."),
                             subtitle: formatSize(downloadsSize),
                             action: {
                                 activeAlert = .removeDownloads

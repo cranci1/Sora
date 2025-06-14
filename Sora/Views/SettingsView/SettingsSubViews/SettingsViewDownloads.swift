@@ -181,15 +181,21 @@ struct SettingsViewDownloads: View {
                                 .frame(width: 24, height: 24)
                                 .foregroundStyle(.primary)
                             
-                            Text(String(localized: "Max Concurrent Downloads"))
+                            Text(String(localized: "Concurrent downloads"))
                                 .foregroundStyle(.primary)
                             
                             Spacer()
                             
-                            Stepper("\(maxConcurrentDownloads)", value: $maxConcurrentDownloads, in: 1...10)
-                                .onChange(of: maxConcurrentDownloads) { newValue in
-                                    jsController.updateMaxConcurrentDownloads(newValue)
-                                }
+                            HStack {
+                                Stepper("", value: $maxConcurrentDownloads, in: 1...10)
+                                    .onChange(of: maxConcurrentDownloads) { newValue in
+                                        jsController.updateMaxConcurrentDownloads(newValue)
+                                    }
+                                    .labelsHidden()
+                                
+                                Text("\(maxConcurrentDownloads)")
+                                    .foregroundStyle(.gray)
+                            }
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
@@ -310,7 +316,7 @@ struct SettingsViewDownloads: View {
             }
             .padding(.vertical, 20)
         }
-        .navigationTitle(String(localized: "Downloads"))
+        .navigationTitle(String(localized: "Download Management"))
         .scrollViewBottomPadding()
         .alert(String(localized: "Delete All Downloads"), isPresented: $showClearConfirmation) {
             Button(String(localized: "Cancel"), role: .cancel) { }
@@ -321,7 +327,7 @@ struct SettingsViewDownloads: View {
                 clearAllDownloads(preservePersistentDownloads: true)
             }
         } message: {
-            Text(String(localized: "Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use."))
+            Text(String(localized: "Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use.") )
         }
         .onAppear {
             calculateTotalStorage()

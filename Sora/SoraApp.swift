@@ -38,6 +38,7 @@ struct SoraApp: App {
                     ContentView()
                 }
             }
+            .environment(\.layoutDirection, .leftToRight)
             .environmentObject(moduleManager)
             .environmentObject(settings)
             .environmentObject(libraryManager)

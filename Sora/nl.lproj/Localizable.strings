@@ -1,0 +1,384 @@
+/* General */
+"About" = "Over";
+"About Sora" = "Over Sora";
+"Active" = "Actief";
+"Active Downloads" = "Actieve Downloads";
+"Actively downloading media can be tracked from here." = "Actief downloaden van media kan hier worden gevolgd.";
+"Add Module" = "Module Toevoegen";
+"Adjust the number of media items per row in portrait and landscape modes." = "Pas het aantal media-items per rij aan in staande en liggende modus.";
+"Advanced" = "Geavanceerd";
+"AKA Sulfur" = "AKA Sulfur";
+"All Bookmarks" = "Alle Bladwijzers";
+"All Prev" = "Alle vorige";
+"All Watching" = "Alles Wat Ik Kijk";
+"AniList" = "AniList";
+"Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time." = "Anonieme gegevens worden verzameld om de app te verbeteren. Er worden geen persoonlijke gegevens verzameld. Dit kan op elk moment worden uitgeschakeld.";
+"App Info" = "App Info";
+"App Language" = "App Taal";
+"App Storage" = "App Opslag";
+"Appearance" = "Uiterlijk";
+
+/* Alerts and Actions */
+"Are you sure you want to clear all cached data? This will help free up storage space." = "Weet je zeker dat je alle gecachte gegevens wilt wissen? Dit helpt opslagruimte vrij te maken.";
+"Are you sure you want to delete '%@'?" = "Weet je zeker dat je '%@' wilt verwijderen?";
+"Are you sure you want to delete all %1$lld episodes in '%2$@'?" = "Weet je zeker dat je alle %1$lld afleveringen in '%2$@' wilt verwijderen?";
+"Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use." = "Weet je zeker dat je alle gedownloade bestanden wilt verwijderen? Je kunt ervoor kiezen om alleen de bibliotheek te wissen terwijl je de gedownloade bestanden voor later gebruik bewaart.";
+"Are you sure you want to erase all app data? This action cannot be undone." = "Weet je zeker dat je alle app-gegevens wilt wissen? Deze actie kan niet ongedaan worden gemaakt.";
+"Are you sure you want to remove all downloaded media files (.mov, .mp4, .pkg)?" = "Weet je zeker dat je alle gedownloade mediabestanden (.mov, .mp4, .pkg) wilt verwijderen?";
+"Are you sure you want to remove all files in the Documents folder?" = "Weet je zeker dat je alle bestanden in de map Documenten wilt verwijderen?";
+
+/* Features */
+"Author" = "Auteur";
+"Background Enabled" = "Achtergrond Ingeschakeld";
+"Bookmark items for an easier access later." = "Bladwijzer items voor eenvoudigere toegang later.";
+"Bookmarks" = "Bladwijzers";
+"Bottom Padding" = "Onderste Padding";
+"Cancel" = "Annuleren";
+"Cellular Quality" = "Mobiele Kwaliteit";
+"Check out some community modules here!" = "Bekijk hier enkele community modules!";
+"Choose preferred video resolution for WiFi and cellular connections." = "Kies de gewenste videoresolutie voor WiFi en mobiele verbindingen.";
+"Clear" = "Wissen";
+"Clear All Downloads" = "Alle Downloads Wissen";
+"Clear Cache" = "Wis Cache";
+"Clear Library Only" = "Alleen Bibliotheek Wissen";
+"Clear Logs" = "Wis Logs";
+"Click the plus button to add a module!" = "Klik op de plus-knop om een module toe te voegen!";
+"Continue Watching" = "Verder Kijken";
+"Continue Watching Episode %d" = "Verder Kijken Aflevering %d";
+"Contributors" = "Bijdragers";
+"Copied to Clipboard" = "Gekopieerd naar Klembord";
+"Copy to Clipboard" = "Kopiëren naar Klembord";
+"Copy URL" = "Kopieer URL";
+
+/* Episodes */
+"%lld Episodes" = "%lld Afleveringen";
+"%lld of %lld" = "%1$lld van %2$lld";
+"%lld-%lld" = "%1$lld-%2$lld";
+"%lld%% seen" = "%lld%% gezien";
+"Episode %lld" = "Aflevering %lld";
+"Episodes" = "Afleveringen";
+"Episodes might not be available yet or there could be an issue with the source." = "Afleveringen zijn mogelijk nog niet beschikbaar of er is een probleem met de bron.";
+"Episodes Range" = "Afleveringen Bereik";
+
+/* System */
+"cranci1" = "cranci1";
+"Dark" = "Donker";
+"DATA & LOGS" = "DATA & LOGS";
+"Debug" = "Debug";
+"Debugging and troubleshooting." = "Debuggen en probleemoplossing.";
+
+/* Actions */
+"Delete" = "Verwijderen";
+"Delete All" = "Alles Wissen";
+"Delete All Downloads" = "Alle Downloads Verwijderen";
+"Delete All Episodes" = "Alle Afleveringen Wissen";
+"Delete Download" = "Downloads Wissen";
+"Delete Episode" = "Afleveringen Wissen";
+
+/* Player */
+"Double Tap to Seek" = "Dubbel Tikken om te Zoeken";
+"Double tapping the screen on it's sides will skip with the short tap setting." = "Dubbel tikken op de zijkanten van het scherm zal overslaan met de korte tik instelling.";
+
+/* Downloads */
+"Download" = "Downloaden";
+"Download Episode" = "Aflevering Downloaden";
+"Download Summary" = "Download Samenvatting";
+"Download This Episode" = "Download Deze Aflevering";
+"Downloaded" = "Gedownload";
+"Downloaded Shows" = "Gedownloade Series";
+"Downloading" = "Downloaden";
+"Downloads" = "Downloads";
+
+/* Settings */
+"Enable Analytics" = "Analytics Inschakelen";
+"Enable Subtitles" = "Ondertiteling Inschakelen";
+
+/* Data Management */
+"Erase" = "Verwijden";
+"Erase all App Data" = "Wis Alle App Data";
+"Erase App Data" = "Verwijder App Data";
+
+/* Errors */
+"Error" = "Fout";
+"Error Fetching Results" = "Fout bij Ophalen Resultaten";
+"Errors and critical issues." = "Fouten en kritieke problemen.";
+"Failed to load contributors" = "Laden van bijdragers mislukt";
+
+/* Features */
+"Fetch Episode metadata" = "Haal Aflevering Metadata op";
+"Files Downloaded" = "Gedownloade Bestanden";
+"Font Size" = "Lettergrootte";
+
+/* Interface */
+"Force Landscape" = "Forceer Landschap";
+"General" = "Algemeen";
+"General events and activities." = "Algemene gebeurtenissen en activiteiten.";
+"General Preferences" = "Algemene Voorkeuren";
+"Hide Splash Screen" = "Splash Screen Verbergen";
+"HLS video downloading." = "HLS video downloaden.";
+"Hold Speed" = "Vasthouden Snelheid";
+
+/* Info */
+"Info" = "Info";
+"INFOS" = "INFO";
+"Installed Modules" = "Geïnstalleerde Modules";
+"Interface" = "Interface";
+
+/* Social */
+"Join the Discord" = "Word lid van de Discord";
+
+/* Layout */
+"Landscape Columns" = "Liggende Kolommen";
+"Language" = "Taal";
+"LESS" = "MINDER";
+
+/* Library */
+"Library" = "Bibliotheek";
+"License (GPLv3.0)" = "Licentie (GPLv3.0)";
+"Light" = "Licht";
+
+/* Loading States */
+"Loading Episode %lld..." = "Aflevering %lld laden...";
+"Loading logs..." = "Logboeken laden...";
+"Loading module information..." = "Module-informatie laden...";
+"Loading Stream" = "Stream Laden";
+
+/* Logging */
+"Log Debug Info" = "Debug Info Loggen";
+"Log Filters" = "Log Filters";
+"Log In with AniList" = "Inloggen met AniList";
+"Log In with Trakt" = "Inloggen met Trakt";
+"Log Out from AniList" = "Uitloggen van AniList";
+"Log Out from Trakt" = "Uitloggen van Trakt";
+"Log Types" = "Logboek Types";
+"Logged in as" = "Ingelogd als";
+"Logged in as " = "Ingelogd als ";
+
+/* Logs and Settings */
+"Logs" = "Logboeken";
+"Long press Skip" = "Lang Drukken Overslaan";
+"MAIN" = "Hoofdinstellingen";
+"Main Developer" = "Hoofdontwikkelaar";
+"MAIN SETTINGS" = "HOOFDINSTELLINGEN";
+
+/* Media Actions */
+"Mark All Previous Watched" = "Markeer alles als gezien";
+"Mark as Watched" = "Markeer als gezien";
+"Mark Episode as Watched" = "Markeer aflevering als gezien";
+"Mark Previous Episodes as Watched" = "Markeer vorige afleveringen als gezien";
+"Mark watched" = "Markeer als gezien";
+"Match with AniList" = "Match met AniList";
+"Match with TMDB" = "Match met TMDB";
+"Matched ID: %lld" = "Gematchte ID: %lld";
+"Matched with: %@" = "Match met: %@";
+"Max Concurrent Downloads" = "Maximaal gelijktijdige downloads";
+
+/* Media Interface */
+"Media Grid Layout" = "Media Raster Layout";
+"Media Player" = "Media Speler";
+"Media View" = "Mediaweergave";
+"Metadata Provider" = "Metadata Provider";
+"Metadata Providers Order" = "Metadata Providers Volgorde";
+"Module Removed" = "Module Verwijderd";
+"Modules" = "Modules";
+
+/* Headers */
+"MODULES" = "MODULES";
+"MORE" = "MEER";
+
+/* Status Messages */
+"No Active Downloads" = "Geen Actieve Downloads";
+"No AniList matches found" = "Geen AniList overeenkomsten gevonden";
+"No Data Available" = "Geen Gegevens Beschikbaar";
+"No Downloads" = "Geen Downloads";
+"No episodes available" = "Geen afleveringen beschikbaar";
+"No Episodes Available" = "Geen Afleveringen Beschikbaar";
+"No items to continue watching." = "Geen items om verder te kijken.";
+"No matches found" = "Geen overeenkomsten gevonden";
+"No Module Selected" = "Geen Module Geselecteerd";
+"No Modules" = "Geen Modules";
+"No Results Found" = "Geen Resultaten Gevonden";
+"No Search Results Found" = "Geen Zoekresultaten Gevonden";
+"Nothing to Continue Watching" = "Niets om Verder te Kijken";
+
+/* Notes and Messages */
+"Note that the modules will be replaced only if there is a different version string inside the JSON file." = "Let op: de modules worden alleen vervangen als er een andere versiestring in het JSON-bestand staat.";
+
+/* Actions */
+"OK" = "OK";
+"Open Community Library" = "Open Community Bibliotheek";
+
+/* External Services */
+"Open in AniList" = "Openen in AniList";
+"Original Poster" = "Originele Poster";
+
+/* Playback */
+"Paused" = "Gepauzeerd";
+"Play" = "Afspelen";
+"Player" = "Speler";
+
+/* System Messages */
+"Please restart the app to apply the language change." = "Herstart de app om de taalwijziging toe te passen.";
+"Please select a module from settings" = "Selecteer een module uit de instellingen";
+
+/* Interface */
+"Portrait Columns" = "Staande Kolommen";
+"Progress bar Marker Color" = "Voortgangsbalk Markeerkleur";
+"Provider: %@" = "Provider: %@";
+
+/* Queue */
+"Queue" = "Wachtrij";
+"Queued" = "In Wachtrij";
+
+/* Content */
+"Recently watched content will appear here." = "Recent bekeken inhoud verschijnt hier.";
+
+/* Settings */
+"Refresh Modules on Launch" = "Ververs Modules bij Opstarten";
+"Refresh Storage Info" = "Opslaginformatie Vernieuwen";
+"Remember Playback speed" = "Onthoud Afspeelsnelheid";
+
+/* Actions */
+"Remove" = "Verwijderen";
+"Remove All Cache" = "Verwijder Alle Cache";
+
+/* File Management */
+"Remove All Documents" = "Verwijder Alle Documenten";
+"Remove Documents" = "Documenten Verwijderen";
+"Remove Downloaded Media" = "Gedownloade Media Verwijderen";
+"Remove Downloads" = "Verwijder Downloads";
+"Remove from Bookmarks" = "Verwijderen uit Bladwijzers";
+"Remove Item" = "Item Verwijderen";
+
+/* Support */
+"Report an Issue" = "Rapporteer een Probleem";
+
+/* Reset Options */
+"Reset" = "Resetten";
+"Reset AniList ID" = "AniList ID Resetten";
+"Reset Episode Progress" = "Afleveringsvoortgang Resetten";
+"Reset progress" = "Voortgang resetten";
+"Reset Progress" = "Voortgang Resetten";
+
+/* System */
+"Restart Required" = "Herstart Vereist";
+"Running Sora %@ - cranci1" = "Sora %@ draait - cranci1";
+
+/* Actions */
+"Save" = "Opslaan";
+"Search" = "Zoeken";
+
+/* Search */
+"Search downloads" = "Downloads zoeken";
+"Search for something..." = "Zoek naar iets...";
+"Search..." = "Zoeken...";
+
+/* Content */
+"Season %d" = "Seizoen %d";
+"Season %lld" = "Seizoen %lld";
+"Segments Color" = "Segmenten Kleur";
+
+/* Modules */
+"Select Module" = "Module Selecteren";
+"Set Custom AniList ID" = "Aangepaste AniList ID Instellen";
+
+/* Interface */
+"Settings" = "Instellingen";
+"Shadow" = "Schaduw";
+"Show More (%lld more characters)" = "Meer Tonen (%lld meer tekens)";
+"Show PiP Button" = "Toon PiP Knop";
+"Show Skip 85s Button" = "Toon Overslaan 85s Knop";
+"Show Skip Intro / Outro Buttons" = "Toon Overslaan Intro / Outro Knoppen";
+"Shows" = "Series";
+"Size (%@)" = "Grootte (%@)";
+"Skip Settings" = "Overslaan Instellingen";
+
+/* Player Features */
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments." = "Sommige functies zijn beperkt tot de Sora en Standaard speler, zoals ForceLandscape, holdSpeed en aangepaste tijd overslaan stappen.";
+
+/* App Info */
+"Sora" = "Sora";
+"Sora %@ by cranci1" = "Sora %@ door cranci1";
+"Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate." = "Sora en cranci1 zijn op geen enkele manier verbonden met AniList of Trakt.\n\nHoud er ook rekening mee dat voortgangsupdates mogelijk niet 100% nauwkeurig zijn.";
+"Sora GitHub Repository" = "Sora GitHub Repository";
+"Sora/Sulfur will always remain free with no ADs!" = "Sora/Sulfur blijft altijd gratis zonder advertenties!";
+
+/* Interface */
+"Sort" = "Sorteren";
+"Speed Settings" = "Snelheidsinstellingen";
+
+/* Playback */
+"Start Watching" = "Start met Kijken";
+"Start Watching Episode %d" = "Start met Kijken Aflevering %d";
+"Storage Used" = "Gebruikte Opslag";
+"Stream" = "Stream";
+"Streaming and video playback." = "Streaming en video afspelen.";
+
+/* Subtitles */
+"Subtitle Color" = "Ondertitelingskleur";
+"Subtitle Settings" = "Ondertitelingsinstellingen";
+
+/* Sync */
+"Sync anime progress" = "Synchroniseer anime voortgang";
+"Sync TV shows progress" = "Synchroniseer TV series voortgang";
+
+/* System */
+"System" = "Systeem";
+
+/* Instructions */
+"Tap a title to override the current match." = "Tik op een titel om de huidige match te overschrijven.";
+"Tap Skip" = "Tik Overslaan";
+"Tap to manage your modules" = "Tik om je modules te beheren";
+"Tap to select a module" = "Tik om een module te selecteren";
+
+/* App Information */
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nDo not erase App Data unless you understand the consequences — it may cause the app to malfunction." = "De app cache helpt de app om afbeeldingen sneller te laden.\n\nHet wissen van de Documents map zal alle gedownloade modules verwijderen.\n\nWis de App Data niet tenzij je de gevolgen begrijpt — het kan ervoor zorgen dat de app niet meer goed werkt.";
+"The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers." = "Het afleveringen bereik bepaalt hoeveel afleveringen er op elke pagina verschijnen. Afleveringen worden gegroepeerd in sets (zoals 1-25, 26-50, enzovoort), waardoor je er gemakkelijker doorheen kunt navigeren.\n\nVoor aflevering metadata verwijst dit naar de aflevering miniatuur en titel, aangezien deze soms spoilers kunnen bevatten.";
+"The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases." = "De module heeft slechts één aflevering geleverd, dit is waarschijnlijk een film, daarom hebben we aparte schermen gemaakt voor deze gevallen.";
+
+/* Interface */
+"Thumbnails Width" = "Miniatuur Breedte";
+"TMDB Match" = "TMDB Match";
+"Trackers" = "Trackers";
+"Trakt" = "Trakt";
+"Trakt.tv" = "Trakt.tv";
+
+/* Search */
+"Try different keywords" = "Probeer andere zoekwoorden";
+"Try different search terms" = "Probeer andere zoektermen";
+
+/* Player Controls */
+"Two Finger Hold for Pause" = "Twee Vingers Vasthouden voor Pauze";
+"Unable to fetch matches. Please try again later." = "Kan geen matches ophalen. Probeer het later opnieuw.";
+"Use TMDB Poster Image" = "TMDB Poster Afbeelding Gebruiken";
+
+/* Version */
+"v%@" = "v%@";
+"Video Player" = "Videospeler";
+
+/* Video Settings */
+"Video Quality Preferences" = "Video Kwaliteit Voorkeuren";
+"View All" = "Alles Bekijken";
+"Watched" = "Bekeken";
+"Why am I not seeing any episodes?" = "Waarom zie ik geen afleveringen?";
+"WiFi Quality" = "WiFi Kwaliteit";
+
+/* User Status */
+"You are not logged in" = "Je bent niet ingelogd";
+"You have no items saved." = "Je hebt geen items opgeslagen.";
+"Your downloaded episodes will appear here" = "Je gedownloade afleveringen verschijnen hier";
+"Your recently watched content will appear here" = "Je recent bekeken inhoud verschijnt hier";
+
+/* Download Settings */
+"Download Settings" = "Download Instellingen";
+"Max concurrent downloads controls how many episodes can download simultaneously. Higher values may use more bandwidth and device resources." = "Maximum gelijktijdige downloads bepaalt hoeveel afleveringen tegelijk kunnen worden gedownload. Hogere waarden kunnen meer bandbreedte en apparaatbronnen gebruiken.";
+"Quality" = "Kwaliteit";
+"Max Concurrent Downloads" = "Maximum Gelijktijdige Downloads";
+"Allow Cellular Downloads" = "Downloads via Mobiel Netwerk Toestaan";
+"Quality Information" = "Kwaliteitsinformatie";
+
+/* Storage */
+"Storage Management" = "Opslagbeheer";
+"Storage Used" = "Gebruikte Opslag";
+"Library cleared successfully" = "Bibliotheek succesvol gewist";
+"All downloads deleted successfully" = "Alle downloads succesvol verwijderd"; 

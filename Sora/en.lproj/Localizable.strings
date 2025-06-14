@@ -1,0 +1,384 @@
+/* General */
+"About" = "About";
+"About Sora" = "About Sora";
+"Active" = "Active";
+"Active Downloads" = "Active Downloads";
+"Actively downloading media can be tracked from here." = "Actively downloading media can be tracked from here.";
+"Add Module" = "Add Module";
+"Adjust the number of media items per row in portrait and landscape modes." = "Adjust the number of media items per row in portrait and landscape modes.";
+"Advanced" = "Advanced";
+"AKA Sulfur" = "AKA Sulfur";
+"All Bookmarks" = "All Bookmarks";
+"All Watching" = "All Watching";
+"Also known as Sulfur" = "Also known as Sulfur";
+"AniList" = "AniList";
+"AniList ID" = "AniList ID";
+"AniList Match" = "AniList Match";
+"AniList.co" = "AniList.co";
+"Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time." = "Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time.";
+"App Info" = "App Info";
+"App Language" = "App Language";
+"App Storage" = "App Storage";
+"Appearance" = "Appearance";
+
+/* Alerts and Actions */
+"Are you sure you want to clear all cached data? This will help free up storage space." = "Are you sure you want to clear all cached data? This will help free up storage space.";
+"Are you sure you want to delete '%@'?" = "Are you sure you want to delete '%@'?";
+"Are you sure you want to delete all %1$d episodes in '%2$@'?" = "Are you sure you want to delete all %1$d episodes in '%2$@'?";
+"Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use." = "Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use.";
+"Are you sure you want to erase all app data? This action cannot be undone." = "Are you sure you want to erase all app data? This action cannot be undone.";
+
+/* Features */
+"Background Enabled" = "Background Enabled";
+"Bookmark items for an easier access later." = "Bookmark items for an easier access later.";
+"Bookmarks" = "Bookmarks";
+"Bottom Padding" = "Bottom Padding";
+"Cancel" = "Cancel";
+"Cellular Quality" = "Cellular Quality";
+"Check out some community modules here!" = "Check out some community modules here!";
+"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality." = "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality.";
+"Clear" = "Clear";
+"Clear All Downloads" = "Clear All Downloads";
+"Clear Cache" = "Clear Cache";
+"Clear Library Only" = "Clear Library Only";
+"Clear Logs" = "Clear Logs";
+"Click the plus button to add a module!" = "Click the plus button to add a module!";
+"Continue Watching" = "Continue Watching";
+"Continue Watching Episode %d" = "Continue Watching Episode %d";
+"Contributors" = "Contributors";
+"Copied to Clipboard" = "Copied to Clipboard";
+"Copy to Clipboard" = "Copy to Clipboard";
+"Copy URL" = "Copy URL";
+
+/* Episodes */
+"%lld Episodes" = "%lld Episodes";
+"%lld of %lld" = "%1$lld of %2$lld";
+"%lld-%lld" = "%1$lld-%2$lld";
+"%lld%% seen" = "%lld%% seen";
+"Episode %lld" = "Episode %lld";
+"Episodes" = "Episodes";
+"Episodes might not be available yet or there could be an issue with the source." = "Episodes might not be available yet or there could be an issue with the source.";
+"Episodes Range" = "Episodes Range";
+
+/* System */
+"cranci1" = "cranci1";
+"Dark" = "Dark";
+"DATA & LOGS" = "DATA & LOGS";
+"Debug" = "Debug";
+"Debugging and troubleshooting." = "Debugging and troubleshooting.";
+
+/* Actions */
+"Delete" = "Delete";
+"Delete All" = "Delete All";
+"Delete All Downloads" = "Delete All Downloads";
+"Delete All Episodes" = "Delete All Episodes";
+"Delete Download" = "Delete Download";
+"Delete Episode" = "Delete Episode";
+
+/* Player */
+"Double Tap to Seek" = "Double Tap to Seek";
+"Double tapping the screen on it's sides will skip with the short tap setting." = "Double tapping the screen on it's sides will skip with the short tap setting.";
+
+/* Downloads */
+"Download" = "Download";
+"Download Episode" = "Download Episode";
+"Download Summary" = "Download Summary";
+"Download This Episode" = "Download This Episode";
+"Downloaded" = "Downloaded";
+"Downloaded Shows" = "Downloaded Shows";
+"Downloading" = "Downloading";
+"Downloads" = "Downloads";
+
+/* Settings */
+"Enable Analytics" = "Enable Analytics";
+"Enable Subtitles" = "Enable Subtitles";
+
+/* Data Management */
+"Erase" = "Erase";
+"Erase all App Data" = "Erase all App Data";
+"Erase App Data" = "Erase App Data";
+
+/* Errors */
+"Error" = "Error";
+"Error Fetching Results" = "Error Fetching Results";
+"Errors and critical issues." = "Errors and critical issues.";
+"Failed to load contributors" = "Failed to load contributors";
+
+/* Features */
+"Fetch Episode metadata" = "Fetch Episode metadata";
+"Files Downloaded" = "Files Downloaded";
+"Font Size" = "Font Size";
+
+/* Interface */
+"Force Landscape" = "Force Landscape";
+"General" = "General";
+"General events and activities." = "General events and activities.";
+"General Preferences" = "General Preferences";
+"Hide Splash Screen" = "Hide Splash Screen";
+"HLS video downloading." = "HLS video downloading.";
+"Hold Speed" = "Hold Speed";
+
+/* Info */
+"Info" = "Info";
+"INFOS" = "INFOS";
+"Installed Modules" = "Installed Modules";
+"Interface" = "Interface";
+
+/* Social */
+"Join the Discord" = "Join the Discord";
+
+/* Layout */
+"Landscape Columns" = "Landscape Columns";
+"Language" = "Language";
+"LESS" = "LESS";
+
+/* Library */
+"Library" = "Library";
+"License (GPLv3.0)" = "License (GPLv3.0)";
+"Light" = "Light";
+
+/* Loading States */
+"Loading Episode %lld..." = "Loading Episode %lld...";
+"Loading logs..." = "Loading logs...";
+"Loading module information..." = "Loading module information...";
+"Loading Stream" = "Loading Stream";
+
+/* Logging */
+"Log Debug Info" = "Log Debug Info";
+"Log Filters" = "Log Filters";
+"Log In with AniList" = "Log In with AniList";
+"Log In with Trakt" = "Log In with Trakt";
+"Log Out from AniList" = "Log Out from AniList";
+"Log Out from Trakt" = "Log Out from Trakt";
+"Log Types" = "Log Types";
+"Logged in as" = "Logged in as";
+"Logged in as " = "Logged in as ";
+
+/* Logs and Settings */
+"Logs" = "Logs";
+"Long press Skip" = "Long press Skip";
+"MAIN" = "Main Settings";
+"Main Developer" = "Main Developer";
+"MAIN SETTINGS" = "MAIN SETTINGS";
+
+/* Media Actions */
+"Mark All Previous Watched" = "Mark All Previous Watched";
+"Mark as Watched" = "Mark as Watched";
+"Mark Episode as Watched" = "Mark Episode as Watched";
+"Mark Previous Episodes as Watched" = "Mark Previous Episodes as Watched";
+"Mark watched" = "Mark watched";
+"Match with AniList" = "Match with AniList";
+"Match with TMDB" = "Match with TMDB";
+"Matched ID: %lld" = "Matched ID: %lld";
+"Matched with: %@" = "Matched with: %@";
+"Max Concurrent Downloads" = "Max Concurrent Downloads";
+
+/* Media Interface */
+"Media Grid Layout" = "Media Grid Layout";
+"Media Player" = "Media Player";
+"Media View" = "Media View";
+"Metadata Provider" = "Metadata Provider";
+"Metadata Providers Order" = "Metadata Providers Order";
+"Module Removed" = "Module Removed";
+"Modules" = "Modules";
+
+/* Headers */
+"MODULES" = "MODULES";
+"MORE" = "MORE";
+
+/* Status Messages */
+"No Active Downloads" = "No Active Downloads";
+"No AniList matches found" = "No AniList matches found";
+"No Data Available" = "No Data Available";
+"No Downloads" = "No Downloads";
+"No episodes available" = "No episodes available";
+"No Episodes Available" = "No Episodes Available";
+"No items to continue watching." = "No items to continue watching.";
+"No matches found" = "No matches found";
+"No Module Selected" = "No Module Selected";
+"No Modules" = "No Modules";
+"No Results Found" = "No Results Found";
+"No Search Results Found" = "No Search Results Found";
+"Nothing to Continue Watching" = "Nothing to Continue Watching";
+
+/* Notes and Messages */
+"Note that the modules will be replaced only if there is a different version string inside the JSON file." = "Note that the modules will be replaced only if there is a different version string inside the JSON file.";
+
+/* Actions */
+"OK" = "OK";
+"Open Community Library" = "Open Community Library";
+
+/* External Services */
+"Open in AniList" = "Open in AniList";
+"Original Poster" = "Original Poster";
+
+/* Playback */
+"Paused" = "Paused";
+"Play" = "Play";
+"Player" = "Player";
+
+/* System Messages */
+"Please restart the app to apply the language change." = "Please restart the app to apply the language change.";
+"Please select a module from settings" = "Please select a module from settings";
+
+/* Interface */
+"Portrait Columns" = "Portrait Columns";
+"Progress bar Marker Color" = "Progress bar Marker Color";
+"Provider: %@" = "Provider: %@";
+
+/* Queue */
+"Queue" = "Queue";
+"Queued" = "Queued";
+
+/* Content */
+"Recently watched content will appear here." = "Recently watched content will appear here.";
+
+/* Settings */
+"Refresh Modules on Launch" = "Refresh Modules on Launch";
+"Refresh Storage Info" = "Refresh Storage Info";
+"Remember Playback speed" = "Remember Playback speed";
+
+/* Actions */
+"Remove" = "Remove";
+"Remove All Cache" = "Remove All Cache";
+
+/* File Management */
+"Remove All Documents" = "Remove All Documents";
+"Remove Documents" = "Remove Documents";
+"Remove Downloaded Media" = "Remove Downloaded Media";
+"Remove Downloads" = "Remove Downloads";
+"Remove from Bookmarks" = "Remove from Bookmarks";
+"Remove Item" = "Remove Item";
+
+/* Support */
+"Report an Issue" = "Report an Issue";
+
+/* Reset Options */
+"Reset" = "Reset";
+"Reset AniList ID" = "Reset AniList ID";
+"Reset Episode Progress" = "Reset Episode Progress";
+"Reset progress" = "Reset progress";
+"Reset Progress" = "Reset Progress";
+
+/* System */
+"Restart Required" = "Restart Required";
+"Running Sora %@ - cranci1" = "Running Sora %@ - cranci1";
+
+/* Actions */
+"Save" = "Save";
+"Search" = "Search";
+
+/* Search */
+"Search downloads" = "Search downloads";
+"Search for something..." = "Search for something...";
+"Search..." = "Search...";
+
+/* Content */
+"Season %d" = "Season %d";
+"Season %lld" = "Season %lld";
+"Segments Color" = "Segments Color";
+
+/* Modules */
+"Select Module" = "Select Module";
+"Set Custom AniList ID" = "Set Custom AniList ID";
+
+/* Interface */
+"Settings" = "Settings";
+"Shadow" = "Shadow";
+"Show More (%lld more characters)" = "Show More (%lld more characters)";
+"Show PiP Button" = "Show PiP Button";
+"Show Skip 85s Button" = "Show Skip 85s Button";
+"Show Skip Intro / Outro Buttons" = "Show Skip Intro / Outro Buttons";
+"Shows" = "Shows";
+"Size (%@)" = "Size (%@)";
+"Skip Settings" = "Skip Settings";
+
+/* Player Features */
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments." = "Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.";
+
+/* App Info */
+"Sora" = "Sora";
+"Sora %@ by cranci1" = "Sora %@ by cranci1";
+"Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate." = "Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate.";
+"Sora GitHub Repository" = "Sora GitHub Repository";
+"Sora/Sulfur will always remain free with no ADs!" = "Sora/Sulfur will always remain free with no ADs!";
+
+/* Interface */
+"Sort" = "Sort";
+"Speed Settings" = "Speed Settings";
+
+/* Playback */
+"Start Watching" = "Start Watching";
+"Start Watching Episode %d" = "Start Watching Episode %d";
+"Storage Used" = "Storage Used";
+"Stream" = "Stream";
+"Streaming and video playback." = "Streaming and video playback.";
+
+/* Subtitles */
+"Subtitle Color" = "Subtitle Color";
+"Subtitle Settings" = "Subtitle Settings";
+
+/* Sync */
+"Sync anime progress" = "Sync anime progress";
+"Sync TV shows progress" = "Sync TV shows progress";
+
+/* System */
+"System" = "System";
+
+/* Instructions */
+"Tap a title to override the current match." = "Tap a title to override the current match.";
+"Tap Skip" = "Tap Skip";
+"Tap to manage your modules" = "Tap to manage your modules";
+"Tap to select a module" = "Tap to select a module";
+
+/* App Information */
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nDo not erase App Data unless you understand the consequences — it may cause the app to malfunction." = "The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nDo not erase App Data unless you understand the consequences — it may cause the app to malfunction.";
+"The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers." = "The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers.";
+"The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases." = "The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases.";
+
+/* Interface */
+"Thumbnails Width" = "Thumbnails Width";
+"TMDB Match" = "TMDB Match";
+"Trackers" = "Trackers";
+"Trakt" = "Trakt";
+"Trakt.tv" = "Trakt.tv";
+
+/* Search */
+"Try different keywords" = "Try different keywords";
+"Try different search terms" = "Try different search terms";
+
+/* Player Controls */
+"Two Finger Hold for Pause" = "Two Finger Hold for Pause";
+"Unable to fetch matches. Please try again later." = "Unable to fetch matches. Please try again later.";
+"Use TMDB Poster Image" = "Use TMDB Poster Image";
+
+/* Version */
+"v%@" = "v%@";
+"Video Player" = "Video Player";
+
+/* Video Settings */
+"Video Quality Preferences" = "Video Quality Preferences";
+"View All" = "View All";
+"Watched" = "Watched";
+"Why am I not seeing any episodes?" = "Why am I not seeing any episodes?";
+"WiFi Quality" = "WiFi Quality";
+
+/* User Status */
+"You are not logged in" = "You are not logged in";
+"You have no items saved." = "You have no items saved.";
+"Your downloaded episodes will appear here" = "Your downloaded episodes will appear here";
+"Your recently watched content will appear here" = "Your recently watched content will appear here";
+
+/* Download Settings */
+"Download Settings" = "Download Settings";
+"Max concurrent downloads controls how many episodes can download simultaneously. Higher values may use more bandwidth and device resources." = "Max concurrent downloads controls how many episodes can download simultaneously. Higher values may use more bandwidth and device resources.";
+"Quality" = "Quality";
+"Max Concurrent Downloads" = "Max Concurrent Downloads";
+"Allow Cellular Downloads" = "Allow Cellular Downloads";
+"Quality Information" = "Quality Information";
+
+/* Storage */
+"Storage Management" = "Storage Management";
+"Storage Used" = "Storage Used";
+"Library cleared successfully" = "Library cleared successfully";
+"All downloads deleted successfully" = "All downloads deleted successfully"; 

@@ -400,7 +400,17 @@ class Settings: ObservableObject {
     }
     
     func updateLanguage() {
-        let languageCode = selectedLanguage == "Dutch" ? "nl" : "en"
+        let languageCode: String
+        switch selectedLanguage {
+        case "Dutch":
+            languageCode = "nl"
+        case "French":
+            languageCode = "fr"
+        case "Arabic":
+            languageCode = "ar"
+        default:
+            languageCode = "en"
+        }
         UserDefaults.standard.set([languageCode], forKey: "AppleLanguages")
         UserDefaults.standard.synchronize()
     }

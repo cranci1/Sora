@@ -179,7 +179,7 @@ struct SettingsViewLoggerFilter: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                SettingsSection(title: NSLocalizedString("Log Types", comment: "")) {
+                SettingsSection(title: NSLocalizedString("Log Categories", comment: "Select which categories of logs to display.")) {
                     ForEach($viewModel.filters) { $filter in
                         SettingsToggleRow(
                             icon: iconForFilter(filter.type),
@@ -192,6 +192,6 @@ struct SettingsViewLoggerFilter: View {
             }
             .padding(.vertical, 20)
         }
-        .navigationTitle(NSLocalizedString("Log Filters", comment: ""))
+        .navigationTitle(NSLocalizedString("Log Filters", comment: "Title for the log filter settings screen."))
     }
 }

@@ -270,7 +270,7 @@ struct SettingsViewTrackers: View {
                             
                             SettingsToggleRow(
                                 icon: "arrow.triangle.2.circlepath",
-                                title: NSLocalizedString("Sync TV shows progress", comment: ""),
+                                title: NSLocalizedString("Sync shows/movies progress", comment: ""),
                                 isOn: $isSendTraktUpdates,
                                 showDivider: false
                             )

@@ -1,5 +1,7 @@
+//
 // AnilistMatchPopupView.swift
 // Sulfur
+//
 // Created by seiike on 01/06/2025.
 
 import NukeUI

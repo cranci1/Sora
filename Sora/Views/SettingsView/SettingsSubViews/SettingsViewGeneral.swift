@@ -202,8 +202,18 @@ struct SettingsViewGeneral: View {
                     SettingsPickerRow(
                         icon: "globe",
                         title: NSLocalizedString("App Language", comment: ""),
-                        options: ["English", "Dutch", "French", "Arabic"],
-                        optionToString: { $0 },
+                        options: ["English", "Dutch", "French", "Arabic", "Czech", "Spanish"],
+                        optionToString: { lang in
+                            switch lang {
+                            case "English": return "English"
+                            case "Dutch": return "Nederlands"
+                            case "French": return "Français"
+                            case "Arabic": return "العربية"
+                            case "Czech": return "Čeština"
+                            case "Spanish": return "Español"
+                            default: return lang
+                            }
+                        },
                         selection: $settings.selectedLanguage,
                         showDivider: false
                     )
@@ -333,7 +343,7 @@ struct SettingsViewGeneral: View {
         .scrollViewBottomPadding()
         .alert(isPresented: $showRestartAlert) {
             Alert(
-                title: Text(NSLocalizedString("Restart Required", comment: "")),
+                title: Text("Restart Required"),
                 message: Text(NSLocalizedString("Please restart the app to apply the language change.", comment: "")),
                 dismissButton: .default(Text("OK"))
             )

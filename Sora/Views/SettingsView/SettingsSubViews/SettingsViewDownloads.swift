@@ -169,7 +169,7 @@ struct SettingsViewDownloads: View {
                 ) {
                     SettingsPickerRow(
                         icon: "4k.tv",
-                        title: String(localized: "Quality"),
+                        title: NSLocalizedString("Maximum Quality Available", comment: "Label for the download quality picker, meaning the highest quality that can be selected."),
                         options: DownloadQualityPreference.allCases.map { $0.rawValue },
                         optionToString: { $0 },
                         selection: $downloadQuality

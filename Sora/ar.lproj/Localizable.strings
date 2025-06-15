@@ -36,7 +36,7 @@
 "Cancel" = "إلغاء";
 "Cellular Quality" = "جودة بيانات الجوال";
 "Check out some community modules here!" = "اطلع على بعض وحدات المجتمع هنا!";
-"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality." = "اختر دقة الفيديو المفضلة لاتصالات WiFi وبيانات الجوال. الدقة الأعلى تستهلك المزيد من البيانات ولكنها توفر جودة أفضل.";
+"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." = "اختر دقة الفيديو المفضلة لاتصالات WiFi وبيانات الجوال. الدقة الأعلى تستهلك المزيد من البيانات ولكنها توفر جودة أفضل. إذا لم تكن الجودة الدقيقة متاحة، سيتم اختيار الخيار الأقرب تلقائيًا.\n\nملاحظة: ليست كل مصادر الفيديو والمشغلات تدعم اختيار الجودة. تعمل هذه الميزة بشكل أفضل مع تدفقات HLS باستخدام مشغل Sora.";
 "Clear" = "مسح";
 "Clear All Downloads" = "مسح كل التنزيلات";
 "Clear Cache" = "مسح ذاكرة التخزين المؤقت";
@@ -382,3 +382,9 @@
 "Storage Used" = "المساحة المستخدمة";
 "Library cleared successfully" = "تم مسح المكتبة بنجاح";
 "All downloads deleted successfully" = "تم حذف جميع التنزيلات بنجاح";
+
+/* New additions */
+"Recent searches" = "عمليات البحث الأخيرة";
+"me frfr" = "أنا frfr";
+"Data" = "البيانات";
+"Maximum Quality Available" = "أعلى جودة متاحة";

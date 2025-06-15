@@ -36,7 +36,7 @@
 "Cancel" = "Annuleren";
 "Cellular Quality" = "Mobiele Kwaliteit";
 "Check out some community modules here!" = "Bekijk hier enkele community modules!";
-"Choose preferred video resolution for WiFi and cellular connections." = "Kies de gewenste videoresolutie voor WiFi en mobiele verbindingen.";
+"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." = "Kies de gewenste videoresolutie voor WiFi- en mobiele verbindingen. Hogere resoluties gebruiken meer data maar bieden een betere kwaliteit. Als de exacte kwaliteit niet beschikbaar is, wordt automatisch de dichtstbijzijnde optie geselecteerd.\n\nLet op: Niet alle videobronnen en spelers ondersteunen kwaliteitsselectie. Deze functie werkt het beste met HLS-streams via de Sora-speler.";
 "Clear" = "Wissen";
 "Clear All Downloads" = "Alle Downloads Wissen";
 "Clear Cache" = "Wis Cache";
@@ -381,4 +381,10 @@
 "Storage Management" = "Opslagbeheer";
 "Storage Used" = "Gebruikte Opslag";
 "Library cleared successfully" = "Bibliotheek succesvol gewist";
-"All downloads deleted successfully" = "Alle downloads succesvol verwijderd"; 
+"All downloads deleted successfully" = "Alle downloads succesvol verwijderd";
+
+/* New additions */
+"Recent searches" = "Recente zoekopdrachten";
+"me frfr" = "ik frfr";
+"Data" = "Gegevens";
+"Maximum Quality Available" = "Maximale beschikbare kwaliteit"; 

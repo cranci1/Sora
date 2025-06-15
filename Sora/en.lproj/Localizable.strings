@@ -36,7 +36,7 @@
 "Cancel" = "Cancel";
 "Cellular Quality" = "Cellular Quality";
 "Check out some community modules here!" = "Check out some community modules here!";
-"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality." = "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality.";
+"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." = "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player.";
 "Clear" = "Clear";
 "Clear All Downloads" = "Clear All Downloads";
 "Clear Cache" = "Clear Cache";
@@ -376,9 +376,15 @@
 "Max Concurrent Downloads" = "Max Concurrent Downloads";
 "Allow Cellular Downloads" = "Allow Cellular Downloads";
 "Quality Information" = "Quality Information";
+"Maximum Quality Available" = "Maximum Quality Available";
 
 /* Storage */
 "Storage Management" = "Storage Management";
 "Storage Used" = "Storage Used";
 "Library cleared successfully" = "Library cleared successfully";
-"All downloads deleted successfully" = "All downloads deleted successfully"; 
+"All downloads deleted successfully" = "All downloads deleted successfully";
+
+/* New additions */
+"Recent searches" = "Recent searches";
+"me frfr" = "me frfr";
+"Data" = "Data"; 

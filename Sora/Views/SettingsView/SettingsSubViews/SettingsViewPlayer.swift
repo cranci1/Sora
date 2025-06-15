@@ -265,8 +265,8 @@ struct SettingsViewPlayer: View {
                     )
                 }
                 SettingsSection(
-                    title: String(localized: "Video Quality Preferences"),
-                    footer: String(localized: "Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player.")
+                    title: NSLocalizedString("Video Quality Preferences", comment: ""),
+                    footer: NSLocalizedString("Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player.", comment: "Footer explaining video quality settings for translators.")
                 ) {
                     SettingsPickerRow(
                         icon: "wifi",

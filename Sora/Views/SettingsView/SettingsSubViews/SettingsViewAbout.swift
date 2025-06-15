@@ -130,6 +130,10 @@ struct SettingsViewAbout: View {
                 SettingsSection(title: "Contributors") {
                     ContributorsView()
                 }
+                
+                SettingsSection(title: "Translators") {
+                    TranslatorsView()
+                }
             }
             .padding(.vertical, 20)
         }
@@ -257,6 +261,107 @@ struct ContributorView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
+        }
+    }
+}
+
+struct TranslatorsView: View {
+    struct Translator: Identifiable {
+        let id: Int
+        let login: String
+        let avatarUrl: String
+        let language: String
+    }
+
+    private let translators: [Translator] = [
+        Translator(
+            id: 1,
+            login: "paul",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/54b3198dfb900837a9b8a7ec0b791add_webp.png?raw=true",
+            language: "Dutch"
+        ),
+        Translator(
+            id: 2,
+            login: "cranci",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/28ac8bfaa250788579af747d8fb7f827_webp.png?raw=true",
+            language: "Italian"
+        ),
+        Translator(
+            id: 3,
+            login: "ibro",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/05cd4f3508f99ba0a4ae2d0985c2f68c_webp.png?raw=true",
+            language: "Russian - Czech"
+        ),
+        Translator(
+            id: 4,
+            login: "Ciro",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/4accfc2fcfa436165febe4cad18de978_webp.png?raw=true",
+            language: "Arabic - French"
+        ),
+        Translator(
+            id: 5,
+            login: "storm",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/a6cc97f87d356523820461fd761fc3e1_webp.png?raw=true",
+            language: "Norwegian - Swedish"
+        ),
+        Translator(
+            id: 6,
+            login: "VastSector0",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/bd8bccb82e0393b767bb705c4dc07113_webp.png?raw=true",
+            language: "Spanish"
+        ),
+        Translator(
+            id: 7,
+            login: "Seiike",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/ca512dc4ce1f0997fd44503dce0a0fc8_webp.png?raw=true",
+            language: "Slovak"
+        ),
+        Translator(
+            id: 8,
+            login: "Cufiy",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/y1wwm0ed_png.png?raw=true",
+            language: "German"
+        )
+    ]
+
+    var body: some View {
+        ForEach(translators) { translator in
+            Button(action: {
+                if let url = URL(string: "https://github.com/\(translator.login)") {
+                    UIApplication.shared.open(url)
+                }
+            }) {
+                HStack {
+                    LazyImage(url: URL(string: translator.avatarUrl)) { state in
+                        if let uiImage = state.imageContainer?.image {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .frame(width: 40, height: 40)
+                                .clipShape(Circle())
+                        } else {
+                            ProgressView()
+                                .frame(width: 40, height: 40)
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(translator.login)
+                            .font(.headline)
+                            .foregroundColor(.accentColor)
+                        Text(translator.language)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "safari")
+                        .foregroundColor(.accentColor)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+            }
+            if translator.id != translators.last?.id {
+                Divider()
+                    .padding(.horizontal, 16)
+            }
         }
     }
 }

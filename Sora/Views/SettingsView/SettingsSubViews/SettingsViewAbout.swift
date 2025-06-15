@@ -247,6 +247,7 @@ struct ContributorView: View {
                     .foregroundColor(
                         contributor.login == "IBH-RAD" ? Color(hexTwo: "#41127b") :
                         contributor.login == "50n50" ? Color(hexTwo: "#fa4860") :
+                        contributor.login == "CiroHoodLove" ? Color(hexTwo: "#940101") :
                         .accentColor
                     )
 

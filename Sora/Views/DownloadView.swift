@@ -888,7 +888,7 @@ struct EnhancedDownloadGroupCard: View {
                             .foregroundStyle(.primary)
                         
                         HStack(spacing: 16) {
-                            Label("\(group.assetCount)", systemImage: "play.rectangle")
+                            Label("\(group.assetCount) \(group.assetCount == 1 ? "Episode" : "Episodes")", systemImage: "play.rectangle")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             
@@ -997,7 +997,7 @@ struct EnhancedShowEpisodesView: View {
                                 HStack {
                                     Image(systemName: "play.rectangle.fill")
                                         .foregroundColor(.accentColor)
-                                    Text("\(group.assetCount) Episodes")
+                                    Text("\(group.assetCount) \(group.assetCount == 1 ? "Episode" : "Episodes")")
                                         .font(.headline)
                                         .foregroundColor(.secondary)
                                 }

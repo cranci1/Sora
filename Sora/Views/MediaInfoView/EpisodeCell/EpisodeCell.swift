@@ -359,7 +359,7 @@ private extension EpisodeCell {
                     swipeOffset = newOffset
                 }
             } else if isShowingActions {
-                swipeOffset = max(proposedOffset, -maxSwipe)
+                swipeOffset = min(max(proposedOffset, -maxSwipe), maxSwipe * 0.2)
             }
         } else if !hasSignificantHorizontalMovement {
             dragState = .inactive

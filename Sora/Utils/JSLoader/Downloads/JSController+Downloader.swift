@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 import AVFoundation
 
-
 struct DownloadRequest {
     let url: URL
     let headers: [String: String]

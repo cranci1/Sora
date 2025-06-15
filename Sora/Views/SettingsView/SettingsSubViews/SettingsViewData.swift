@@ -141,10 +141,9 @@ struct SettingsViewData: View {
     @State private var isCalculatingSize: Bool = false
     @State private var cacheSize: Int64 = 0
     @State private var documentsSize: Int64 = 0
-    @State private var downloadsSize: Int64 = 0
     
     enum ActiveAlert {
-        case eraseData, removeDocs, removeDownloads, clearCache
+        case eraseData, removeDocs, clearCache
     }
     
     @State private var activeAlert: ActiveAlert = .eraseData
@@ -154,7 +153,7 @@ struct SettingsViewData: View {
             VStack(spacing: 24) {
                 SettingsSection(
                     title: NSLocalizedString("App Storage", comment: ""),
-                    footer: NSLocalizedString("The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nDo not erase App Data unless you understand the consequences — it may cause the app to malfunction.", comment: "")
+                    footer: NSLocalizedString("The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nErasing the App Data will clears all your settings and data of the app.", comment: "")
                 ) {
                     VStack(spacing: 0) {
                         SettingsButtonRow(
@@ -163,18 +162,6 @@ struct SettingsViewData: View {
                             subtitle: cacheSizeText,
                             action: {
                                 activeAlert = .clearCache
-                                showAlert = true
-                            }
-                        )
-                        
-                        Divider().padding(.horizontal, 16)
-                        
-                        SettingsButtonRow(
-                            icon: "film",
-                            title: NSLocalizedString("Remove Downloads", comment: ""),
-                            subtitle: formatSize(downloadsSize),
-                            action: {
-                                activeAlert = .removeDownloads
                                 showAlert = true
                             }
                         )
@@ -209,7 +196,6 @@ struct SettingsViewData: View {
             .onAppear {
                 calculateCacheSize()
                 updateSizes()
-                calculateDownloadsSize()
             }
             .alert(isPresented: $showAlert) {
                 switch activeAlert {
@@ -228,15 +214,6 @@ struct SettingsViewData: View {
                         message: Text(NSLocalizedString("Are you sure you want to remove all files in the Documents folder? This will remove all modules.", comment: "")),
                         primaryButton: .destructive(Text(NSLocalizedString("Remove", comment: ""))) {
                             removeAllFilesInDocuments()
-                        },
-                        secondaryButton: .cancel()
-                    )
-                case .removeDownloads:
-                    return Alert(
-                        title: Text(NSLocalizedString("Remove Downloaded Media", comment: "")),
-                        message: Text(NSLocalizedString("Are you sure you want to remove all downloaded media files (.mov, .mp4, .pkg)? This action cannot be undone.", comment: "")),
-                        primaryButton: .destructive(Text(NSLocalizedString("Remove", comment: ""))) {
-                            removeDownloadedMedia()
                         },
                         secondaryButton: .cancel()
                     )
@@ -286,42 +263,6 @@ struct SettingsViewData: View {
         }
     }
     
-    func calculateDownloadsSize() {
-        DispatchQueue.global(qos: .background).async {
-            if let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-                let size = calculateMediaFilesSize(in: documentsURL)
-                DispatchQueue.main.async {
-                    self.downloadsSize = size
-                }
-            }
-        }
-    }
-    
-    func calculateMediaFilesSize(in directory: URL) -> Int64 {
-        let fileManager = FileManager.default
-        var totalSize: Int64 = 0
-        let mediaExtensions = [".mov", ".mp4", ".pkg"]
-        
-        do {
-            let contents = try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.fileSizeKey, .isDirectoryKey])
-            for url in contents {
-                let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey, .isDirectoryKey])
-                if resourceValues.isDirectory == true {
-                    totalSize += calculateMediaFilesSize(in: url)
-                } else {
-                    let fileExtension = url.pathExtension.lowercased()
-                    if mediaExtensions.contains(".\(fileExtension)") {
-                        totalSize += Int64(resourceValues.fileSize ?? 0)
-                    }
-                }
-            }
-        } catch {
-            Logger.shared.log("Error calculating media files size: \(error)", type: "Error")
-        }
-        
-        return totalSize
-    }
-    
     func clearAllCaches() {
         clearCache()
     }
@@ -337,44 +278,9 @@ struct SettingsViewData: View {
                 Logger.shared.log("Cache cleared successfully!", type: "General")
                 calculateCacheSize()
                 updateSizes()
-                calculateDownloadsSize()
             }
         } catch {
             Logger.shared.log("Failed to clear cache.", type: "Error")
-        }
-    }
-    
-    func removeDownloadedMedia() {
-        let fileManager = FileManager.default
-        let mediaExtensions = [".mov", ".mp4", ".pkg"]
-        
-        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
-            removeMediaFiles(in: documentsURL, extensions: mediaExtensions)
-            Logger.shared.log("Downloaded media files removed", type: "General")
-            updateSizes()
-            calculateDownloadsSize()
-        }
-    }
-    
-    func removeMediaFiles(in directory: URL, extensions: [String]) {
-        let fileManager = FileManager.default
-        
-        do {
-            let contents = try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.isDirectoryKey])
-            for url in contents {
-                let resourceValues = try url.resourceValues(forKeys: [.isDirectoryKey])
-                if resourceValues.isDirectory == true {
-                    removeMediaFiles(in: url, extensions: extensions)
-                } else {
-                    let fileExtension = ".\(url.pathExtension.lowercased())"
-                    if extensions.contains(fileExtension) {
-                        try fileManager.removeItem(at: url)
-                        Logger.shared.log("Removed media file: \(url.lastPathComponent)", type: "General")
-                    }
-                }
-            }
-        } catch {
-            Logger.shared.log("Error removing media files in \(directory.path): \(error)", type: "Error")
         }
     }
     
@@ -431,4 +337,3 @@ struct SettingsViewData: View {
         return formatter.string(fromByteCount: bytes)
     }
 }
-

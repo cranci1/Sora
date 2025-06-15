@@ -174,7 +174,7 @@ struct SettingsView: View {
                             Divider().padding(.horizontal, 16)
                             
                             NavigationLink(destination: SettingsViewDownloads()) {
-                                SettingsNavigationRow(icon: "arrow.down.circle", titleKey: "Download")
+                                SettingsNavigationRow(icon: "arrow.down.circle", titleKey: "Downloads")
                             }
                             Divider().padding(.horizontal, 16)
                             

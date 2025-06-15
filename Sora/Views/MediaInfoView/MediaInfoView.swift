@@ -1283,18 +1283,12 @@ struct MediaInfoView: View {
                     self.tmdbType = type
                     tmdbSuccess = true
                     Logger.shared.log("Successfully fetched TMDB ID: \(id) (type: \(type.rawValue))", type: "Debug")
-                    
-                    if self.activeProvider != "TMDB" {
-                        self.fetchTMDBPosterImageAndSet()
-                    }
                 } else {
                     Logger.shared.log("Failed to fetch TMDB ID", type: "Debug")
                 }
                 checkCompletion()
             }
         }
-        
-        fetchAniListIDForSync()
     }
     
     private func fetchItemID(byTitle title: String, completion: @escaping (Result<Int, Error>) -> Void) {

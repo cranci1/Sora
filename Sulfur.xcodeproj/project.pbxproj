@@ -43,6 +43,9 @@
 		132AF1252D9995F900A0140B /* JSController-Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132AF1242D9995F900A0140B /* JSController-Search.swift */; };
 		13367ECC2DF70698009CB33F /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = 13367ECB2DF70698009CB33F /* Nuke */; };
 		13367ECE2DF70698009CB33F /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 13367ECD2DF70698009CB33F /* NukeUI */; };
+		133CF6A62DFEBE9000BD13F9 /* VideoWatchingActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CF6A32DFEBE8F00BD13F9 /* VideoWatchingActivity.swift */; };
+		133CF6A72DFEBE9000BD13F9 /* SharePlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CF6A42DFEBE8F00BD13F9 /* SharePlayManager.swift */; };
+		133CF6A82DFEBE9000BD13F9 /* SharePlayCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CF6A52DFEBE9000BD13F9 /* SharePlayCoordinator.swift */; };
 		133D7C6E2D2BE2500075467E /* SoraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6D2D2BE2500075467E /* SoraApp.swift */; };
 		133D7C702D2BE2500075467E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133D7C6F2D2BE2500075467E /* ContentView.swift */; };
 		133D7C722D2BE2520075467E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 133D7C712D2BE2520075467E /* Assets.xcassets */; };
@@ -143,6 +146,9 @@
 		132AF1202D99951700A0140B /* JSController-Streams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Streams.swift"; sourceTree = "<group>"; };
 		132AF1222D9995C300A0140B /* JSController-Details.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Details.swift"; sourceTree = "<group>"; };
 		132AF1242D9995F900A0140B /* JSController-Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Search.swift"; sourceTree = "<group>"; };
+		133CF6A32DFEBE8F00BD13F9 /* VideoWatchingActivity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoWatchingActivity.swift; sourceTree = "<group>"; };
+		133CF6A42DFEBE8F00BD13F9 /* SharePlayManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SharePlayManager.swift; sourceTree = "<group>"; };
+		133CF6A52DFEBE9000BD13F9 /* SharePlayCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SharePlayCoordinator.swift; sourceTree = "<group>"; };
 		133D7C6A2D2BE2500075467E /* Sulfur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sulfur.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		133D7C6D2D2BE2500075467E /* SoraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoraApp.swift; sourceTree = "<group>"; };
 		133D7C6F2D2BE2500075467E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -379,6 +385,27 @@
 			path = Analytics;
 			sourceTree = "<group>";
 		};
+		133CF6A22DFEBE8100BD13F9 /* SharePlay */ = {
+			isa = PBXGroup;
+			children = (
+				133CF6A42DFEBE8F00BD13F9 /* SharePlayManager.swift */,
+				133CF6A52DFEBE9000BD13F9 /* SharePlayCoordinator.swift */,
+				133CF6A32DFEBE8F00BD13F9 /* VideoWatchingActivity.swift */,
+			);
+			path = SharePlay;
+			sourceTree = "<group>";
+		};
+		133CF6A92DFEBEAB00BD13F9 /* MediaUtils */ = {
+			isa = PBXGroup;
+			children = (
+				133CF6A22DFEBE8100BD13F9 /* SharePlay */,
+				13DC0C442D302C6A00D0F966 /* NormalPlayer */,
+				13EA2BD02D32D97400C1EBD7 /* CustomPlayer */,
+				13C0E5E82D5F85DD00E7F619 /* ContinueWatching */,
+			);
+			path = MediaUtils;
+			sourceTree = "<group>";
+		};
 		133D7C612D2BE2500075467E = {
 			isa = PBXGroup;
 			children = (
@@ -408,8 +435,9 @@
 				130C6BF82D53A4C200DC1432 /* Sora.entitlements */,
 				13DC0C412D2EC9BA00D0F966 /* Info.plist */,
 				13103E802D589D6C000F0673 /* Tracking Services */,
-				133D7C852D2BE2640075467E /* Utils */,
+				133CF6A92DFEBEAB00BD13F9 /* MediaUtils */,
 				133D7C7B2D2BE2630075467E /* Views */,
+				133D7C852D2BE2640075467E /* Utils */,
 				133D7C6D2D2BE2500075467E /* SoraApp.swift */,
 				133D7C6F2D2BE2500075467E /* ContentView.swift */,
 				133D7C712D2BE2520075467E /* Assets.xcassets */,
@@ -479,10 +507,8 @@
 				133D7C8A2D2BE2640075467E /* JSLoader */,
 				1327FBA52D758CEA00FC6689 /* Analytics */,
 				133D7C862D2BE2640075467E /* Extensions */,
-				13DC0C442D302C6A00D0F966 /* MediaPlayer */,
 				13103E8C2D58E037000F0673 /* SkeletonCells */,
 				72443C832DC8046500A61321 /* DownloadUtils */,
-				13C0E5E82D5F85DD00E7F619 /* ContinueWatching */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -626,14 +652,13 @@
 			path = Auth;
 			sourceTree = "<group>";
 		};
-		13DC0C442D302C6A00D0F966 /* MediaPlayer */ = {
+		13DC0C442D302C6A00D0F966 /* NormalPlayer */ = {
 			isa = PBXGroup;
 			children = (
-				13EA2BD02D32D97400C1EBD7 /* CustomPlayer */,
 				13DC0C452D302C7500D0F966 /* VideoPlayer.swift */,
 				13EA2BD82D32D98400C1EBD7 /* NormalPlayer.swift */,
 			);
-			path = MediaPlayer;
+			path = NormalPlayer;
 			sourceTree = "<group>";
 		};
 		13E62FBF2DABC3A20007E259 /* Trakt */ = {
@@ -845,6 +870,7 @@
 				138AA1B82D2D66FD0021F9DF /* EpisodeCell.swift in Sources */,
 				722248662DCBC13E00CABE2D /* JSController-Downloads.swift in Sources */,
 				133D7C8C2D2BE2640075467E /* SearchView.swift in Sources */,
+				133CF6A62DFEBE9000BD13F9 /* VideoWatchingActivity.swift in Sources */,
 				13DB468E2D90093A008CBC03 /* Anilist-Token.swift in Sources */,
 				1EAC7A322D888BC50083984D /* MusicProgressSlider.swift in Sources */,
 				722248632DCBAA4700CABE2D /* JSController-HeaderManager.swift in Sources */,
@@ -852,6 +878,7 @@
 				133D7C922D2BE2640075467E /* URLSession.swift in Sources */,
 				0457C5A12DE78385000AFBD9 /* BookmarksDetailView.swift in Sources */,
 				133D7C912D2BE2640075467E /* SettingsViewModule.swift in Sources */,
+				133CF6A82DFEBE9000BD13F9 /* SharePlayCoordinator.swift in Sources */,
 				13E62FC22DABC5830007E259 /* Trakt-Login.swift in Sources */,
 				133F55BB2D33B55100E08EEA /* LibraryManager.swift in Sources */,
 				13E62FC42DABC58C0007E259 /* Trakt-Token.swift in Sources */,
@@ -879,6 +906,7 @@
 				13C0E5EA2D5F85EA00E7F619 /* ContinueWatchingManager.swift in Sources */,
 				13637B8A2DE0EA1100BDA2FC /* UserDefaults.swift in Sources */,
 				0457C59D2DE78267000AFBD9 /* BookmarkGridView.swift in Sources */,
+				133CF6A72DFEBE9000BD13F9 /* SharePlayManager.swift in Sources */,
 				0457C59E2DE78267000AFBD9 /* BookmarkLink.swift in Sources */,
 				0457C59F2DE78267000AFBD9 /* BookmarkGridItemView.swift in Sources */,
 			);

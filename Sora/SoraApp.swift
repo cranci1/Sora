@@ -19,6 +19,7 @@ struct SoraApp: App {
         if let userAccentColor = UserDefaults.standard.color(forKey: "accentColor") {
             UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).tintColor = userAccentColor
         }
+        clearTmpFolder()
         
         TraktToken.checkAuthenticationStatus { isAuthenticated in
             if isAuthenticated {
@@ -101,6 +102,22 @@ struct SoraApp: App {
             
         default:
             break
+        }
+    }
+    
+    private func clearTmpFolder() {
+        let fileManager = FileManager.default
+        let tmpDirectory = NSTemporaryDirectory()
+        
+        do {
+            let tmpURL = URL(fileURLWithPath: tmpDirectory)
+            let tmpContents = try fileManager.contentsOfDirectory(at: tmpURL, includingPropertiesForKeys: nil)
+            
+            for url in tmpContents {
+                try fileManager.removeItem(at: url)
+            }
+        } catch {
+            Logger.shared.log("Failed to clear tmp folder: \(error.localizedDescription)", type: "Error")
         }
     }
 }

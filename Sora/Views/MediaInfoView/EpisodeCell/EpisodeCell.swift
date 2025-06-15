@@ -794,6 +794,14 @@ private extension EpisodeCell {
 private extension EpisodeCell {
     
     func fetchAnimeEpisodeDetails() {
+        if let fetchMeta = UserDefaults.standard.object(forKey: "fetchEpisodeMetadata"),
+           !(fetchMeta as? Bool ?? true) {
+            DispatchQueue.main.async {
+                self.isLoading = false
+                self.retryAttempts = 0
+            }
+            return
+        }
         guard let url = URL(string: "https://api.ani.zip/mappings?anilist_id=\(itemID)") else {
             isLoading = false
             Logger.shared.log("Invalid URL for itemID: \(itemID)", type: "Error")
@@ -870,6 +878,13 @@ private extension EpisodeCell {
     }
     
     func fetchTMDBEpisodeImage() {
+        if let fetchMeta = UserDefaults.standard.object(forKey: "fetchEpisodeMetadata"),
+           !(fetchMeta as? Bool ?? true) {
+            DispatchQueue.main.async {
+                self.isLoading = false
+            }
+            return
+        }
         guard let tmdbID = tmdbID, let season = seasonNumber else { return }
         
         let episodeNum = episodeID + 1

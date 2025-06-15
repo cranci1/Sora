@@ -160,7 +160,7 @@ struct SettingsViewModule: View {
     @State private var showLibrary = false
     
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 if moduleManager.modules.isEmpty {
                     SettingsSection(title: NSLocalizedString("Modules", comment: "")) {

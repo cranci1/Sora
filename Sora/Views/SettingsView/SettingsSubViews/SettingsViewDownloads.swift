@@ -161,7 +161,7 @@ struct SettingsViewDownloads: View {
     @State private var isCalculating: Bool = false
     
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 SettingsSection(
                     title: String(localized: "Download Settings"),

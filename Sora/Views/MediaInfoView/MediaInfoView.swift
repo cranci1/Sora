@@ -226,7 +226,7 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var mainScrollView: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             ZStack(alignment: .top) {
                 heroImageSection
                 contentContainer

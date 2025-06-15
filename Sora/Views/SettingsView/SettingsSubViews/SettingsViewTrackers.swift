@@ -115,7 +115,7 @@ struct SettingsViewTrackers: View {
     @State private var isTraktLoading: Bool = false
     
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 SettingsSection(title: NSLocalizedString("AniList", comment: "")) {
                     VStack(spacing: 0) {

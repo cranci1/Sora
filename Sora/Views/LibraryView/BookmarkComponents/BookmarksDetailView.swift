@@ -109,7 +109,7 @@ private struct BookmarksDetailGrid: View {
     let moduleManager: ModuleManager
     private let columns = [GridItem(.adaptive(minimum: 150))]
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(bookmarks) { bookmark in
                     BookmarksDetailGridCell(bookmark: bookmark, moduleManager: moduleManager)

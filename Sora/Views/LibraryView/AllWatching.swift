@@ -105,7 +105,7 @@ struct AllWatchingView: View {
             .padding(.horizontal)
             .padding(.top)
             
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 12) {
                     ForEach(sortedItems) { item in
                         FullWidthContinueWatchingCell(

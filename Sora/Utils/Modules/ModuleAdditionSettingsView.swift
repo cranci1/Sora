@@ -41,7 +41,7 @@ struct ModuleAdditionSettingsView: View {
                 }
                 .padding(.bottom, 8)
                 
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         if let metadata = moduleMetadata {
                             VStack(spacing: 0) {

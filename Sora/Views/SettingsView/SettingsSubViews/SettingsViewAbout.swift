@@ -60,7 +60,7 @@ fileprivate struct SettingsSection<Content: View>: View {
 
 struct SettingsViewAbout: View {
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 SettingsSection(title: "App Info", footer: "Sora/Sulfur will always remain free with no ads!") {
                     HStack(alignment: .center, spacing: 16) {

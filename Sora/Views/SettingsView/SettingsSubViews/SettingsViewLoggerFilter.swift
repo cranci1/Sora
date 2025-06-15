@@ -177,7 +177,7 @@ struct SettingsViewLoggerFilter: View {
     }
     
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 SettingsSection(title: NSLocalizedString("Log Types", comment: "")) {
                     ForEach($viewModel.filters) { $filter in

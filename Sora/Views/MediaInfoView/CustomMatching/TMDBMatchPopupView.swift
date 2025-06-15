@@ -38,7 +38,7 @@ struct TMDBMatchPopupView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     if isLoading {
                         ProgressView()

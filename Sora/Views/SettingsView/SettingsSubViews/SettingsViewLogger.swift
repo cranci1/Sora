@@ -74,7 +74,7 @@ struct SettingsViewLogger: View {
     }
     
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 SettingsSection(title: NSLocalizedString("Logs", comment: "")) {
                     if isLoading {

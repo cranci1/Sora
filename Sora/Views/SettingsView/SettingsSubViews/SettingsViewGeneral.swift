@@ -173,7 +173,7 @@ struct SettingsViewGeneral: View {
     @State private var showRestartAlert = false
     
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 SettingsSection(title: NSLocalizedString("Interface", comment: "")) {
                     SettingsPickerRow(

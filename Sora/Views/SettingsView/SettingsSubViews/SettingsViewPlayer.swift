@@ -212,7 +212,7 @@ struct SettingsViewPlayer: View {
     private let qualityOptions = VideoQualityPreference.allCases.map { $0.rawValue }
     
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 SettingsSection(
                     title: NSLocalizedString("Media Player", comment: ""),

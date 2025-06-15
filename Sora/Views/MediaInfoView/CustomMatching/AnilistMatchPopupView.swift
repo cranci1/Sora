@@ -29,7 +29,7 @@ struct AnilistMatchPopupView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("".uppercased())
                         .font(.footnote)

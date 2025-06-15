@@ -93,7 +93,7 @@ struct SearchView: View {
             .padding(.horizontal, 20)
             .padding(.top, 20)
             
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 SearchContent(
                     selectedModule: selectedModule,
                     searchQuery: searchQuery,

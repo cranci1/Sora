@@ -134,7 +134,7 @@ struct SettingsView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     Text("Settings")
                         .font(.largeTitle)

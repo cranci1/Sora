@@ -56,7 +56,7 @@ struct LibraryView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Library")
                             .font(.largeTitle)

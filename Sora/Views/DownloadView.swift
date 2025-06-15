@@ -79,7 +79,7 @@ struct DownloadView: View {
             if jsController.activeDownloads.isEmpty && jsController.downloadQueue.isEmpty {
                 emptyActiveDownloadsView
             } else {
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
                         if !jsController.downloadQueue.isEmpty {
                             DownloadSectionView(
@@ -109,7 +109,7 @@ struct DownloadView: View {
             if filteredAndSortedAssets.isEmpty {
                 emptyDownloadsView
             } else {
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
                         DownloadSummaryCard(
                             totalShows: groupedAssets.count,
@@ -956,7 +956,7 @@ struct EnhancedShowEpisodesView: View {
     }
     
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 VStack(spacing: 20) {
                     HStack(alignment: .top, spacing: 20) {

@@ -347,8 +347,9 @@ struct SettingsViewGeneral: View {
                     )
                 }
             }
-            .navigationTitle("General")
+            .padding(.vertical, 20)
             .scrollViewBottomPadding()
+            .navigationTitle("General")
         }
         .navigationTitle(NSLocalizedString("General", comment: ""))
         .scrollViewBottomPadding()

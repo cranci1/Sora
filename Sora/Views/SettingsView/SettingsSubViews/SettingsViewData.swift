@@ -191,6 +191,7 @@ struct SettingsViewData: View {
                     }
                 }
             }
+            .padding(.vertical, 20)
             .scrollViewBottomPadding()
             .navigationTitle(NSLocalizedString("App Data", comment: ""))
             .onAppear {

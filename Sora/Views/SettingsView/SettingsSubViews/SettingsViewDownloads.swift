@@ -309,9 +309,9 @@ struct SettingsViewDownloads: View {
                 }
             }
             .padding(.vertical, 20)
+            .scrollViewBottomPadding()
+            .navigationTitle(String(localized: "Downloads"))
         }
-        .navigationTitle(String(localized: "Downloads"))
-        .scrollViewBottomPadding()
         .alert(String(localized: "Delete All Downloads"), isPresented: $showClearConfirmation) {
             Button(String(localized: "Cancel"), role: .cancel) { }
             Button(String(localized: "Delete All"), role: .destructive) {

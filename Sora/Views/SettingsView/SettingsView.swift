@@ -131,6 +131,7 @@ struct SettingsView: View {
     @Environment(\.colorScheme) var colorScheme
     @StateObject var settings = Settings()
     @EnvironmentObject var moduleManager: ModuleManager
+    @State private var isNavigationActive = false
     
     var body: some View {
         NavigationView {
@@ -150,7 +151,7 @@ struct SettingsView: View {
                             .foregroundStyle(.gray)
                             .padding(.horizontal, 20)
                         
-                        NavigationLink(destination: SettingsViewModule()) {
+                        NavigationLink(destination: SettingsViewModule().navigationBarBackButtonHidden(false)) {
                             ModulePreviewRow()
                         }
                         .padding(.horizontal, 20)
@@ -163,22 +164,22 @@ struct SettingsView: View {
                             .padding(.horizontal, 20)
                         
                         VStack(spacing: 0) {
-                            NavigationLink(destination: SettingsViewGeneral()) {
+                            NavigationLink(destination: SettingsViewGeneral().navigationBarBackButtonHidden(false)) {
                                 SettingsNavigationRow(icon: "gearshape", titleKey: "General Preferences")
                             }
                             Divider().padding(.horizontal, 16)
                             
-                            NavigationLink(destination: SettingsViewPlayer()) {
+                            NavigationLink(destination: SettingsViewPlayer().navigationBarBackButtonHidden(false)) {
                                 SettingsNavigationRow(icon: "play.circle", titleKey: "Video Player")
                             }
                             Divider().padding(.horizontal, 16)
                             
-                            NavigationLink(destination: SettingsViewDownloads()) {
+                            NavigationLink(destination: SettingsViewDownloads().navigationBarBackButtonHidden(false)) {
                                 SettingsNavigationRow(icon: "arrow.down.circle", titleKey: "Downloads")
                             }
                             Divider().padding(.horizontal, 16)
                             
-                            NavigationLink(destination: SettingsViewTrackers()) {
+                            NavigationLink(destination: SettingsViewTrackers().navigationBarBackButtonHidden(false)) {
                                 SettingsNavigationRow(icon: "square.stack.3d.up", titleKey: "Trackers")
                             }
                         }
@@ -208,12 +209,12 @@ struct SettingsView: View {
                             .padding(.horizontal, 20)
                         
                         VStack(spacing: 0) {
-                            NavigationLink(destination: SettingsViewData()) {
+                            NavigationLink(destination: SettingsViewData().navigationBarBackButtonHidden(false)) {
                                 SettingsNavigationRow(icon: "folder", titleKey: "Data")
                             }
                             Divider().padding(.horizontal, 16)
                             
-                            NavigationLink(destination: SettingsViewLogger()) {
+                            NavigationLink(destination: SettingsViewLogger().navigationBarBackButtonHidden(false)) {
                                 SettingsNavigationRow(icon: "doc.text", titleKey: "Logs")
                             }
                         }
@@ -243,7 +244,7 @@ struct SettingsView: View {
                             .padding(.horizontal, 20)
                         
                         VStack(spacing: 0) {
-                            NavigationLink(destination: SettingsViewAbout()) {
+                            NavigationLink(destination: SettingsViewAbout().navigationBarBackButtonHidden(false)) {
                                 SettingsNavigationRow(icon: "info.circle", titleKey: "About Sora")
                             }
                             Divider().padding(.horizontal, 16)

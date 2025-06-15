@@ -343,9 +343,9 @@ struct SettingsViewGeneral: View {
         .scrollViewBottomPadding()
         .alert(isPresented: $showRestartAlert) {
             Alert(
-                title: Text("Restart Required"),
-                message: Text(NSLocalizedString("Please restart the app to apply the language change.", comment: "")),
-                dismissButton: .default(Text("OK"))
+                title: Text(verbatim: "Restart Required"),
+                message: Text(verbatim: "Please restart the app to apply the language change."),
+                dismissButton: .default(Text(verbatim: "OK"))
             )
         }
     }

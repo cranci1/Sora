@@ -7,6 +7,7 @@
 
 import Drops
 import UIKit
+import SwiftUI
 
 class DropManager {
     static let shared = DropManager()
@@ -59,7 +60,8 @@ class DropManager {
     }
     
     func info(_ message: String, duration: TimeInterval = 2.0) {
-        let icon = UIImage(systemName: "info.circle.fill")?.withTintColor(.blue, renderingMode: .alwaysOriginal)
+        let accentColor = UIColor(Color.accentColor)
+        let icon = UIImage(systemName: "info.circle.fill")?.withTintColor(accentColor, renderingMode: .alwaysOriginal)
         showDrop(title: "Info", subtitle: message, duration: duration, icon: icon)
     }
     

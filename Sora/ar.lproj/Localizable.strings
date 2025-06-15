@@ -113,7 +113,7 @@
 "Force Landscape" = "فرض الوضع الأفقي";
 "General" = "عام";
 "General events and activities." = "الأحداث والأنشطة العامة.";
-"General Preferences" = "التفضيلات العامة";
+"General Preferences" = "الإعدادات العامة";
 "Hide Splash Screen" = "إخفاء شاشة البداية";
 "HLS video downloading." = "تنزيل فيديو HLS.";
 "Hold Speed" = "سرعة الضغط المطول";
@@ -339,7 +339,7 @@
 /* Interface */
 "Thumbnails Width" = "عرض الصور المصغرة";
 "TMDB Match" = "مطابقة TMDB";
-"Trackers" = "المتتبعات";
+"Trackers" = "منصات المتابعة";
 "Trakt" = "Trakt";
 "Trakt.tv" = "Trakt.tv";
 
@@ -385,6 +385,6 @@
 
 /* New additions */
 "Recent searches" = "عمليات البحث الأخيرة";
-"me frfr" = "أنا frfr";
+"me frfr" = "me frfr";
 "Data" = "البيانات";
 "Maximum Quality Available" = "أعلى جودة متاحة";

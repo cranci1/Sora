@@ -202,7 +202,15 @@ struct SettingsViewGeneral: View {
                     SettingsPickerRow(
                         icon: "globe",
                         title: NSLocalizedString("App Language", comment: ""),
-                        options: ["English", "Dutch", "French", "Arabic", "Czech", "Spanish"],
+                        options: [
+                            "English",
+                            "Arabic",
+                            "Czech",
+                            "Dutch",
+                            "French",
+                            "Russian",
+                            "Spanish"
+                        ],
                         optionToString: { lang in
                             switch lang {
                             case "English": return "English"
@@ -211,6 +219,7 @@ struct SettingsViewGeneral: View {
                             case "Arabic": return "العربية"
                             case "Czech": return "Čeština"
                             case "Spanish": return "Español"
+                            case "Russian": return "Русский"
                             default: return lang
                             }
                         },

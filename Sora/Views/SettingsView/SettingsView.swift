@@ -412,6 +412,8 @@ class Settings: ObservableObject {
             languageCode = "cs"
         case "Spanish":
             languageCode = "es"
+        case "Russian":
+            languageCode = "ru"
         default:
             languageCode = "en"
         }

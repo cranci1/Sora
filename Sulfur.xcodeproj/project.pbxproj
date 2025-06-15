@@ -14,6 +14,7 @@
 		0402DA172DE7B7B8003BB42C /* SearchViewComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402DA162DE7B7B8003BB42C /* SearchViewComponents.swift */; };
 		0409FE872DFF0870000DB00C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0409FE852DFF0870000DB00C /* Localizable.strings */; };
 		0409FE882DFF0870000DB00C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0409FE822DFF0870000DB00C /* Localizable.strings */; };
+		0409FE8C2DFF2886000DB00C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0409FE8A2DFF2886000DB00C /* Localizable.strings */; };
 		0457C5972DE7712A000AFBD9 /* DeviceScaleModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C5942DE7712A000AFBD9 /* DeviceScaleModifier.swift */; };
 		0457C59D2DE78267000AFBD9 /* BookmarkGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C59A2DE78267000AFBD9 /* BookmarkGridView.swift */; };
 		0457C59E2DE78267000AFBD9 /* BookmarkLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0457C59B2DE78267000AFBD9 /* BookmarkLink.swift */; };
@@ -114,6 +115,7 @@
 		0402DA162DE7B7B8003BB42C /* SearchViewComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewComponents.swift; sourceTree = "<group>"; };
 		0409FE812DFF0870000DB00C /* cz */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = cz; path = Localizable.strings; sourceTree = "<group>"; };
 		0409FE842DFF0870000DB00C /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = Localizable.strings; sourceTree = "<group>"; };
+		0409FE892DFF2886000DB00C /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = Localizable.strings; sourceTree = "<group>"; };
 		0457C5942DE7712A000AFBD9 /* DeviceScaleModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceScaleModifier.swift; sourceTree = "<group>"; };
 		0457C5992DE78267000AFBD9 /* BookmarkGridItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkGridItemView.swift; sourceTree = "<group>"; };
 		0457C59A2DE78267000AFBD9 /* BookmarkGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkGridView.swift; sourceTree = "<group>"; };
@@ -246,6 +248,14 @@
 				0409FE852DFF0870000DB00C /* Localizable.strings */,
 			);
 			path = es.lproj;
+			sourceTree = "<group>";
+		};
+		0409FE8B2DFF2886000DB00C /* ru.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				0409FE8A2DFF2886000DB00C /* Localizable.strings */,
+			);
+			path = ru.lproj;
 			sourceTree = "<group>";
 		};
 		0457C5962DE7712A000AFBD9 /* ViewModifiers */ = {
@@ -388,6 +398,7 @@
 		133D7C6C2D2BE2500075467E /* Sora */ = {
 			isa = PBXGroup;
 			children = (
+				0409FE8B2DFF2886000DB00C /* ru.lproj */,
 				0409FE832DFF0870000DB00C /* cz.lproj */,
 				0409FE862DFF0870000DB00C /* es.lproj */,
 				0488FA9B2DFDF385007575E1 /* ar.lproj */,
@@ -744,6 +755,7 @@
 				ar,
 				cz,
 				es,
+				ru,
 			);
 			mainGroup = 133D7C612D2BE2500075467E;
 			packageReferences = (
@@ -770,6 +782,7 @@
 				0488FA9E2DFDF3BB007575E1 /* Localizable.strings in Resources */,
 				0409FE872DFF0870000DB00C /* Localizable.strings in Resources */,
 				0409FE882DFF0870000DB00C /* Localizable.strings in Resources */,
+				0409FE8C2DFF2886000DB00C /* Localizable.strings in Resources */,
 				133D7C752D2BE2520075467E /* Preview Assets.xcassets in Resources */,
 				133D7C722D2BE2520075467E /* Assets.xcassets in Resources */,
 				0488FA952DFDE724007575E1 /* Localizable.strings in Resources */,
@@ -886,6 +899,14 @@
 			isa = PBXVariantGroup;
 			children = (
 				0409FE842DFF0870000DB00C /* es */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		0409FE8A2DFF2886000DB00C /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0409FE892DFF2886000DB00C /* ru */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";

@@ -203,7 +203,10 @@ struct MediaInfoView: View {
     private var navigationOverlay: some View {
         VStack {
             HStack {
-                Button(action: { dismiss() }) {
+                Button(action: { 
+                    tabBarController.showTabBar()
+                    dismiss()
+                }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 24))
                         .foregroundColor(.primary)

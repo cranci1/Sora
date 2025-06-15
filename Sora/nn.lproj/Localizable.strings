@@ -1,0 +1,384 @@
+/* General */
+"About" = "Om oss";
+"About Sora" = "Om Sora";
+"Active" = "Aktiv";
+"Active Downloads" = "Aktive nedlastinger";
+"Actively downloading media can be tracked from here." = "Aktive nedlastninger av media kan spores her.";
+"Add Module" = "Legg til Modul";
+"Adjust the number of media items per row in portrait and landscape modes." = "Juster antall mediaelementer per rad i portrett- og landskapsmodus.";
+"Advanced" = "Avansert";
+"AKA Sulfur" = "AKA Sulfur";
+"All Bookmarks" = "Alle bokmerker";
+"All Watching" = "Alt du ser på";
+"Also known as Sulfur" = "Også kjent som Sulfur";
+"AniList" = "AniList";
+"AniList ID" = "AniList-ID";
+"AniList Match" = "AniList-treff";
+"AniList.co" = "AniList.co";
+"Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time." = "Anonyme data samles inn for å forbedre appen. Ingen personlig informasjon samles inn. Dette kan deaktiveres når som helst.";
+"App Info" = "App Informasjon";
+"App Language" = "App Språk";
+"App Storage" = "App Lagring";
+"Appearance" = "Utseende";
+
+/* Alerts and Actions */
+"Are you sure you want to clear all cached data? This will help free up storage space." = "Er du sikker på at du vil slette alle bufrede data? Dette vil hjelpe med å frigjøre lagringsplass.";
+"Are you sure you want to delete '%@'?" = "Er du sikker på at du vil slette '%@'?";
+"Are you sure you want to delete all %1$d episodes in '%2$@'?" = "Er du sikker på at du vil slette alle %1$d episodene i '%2$@'?";
+"Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use." = "Er du sikker på at du vil slette alle nedlastede filer? Du kan velge å kun tømme biblioteket og beholde de nedlastede filene til senere bruk.";
+"Are you sure you want to erase all app data? This action cannot be undone." = "Er du sikker på at du vil slette alle appens data? Denne handlingen kan ikke angres.";
+
+/* Features */
+"Background Enabled" = "Bakgrunn Aktivert";
+"Bookmark items for an easier access later." = "Bokmerk elementer for enklere tilgang senere.";
+"Bookmarks" = "Bokmerker";
+"Bottom Padding" = "Bunnutfylling";
+"Cancel" = "Avbryt";
+"Cellular Quality" = "Mobilnettkvalitet";
+"Check out some community modules here!" = "Sjekk ut noen fellesskapsmoduler her!";
+"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality." = "Velg foretrukken videooppløsning for WiFi og mobilnett. Høyere oppløsninger bruker mer data, men gir bedre kvalitet.";
+"Clear" = "Tøm";
+"Clear All Downloads" = "Tøm alle nedlastinger";
+"Clear Cache" = "Tøm buffer";
+"Clear Library Only" = "Tøm kun bibliotek";
+"Clear Logs" = "Tøm logger";
+"Click the plus button to add a module!" = "Klikk på pluss-knappen for å legge til en modul!";
+"Continue Watching" = "Fortsett å se";
+"Continue Watching Episode %d" = "Fortsett å se Episode %d";
+"Contributors" = "Prosjektdeltaker";
+"Copied to Clipboard" = "Kopiert til Utklippstavlen";
+"Copy to Clipboard" = "Kopier til Utklippstavlen";
+"Copy URL" = "Kopier URL";
+
+/* Episodes */
+"%lld Episodes" = "%lld Episoder";
+"%lld of %lld" = "%lld av %lld";
+"%lld-%lld" = "%lld-%lld";
+"%lld%% seen" = "%lld%% sett";
+"Episode %lld" = "Episode %lld";
+"Episodes" = "Episoder";
+"Episodes might not be available yet or there could be an issue with the source." = "Det er mulig at episodene ikke er tilgjengelige ennå, eller at det er en feil med kilden.";
+"Episodes Range" = "Episoderrekkevidde";
+
+/* System */
+"cranci1" = "cranci1";
+"Dark" = "Mørk";
+"DATA & LOGS" = "DATA & LOGGER";
+"Debug" = "Feilsøking";
+"Debugging and troubleshooting." = "Feilsøking og debugging.";
+
+/* Actions */
+"Delete" = "Slett";
+"Delete All" = "Slett alle";
+"Delete All Downloads" = "Slett Alle Nedlastinger";
+"Delete All Episodes" = "Slett Alle Episoder";
+"Delete Download" = "Slett Nedlasting";
+"Delete Episode" = "Slett Episode";
+
+/* Player */
+"Double Tap to Seek" = "Dobbeltklikk for å Søke";
+"Double tapping the screen on it's sides will skip with the short tap setting." = "Ved å dobbeltklikke på sidene av skjermen vil spilleren hoppe som definert i kortklikk-innstillingen.";
+
+/* Downloads */
+"Download" = "Last ned";
+"Download Episode" = "Last ned Episode";
+"Download Summary" = "Nedlastingssammendrag";
+"Download This Episode" = "Last ned Denne Episoden";
+"Downloaded" = "Nedlastet";
+"Downloaded Shows" = "Nedlastede Serier";
+"Downloading" = "Laster ned";
+"Downloads" = "Nedlastinger";
+
+/* Settings */
+"Enable Analytics" = "Aktiver Analyser";
+"Enable Subtitles" = "Aktiver Undertekster";
+
+/* Data Management */
+"Erase" = "Slett";
+"Erase all App Data" = "Slett alle App Data";
+"Erase App Data" = "Slett App Data";
+
+/* Errors */
+"Error" = "Feil";
+"Error Fetching Results" = "Feil ved henting av resultater";
+"Errors and critical issues." = "Feil og kritiske problemer.";
+"Failed to load contributors" = "Kunne ikke laste prosjektdeltakere";
+
+/* Features */
+"Fetch Episode metadata" = "Hent Episode metadata";
+"Files Downloaded" = "Nedlastede Filer";
+"Font Size" = "Skriftstørrelse";
+
+/* Interface */
+"Force Landscape" = "Tving Landskapsmodus";
+"General" = "Generelt";
+"General events and activities." = "Generelle hendelser og aktiviteter.";
+"General Preferences" = "Generelle Instillinger";
+"Hide Splash Screen" = "Skjul Velkomstskjerm";
+"HLS video downloading." = "HLS videonedlasting.";
+"Hold Speed" = "Midlertidig Holdehastighet";
+
+/* Info */
+"Info" = "Info";
+"INFOS" = "INFO";
+"Installed Modules" = "Installerte moduler";
+"Interface" = "Grensesnitt";
+
+/* Social */
+"Join the Discord" = "Bli med i vår Discord";
+
+/* Layout */
+"Landscape Columns" = "Kolonner i Landskapsmodus";
+"Language" = "Språk";
+"LESS" = "MINDRE";
+
+/* Library */
+"Library" = "Bibliotek";
+"License (GPLv3.0)" = "Lisens (GPLv3.0)";
+"Light" = "Lys";
+
+/* Loading States */
+"Loading Episode %lld..." = "Laster Episode %lld...";
+"Loading logs..." = "Laster logger...";
+"Loading module information..." = "Laster modulinformasjon...";
+"Loading Stream" = "Laster Videostrøm";
+
+/* Logging */
+"Log Debug Info" = "Logg Feilsøkingsinfo";
+"Log Filters" = "Loggfiltre";
+"Log In with AniList" = "Logg inn med AniList";
+"Log In with Trakt" = "Logg inn med Trakt";
+"Log Out from AniList" = "Logg ut fra AniList";
+"Log Out from Trakt" = "Logg ut fra Trakt";
+"Log Types" = "Loggtyper";
+"Logged in as" = "Logget inn som";
+"Logged in as " = "Logget inn som ";
+
+/* Logs and Settings */
+"Logs" = "Logger";
+"Long press Skip" = "Langt trykk Skip";
+"MAIN" = "HOVED";
+"Main Developer" = "Hovedutvikler";
+"MAIN SETTINGS" = "HOVEDINNSTILLINGER";
+
+/* Media Actions */
+"Mark All Previous Watched" = "Merk Alle Tidligere som Sett";
+"Mark as Watched" = "Merk som Sett";
+"Mark Episode as Watched" = "Merk Episode som Sett";
+"Mark Previous Episodes as Watched" = "Merk Tidligere Episoder som Sett";
+"Mark watched" = "Merk som Sett";
+"Match with AniList" = "Match med AniList";
+"Match with TMDB" = "Match med TMDB";
+"Matched ID: %lld" = "Matchet ID: %lld";
+"Matched with: %@" = "Matchet med: %@";
+"Max Concurrent Downloads" = "Maks Antall Parallele Nedlastinger";
+
+/* Media Interface */
+"Media Grid Layout" = "Medierutenettlayout";
+"Media Player" = "Mediaspiller";
+"Media View" = "Mediavisning";
+"Metadata Provider" = "Metadata Leverandør";
+"Metadata Providers Order" = "Metadata Leverandørs Rekkefølge";
+"Module Removed" = "Modul Fjernet";
+"Modules" = "Moduler";
+
+/* Headers */
+"MODULES" = "MODULER";
+"MORE" = "MER";
+
+/* Status Messages */
+"No Active Downloads" = "Ingen Aktive Nedlastinger";
+"No AniList matches found" = "Ingen AniList-treff funnet";
+"No Data Available" = "Ingen Data Tilgjengelig";
+"No Downloads" = "Ingen Nedlastinger";
+"No episodes available" = "Ingen episoder tilgjengelig";
+"No Episodes Available" = "Ingen Episoder Tilgjengelig";
+"No items to continue watching." = "Ingen elementer å fortsette å se på.";
+"No matches found" = "Ingen treff funnet";
+"No Module Selected" = "Ingen Modul Valgt";
+"No Modules" = "Ingen Moduler";
+"No Results Found" = "Ingen Resultater Funnet";
+"No Search Results Found" = "Ingen Søkeresultater Funnet";
+"Nothing to Continue Watching" = "Ingenting å fortsette å se på";
+
+/* Notes and Messages */
+"Note that the modules will be replaced only if there is a different version string inside the JSON file." = "Merk at modulene erstattes kun hvis det er en annen versjonsstreng i JSON-filen.";
+
+/* Actions */
+"OK" = "OK";
+"Open Community Library" = "Åpne Fellesskapsbibliotek";
+
+/* External Services */
+"Open in AniList" = "Åpne i AniList";
+"Original Poster" = "Originalplakat";
+
+/* Playback */
+"Paused" = "Pauset";
+"Play" = "Spill av";
+"Player" = "Spiller";
+
+/* System Messages */
+"Please restart the app to apply the language change." = "Appen må startes på nytt for å aktivere språkendringen.";
+"Please select a module from settings" = "Velg en modul fra innstillinger";
+
+/* Interface */
+"Portrait Columns" = "Kolonner i Portrettmodus";
+"Progress bar Marker Color" = "Farge på Progresjonslinje";
+"Provider: %@" = "Leverandør: %@";
+
+/* Queue */
+"Queue" = "Kø";
+"Queued" = "I kø";
+
+/* Content */
+"Recently watched content will appear here." = "Nylig sett innhold vil vises her.";
+
+/* Settings */
+"Refresh Modules on Launch" = "Oppdater Moduler ved Oppstart";
+"Refresh Storage Info" = "Oppdater Lagringsinformasjon";
+"Remember Playback speed" = "Husk Avspillingshastighet";
+
+/* Actions */
+"Remove" = "Fjern";
+"Remove All Cache" = "Fjern Alle Buffer";
+
+/* File Management */
+"Remove All Documents" = "Fjern Alle Dokumenter";
+"Remove Documents" = "Fjern Dokumenter";
+"Remove Downloaded Media" = "Fjern Nedlastet Media";
+"Remove Downloads" = "Fjern Nedlastinger";
+"Remove from Bookmarks" = "Fjern fra Bokmerker";
+"Remove Item" = "Fjern Element";
+
+/* Support */
+"Report an Issue" = "Rapporter et Problem";
+
+/* Reset Options */
+"Reset" = "Tilbakestill";
+"Reset AniList ID" = "Tilbakestill AniList-ID";
+"Reset Episode Progress" = "Tilbakestill Episodeprogresjon";
+"Reset progress" = "Tilbakestill Progresjon";
+"Reset Progress" = "Tilbakestill Progresjon";
+
+/* System */
+"Restart Required" = "Omstart Kreves";
+"Running Sora %@ - cranci1" = "Kjører Sora %@ - cranci1";
+
+/* Actions */
+"Save" = "Lagre";
+"Search" = "Søk";
+
+/* Search */
+"Search downloads" = "Søk i nedlastinger";
+"Search for something..." = "Søk etter noe...";
+"Search..." = "Søk...";
+
+/* Content */
+"Season %d" = "Sesong %d";
+"Season %lld" = "Sesong %lld";
+"Segments Color" = "Segmentfarge";
+
+/* Modules */
+"Select Module" = "Velg Modul";
+"Set Custom AniList ID" = "Sett Egendefinert AniList-ID";
+
+/* Interface */
+"Settings" = "Innstillinger";
+"Shadow" = "Skygge";
+"Show More (%lld more characters)" = "Vis mer (%lld flere tegn)";
+"Show PiP Button" = "Vis PiP Knapp";
+"Show Skip 85s Button" = "Vis Hopp 85s Knapp";
+"Show Skip Intro / Outro Buttons" = "Vis hopp over Intro / Outro Knapper";
+"Shows" = "Serier";
+"Size (%@)" = "Størrelse (%@)";
+"Skip Settings" = "Tidshopp Innstillinger";
+
+/* Player Features */
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments." = "Noen funksjoner er begrenset til Sora og standardavspiller, som Tving Landskapsmodus, Midlertidig Holdehastighet og tilpassede tidshopp.";
+
+/* App Info */
+"Sora" = "Sora";
+"Sora %@ by cranci1" = "Sora %@ av cranci1";
+"Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate." = "Sora og cranci1 er ikke tilknyttet AniList eller Trakt på noen måte.\n\nVær også oppmerksom på at progresjonsoppdateringer ikke nødvendigvis er 100% nøyaktige.";
+"Sora GitHub Repository" = "Sora GitHub Kodelager";
+"Sora/Sulfur will always remain free with no ADs!" = "Sora/Sulfur vil alltid være gratis og uten reklame!";
+
+/* Interface */
+"Sort" = "Sorter";
+"Speed Settings" = "Hastighetsinnstillinger";
+
+/* Playback */
+"Start Watching" = "Start å se";
+"Start Watching Episode %d" = "Start å se Episode %d";
+"Storage Used" = "Brukt Lagring";
+"Stream" = "Strøm";
+"Streaming and video playback." = "Strømming og videoavspilling.";
+
+/* Subtitles */
+"Subtitle Color" = "Undertekstfarge";
+"Subtitle Settings" = "Undertekstinnstillinger";
+
+/* Sync */
+"Sync anime progress" = "Synkroniser anime progresjon";
+"Sync TV shows progress" = "Synkroniser TV-serie progresjon";
+
+/* System */
+"System" = "System";
+
+/* Instructions */
+"Tap a title to override the current match." = "Trykk på en tittel for å overstyre gjeldende treff.";
+"Tap Skip" = "Trykk for å hoppe Fram / Tilbake";
+"Tap to manage your modules" = "Trykk for å administrere modulene dine";
+"Tap to select a module" = "Trykk for å velge en modul";
+
+/* App Information */
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nDo not erase App Data unless you understand the consequences — it may cause the app to malfunction." = "Appens buffer hjelper appen med å laste bilder raskere.\n\nÅ tømme dokumentmappen vil slette alle nedlastede moduler.\n\nIkke slett App Lagring med mindre du forstår konsekvensene — det kan føre til at appen ikke fungerer som den skal.";
+"The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers." = "Episoderekkevidden styrer hvor mange episoder som vises på hver side. Episoder er gruppert i sett (som 1–25, 26–50, osv.), slik at du enklere kan navigere gjennom dem.\n\nEpisode-metadata refererer til episodens miniatyrbilde og tittel, da det noen ganger kan inneholde spoilers.";
+"The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases." = "Modulen leverte kun en episode, dette er mest sannsynlig en film, så vi bestemte oss for å lage separate sider for disse tilfellene.";
+
+/* Interface */
+"Thumbnails Width" = "Miniatyrbildebredde";
+"TMDB Match" = "TMDB Treff";
+"Trackers" = "Sporere";
+"Trakt" = "Trakt";
+"Trakt.tv" = "Trakt.tv";
+
+/* Search */
+"Try different keywords" = "Prøv andre nøkkelord";
+"Try different search terms" = "Prøv andre søkeord";
+
+/* Player Controls */
+"Two Finger Hold for Pause" = "Hold to fingre for pause";
+"Unable to fetch matches. Please try again later." = "Kunne ikke finne noen treff. Vennligst prøv igjen senere.";
+"Use TMDB Poster Image" = "Bruk TMDB Plakatbilde";
+
+/* Version */
+"v%@" = "v%@";
+"Video Player" = "Videospiller";
+
+/* Video Settings */
+"Video Quality Preferences" = "Videokvalitetspreferanser";
+"View All" = "Se alle";
+"Watched" = "Sett";
+"Why am I not seeing any episodes?" = "Hvorfor ser jeg ingen episoder?";
+"WiFi Quality" = "WiFi Kvalitet";
+
+/* User Status */
+"You are not logged in" = "Du er ikke logget inn";
+"You have no items saved." = "Du har ingen lagrede elementer.";
+"Your downloaded episodes will appear here" = "Dine nedlastede episoder vil vises her";
+"Your recently watched content will appear here" = "Ditt nylig sette innhold vil vises her";
+
+/* Download Settings */
+"Download Settings" = "Nedlastingsinnstillinger";
+"Max concurrent downloads controls how many episodes can download simultaneously. Higher values may use more bandwidth and device resources." = "Maks antall parallele nedlastinger styrer hvor mange episoder som kan lastes ned samtidig. Høyere verdier kan bruke mer båndbredde og enhetsressurser.";
+"Quality" = "Kvalitet";
+"Max Concurrent Downloads" = "Maks Antall Parallele Nedlastinger";
+"Allow Cellular Downloads" = "Tillat Nedlastinger over Mobilnett";
+"Quality Information" = "Kvalitetsinformasjon";
+
+/* Storage */
+"Storage Management" = "Lagringsadministrasjon";
+"Storage Used" = "Brukt Lagring";
+"Library cleared successfully" = "Bibliotek tømt";
+"All downloads deleted successfully" = "Alle nedlastinger slettet";

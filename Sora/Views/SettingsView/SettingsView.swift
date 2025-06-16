@@ -423,6 +423,8 @@ class Settings: ObservableObject {
             languageCode = "nn"
         case "Kazakh":
             languageCode = "kk"
+        case "Swedish":
+            languageCode = "sv"
         default:
             languageCode = "en"
         }

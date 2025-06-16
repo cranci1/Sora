@@ -208,8 +208,10 @@ struct SettingsViewGeneral: View {
                             "Czech",
                             "Dutch",
                             "French",
+                            "German",
                             "Norsk",
                             "Russian",
+                            "Slovak",
                             "Spanish"
                         ],
                         optionToString: { lang in
@@ -217,8 +219,10 @@ struct SettingsViewGeneral: View {
                             case "English": return "English"
                             case "Dutch": return "Nederlands"
                             case "French": return "Français"
+                            case "German": return "Deutsch"
                             case "Arabic": return "العربية"
                             case "Czech": return "Čeština"
+                            case "Slovak": return "Slovenčina"
                             case "Spanish": return "Español"
                             case "Russian": return "Русский"
                             case "Norsk": return "Norsk"

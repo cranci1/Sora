@@ -209,6 +209,7 @@ struct SettingsViewGeneral: View {
                             "Dutch",
                             "French",
                             "German",
+                            "Kazakh",
                             "Norsk",
                             "Russian",
                             "Slovak",
@@ -226,6 +227,7 @@ struct SettingsViewGeneral: View {
                             case "Spanish": return "Español"
                             case "Russian": return "Русский"
                             case "Norsk": return "Norsk"
+                            case "Kazakh": return "Қазақша"
                             default: return lang
                             }
                         },

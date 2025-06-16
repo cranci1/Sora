@@ -1,0 +1,406 @@
+/* General */
+"About" = "Туралы";
+"About Sora" = "Sora туралы";
+"Active" = "Белсенді";
+"Active Downloads" = "Белсенді жүктеулер";
+"Actively downloading media can be tracked from here." = "Белсенді жүктелетін медианы осы жерден бақылауға болады.";
+"Add Module" = "Модуль қосу";
+"Adjust the number of media items per row in portrait and landscape modes." = "Портрет және альбом режимдерінде қатардағы медиа элементтерінің санын реттеу.";
+"Advanced" = "Кеңейтілген";
+"AKA Sulfur" = "Sulfur деп те белгілі";
+"All Bookmarks" = "Барлық бетбелгілер";
+"All Watching" = "Барлық көрілетін";
+"Also known as Sulfur" = "Sulfur деп те белгілі";
+"AniList" = "AniList";
+"AniList ID" = "AniList ID";
+"AniList Match" = "AniList сәйкестігі";
+"AniList.co" = "AniList.co";
+"Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time." = "Қолданбаны жақсарту үшін анонимді деректер жиналады. Жеке ақпарат жиналмайды. Мұны кез келген уақытта өшіруге болады.";
+"App Info" = "Қолданба ақпараты";
+"App Language" = "Қолданба тілі";
+"App Storage" = "Қолданба қоймасы";
+"Appearance" = "Сыртқы түр";
+
+/* Alerts and Actions */
+"Are you sure you want to clear all cached data? This will help free up storage space." = "Барлық кэштелген деректерді өшіруді қалайсыз ба? Бұл қойма орынын босатуға көмектеседі.";
+"Are you sure you want to delete '%@'?" = "'%@' жоюды қалайсыз ба?";
+"Are you sure you want to delete all %1$d episodes in '%2$@'?" = "'%2$@' ішіндегі барлық %1$d эпизодты жоюды қалайсыз ба?";
+"Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use." = "Барлық жүктелген активтерді жоюды қалайсыз ба? Жүктелген файлдарды болашақ пайдалану үшін сақтай отырып, тек кітапхананы тазартуды таңдай аласыз.";
+"Are you sure you want to erase all app data? This action cannot be undone." = "Барлық қолданба деректерін өшіруді қалайсыз ба? Бұл әрекетті қайтаруға болмайды.";
+
+/* Features */
+"Background Enabled" = "Фон қосылған";
+"Bookmark items for an easier access later." = "Кейін оңай қол жеткізу үшін элементтерге бетбелгі қою.";
+"Bookmarks" = "Бетбелгілер";
+"Bottom Padding" = "Төменгі жиек";
+"Cancel" = "Болдырмау";
+"Cellular Quality" = "Ұялы байланыс сапасы";
+"Check out some community modules here!" = "Қауымдастық модульдерін осы жерден қараңыз!";
+"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." = "WiFi және ұялы байланыс үшін қалаулы бейне ажыратымдылығын таңдаңыз. Жоғары ажыратымдылық көбірек деректерді пайдаланады, бірақ жақсы сапа береді. Нақты сапа қолжетімді болмаса, ең жақын нұсқа автоматты түрде таңдалады.\n\nЕскерту: Барлық бейне көздері мен ойнатқыштар сапа таңдауды қолдамайды. Бұл мүмкіндік Sora ойнатқышымен HLS ағындарында ең жақсы жұмыс істейді.";
+"Clear" = "Тазарту";
+"Clear All Downloads" = "Барлық жүктеулерді тазарту";
+"Clear Cache" = "Кэшті тазарту";
+"Clear Library Only" = "Тек кітапхананы тазарту";
+"Clear Logs" = "Журналдарды тазарту";
+"Click the plus button to add a module!" = "Модуль қосу үшін плюс түймесін басыңыз!";
+"Continue Watching" = "Көруді жалғастыру";
+"Continue Watching Episode %d" = "%d эпизодты көруді жалғастыру";
+"Contributors" = "Үлес қосушылар";
+"Copied to Clipboard" = "Буферге көшірілді";
+"Copy to Clipboard" = "Буферге көшіру";
+"Copy URL" = "URL көшіру";
+
+/* Episodes */
+"%lld Episodes" = "%lld эпизод";
+"%lld of %lld" = "%lld / %lld";
+"%lld-%lld" = "%lld-%lld";
+"%lld%% seen" = "%lld%% көрілді";
+"Episode %lld" = "%lld эпизод";
+"Episodes" = "Эпизодтар";
+"Episodes might not be available yet or there could be an issue with the source." = "Эпизодтар әлі қолжетімді болмауы мүмкін немесе көзде мәселе болуы мүмкін.";
+"Episodes Range" = "Эпизодтар ауқымы";
+
+/* System */
+"cranci1" = "cranci1";
+"Dark" = "Қараңғы";
+"DATA & LOGS" = "ДЕРЕКТЕР ЖӘНЕ ЖУРНАЛДАР";
+"Debug" = "Жөндеу";
+"Debugging and troubleshooting." = "Жөндеу және ақаулықтарды жою.";
+
+/* Actions */
+"Delete" = "Жою";
+"Delete All" = "Барлығын жою";
+"Delete All Downloads" = "Барлық жүктеулерді жою";
+"Delete All Episodes" = "Барлық эпизодтарды жою";
+"Delete Download" = "Жүктеуді жою";
+"Delete Episode" = "Эпизодты жою";
+
+/* Player */
+"Double Tap to Seek" = "Іздеу үшін екі рет басу";
+"Double tapping the screen on it's sides will skip with the short tap setting." = "Экранның жақтарын екі рет басу қысқа басу параметрімен өткізіп жіберетін болады.";
+
+/* Downloads */
+"Download" = "Жүктеу";
+"Download Episode" = "Эпизодты жүктеу";
+"Download Summary" = "Жүктеу қорытындысы";
+"Download This Episode" = "Осы эпизодты жүктеу";
+"Downloaded" = "Жүктелді";
+"Downloaded Shows" = "Жүктелген шоулар";
+"Downloading" = "Жүктелуде";
+"Downloads" = "Жүктеулер";
+
+/* Settings */
+"Enable Analytics" = "Аналитиканы қосу";
+"Enable Subtitles" = "Субтитрлерді қосу";
+
+/* Data Management */
+"Erase" = "Өшіру";
+"Erase all App Data" = "Барлық қолданба деректерін өшіру";
+"Erase App Data" = "Қолданба деректерін өшіру";
+
+/* Errors */
+"Error" = "Қате";
+"Error Fetching Results" = "Нәтижелерді алуда қате";
+"Errors and critical issues." = "Қателер және сыни мәселелер.";
+"Failed to load contributors" = "Үлес қосушыларды жүктеу сәтсіз аяқталды";
+
+/* Features */
+"Fetch Episode metadata" = "Эпизод метадеректерін алу";
+"Files Downloaded" = "Жүктелген файлдар";
+"Font Size" = "Қаріп өлшемі";
+
+/* Interface */
+"Force Landscape" = "Альбом режимін мәжбүрлеу";
+"General" = "Жалпы";
+"General events and activities." = "Жалпы оқиғалар мен іс-әрекеттер.";
+"General Preferences" = "Жалпы параметрлер";
+"Hide Splash Screen" = "Кіріспе экранын жасыру";
+"HLS video downloading." = "HLS бейне жүктеу.";
+"Hold Speed" = "Ұстау жылдамдығы";
+
+/* Info */
+"Info" = "Ақпарат";
+"INFOS" = "АҚПАРАТТАР";
+"Installed Modules" = "Орнатылған модульдер";
+"Interface" = "Интерфейс";
+
+/* Social */
+"Join the Discord" = "Discord-қа қосылу";
+
+/* Layout */
+"Landscape Columns" = "Альбом бағандары";
+"Language" = "Тіл";
+"LESS" = "АЗ";
+
+/* Library */
+"Library" = "Кітапхана";
+"License (GPLv3.0)" = "Лицензия (GPLv3.0)";
+"Light" = "Жарық";
+
+/* Loading States */
+"Loading Episode %lld..." = "%lld эпизод жүктелуде...";
+"Loading logs..." = "Журналдар жүктелуде...";
+"Loading module information..." = "Модуль ақпараты жүктелуде...";
+"Loading Stream" = "Ағын жүктелуде";
+
+/* Logging */
+"Log Debug Info" = "Жөндеу ақпаратын жазу";
+"Log Filters" = "Журнал сүзгілері";
+"Log In with AniList" = "AniList арқылы кіру";
+"Log In with Trakt" = "Trakt арқылы кіру";
+"Log Out from AniList" = "AniList-тен шығу";
+"Log Out from Trakt" = "Trakt-тен шығу";
+"Log Types" = "Журнал түрлері";
+"Logged in as" = "Кірген пайдаланушы:";
+"Logged in as " = "Кірген пайдаланушы: ";
+
+/* Logs and Settings */
+"Logs" = "Журналдар";
+"Long press Skip" = "Ұзақ басып өткізу";
+"MAIN" = "НЕГІЗГІ";
+"Main Developer" = "Негізгі әзірлеуші";
+"MAIN SETTINGS" = "НЕГІЗГІ ПАРАМЕТРЛЕР";
+
+/* Media Actions */
+"Mark All Previous Watched" = "Алдыңғыларды көрілді деп белгілеу";
+"Mark as Watched" = "Көрілді деп белгілеу";
+"Mark Episode as Watched" = "Эпизодты көрілді деп белгілеу";
+"Mark Previous Episodes as Watched" = "Алдыңғы эпизодтарды көрілді деп белгілеу";
+"Mark watched" = "Көрілді деп белгілеу";
+"Match with AniList" = "AniList-пен сәйкестендіру";
+"Match with TMDB" = "TMDB-мен сәйкестендіру";
+"Matched ID: %lld" = "Сәйкестендірілген ID: %lld";
+"Matched with: %@" = "Сәйкестендірілді: %@";
+"Max Concurrent Downloads" = "Максималды бір мезгілдегі жүктеулер";
+
+/* Media Interface */
+"Media Grid Layout" = "Медиа тор орналасуы";
+"Media Player" = "Медиа ойнатқыш";
+"Media View" = "Медиа көрінісі";
+"Metadata Provider" = "Метадерек провайдері";
+"Metadata Providers Order" = "Метадерек провайдерлерінің реті";
+"Module Removed" = "Модуль жойылды";
+"Modules" = "Модульдер";
+
+/* Headers */
+"MODULES" = "МОДУЛЬДЕР";
+"MORE" = "КӨБІРЕК";
+
+/* Status Messages */
+"No Active Downloads" = "Белсенді жүктеулер жоқ";
+"No AniList matches found" = "AniList сәйкестіктері табылмады";
+"No Data Available" = "Деректер қолжетімді емес";
+"No Downloads" = "Жүктеулер жоқ";
+"No episodes available" = "Эпизодтар қолжетімді емес";
+"No Episodes Available" = "Эпизодтар қолжетімді емес";
+"No items to continue watching." = "Көруді жалғастыратын элементтер жоқ.";
+"No matches found" = "Сәйкестіктер табылмады";
+"No Module Selected" = "Модуль таңдалмады";
+"No Modules" = "Модульдер жоқ";
+"No Results Found" = "Нәтижелер табылмады";
+"No Search Results Found" = "Іздеу нәтижелері табылмады";
+"Nothing to Continue Watching" = "Көруді жалғастыратын ешнәрсе жоқ";
+
+/* Notes and Messages */
+"Note that the modules will be replaced only if there is a different version string inside the JSON file." = "Модульдер тек JSON файлының ішінде басқа нұсқа жолы болған жағдайда ғана ауыстырылатынын ескеріңіз.";
+
+/* Actions */
+"OK" = "Жарайды";
+"Open Community Library" = "Қауымдастық кітапханасын ашу";
+
+/* External Services */
+"Open in AniList" = "AniList-те ашу";
+"Original Poster" = "Түпнұсқа постер";
+
+/* Playback */
+"Paused" = "Тоқтатылды";
+"Play" = "Ойнату";
+"Player" = "Ойнатқыш";
+
+/* System Messages */
+"Please restart the app to apply the language change." = "Тіл өзгерісін қолдану үшін қолданбаны қайта іске қосыңыз.";
+"Please select a module from settings" = "Параметрлерден модуль таңдаңыз";
+
+/* Interface */
+"Portrait Columns" = "Портрет бағандары";
+"Progress bar Marker Color" = "Прогресс жолағы белгішесінің түсі";
+"Provider: %@" = "Провайдер: %@";
+
+/* Queue */
+"Queue" = "Кезек";
+"Queued" = "Кезекте";
+
+/* Content */
+"Recently watched content will appear here." = "Жақында көрілген мазмұн осы жерде пайда болады.";
+
+/* Settings */
+"Refresh Modules on Launch" = "Іске қосу кезінде модульдерді жаңарту";
+"Refresh Storage Info" = "Қойма ақпаратын жаңарту";
+"Remember Playback speed" = "Ойнату жылдамдығын есте сақтау";
+
+/* Actions */
+"Remove" = "Жою";
+"Remove All Cache" = "Барлық кэшті жою";
+
+/* File Management */
+"Remove All Documents" = "Барлық құжаттарды жою";
+"Remove Documents" = "Құжаттарды жою";
+"Remove Downloaded Media" = "Жүктелген медианы жою";
+"Remove Downloads" = "Жүктеулерді жою";
+"Remove from Bookmarks" = "Бетбелгілерден жою";
+"Remove Item" = "Элементті жою";
+
+/* Support */
+"Report an Issue" = "Мәселе туралы хабарлау";
+
+/* Reset Options */
+"Reset" = "Қалпына келтіру";
+"Reset AniList ID" = "AniList ID қалпына келтіру";
+"Reset Episode Progress" = "Эпизод прогрессін қалпына келтіру";
+"Reset progress" = "Прогрессті қалпына келтіру";
+"Reset Progress" = "Прогрессті қалпына келтіру";
+
+/* System */
+"Restart Required" = "Қайта іске қосу қажет";
+"Running Sora %@ - cranci1" = "Sora %@ жұмыс істеп тұр - cranci1";
+
+/* Actions */
+"Save" = "Сақтау";
+"Search" = "Іздеу";
+
+/* Search */
+"Search downloads" = "Жүктеулерді іздеу";
+"Search for something..." = "Бір нәрсені іздеу...";
+"Search..." = "Іздеу...";
+
+/* Content */
+"Season %d" = "%d маусым";
+"Season %lld" = "%lld маусым";
+"Segments Color" = "Сегменттер түсі";
+
+/* Modules */
+"Select Module" = "Модуль таңдау";
+"Set Custom AniList ID" = "Пайдаланушы AniList ID орнату";
+
+/* Interface */
+"Settings" = "Параметрлер";
+"Shadow" = "Көлеңке";
+"Show More (%lld more characters)" = "Көбірек көрсету (тағы %lld таңба)";
+"Show PiP Button" = "PiP түймесін көрсету";
+"Show Skip 85s Button" = "85с өткізу түймесін көрсету";
+"Show Skip Intro / Outro Buttons" = "Кіріспе/шығыспаны өткізу түймелерін көрсету";
+"Shows" = "Шоулар";
+"Size (%@)" = "Өлшем (%@)";
+"Skip Settings" = "Өткізу параметрлері";
+
+/* Player Features */
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments." = "Кейбір мүмкіндіктер Sora және Әдепкі ойнатқышпен шектелген, мысалы ForceLandscape, holdSpeed және пайдаланушы уақыт өткізу өсімшелері.";
+
+/* App Info */
+"Sora" = "Sora";
+"Sora %@ by cranci1" = "Sora %@ - cranci1 әзірлеген";
+"Sora and cranci1 are not affiliated with AniList or Trakt in any way.
+
+Also note that progress updates may not be 100% accurate." = "Sora мен cranci1 AniList немесе Trakt-пен ешқандай байланысы жоқ.
+
+Сонымен қатар прогресс жаңартулары 100% дәл болмауы мүмкін.";
+"Sora GitHub Repository" = "Sora GitHub репозиторийі";
+"Sora/Sulfur will always remain free with no ADs!" = "Sora/Sulfur әрқашан жарнамасыз тегін болып қалады!";
+
+/* Interface */
+"Sort" = "Сұрыптау";
+"Speed Settings" = "Жылдамдық параметрлері";
+
+/* Playback */
+"Start Watching" = "Көруді бастау";
+"Start Watching Episode %d" = "%d эпизодты көруді бастау";
+"Storage Used" = "Пайдаланылған қойма";
+"Stream" = "Ағын";
+"Streaming and video playback." = "Ағын және бейне ойнату.";
+
+/* Subtitles */
+"Subtitle Color" = "Субтитр түсі";
+"Subtitle Settings" = "Субтитр параметрлері";
+
+/* Sync */
+"Sync anime progress" = "Аниме прогрессін синхрондау";
+"Sync TV shows progress" = "ТВ шоулар прогрессін синхрондау";
+
+/* System */
+"System" = "Жүйе";
+
+/* Instructions */
+"Tap a title to override the current match." = "Ағымдағы сәйкестікті ауыстыру үшін атауды басыңыз.";
+"Tap Skip" = "Өткізуді басу";
+"Tap to manage your modules" = "Модульдеріңізді басқару үшін басыңыз";
+"Tap to select a module" = "Модуль таңдау үшін басыңыз";
+
+/* App Information */
+"The app cache helps the app load images faster.
+
+Clearing the Documents folder will delete all downloaded modules.
+
+Do not erase App Data unless you understand the consequences — it may cause the app to malfunction." = "Қолданба кэші қолданбаға суреттерді жылдам жүктеуге көмектеседі.
+
+Құжаттар қалтасын тазарту барлық жүктелген модульдерді жояды.
+
+Салдарын түсінбесеңіз, қолданба деректерін өшірмеңіз - бұл қолданбаның дұрыс жұмыс істемеуіне әкелуі мүмкін.";
+"The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.
+
+For episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers." = "Эпизодтар ауқымы әр бетте қанша эпизод пайда болатынын басқарады. Эпизодтар топтарға бөлінеді (1–25, 26–50 сияқты), бұл олар арқылы оңайырақ жүруге мүмкіндік береді.
+
+Эпизод метадеректері үшін бұл эпизодтың кішкене суреті мен атауын білдіреді, өйткені кейде ол спойлерлерді қамтуы мүмкін.";
+"The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases." = "Модуль тек бір эпизод ұсынды, бұл ең ықтимал фильм, сондықтан біз осы жағдайлар үшін жеке экрандар жасауды шештік.";
+
+/* Interface */
+"Thumbnails Width" = "Кішкене суреттер ені";
+"TMDB Match" = "TMDB сәйкестігі";
+"Trackers" = "Трекерлер";
+"Trakt" = "Trakt";
+"Trakt.tv" = "Trakt.tv";
+
+/* Search */
+"Try different keywords" = "Басқа кілт сөздерді қолданып көріңіз";
+"Try different search terms" = "Басқа іздеу терминдерін қолданып көріңіз";
+
+/* Player Controls */
+"Two Finger Hold for Pause" = "Тоқтату үшін екі саусақпен ұстау";
+"Unable to fetch matches. Please try again later." = "Сәйкестіктерді алу мүмкін емес. Кейінірек қайталап көріңіз.";
+"Use TMDB Poster Image" = "TMDB постер суретін пайдалану";
+
+/* Version */
+"v%@" = "v%@";
+"Video Player" = "Бейне ойнатқыш";
+
+/* Video Settings */
+"Video Quality Preferences" = "Бейне сапасы таңдаулары";
+"View All" = "Барлығын көру";
+"Watched" = "Көрілді";
+"Why am I not seeing any episodes?" = "Неліктен мен ешқандай эпизод көрмеймін?";
+"WiFi Quality" = "WiFi сапасы";
+
+/* User Status */
+"You are not logged in" = "Сіз кірмегенсіз";
+"You have no items saved." = "Сізде сақталған элементтер жоқ.";
+"Your downloaded episodes will appear here" = "Жүктелген эпизодтарыңыз осында пайда болады";
+"Your recently watched content will appear here" = "Жақында көрген мазмұныңыз осында пайда болады";
+
+/* Download Settings */
+"Download Settings" = "Жүктеу параметрлері";
+"Max concurrent downloads controls how many episodes can download simultaneously. Higher values may use more bandwidth and device resources." = "Максималды бір мезгілдегі жүктеулер қанша эпизодты бір уақытта жүктеуге болатынын басқарады. Жоғары мәндер көбірек өткізу қабілеті мен құрылғы ресурстарын пайдалануы мүмкін.";
+"Quality" = "Сапа";
+"Max Concurrent Downloads" = "Максималды бір мезгілдегі жүктеулер";
+"Allow Cellular Downloads" = "Ұялы жүктеулерге рұқсат беру";
+"Quality Information" = "Сапа ақпараты";
+
+/* Storage */
+"Storage Management" = "Қойма басқаруы";
+"Storage Used" = "Пайдаланылған қойма";
+"Library cleared successfully" = "Кітапхана сәтті тазартылды";
+"All downloads deleted successfully" = "Барлық жүктеулер сәтті жойылды"; 
+
+/* New additions */
+"Recent searches" = "Соңғы іздеулер";
+"me frfr" = "мен шынында";
+"Data" = "Деректер";
+"Maximum Quality Available" = "Қолжетімді максималды сапа";

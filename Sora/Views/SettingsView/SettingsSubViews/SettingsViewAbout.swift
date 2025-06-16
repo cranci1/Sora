@@ -290,19 +290,19 @@ struct TranslatorsView: View {
             id: 3,
             login: "ibro",
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/05cd4f3508f99ba0a4ae2d0985c2f68c_webp.png?raw=true",
-            language: "Russian - Czech"
+            language: "Russian, Czech, Kazakh"
         ),
         Translator(
             id: 4,
             login: "Ciro",
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/4accfc2fcfa436165febe4cad18de978_webp.png?raw=true",
-            language: "Arabic - French"
+            language: "Arabic, French"
         ),
         Translator(
             id: 5,
             login: "storm",
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/a6cc97f87d356523820461fd761fc3e1_webp.png?raw=true",
-            language: "Norwegian - Swedish"
+            language: "Norwegian, Swedish"
         ),
         Translator(
             id: 6,

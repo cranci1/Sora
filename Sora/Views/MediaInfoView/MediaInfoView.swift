@@ -421,11 +421,22 @@ struct MediaInfoView: View {
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.primary)
                     }
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: 120)
                     .padding(.vertical, 6)
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(15)
                     .gradientOutline()
+                }
+
+                Button(action: { openSafariViewController(with: href) }) {
+                    Image(systemName: "safari")
+                        .resizable()
+                        .frame(width: 16, height: 16)
+                        .foregroundColor(.primary)
+                        .padding(6)
+                        .background(Color.gray.opacity(0.2))
+                        .clipShape(Circle())
+                        .circularGradientOutline()
                 }
                 
                 menuButton

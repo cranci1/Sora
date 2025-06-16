@@ -625,6 +625,10 @@ struct DownloadedSection: View {
     let onDelete: (DownloadedAsset) -> Void
     let onPlay: (DownloadedAsset) -> Void
     
+    @State private var groupToDelete: SimpleDownloadGroup?
+    @State private var showDeleteGroupAlert = false
+    @EnvironmentObject var jsController: JSController
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -638,12 +642,20 @@ struct DownloadedSection: View {
             .padding(.horizontal, 20)
             
             VStack(spacing: 8) {
-                ForEach(groups, id: \.title) { group in
+                ForEach(groups, id: \ .title) { group in
                     EnhancedDownloadGroupCard(
                         group: group,
                         onDelete: onDelete,
                         onPlay: onPlay
                     )
+                    .contextMenu {
+                        Button(role: .destructive, action: {
+                            groupToDelete = group
+                            showDeleteGroupAlert = true
+                        }) {
+                            Label(NSLocalizedString("Delete All", comment: ""), systemImage: "trash")
+                        }
+                    }
                 }
             }
             .background(.ultraThinMaterial)
@@ -663,6 +675,21 @@ struct DownloadedSection: View {
                     )
             )
             .padding(.horizontal, 20)
+        }
+        .alert(NSLocalizedString("Delete All Episodes", comment: ""), isPresented: $showDeleteGroupAlert) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Delete All", comment: ""), role: .destructive) {
+                if let group = groupToDelete {
+                    for asset in group.assets {
+                        jsController.deleteAsset(asset)
+                    }
+                }
+                groupToDelete = nil
+            }
+        } message: {
+            if let group = groupToDelete {
+                Text(String(format: NSLocalizedString("Are you sure you want to delete all %d episodes in '%@'?", comment: ""), group.assetCount, group.title))
+            }
         }
     }
 }

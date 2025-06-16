@@ -1,0 +1,390 @@
+/* General */
+"About" = "Über";
+"About Sora" = "Über Sora";
+"Active" = "Aktiv";
+"Active Downloads" = "Aktive Downloads";
+"Actively downloading media can be tracked from here." = "Hier kannst du deine laufenden Downloads verfolgen.";
+"Add Module" = "Modul hinzufügen";
+"Adjust the number of media items per row in portrait and landscape modes." = "Passe die Anzahl der Medienelemente pro Zeile im Hoch- und Querformat an.";
+"Advanced" = "Erweitert";
+"AKA Sulfur" = "Alias Sulfur";
+"All Bookmarks" = "Alle Lesezeichen";
+"All Watching" = "Alle ansehen";
+"Also known as Sulfur" = "Auch bekannt als Sulfur";
+"AniList" = "AniList";
+"AniList ID" = "AniList-ID";
+"AniList Match" = "AniList-Zuordnung";
+"AniList.co" = "AniList.co";
+"Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time." = "Anonyme Daten werden gesammelt, um die App zu verbessern. Es werden keine persönlichen Informationen erfasst. Du kannst dies jederzeit deaktivieren.";
+"App Info" = "App-Infos";
+"App Language" = "App-Sprache";
+"App Storage" = "App-Speicher";
+"Appearance" = "Darstellung";
+
+/* Alerts and Actions */
+"Are you sure you want to clear all cached data? This will help free up storage space." = "Bist du sicher, dass du den Cache leeren möchtest? Dies hilft, Speicherplatz freizugeben.";
+"Are you sure you want to delete '%@'?" = "Bist du sicher, dass du '%@' löschen möchtest?";
+"Are you sure you want to delete all %1$d episodes in '%2$@'?" = "Bist du sicher, dass du alle %1$d Folgen in '%2$@' löschen möchtest?";
+"Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use." = "Bist du sicher, dass du alle Downloads löschen möchtest? Du kannst auch nur die Bibliothek leeren und die heruntergeladenen Dateien für später behalten.";
+"Are you sure you want to erase all app data? This action cannot be undone." = "Bist du sicher, dass du alle App-Daten löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.";
+
+/* Features */
+"Background Enabled" = "Hintergrund aktiviert";
+"Bookmark items for an easier access later." = "Setze Lesezeichen für späteren schnellen Zugriff.";
+"Bookmarks" = "Lesezeichen";
+"Bottom Padding" = "Abstand unten";
+"Cancel" = "Abbrechen";
+"Cellular Quality" = "Qualität (Mobilfunk)";
+"Check out some community modules here!" = "Entdecke Community-Module hier!";
+"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." = "Wähle deine bevorzugte Videoqualität für WLAN und Mobilfunk. Höhere Qualität verbraucht mehr Daten. Falls nicht verfügbar, wird automatisch die nächstbeste Option gewählt.\n\nHinweis: Nicht alle Quellen unterstützen Qualitätsauswahl. Funktioniert am besten mit HLS-Streams im Sora-Player.";
+"Clear" = "Löschen";
+"Clear All Downloads" = "Alle Downloads löschen";
+"Clear Cache" = "Cache leeren";
+"Clear Library Only" = "Nur Bibliothek leeren";
+"Clear Logs" = "Logs löschen";
+"Click the plus button to add a module!" = "Tippe auf das Plus-Symbol, um ein Modul hinzuzufügen!";
+"Continue Watching" = "Weiterschauen";
+"Continue Watching Episode %d" = "Folge %d weiterschauen";
+"Contributors" = "Mitwirkende";
+"Copied to Clipboard" = "In die Zwischenablage kopiert";
+"Copy to Clipboard" = "In die Zwischenablage kopieren";
+"Copy URL" = "URL kopieren";
+
+/* Episodes */
+"%lld Episodes" = "%lld Folgen";
+"%lld of %lld" = "%lld von %lld";
+"%lld-%lld" = "%lld-%lld";
+"%lld%% seen" = "%lld%% gesehen";
+"Episode %lld" = "Folge %lld";
+"Episodes" = "Folgen";
+"Episodes might not be available yet or there could be an issue with the source." = "Die Folgen sind möglicherweise noch nicht verfügbar oder es gibt ein Problem mit der Quelle.";
+"Episodes Range" = "Folgenbereich";
+
+/* System */
+"cranci1" = "cranci1";
+"Dark" = "Dunkel";
+"DATA & LOGS" = "DATEN & LOGS";
+"Debug" = "Debug";
+"Debugging and troubleshooting." = "Fehlersuche und Problembehebung.";
+
+/* Actions */
+"Delete" = "Löschen";
+"Delete All" = "Alle löschen";
+"Delete All Downloads" = "Alle Downloads löschen";
+"Delete All Episodes" = "Alle Folgen löschen";
+"Delete Download" = "Download löschen";
+"Delete Episode" = "Folge löschen";
+
+/* Player */
+"Double Tap to Seek" = "Tippe doppelt zum Spulen";
+"Double tapping the screen on it's sides will skip with the short tap setting." = "Doppeltippen auf die Bildschirmseiten überspringt entsprechend deiner Einstellung.";
+
+/* Downloads */
+"Download" = "Herunterladen";
+"Download Episode" = "Folge herunterladen";
+"Download Summary" = "Download-Übersicht";
+"Download This Episode" = "Diese Folge herunterladen";
+"Downloaded" = "Heruntergeladen";
+"Downloaded Shows" = "Heruntergeladene Serien";
+"Downloading" = "Lädt herunter";
+"Downloads" = "Downloads";
+
+/* Settings */
+"Enable Analytics" = "Analytik aktivieren";
+"Enable Subtitles" = "Untertitel aktivieren";
+
+/* Data Management */
+"Erase" = "Löschen";
+"Erase all App Data" = "Alle App-Daten löschen";
+"Erase App Data" = "App-Daten löschen";
+
+/* Errors */
+"Error" = "Fehler";
+"Error Fetching Results" = "Fehler beim Laden";
+"Errors and critical issues." = "Fehler und kritische Probleme.";
+"Failed to load contributors" = "Mitwirkende konnten nicht geladen werden";
+
+/* Features */
+"Fetch Episode metadata" = "Folgen-Metadaten abrufen";
+"Files Downloaded" = "Dateien heruntergeladen";
+"Font Size" = "Schriftgröße";
+
+/* Interface */
+"Force Landscape" = "Querformat erzwingen";
+"General" = "Allgemein";
+"General events and activities." = "Allgemeine Aktivitäten.";
+"General Preferences" = "Allgemeine Einstellungen";
+"Hide Splash Screen" = "Startbildschirm ausblenden";
+"HLS video downloading." = "HLS Video-Downloads.";
+"Hold Speed" = "Geschwindigkeit halten";
+
+/* Info */
+"Info" = "Info";
+"INFOS" = "INFOS";
+"Installed Modules" = "Deine Module";
+"Interface" = "Oberfläche";
+
+/* Social */
+"Join the Discord" = "Tritt unserem Discord-Server bei";
+
+/* Layout */
+"Landscape Columns" = "Spalten (Querformat)";
+"Language" = "Sprache";
+"LESS" = "WENIGER";
+
+/* Library */
+"Library" = "Bibliothek";
+"License (GPLv3.0)" = "Lizenz (GPLv3.0)";
+"Light" = "Hell";
+
+/* Loading States */
+"Loading Episode %lld..." = "Lade Folge %lld...";
+"Loading logs..." = "Lade Logs...";
+"Loading module information..." = "Lade Modulinfos...";
+"Loading Stream" = "Stream wird geladen";
+
+/* Logging */
+"Log Debug Info" = "Debug-Infos protokollieren";
+"Log Filters" = "Log-Filter";
+"Log In with AniList" = "Mit AniList anmelden";
+"Log In with Trakt" = "Mit Trakt anmelden";
+"Log Out from AniList" = "Von AniList abmelden";
+"Log Out from Trakt" = "Von Trakt abmelden";
+"Log Types" = "Log-Typen";
+"Logged in as" = "Angemeldet als";
+"Logged in as " = "Angemeldet als ";
+
+/* Logs and Settings */
+"Logs" = "Logs";
+"Long press Skip" = "Lang drücken zum Überspringen";
+"MAIN" = "MAIN";
+"Main Developer" = "Hauptentwickler";
+"MAIN SETTINGS" = "HAUPTEINSTELLUNGEN";
+
+/* Media Actions */
+"Mark All Previous Watched" = "Alle vorherigen als gesehen markieren";
+"Mark as Watched" = "Als gesehen markieren";
+"Mark Episode as Watched" = "Folge als gesehen markieren";
+"Mark Previous Episodes as Watched" = "Vorherige Folgen als gesehen markieren";
+"Mark watched" = "Als gesehen markieren";
+"Match with AniList" = "Mit AniList abgleichen";
+"Match with TMDB" = "Mit TMDB abgleichen";
+"Matched ID: %lld" = "Zugeordnete ID: %lld";
+"Matched with: %@" = "Abgeglichen mit: %@";
+"Max Concurrent Downloads" = "Max. gleichzeitige Downloads";
+
+/* Media Interface */
+"Media Grid Layout" = "Medienraster-Layout";
+"Media Player" = "Media-Player";
+"Media View" = "Medienansicht";
+"Metadata Provider" = "Metadaten-Anbieter";
+"Metadata Providers Order" = "Reihenfolge der Metadaten-Anbieter";
+"Module Removed" = "Modul entfernt";
+"Modules" = "Module";
+
+/* Headers */
+"MODULES" = "MODULE";
+"MORE" = "MEHR";
+
+/* Status Messages */
+"No Active Downloads" = "Keine aktiven Downloads";
+"No AniList matches found" = "Keine AniList-Übereinstimmungen";
+"No Data Available" = "Keine Daten";
+"No Downloads" = "Keine Downloads";
+"No episodes available" = "Keine Folgen verfügbar";
+"No Episodes Available" = "Keine Folgen verfügbar";
+"No items to continue watching." = "Keine Inhalte zum Weiterschauen verfügbar.";
+"No matches found" = "Keine Übereinstimmungen gefunden";
+"No Module Selected" = "Kein Modul ausgewählt";
+"No Modules" = "Keine Module";
+"No Results Found" = "Keine Ergebnisse";
+"No Search Results Found" = "Keine Suchergebnisse";
+"Nothing to Continue Watching" = "Keine Inhalte zum Weiterschauen";
+
+/* Notes and Messages */
+"Note that the modules will be replaced only if there is a different version string inside the JSON file." = "Beachte, dass Module nur ersetzt werden, wenn in der JSON-Datei eine andere Versionskennung enthalten ist.";
+
+/* Actions */
+"OK" = "OK";
+"Open Community Library" = "Community-Bibliothek öffnen";
+
+/* External Services */
+"Open in AniList" = "In AniList öffnen";
+"Original Poster" = "Original-Poster";
+
+/* Playback */
+"Paused" = "Pausiert";
+"Play" = "Abspielen";
+"Player" = "Player";
+
+/* System Messages */
+"Please restart the app to apply the language change." = "Starte die App neu, um die Sprache zu ändern.";
+"Please select a module from settings" = "Wähle ein Modul in den Einstellungen";
+
+/* Interface */
+"Portrait Columns" = "Spalten (Hochformat)";
+"Progress bar Marker Color" = "Farbe der Fortschrittsanzeige";
+"Provider: %@" = "Anbieter: %@";
+
+/* Queue */
+"Queue" = "Warteschlange";
+"Queued" = "In Warteschlange";
+
+/* Content */
+"Recently watched content will appear here." = "Deine kürzlich angesehenen Inhalte werden hier angezeigt.";
+
+/* Settings */
+"Refresh Modules on Launch" = "Module beim Start aktualisieren";
+"Refresh Storage Info" = "Speicherinfo aktualisieren";
+"Remember Playback speed" = "Wiedergabegeschwindigkeit merken";
+
+/* Actions */
+"Remove" = "Entfernen";
+"Remove All Cache" = "Cache komplett löschen";
+
+/* File Management */
+"Remove All Documents" = "Alle Dokumente löschen";
+"Remove Documents" = "Dokumente löschen";
+"Remove Downloaded Media" = "Downloads entfernen";
+"Remove Downloads" = "Downloads entfernen";
+"Remove from Bookmarks" = "Aus Lesezeichen entfernen";
+"Remove Item" = "Element entfernen";
+
+/* Support */
+"Report an Issue" = "Problem melden";
+
+/* Reset Options */
+"Reset" = "Zurücksetzen";
+"Reset AniList ID" = "AniList-ID zurücksetzen";
+"Reset Episode Progress" = "Folgenfortschritt zurücksetzen";
+"Reset progress" = "Fortschritt zurücksetzen";
+"Reset Progress" = "Fortschritt zurücksetzen";
+
+/* System */
+"Restart Required" = "Neustart erforderlich";
+"Running Sora %@ - cranci1" = "Sora %@ - cranci1";
+
+/* Actions */
+"Save" = "Speichern";
+"Search" = "Suchen";
+
+/* Search */
+"Search downloads" = "Downloads durchsuchen";
+"Search for something..." = "Suche nach etwas...";
+"Search..." = "Suchen...";
+
+/* Content */
+"Season %d" = "Staffel %d";
+"Season %lld" = "Staffel %lld";
+"Segments Color" = "Segmentfarbe";
+
+/* Modules */
+"Select Module" = "Modul auswählen";
+"Set Custom AniList ID" = "Eigene AniList-ID festlegen";
+
+/* Interface */
+"Settings" = "Einstellungen";
+"Shadow" = "Schatten";
+"Show More (%lld more characters)" = "Mehr anzeigen (%lld Zeichen mehr)";
+"Show PiP Button" = "PiP-Taste anzeigen";
+"Show Skip 85s Button" = "85s-Überspringen-Taste anzeigen";
+"Show Skip Intro / Outro Buttons" = "Intro/Outro-Tasten anzeigen";
+"Shows" = "Serien";
+"Size (%@)" = "Größe (%@)";
+"Skip Settings" = "Überspringen-Einstellungen";
+
+/* Player Features */
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments." = "Einige Funktionen sind auf den Sora- und Standard-Player beschränkt, wie z.B. Querformat erzwingen, Geschwindigkeit halten und individuelle Zeitsprünge.";
+
+/* App Info */
+"Sora" = "Sora";
+"Sora %@ by cranci1" = "Sora %@ von cranci1";
+"Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate." = "Sora und cranci1 sind in keiner Weise mit AniList oder Trakt verbunden.\n\nBitte beachte, dass Fortschrittsaktualisierungen möglicherweise nicht zu 100% genau sind.";
+"Sora GitHub Repository" = "Sora GitHub-Repository";
+"Sora/Sulfur will always remain free with no ADs!" = "Sora/Sulfur bleibt für immer kostenlos und ohne Werbung!";
+
+/* Interface */
+"Sort" = "Sortieren";
+"Speed Settings" = "Geschwindigkeitseinstellungen";
+
+/* Playback */
+"Start Watching" = "Jetzt ansehen";
+"Start Watching Episode %d" = "Folge %d starten";
+"Storage Used" = "Belegter Speicher";
+"Stream" = "Streamen";
+"Streaming and video playback." = "Streaming und Videowiedergabe.";
+
+/* Subtitles */
+"Subtitle Color" = "Untertitel-Farbe";
+"Subtitle Settings" = "Untertitel-Einstellungen";
+
+/* Sync */
+"Sync anime progress" = "Anime-Fortschritt syncen";
+"Sync TV shows progress" = "Serien-Fortschritt syncen";
+
+/* System */
+"System" = "System";
+
+/* Instructions */
+"Tap a title to override the current match." = "Tippe einen Titel, um die Zuordnung zu ändern.";
+"Tap Skip" = "Tippe zum Überspringen";
+"Tap to manage your modules" = "Tippe hier, um deine Module zu verwalten";
+"Tap to select a module" = "Tippe hier, um ein Modul auszuwählen";
+
+/* App Information */
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nDo not erase App Data unless you understand the consequences — it may cause the app to malfunction." = "Der App-Cache hilft, Bilder schneller zu laden.\n\nDas Löschen des Dokumentenordners entfernt alle heruntergeladenen Module.\n\nLösche App-Daten nur, wenn du die Konsequenzen verstehst — dies könnte dazu führen, dass die App nicht mehr richtig funktioniert.";
+"The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers." = "Der Folgenbereich legt fest, wie viele Folgen pro Seite angezeigt werden. Folgen werden in Gruppen zusammengefasst (z.B. 1-25, 26-50 usw.), um die Navigation zu erleichtern.\n\nFolgen-Metadaten beziehen sich auf Vorschaubilder und Titel, die manchmal Spoiler enthalten können.";
+"The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases." = "Das Modul stellt nur eine einzelne Folge bereit, was wahrscheinlich ein Film ist, daher haben wir für diese Fälle separate Ansichten erstellt.";
+
+/* Interface */
+"Thumbnails Width" = "Thumbnail-Breite";
+"TMDB Match" = "TMDB-Zuordnung";
+"Trackers" = "Tracker";
+"Trakt" = "Trakt";
+"Trakt.tv" = "Trakt.tv";
+
+/* Search */
+"Try different keywords" = "Versuche es mit anderen Suchbegriffen";
+"Try different search terms" = "Verwende andere Suchbegriffe";
+
+/* Player Controls */
+"Two Finger Hold for Pause" = "Halte mit zwei Fingern zum Pausieren";
+"Unable to fetch matches. Please try again later." = "Konnte keine Übereinstimmungen abrufen. Bitte versuche es später erneut.";
+"Use TMDB Poster Image" = "TMDB-Poster verwenden";
+
+/* Version */
+"v%@" = "v%@";
+"Video Player" = "Video-Player";
+
+/* Video Settings */
+"Video Quality Preferences" = "Videoqualität";
+"View All" = "Alle anzeigen";
+"Watched" = "Gesehen";
+"Why am I not seeing any episodes?" = "Warum werden keine Folgen angezeigt?";
+"WiFi Quality" = "Qualität (WLAN)";
+
+/* User Status */
+"You are not logged in" = "Du bist nicht angemeldet";
+"You have no items saved." = "Du hast keine gespeicherten Elemente.";
+"Your downloaded episodes will appear here" = "Deine heruntergeladenen Folgen werden hier angezeigt.";
+"Your recently watched content will appear here" = "Deine kürzlich angesehenen Inhalte werden hier angezeigt.";
+
+/* Download Settings */
+"Download Settings" = "Download-Einstellungen";
+"Max concurrent downloads controls how many episodes can download simultaneously. Higher values may use more bandwidth and device resources." = "Die maximale Anzahl gleichzeitiger Downloads legt fest, wie viele Folgen gleichzeitig heruntergeladen werden können. Höhere Werte können mehr Bandbreite und Geräteleistung beanspruchen.";
+"Quality" = "Qualität";
+"Max Concurrent Downloads" = "Max. gleichzeitige Downloads";
+"Allow Cellular Downloads" = "Downloads über Mobilfunk erlauben";
+"Quality Information" = "Qualitäts-Info";
+
+/* Storage */
+"Storage Management" = "Speicherverwaltung";
+"Storage Used" = "Belegter Speicher";
+"Library cleared successfully" = "Bibliothek erfolgreich geleert";
+"All downloads deleted successfully" = "Alle Downloads erfolgreich gelöscht";
+
+/* New additions */
+"Recent searches" = "Letzte Suchanfragen";
+"me frfr" = "Ich, ohne Witz";
+"Data" = "Daten";
+"Maximum Quality Available" = "Maximal verfügbare Qualität";

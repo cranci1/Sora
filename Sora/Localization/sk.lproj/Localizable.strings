@@ -1,0 +1,406 @@
+/\* General \*/
+"About" = "O aplikácii";
+"About Sora" = "O aplikácii Sora";
+"Active" = "Aktívne";
+"Active Downloads" = "Aktívne sťahovania";
+"Actively downloading media can be tracked from here." = "Aktívne preberané médiá môžete sledovať tu.";
+"Add Module" = "Pridať modul";
+"Adjust the number of media items per row in portrait and landscape modes." = "Nastavte počet mediálnych položiek na riadok v režime na výšku a na šírku.";
+"Advanced" = "Pokročilé";
+"AKA Sulfur" = "AKA Sulfur";
+"All Bookmarks" = "Všetky záložky";
+"All Watching" = "Všetky rozpozerané";
+"Also known as Sulfur" = "Tiež známe ako Sulfur";
+"AniList" = "AniList";
+"AniList ID" = "ID AniList";
+"AniList Match" = "AniList Match";
+"AniList.co" = "AniList.co";
+"Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time." = "Anonymné údaje sa zbierajú na zlepšenie aplikácie. Žiadne osobné údaje sa nezbierajú. Túto možnosť môžete kedykoľvek vypnúť.";
+"App Info" = "Informácie o aplikácii";
+"App Language" = "Jazyk aplikácie";
+"App Storage" = "Ukladací priestor aplikácie";
+"Appearance" = "Vzhľad";
+
+/\* Alerts and Actions \*/
+"Are you sure you want to clear all cached data? This will help free up storage space." = "Naozaj chcete vymazať všetku medzipamäť? Pomôže to uvoľniť miesto na disku.";
+"Are you sure you want to delete '%@'?" = "Naozaj chcete zmazať '%@'?";
+"Are you sure you want to delete all %1\$d episodes in '%2\$@'?" = "Naozaj chcete zmazať všetkých %1\$d epizód v '%2\$@'?";
+"Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use." = "Naozaj chcete zmazať všetky stiahnuté súbory? Môžete vymazať iba knižnicu a stiahnuté súbory si ponechať.";
+"Are you sure you want to erase all app data? This action cannot be undone." = "Naozaj chcete vymazať všetky dáta aplikácie? Túto akciu nie je možné vrátiť späť.";
+
+/\* Features \*/
+"Background Enabled" = "V pozadí povolené";
+"Bookmark items for an easier access later." = "Označte položky záložkou pre ľahší prístup neskôr.";
+"Bookmarks" = "Záložky";
+"Bottom Padding" = "Spodná výplň";
+"Cancel" = "Zrušiť";
+"Cellular Quality" = "Kvalita cez mobilné dáta";
+"Check out some community modules here!" = "Prezrite si nejaké komunitou vytvorené moduly tu!";
+"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." = "Vyberte preferované video rozlíšenie pre WiFi a mobilné pripojenia. Vyššie rozlíšenia používajú viac dát, ale poskytujú lepšiu kvalitu. Ak presné rozlíšenie nie je dostupné, automaticky sa vyberie najbližšia možnosť.\n\nPoznámka: Nie všetky video zdroje a prehrávače podporujú výber kvality. Táto funkcia funguje najlepšie s HLS streamami pomocou prehrávača Sora.";
+"Clear" = "Vymazať";
+"Clear All Downloads" = "Vymazať všetky sťiahnuté položky";
+"Clear Cache" = "Vymazať medzipamäť";
+"Clear Library Only" = "Vymazať len knižnicu";
+"Clear Logs" = "Vymazať záznamy";
+"Click the plus button to add a module!" = "Kliknite na tlačidlo plus pre pridanie modulu!";
+"Continue Watching" = "Pokračovať v sledovaní";
+"Continue Watching Episode %d" = "Pokračovať v sledovaní epizódy %d";
+"Contributors" = "Prispievatelia";
+"Copied to Clipboard" = "Skopírované do schránky";
+"Copy to Clipboard" = "Kopírovať do schránky";
+"Copy URL" = "Kopírovať URL";
+
+/\* Episodes \*/
+"%lld Episodes" = "%lld epizód";
+"%lld of %lld" = "%lld z %lld";
+"%lld-%lld" = "%lld–%lld";
+"%lld%% seen" = "%lld%% zhliadnuté";
+"Episode %lld" = "Epizóda %lld";
+"Episodes" = "Epizódy";
+"Episodes might not be available yet or there could be an issue with the source." = "Epizódy môžu byť ešte nedostupné alebo môže byť problém so zdrojom.";
+"Episodes Range" = "Rozsah epizód";
+
+/\* System \*/
+"cranci1" = "cranci1";
+"Dark" = "Tmavé";
+"DATA & LOGS" = "DÁTA A ZÁZNAMY";
+"Debug" = "Ladenie";
+"Debugging and troubleshooting." = "Ladenie a troubleshooting.";
+
+/\* Actions \*/
+"Delete" = "Zmazať";
+"Delete All" = "Zmazať všetko";
+"Delete All Downloads" = "Zmazať všetky preberania";
+"Delete All Episodes" = "Zmazať všetky epizódy";
+"Delete Download" = "Zmazať preberanie";
+"Delete Episode" = "Zmazať epizódu";
+
+/\* Player \*/
+"Double Tap to Seek" = "Dvojité klepnutie pre skok";
+"Double tapping the screen on it's sides will skip with the short tap setting." = "Dvojité klepnutie na okraje obrazovky preskočí podľa nastavenia krátkeho klepnutia.";
+
+/\* Downloads \*/
+"Download" = "Stiahnuť";
+"Download Episode" = "Stiahnuť epizódu";
+"Download Summary" = "Súhrn sťiahnutých";
+"Download This Episode" = "Stiahnuť túto epizódu";
+"Downloaded" = "Stiahnuté";
+"Downloaded Shows" = "Stiahnuté shows";
+"Downloading" = "Sťahuje sa";
+"Downloads" = "Sťiahnuté";
+
+/\* Settings \*/
+"Enable Analytics" = "Povoliť analytiku";
+"Enable Subtitles" = "Povoliť titulky";
+
+/\* Data Management \*/
+"Erase" = "Vymazať";
+"Erase all App Data" = "Vymazať všetky dáta aplikácie";
+"Erase App Data" = "Vymazať dáta aplikácie";
+
+/\* Errors \*/
+"Error" = "Chyba";
+"Error Fetching Results" = "Chyba pri získavaní výsledkov";
+"Errors and critical issues." = "Chyby a kritické problémy.";
+"Failed to load contributors" = "Nepodarilo sa načítať prispievateľov";
+
+/\* Features \*/
+"Fetch Episode metadata" = "Získať metadata epizódy";
+"Files Downloaded" = "Stiahnuté súbory";
+"Font Size" = "Veľkosť písma";
+
+/\* Interface \*/
+"Force Landscape" = "Vynútiť režim na šírku";
+"General" = "Všeobecné";
+"General events and activities." = "Všeobecné udalosti a aktivity.";
+"General Preferences" = "Všeobecné nastavenia";
+"Hide Splash Screen" = "Skryť uvítaciu obrazovku";
+"HLS video downloading." = "Sťahovanie HLS videa.";
+"Hold Speed" = "Rýchlosť podržania";
+
+/\* Info \*/
+"Info" = "Informácie";
+"INFOS" = "INFORMÁCIE";
+"Installed Modules" = "Inštalované moduly";
+"Interface" = "Rozhranie";
+
+/\* Social \*/
+"Join the Discord" = "Pripojte sa k nášmu Discordu";
+
+/\* Layout \*/
+"Landscape Columns" = "Stĺpce v režime na šírku";
+"Language" = "Jazyk";
+"LESS" = "MENEJ";
+
+/\* Library \*/
+"Library" = "Knižnica";
+"License (GPLv3.0)" = "Licencia (GPLv3.0)";
+"Light" = "Svetlé";
+
+/\* Loading States \*/
+"Loading Episode %lld..." = "Načítava sa epizóda %lld...";
+"Loading logs..." = "Načítavajú sa záznamy...";
+"Loading module information..." = "Načítavajú sa informácie o module...";
+"Loading Stream" = "Načítava sa stream";
+
+/\* Logging \*/
+"Log Debug Info" = "Zaznamenať ladacie informácie";
+"Log Filters" = "Filtre záznamov";
+"Log In with AniList" = "Prihlásiť sa cez AniList";
+"Log In with Trakt" = "Prihlásiť sa cez Trakt";
+"Log Out from AniList" = "Odhlásiť sa z AniList";
+"Log Out from Trakt" = "Odhlásiť sa z Trakt";
+"Log Types" = "Typy záznamov";
+"Logged in as" = "Prihlásený ako";
+"Logged in as " = "Prihlásený ako ";
+
+/\* Logs and Settings \*/
+"Logs" = "Záznamy";
+"Long press Skip" = "Dlhé stlačenie preskočí";
+"MAIN" = "HLAVNÉ";
+"Main Developer" = "Hlavný vývojár";
+"MAIN SETTINGS" = "HLAVNÉ NASTAVENIA";
+
+/\* Media Actions \*/
+"Mark All Previous Watched" = "Označiť všetky predchádzajúce ako zhliadnuté";
+"Mark as Watched" = "Označiť ako zhliadnuté";
+"Mark Episode as Watched" = "Označiť epizódu ako zhliadnutú";
+"Mark Previous Episodes as Watched" = "Označiť predchádzajúce epizódy ako zhliadnuté";
+"Mark watched" = "Označiť ako zhliadnuté";
+"Match with AniList" = "Match with AniList";
+"Match with TMDB" = "Match with TMDB";
+"Matched ID: %lld" = "Matched ID: %lld";
+"Matched with: %@" = "Matched with: %@";
+"Max Concurrent Downloads" = "Maximálny počet súbežných šťahovaní";
+
+/\* Media Interface \*/
+"Media Grid Layout" = "Rozloženie mriežky médií";
+"Media Player" = "Prehrávač médií";
+"Media View" = "Zobrazenie médií";
+"Metadata Provider" = "Poskytovateľ metadát";
+"Metadata Providers Order" = "Poradie poskytovateľov metadata";
+"Module Removed" = "Modul odstránený";
+"Modules" = "Moduly";
+
+/\* Headers \*/
+"MODULES" = "MODULY";
+"MORE" = "VIAC";
+
+/\* Status Messages \*/
+"No Active Downloads" = "Žiadne aktívne sťahovania";
+"No AniList matches found" = "No AniList matches found";
+"No Data Available" = "Žiadne dostupné dáta";
+"No Downloads" = "Žiadne sťahovania";
+"No episodes available" = "Žiadne dostupné epizódy";
+"No Episodes Available" = "Žiadne dostupné epizódy";
+"No items to continue watching." = "Žiadne položky na pokračovanie v sledovaní.";
+"No matches found" = "Nenašli sa žiadne zhody";
+"No Module Selected" = "Nie je vybratý žiaden modul";
+"No Modules" = "Žiadne moduly";
+"No Results Found" = "Nenašli sa žiadne výsledky";
+"No Search Results Found" = "Nenašli sa žiadne výsledky vyhľadávania";
+"Nothing to Continue Watching" = "Niž nič na pokračovanie v sledovaní";
+
+/\* Notes and Messages \*/
+"Note that the modules will be replaced only if there is a different version string inside the JSON file." = "Moduly sa nahradia iba v prípade, že v JSON súbore je odlišná verzia.";
+
+/\* Actions \*/
+"OK" = "OK";
+"Open Community Library" = "Otvoriť komunitnú knižnicu";
+
+/\* External Services \*/
+"Open in AniList" = "Otvoriť v AniList";
+"Original Poster" = "Pôvodný plagát";
+
+/\* Playback \*/
+"Paused" = "Pozastavené";
+"Play" = "Prehrať";
+"Player" = "Prehrávač";
+
+/\* System Messages \*/
+"Please restart the app to apply the language change." = "Reštartujte aplikáciu pre zmenu jazyka.";
+"Please select a module from settings" = "Vyberte modul v nastaveniach";
+
+/\* Interface \*/
+"Portrait Columns" = "Stĺpce na výšku";
+"Progress bar Marker Color" = "Farba značky na časového úseku";
+"Provider: %@" = "Poskytovateľ: %@";
+
+/\* Queue \*/
+"Queue" = "Fronta";
+"Queued" = "Vo fronte";
+
+/\* Content \*/
+"Recently watched content will appear here." = "Nedávno sledovaný obsah sa zobrazí tu.";
+
+/\* Settings \*/
+"Refresh Modules on Launch" = "Obnoviť moduly pri spustení";
+"Refresh Storage Info" = "Obnoviť informácie o úložisku";
+"Remember Playback speed" = "Zapamätať rýchlosť prehrávania";
+
+/\* Actions \*/
+"Remove" = "Odstrániť";
+"Remove All Cache" = "Odstrániť všetku medzipamäť";
+
+/\* File Management \*/
+"Remove All Documents" = "Odstrániť všetky dokumenty";
+"Remove Documents" = "Odstrániť dokumenty";
+"Remove Downloaded Media" = "Odstrániť stiahnuté médiá";
+"Remove Downloads" = "Odstrániť preberania";
+"Remove from Bookmarks" = "Odstrániť zo záložiek";
+"Remove Item" = "Odstrániť položku";
+
+/\* Support \*/
+"Report an Issue" = "Nahlásiť problém";
+
+/\* Reset Options \*/
+"Reset" = "Obnoviť";
+"Reset AniList ID" = "Obnoviť ID AniList";
+"Reset Episode Progress" = "Obnoviť pokrok epizódy";
+"Reset progress" = "Obnoviť pokrok";
+"Reset Progress" = "Obnoviť pokrok";
+
+/\* System \*/
+"Restart Required" = "Vyžaduje sa reštart";
+"Running Sora %@ - cranci1" = "Spustená Sora %@ - cranci1";
+
+/\* Actions \*/
+"Save" = "Uložiť";
+"Search" = "Vyhľadať";
+
+/\* Search \*/
+"Search downloads" = "Vyhľadávať preberania";
+"Search for something..." = "Hľadať niečo...";
+"Search..." = "Hľadať...";
+
+/\* Content \*/
+"Season %d" = "Séria %d";
+"Season %lld" = "Séria %lld";
+"Segments Color" = "Farba segmentov";
+
+/\* Modules \*/
+"Select Module" = "Vybrať modul";
+"Set Custom AniList ID" = "Nastaviť vlastné AniList ID";
+
+/\* Interface \*/
+"Settings" = "Nastavenia";
+"Shadow" = "Tieň";
+"Show More (%lld more characters)" = "Zobraziť viac (%lld znakov)";
+"Show PiP Button" = "Zobraziť tlačidlo PiP";
+"Show Skip 85s Button" = "Zobraziť tlačidlo preskočiť 85s";
+"Show Skip Intro / Outro Buttons" = "Zobraziť tlačidlá preskočiť úvod / záver";
+"Shows" = "Relácie";
+"Size (%@)" = "Veľkosť (%@)";
+"Skip Settings" = "Nastavenia preskočenia";
+
+/\* Player Features \*/
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments." = "Niektoré funkcie sú obmedzené na prehrávač Sora a predvolený prehrávač, ako ForceLandscape, holdSpeed a vlastné inkrementy preskočenia času.";
+
+/\* App Info \*/
+"Sora" = "Sora";
+"Sora %@ by cranci1" = "Sora %@ od cranci1";
+"Sora and cranci1 are not affiliated with AniList or Trakt in any way.
+
+Also note that progress updates may not be 100% accurate." = "Sora a cranci1 nie sú v žiadnom prípade spojené s AniList alebo Trakt.
+
+Upozorňujeme, že aktualizácie pozerania nemusia byť stopercentne presné.";
+"Sora GitHub Repository" = "GitHub repozitár Sora";
+"Sora/Sulfur will always remain free with no ADs!" = "Sora/Sulfur bude vždy zadarmo bez reklám!";
+
+/\* Interface \*/
+"Sort" = "Zoradiť";
+"Speed Settings" = "Nastavenia rýchlosti";
+
+/\* Playback \*/
+"Start Watching" = "Začať pozerať";
+"Start Watching Episode %d" = "Začať pozerať epizódu %d";
+"Storage Used" = "Použitá pamäť";
+"Stream" = "Stream";
+"Streaming and video playback." = "Streamovanie a prehrávanie videa.";
+
+/\* Subtitles \*/
+"Subtitle Color" = "Farba tituliek";
+"Subtitle Settings" = "Nastavenia tituliek";
+
+/\* Sync \*/
+"Sync anime progress" = "Synchronizovať pozeranie anime";
+"Sync TV shows progress" = "Synchronizovať pozeranie TV relácií";
+
+/\* System \*/
+"System" = "Systém";
+
+/\* Instructions \*/
+"Tap a title to override the current match." = "Klepnite na názov prepíšte aktuálnu zhodu.";
+"Tap Skip" = "Klepnite na Preskočiť";
+"Tap to manage your modules" = "Klepnite pre správu modulov";
+"Tap to select a module" = "Klepnite na výber modulu";
+
+/\* App Information \*/
+"The app cache helps the app load images faster.
+
+Clearing the Documents folder will delete all downloaded modules.
+
+Do not erase App Data unless you understand the consequences — it may cause the app to malfunction." = "Medzipamäť aplikácie pomáha aplikácii rýchlejšie načítať obrázky.
+
+Vyprázdnením priečinka Dokumenty sa odstránia všetky stiahnuté moduly.
+
+Neodstraňujte dáta aplikácie, ak nerozumiete následkom — môže to spôsobiť nesprávne fungovanie aplikácie.";
+"The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.
+
+For episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers." = "Rozsah epizód riadi, koľko epizód sa zobrazí na každej stránke. Epizódy sú zoskupené do sád (napr. 1–25, 26–50 atď.), čo vám umožňuje ľahšie sa medzi nimi pohybovať.
+
+Čo sa týka metadata epizódy, ide o náhľad epizódy a názov, pretože niekedy môže obsahovať spoilery.";
+"The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases." = "Modul poskytol iba jednu epizódu; pravdepodobne ide o film, preto sme sa rozhodli vytvoriť pre tieto prípady samostatné obrazovky.";
+
+/\* Interface \*/
+"Thumbnails Width" = "Šírka náhľadov";
+"TMDB Match" = "Match s TMDB";
+"Trackers" = "Sledovače";
+"Trakt" = "Trakt";
+"Trakt.tv" = "Trakt.tv";
+
+/\* Search \*/
+"Try different keywords" = "Skúste iné kľúčové slová";
+"Try different search terms" = "Skúste iné vyhľadávacie výrazy";
+
+/\* Player Controls \*/
+"Two Finger Hold for Pause" = "Podržanie dvoma prstami na pozastavenie";
+"Unable to fetch matches. Please try again later." = "Nie je možné načítať zhody. Skúste to prosím neskôr.";
+"Use TMDB Poster Image" = "Použiť plagát z TMDB";
+
+/\* Version \*/
+"v%@" = "v%@";
+"Video Player" = "Video prehrávač";
+
+/\* Video Settings \*/
+"Video Quality Preferences" = "Preferencie kvality videa";
+"View All" = "Zobraziť všetko";
+"Watched" = "Zhliadnuté";
+"Why am I not seeing any episodes?" = "Prečo nevidím žiadne epizódy?";
+"WiFi Quality" = "Kvalita WiFi";
+
+/\* User Status \*/
+"You are not logged in" = "Nie ste prihlásený";
+"You have no items saved." = "Nemáte uložené žiadne položky.";
+"Your downloaded episodes will appear here" = "Stiahnuté epizódy sa zobrazia tu";
+"Your recently watched content will appear here" = "Nedávno zhliadnutý obsah sa zobrazí tu";
+
+/\* Download Settings \*/
+"Download Settings" = "Nastavenia sťahovania";
+"Max concurrent downloads controls how many episodes can download simultaneously. Higher values may use more bandwidth and device resources." = "Maximálny počet súbežných sťahovaní určuje, koľko epizód sa môže sťahovať v jeden moment. Vyššie hodnoty môžu využívať viacej internetu/dát a zaťažovať zariadenie.";
+"Quality" = "Kvalita";
+"Max Concurrent Downloads" = "Maximálne súbežné sťahovania";
+"Allow Cellular Downloads" = "Povoliť sťahovanie cez mobilné dáta";
+"Quality Information" = "Informácie o kvalite";
+
+/\* Storage \*/
+"Storage Management" = "Správa ukladacieho priestoru";
+"Storage Used" = "Použitý priestor";
+"Library cleared successfully" = "Knižnica bola úspešne vymazaná";
+"All downloads deleted successfully" = "Všetky sťahovania boli úspešne zmazané";
+
+/\* New additions \*/
+"Recent searches" = "Nedávne vyhľadávania";
+"me frfr" = "me frfr";
+"Data" = "Dáta";
+"Maximum Quality Available" = "Maximálna dostupná kvalita";

@@ -34,6 +34,8 @@ struct AllWatchingView: View {
     
     @State private var continueWatchingItems: [ContinueWatchingItem] = []
     @State private var sortOption: SortOption = .dateAdded
+    @State private var searchText: String = ""
+    @State private var isSearchActive: Bool = false
     
     enum SortOption: String, CaseIterable {
         case dateAdded = "Recently Added"
@@ -42,16 +44,20 @@ struct AllWatchingView: View {
         case progress = "Watch Progress"
     }
     
-    var sortedItems: [ContinueWatchingItem] {
+    var filteredAndSortedItems: [ContinueWatchingItem] {
+        let filtered = searchText.isEmpty ? continueWatchingItems : continueWatchingItems.filter { item in
+            item.mediaTitle.localizedCaseInsensitiveContains(searchText) ||
+            item.module.metadata.sourceName.localizedCaseInsensitiveContains(searchText)
+        }
         switch sortOption {
         case .dateAdded:
-            return continueWatchingItems.reversed() 
+            return filtered.reversed()
         case .title:
-            return continueWatchingItems.sorted { $0.mediaTitle.lowercased() < $1.mediaTitle.lowercased() }
+            return filtered.sorted { $0.mediaTitle.lowercased() < $1.mediaTitle.lowercased() }
         case .source:
-            return continueWatchingItems.sorted { $0.module.metadata.sourceName < $1.module.metadata.sourceName }
+            return filtered.sorted { $0.module.metadata.sourceName < $1.module.metadata.sourceName }
         case .progress:
-            return continueWatchingItems.sorted { $0.progress > $1.progress }
+            return filtered.sorted { $0.progress > $1.progress }
         }
     }
     
@@ -77,37 +83,114 @@ struct AllWatchingView: View {
                 
                 Spacer()
                 
-                Menu {
-                    ForEach(SortOption.allCases, id: \.self) { option in
-                        Button {
-                            sortOption = option
-                        } label: {
-                            HStack {
-                                Text(option.rawValue)
-                                if option == sortOption {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.accentColor)
+                HStack(spacing: 16) {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isSearchActive.toggle()
+                        }
+                        if !isSearchActive {
+                            searchText = ""
+                        }
+                    }) {
+                        Image(systemName: isSearchActive ? "xmark.circle.fill" : "magnifyingglass")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(.accentColor)
+                            .padding(10)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            )
+                            .circularGradientOutline()
+                    }
+                    Menu {
+                        ForEach(SortOption.allCases, id: \.self) { option in
+                            Button {
+                                sortOption = option
+                            } label: {
+                                HStack {
+                                    Text(option.rawValue)
+                                    if option == sortOption {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(.accentColor)
+                                    }
                                 }
                             }
                         }
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(.accentColor)
+                            .padding(10)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            )
+                            .circularGradientOutline()
                     }
-                } label: {
-                    Image(systemName: "line.3.horizontal.decrease.circle")
-                        .resizable()
-                        .frame(width: 24, height: 24)
-                        .foregroundColor(.accentColor)
-                        .padding(6)
-                        .background(Color.gray.opacity(0.2))
-                        .clipShape(Circle())
-                        .circularGradientOutline()
                 }
             }
             .padding(.horizontal)
             .padding(.top)
             
+            if isSearchActive {
+                HStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "magnifyingglass")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(.secondary)
+                        TextField("Search watching...", text: $searchText)
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .foregroundColor(.primary)
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 18, height: 18)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: Color.accentColor.opacity(0.25), location: 0),
+                                        .init(color: Color.accentColor.opacity(0), location: 1)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 1.5
+                            )
+                    )
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .top).combined(with: .opacity),
+                    removal: .move(edge: .top).combined(with: .opacity)
+                ))
+            }
+            
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 12) {
-                    ForEach(sortedItems) { item in
+                    ForEach(filteredAndSortedItems) { item in
                         FullWidthContinueWatchingCell(
                             item: item,
                             markAsWatched: {

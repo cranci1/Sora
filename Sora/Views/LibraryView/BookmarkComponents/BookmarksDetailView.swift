@@ -15,6 +15,8 @@ struct BookmarksDetailView: View {
     
     @Binding var bookmarks: [LibraryItem]
     @State private var sortOption: SortOption = .dateAdded
+    @State private var searchText: String = ""
+    @State private var isSearchActive: Bool = false
     
     enum SortOption: String, CaseIterable {
         case dateAdded = "Date Added"
@@ -22,14 +24,18 @@ struct BookmarksDetailView: View {
         case source = "Source"
     }
     
-    var sortedBookmarks: [LibraryItem] {
+    var filteredAndSortedBookmarks: [LibraryItem] {
+        let filtered = searchText.isEmpty ? bookmarks : bookmarks.filter { item in
+            item.title.localizedCaseInsensitiveContains(searchText) ||
+            item.moduleName.localizedCaseInsensitiveContains(searchText)
+        }
         switch sortOption {
         case .dateAdded:
-            return bookmarks
+            return filtered
         case .title:
-            return bookmarks.sorted { $0.title.lowercased() < $1.title.lowercased() }
+            return filtered.sorted { $0.title.lowercased() < $1.title.lowercased() }
         case .source:
-            return bookmarks.sorted { item1, item2 in
+            return filtered.sorted { item1, item2 in
                 let module1 = moduleManager.modules.first { $0.id.uuidString == item1.moduleId }
                 let module2 = moduleManager.modules.first { $0.id.uuidString == item2.moduleId }
                 return (module1?.metadata.sourceName ?? "") < (module2?.metadata.sourceName ?? "")
@@ -52,12 +58,111 @@ struct BookmarksDetailView: View {
                         .foregroundColor(.primary)
                 }
                 Spacer()
-                SortMenu(sortOption: $sortOption)
+                HStack(spacing: 16) {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isSearchActive.toggle()
+                        }
+                        if !isSearchActive {
+                            searchText = ""
+                        }
+                    }) {
+                        Image(systemName: isSearchActive ? "xmark.circle.fill" : "magnifyingglass")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(.accentColor)
+                            .padding(10)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            )
+                            .circularGradientOutline()
+                    }
+                    Menu {
+                        ForEach(SortOption.allCases, id: \.self) { option in
+                            Button {
+                                sortOption = option
+                            } label: {
+                                HStack {
+                                    Text(option.rawValue)
+                                    if option == sortOption {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(.accentColor)
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(.accentColor)
+                            .padding(10)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            )
+                            .circularGradientOutline()
+                    }
+                }
             }
             .padding(.horizontal)
             .padding(.top)
+            if isSearchActive {
+                HStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "magnifyingglass")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(.secondary)
+                        TextField("Search bookmarks...", text: $searchText)
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .foregroundColor(.primary)
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 18, height: 18)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: Color.accentColor.opacity(0.25), location: 0),
+                                        .init(color: Color.accentColor.opacity(0), location: 1)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 1.5
+                            )
+                    )
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .top).combined(with: .opacity),
+                    removal: .move(edge: .top).combined(with: .opacity)
+                ))
+            }
             BookmarksDetailGrid(
-                bookmarks: sortedBookmarks,
+                bookmarks: filteredAndSortedBookmarks,
                 moduleManager: moduleManager
             )
         }

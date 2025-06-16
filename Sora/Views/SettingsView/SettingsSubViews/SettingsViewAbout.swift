@@ -326,38 +326,30 @@ struct TranslatorsView: View {
 
     var body: some View {
         ForEach(translators) { translator in
-            Button(action: {
-                if let url = URL(string: "https://github.com/\(translator.login)") {
-                    UIApplication.shared.open(url)
+            HStack {
+                LazyImage(url: URL(string: translator.avatarUrl)) { state in
+                    if let uiImage = state.imageContainer?.image {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+                    } else {
+                        ProgressView()
+                            .frame(width: 40, height: 40)
+                    }
                 }
-            }) {
-                HStack {
-                    LazyImage(url: URL(string: translator.avatarUrl)) { state in
-                        if let uiImage = state.imageContainer?.image {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .frame(width: 40, height: 40)
-                                .clipShape(Circle())
-                        } else {
-                            ProgressView()
-                                .frame(width: 40, height: 40)
-                        }
-                    }
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(translator.login)
-                            .font(.headline)
-                            .foregroundColor(.accentColor)
-                        Text(translator.language)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    Spacer()
-                    Image(systemName: "safari")
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(translator.login)
+                        .font(.headline)
                         .foregroundColor(.accentColor)
+                    Text(translator.language)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                Spacer()
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
             if translator.id != translators.last?.id {
                 Divider()
                     .padding(.horizontal, 16)

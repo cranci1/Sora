@@ -17,6 +17,7 @@ struct DownloadView: View {
     @State private var showDeleteAlert = false
     @State private var assetToDelete: DownloadedAsset?
     @State private var isSearchActive = false
+    @State private var showDeleteAllAlert = false
     
     enum SortOption: String, CaseIterable, Identifiable {
         case newest = "Newest"
@@ -658,22 +659,6 @@ struct DownloadedSection: View {
                     }
                 }
             }
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .strokeBorder(
-                        LinearGradient(
-                            gradient: Gradient(stops: [
-                                .init(color: Color.accentColor.opacity(0.3), location: 0),
-                                .init(color: Color.accentColor.opacity(0), location: 1)
-                            ]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        ),
-                        lineWidth: 0.5
-                    )
-            )
             .padding(.horizontal, 20)
         }
         .alert(NSLocalizedString("Delete All Episodes", comment: ""), isPresented: $showDeleteGroupAlert) {
@@ -934,6 +919,22 @@ struct EnhancedDownloadGroupCard: View {
                 .padding(16)
                 .contentShape(Rectangle())
             }
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.3), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -954,8 +955,12 @@ struct EnhancedShowEpisodesView: View {
     @State private var showDeleteAllAlert = false
     @State private var assetToDelete: DownloadedAsset?
     @EnvironmentObject var jsController: JSController
+    @EnvironmentObject var tabBarController: TabBarController
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
     
     @State private var episodeSortOption: EpisodeSortOption = .episodeOrder
+    @State private var showFullSynopsis = false
 
     enum EpisodeSortOption: String, CaseIterable, Identifiable {
         case downloadDate = "Download Date"
@@ -983,165 +988,231 @@ struct EnhancedShowEpisodesView: View {
     }
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 24) {
-                VStack(spacing: 20) {
-                    HStack(alignment: .top, spacing: 20) {
-                        Group {
-                            if let posterURL = group.posterURL {
-                                LazyImage(url: posterURL) { state in
-                                    if let uiImage = state.imageContainer?.image {
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                    } else {
-                                        Rectangle()
-                                            .fill(.tertiary)
-                                    }
-                                }
-                            } else {
-                                Rectangle()
-                                    .fill(.tertiary)
-                                    .overlay(
-                                        Image(systemName: "tv")
-                                            .font(.largeTitle)
-                                            .foregroundColor(.secondary)
-                                    )
-                            }
-                        }
-                        .frame(width: 120, height: 180)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
-                        
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text(group.title)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .lineLimit(3)
-                                .foregroundColor(.primary)
-                            
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Image(systemName: "play.rectangle.fill")
-                                        .foregroundColor(.accentColor)
-                                    Text("\(group.assetCount) \(group.assetCount == 1 ? "Episode" : "Episodes")")
-                                        .font(.headline)
-                                        .foregroundColor(.secondary)
-                                }
-                                
-                                HStack {
-                                    Image(systemName: "internaldrive.fill")
-                                        .foregroundColor(.accentColor)
-                                    Text(formatFileSize(group.totalFileSize))
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            
-                            Spacer()
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(.horizontal, 20)
+        ZStack {
+            mainScrollView
+                .navigationBarHidden(true)
+                .ignoresSafeArea(.container, edges: .top)
+            navigationOverlay
+        }
+        .onAppear {
+            tabBarController.hideTabBar()
+            // Enable swipe-to-go-back gesture
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let navigationController = window.rootViewController?.children.first as? UINavigationController {
+                navigationController.interactivePopGestureRecognizer?.isEnabled = true
+                navigationController.interactivePopGestureRecognizer?.delegate = nil
+            }
+        }
+        .onDisappear {
+            tabBarController.showTabBar()
+        }
+        .navigationBarBackButtonHidden(true)
+    }
+    
+    @ViewBuilder
+    private var navigationOverlay: some View {
+        VStack {
+            HStack {
+                Button(action: {
+                    tabBarController.showTabBar()
+                    dismiss()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 24))
+                        .foregroundColor(.primary)
+                        .padding(12)
+                        .background(Color.gray.opacity(0.2))
+                        .clipShape(Circle())
+                        .circularGradientOutline()
                 }
-                .padding(.top, 20)
-                
-                // Episodes Section
-                VStack(spacing: 16) {
-                    // Section Header
-                    VStack(spacing: 12) {
-                        HStack {
-                            Image(systemName: "list.bullet.rectangle")
-                                .foregroundColor(.accentColor)
-                            Text(NSLocalizedString("Episodes", comment: "").uppercased())
-                                .font(.footnote)
-                                .fontWeight(.medium)
-                                .foregroundColor(.secondary)
-                            
-                            Spacer()
-                            
-                            Menu {
-                                ForEach(EpisodeSortOption.allCases) { option in
-                                    Button(action: {
-                                        episodeSortOption = option
-                                    }) {
-                                        HStack {
-                                            Image(systemName: option.systemImage)
-                                            Text(option.rawValue)
-                                            if episodeSortOption == option {
-                                                Spacer()
-                                                Image(systemName: "checkmark")
-                                            }
-                                        }
-                                    }
-                                }
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Image(systemName: episodeSortOption.systemImage)
-                                    Text(NSLocalizedString("Sort", comment: ""))
-                                }
-                                .font(.subheadline)
-                                .foregroundColor(.accentColor)
-                            }
-                            
-                            Button(action: {
-                                showDeleteAllAlert = true
-                            }) {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "trash")
-                                    Text(NSLocalizedString("Delete All", comment: ""))
-                                }
-                                .font(.subheadline)
-                                .foregroundColor(.red)
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                    }
-                    
-                    // Episodes List
-                    if group.assets.isEmpty {
-                        Text(NSLocalizedString("No episodes available", comment: ""))
-                            .foregroundColor(.secondary)
-                            .italic()
-                            .padding(40)
+                .padding(.top, 8)
+                .padding(.leading, 16)
+                Spacer()
+            }
+            Spacer()
+        }
+    }
+    
+    @ViewBuilder
+    private var mainScrollView: some View {
+        ScrollView(showsIndicators: false) {
+            ZStack(alignment: .top) {
+                heroImageSection
+                contentContainer
+            }
+        }
+        .onAppear {
+            UIScrollView.appearance().bounces = false
+        }
+    }
+    
+    @ViewBuilder
+    private var heroImageSection: some View {
+        Group {
+            if let posterURL = group.posterURL {
+                LazyImage(url: posterURL) { state in
+                    if let uiImage = state.imageContainer?.image {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: UIScreen.main.bounds.width, height: 700)
+                            .clipped()
                     } else {
-                        VStack(spacing: 8) {
-                            ForEach(Array(sortedEpisodes.enumerated()), id: \.element.id) { index, asset in
-                                EnhancedEpisodeRow(
-                                    asset: asset,
-                                    showDivider: index < sortedEpisodes.count - 1
-                                )
-                                .contextMenu {
-                                    Button(action: { onPlay(asset) }) {
-                                        Label(NSLocalizedString("Play", comment: ""), systemImage: "play.fill")
-                                    }
-                                    .disabled(!asset.fileExists)
-                                    
-                                    Button(role: .destructive, action: {
-                                        assetToDelete = asset
-                                        showDeleteAlert = true
-                                    }) {
-                                        Label(NSLocalizedString("Delete", comment: ""), systemImage: "trash")
-                                    }
-                                }
-                                .onTapGesture {
-                                    onPlay(asset)
-                                }
-                            }
+                        placeholderGradient
+                    }
+                }
+            } else {
+                placeholderGradient
+            }
+        }
+    }
+    
+    private var placeholderGradient: some View {
+        Rectangle()
+            .fill(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.gray.opacity(0.2),
+                        Color.gray.opacity(0.3),
+                        Color.gray.opacity(0.2)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: UIScreen.main.bounds.width, height: 700)
+            .clipped()
+    }
+    
+    @ViewBuilder
+    private var contentContainer: some View {
+        VStack(spacing: 0) {
+            Rectangle()
+                .fill(Color.clear)
+                .frame(height: 400)
+            
+            ZStack(alignment: .top) {
+                gradientOverlay
+                
+                VStack(alignment: .leading, spacing: 16) {
+                    headerSection
+                    episodesSection
+                }
+                .padding()
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var gradientOverlay: some View {
+        LinearGradient(
+            gradient: Gradient(stops: [
+                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.0), location: 0.0),
+                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.5), location: 0.2),
+                .init(color: (colorScheme == .dark ? Color.black : Color.white).opacity(0.8), location: 0.5),
+                .init(color: (colorScheme == .dark ? Color.black : Color.white), location: 1.0)
+            ]),
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .frame(height: 300)
+        .clipShape(RoundedRectangle(cornerRadius: 0))
+        .shadow(color: (colorScheme == .dark ? Color.black : Color.white).opacity(1), radius: 10, x: 0, y: 10)
+    }
+    
+    @ViewBuilder
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(group.title)
+                .font(.system(size: 28, weight: .bold))
+                .foregroundColor(.primary)
+                .lineLimit(3)
+            
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Image(systemName: "play.rectangle.fill")
+                        .foregroundColor(.accentColor)
+                    Text("\(group.assetCount) \(group.assetCount == 1 ? "Episode" : "Episodes")")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
+                
+                HStack {
+                    Image(systemName: "internaldrive.fill")
+                        .foregroundColor(.accentColor)
+                    Text(formatFileSize(group.totalFileSize))
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            HStack(spacing: 12) {
+                Button(action: { showDeleteAllAlert = true }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                        Text(NSLocalizedString("Delete All", comment: ""))
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.red)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 25)
+                            .fill(Color.red.opacity(0.1))
+                    )
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var episodesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "play.rectangle.fill")
+                    .foregroundColor(.accentColor)
+                Text(NSLocalizedString("Episodes", comment: "").uppercased())
+                    .font(.footnote)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+            }
+            VStack(spacing: 8) {
+                ForEach(Array(sortedEpisodes.enumerated()), id: \.element.id) { index, asset in
+                    EnhancedEpisodeRow(
+                        asset: asset,
+                        showDivider: index < sortedEpisodes.count - 1,
+                        onPlay: onPlay,
+                        onDelete: { asset in
+                            assetToDelete = asset
+                            showDeleteAlert = true
                         }
+                    )
+                    .contextMenu {
+                        Button(action: { onPlay(asset) }) {
+                            Label(NSLocalizedString("Play", comment: ""), systemImage: "play.fill")
+                        }
+                        .disabled(!asset.fileExists)
+                        Button(role: .destructive, action: {
+                            assetToDelete = asset
+                            showDeleteAlert = true
+                        }) {
+                            Label(NSLocalizedString("Delete", comment: ""), systemImage: "trash")
+                        }
+                    }
+                    .onTapGesture {
+                        onPlay(asset)
                     }
                 }
             }
-            .padding(.vertical)
-            .scrollViewBottomPadding()
         }
-        .navigationTitle(NSLocalizedString("Episodes", comment: ""))
-        .navigationBarTitleDisplayMode(.inline)
         .alert(NSLocalizedString("Delete Episode", comment: ""), isPresented: $showDeleteAlert) {
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
             Button(NSLocalizedString("Delete", comment: ""), role: .destructive) {
                 if let asset = assetToDelete {
-                    onDelete(asset)
+                    jsController.deleteAsset(asset)
                 }
             }
         } message: {
@@ -1176,84 +1247,213 @@ struct EnhancedShowEpisodesView: View {
 struct EnhancedEpisodeRow: View {
     let asset: DownloadedAsset
     let showDivider: Bool
+    let onPlay: (DownloadedAsset) -> Void
+    let onDelete: (DownloadedAsset) -> Void
+    @State private var swipeOffset: CGFloat = 0
+    @State private var isShowingActions: Bool = false
+    @State private var dragState = DragState.inactive
+    
+    struct DragState {
+        var translation: CGSize
+        var isActive: Bool
+        
+        static var inactive: DragState {
+            DragState(translation: .zero, isActive: false)
+        }
+    }
     
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 16) {
-                Group {
-                    if let backdropURL = asset.metadata?.backdropURL ?? asset.metadata?.posterURL {
-                        LazyImage(url: backdropURL) { state in
-                            if let uiImage = state.imageContainer?.image {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                            } else {
-                                Rectangle()
-                                    .fill(.tertiary)
-                            }
-                        }
-                    } else {
-                        Rectangle()
-                            .fill(.tertiary)
-                            .overlay(
-                                Image(systemName: "photo")
-                                    .foregroundColor(.secondary)
-                            )
-                    }
-                }
-                .frame(width: 100, height: 60)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(asset.episodeDisplayName)
-                        .font(.headline)
-                        .lineLimit(2)
-                        .foregroundColor(.primary)
-                    
-                    Text(formatFileSize(asset.fileSize))
+        ZStack {
+            actionButtonsBackground
+            episodeCellContent
+        }
+    }
+    
+    private var actionButtonsBackground: some View {
+        HStack {
+            Spacer()
+            Button(action: {
+                onDelete(asset)
+            }) {
+                VStack(spacing: 4) {
+                    Image(systemName: "trash.fill")
+                        .font(.title2)
+                        .foregroundColor(.red)
+                    Text("Delete")
                         .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    HStack(spacing: 6) {
-                        Text(asset.downloadDate.formatted(date: .abbreviated, time: .shortened))
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        if asset.localSubtitleURL != nil {
-                            Image(systemName: "captions.bubble")
-                                .foregroundColor(.blue)
-                                .font(.caption)
-                        }
-                        
-                        if !asset.fileExists {
-                            Image(systemName: "exclamationmark.triangle")
-                                .foregroundColor(.orange)
-                                .font(.caption)
+                        .foregroundColor(.red)
+                }
+                .frame(width: 60)
+            }
+            .frame(height: 76)
+        }
+        .zIndex(0)
+    }
+    
+    private var episodeCellContent: some View {
+        HStack {
+            // Thumbnail
+            Group {
+                if let backdropURL = asset.metadata?.backdropURL ?? asset.metadata?.posterURL {
+                    LazyImage(url: backdropURL) { state in
+                        if let uiImage = state.imageContainer?.image {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .aspectRatio(16/9, contentMode: .fill)
+                        } else {
+                            Rectangle()
+                                .fill(.tertiary)
+                                .overlay(
+                                    Image(systemName: "photo")
+                                        .foregroundColor(.secondary)
+                                )
                         }
                     }
+                } else {
+                    Rectangle()
+                        .fill(.tertiary)
+                        .overlay(
+                            Image(systemName: "photo")
+                                .foregroundColor(.secondary)
+                        )
                 }
-                
-                Spacer()
-                
-                Image(systemName: "play.circle.fill")
-                    .foregroundColor(asset.fileExists ? .blue : .gray)
-                    .font(.title2)
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 16)
+            .frame(width: 100, height: 56)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
             
-            if showDivider {
-                Divider()
-                    .padding(.horizontal, 16)
+            VStack(alignment: .leading) {
+                Text("Episode \(asset.metadata?.episode ?? 0)")
+                    .font(.system(size: 15))
+                if let title = asset.metadata?.title {
+                    Text(title)
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            
+            Spacer()
+            
+            CircularProgressBar(progress: 0.0)
+                .frame(width: 40, height: 40)
+                .padding(.trailing, 4)
+        }
+        .contentShape(Rectangle())
+        .padding(.horizontal, 8)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
+        .background(cellBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 15))
+        .offset(x: swipeOffset + dragState.translation.width)
+        .zIndex(1)
+        .scaleEffect(dragState.isActive ? 0.98 : 1.0)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: swipeOffset)
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: dragState.isActive)
+        .simultaneousGesture(
+            DragGesture(coordinateSpace: .local)
+                .onChanged { value in
+                    handleDragChanged(value)
+                }
+                .onEnded { value in
+                    handleDragEnded(value)
+                }
+        )
+        .onTapGesture { handleTap() }
+    }
+    
+    private var cellBackground: some View {
+        RoundedRectangle(cornerRadius: 15)
+            .fill(Color(UIColor.systemBackground))
+            .overlay(
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(Color.gray.opacity(0.2))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 15)
+                    .stroke(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.accentColor.opacity(0.25), location: 0),
+                                .init(color: Color.accentColor.opacity(0), location: 1)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+    }
+    
+    private func handleDragChanged(_ value: DragGesture.Value) {
+        let translation = value.translation
+        let velocity = value.velocity
+        
+        let isHorizontalGesture = abs(translation.width) > abs(translation.height)
+        let hasSignificantHorizontalMovement = abs(translation.width) > 10
+        
+        if isHorizontalGesture && hasSignificantHorizontalMovement {
+            dragState = .inactive
+            
+            let proposedOffset = swipeOffset + translation.width
+            let maxSwipe: CGFloat = 60 // Only one button
+            
+            if translation.width < 0 {
+                let newOffset = max(proposedOffset, -maxSwipe)
+                if proposedOffset < -maxSwipe {
+                    let resistance = abs(proposedOffset + maxSwipe) * 0.15
+                    swipeOffset = -maxSwipe - resistance
+                } else {
+                    swipeOffset = newOffset
+                }
+            } else if isShowingActions {
+                swipeOffset = min(max(proposedOffset, -maxSwipe), maxSwipe * 0.2)
+            }
+        } else if !hasSignificantHorizontalMovement {
+            dragState = .inactive
+        }
+    }
+    
+    private func handleDragEnded(_ value: DragGesture.Value) {
+        let translation = value.translation
+        let velocity = value.velocity
+        
+        dragState = .inactive
+        
+        let isHorizontalGesture = abs(translation.width) > abs(translation.height)
+        let hasSignificantHorizontalMovement = abs(translation.width) > 10
+        
+        if isHorizontalGesture && hasSignificantHorizontalMovement {
+            let maxSwipe: CGFloat = 60
+            let threshold = maxSwipe * 0.3
+            let velocityThreshold: CGFloat = 500
+            
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                if translation.width < -threshold || velocity.width < -velocityThreshold {
+                    swipeOffset = -maxSwipe
+                    isShowingActions = true
+                } else if translation.width > threshold || velocity.width > velocityThreshold {
+                    swipeOffset = 0
+                    isShowingActions = false
+                } else {
+                    swipeOffset = isShowingActions ? -maxSwipe : 0
+                }
+            }
+        } else {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                swipeOffset = isShowingActions ? -60 : 0
             }
         }
     }
     
-    private func formatFileSize(_ size: Int64) -> String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useKB, .useMB, .useGB]
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: size)
+    private func handleTap() {
+        if isShowingActions {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                swipeOffset = 0
+                isShowingActions = false
+            }
+        } else {
+            onPlay(asset)
+        }
     }
 }
 

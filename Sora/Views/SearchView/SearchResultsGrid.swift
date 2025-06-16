@@ -41,7 +41,7 @@ struct SearchResultsGrid: View {
                                 if let uiImage = state.imageContainer?.image {
                                     Image(uiImage: uiImage)
                                         .resizable()
-                                        .aspectRatio(0.72, contentMode: .fill)
+                                        .aspectRatio(contentMode: .fill)
                                         .frame(width: cellWidth, height: cellWidth * 1.5)
                                         .cornerRadius(12)
                                         .clipped()

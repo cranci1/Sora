@@ -276,7 +276,7 @@ struct TranslatorsView: View {
     private let translators: [Translator] = [
         Translator(
             id: 1,
-            login: "paul",
+            login: "paul", 
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/54b3198dfb900837a9b8a7ec0b791add_webp.png?raw=true",
             language: "Dutch"
         ),

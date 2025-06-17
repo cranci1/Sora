@@ -901,9 +901,12 @@ struct EnhancedDownloadGroupCard: View {
                             .foregroundStyle(.primary)
                         
                         HStack(spacing: 16) {
-                            Label("\(group.assetCount) \(group.assetCount == 1 ? "Episode" : "Episodes")", systemImage: "play.rectangle")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                            HStack(spacing: 4) {
+                                Image(systemName: "play.rectangle")
+                                Text("\(group.assetCount) \(group.assetCount == 1 ? "Episode" : "Episodes")")
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                             
                             Label(formatFileSize(group.totalFileSize), systemImage: "internaldrive")
                                 .font(.subheadline)

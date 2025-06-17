@@ -2834,7 +2834,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         // Create container
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false
-        container.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        container.backgroundColor = .clear
         container.layer.cornerRadius = 8
         controlsContainerView.addSubview(container)
         self.timeBatteryContainer = container
@@ -2866,8 +2866,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         // Setup constraints
         NSLayoutConstraint.activate([
             container.centerXAnchor.constraint(equalTo: controlsContainerView.centerXAnchor),
-            container.topAnchor.constraint(equalTo: sliderHostingController?.view.bottomAnchor ?? controlsContainerView.bottomAnchor, constant: 8),
-            container.heightAnchor.constraint(equalToConstant: 24),
+            container.topAnchor.constraint(equalTo: sliderHostingController?.view.bottomAnchor ?? controlsContainerView.bottomAnchor, constant: 2),
+            container.heightAnchor.constraint(equalToConstant: 20),
             
             timeLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 12),
             timeLabel.centerYAnchor.constraint(equalTo: container.centerYAnchor),

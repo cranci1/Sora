@@ -34,6 +34,8 @@ struct AllBookmarks: View {
     @State private var searchText: String = ""
     @State private var isSearchActive: Bool = false
     @State private var sortOption: SortOption = .title
+    @State private var isSelecting: Bool = false
+    @State private var selectedBookmarks: Set<LibraryItem.ID> = []
     
     enum SortOption: String, CaseIterable {
         case title = "Title"
@@ -121,6 +123,35 @@ struct AllBookmarks: View {
                             )
                             .circularGradientOutlineTwo()
                     }
+                    Button(action: {
+                        if isSelecting {
+                            // If trash icon tapped
+                            if !selectedBookmarks.isEmpty {
+                                for id in selectedBookmarks {
+                                    if let item = libraryManager.bookmarks.first(where: { $0.id == id }) {
+                                        libraryManager.removeBookmark(item: item)
+                                    }
+                                }
+                                selectedBookmarks.removeAll()
+                            }
+                            isSelecting = false
+                        } else {
+                            isSelecting = true
+                        }
+                    }) {
+                        Image(systemName: isSelecting ? "trash" : "checkmark.circle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(isSelecting ? .red : .accentColor)
+                            .padding(10)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            )
+                            .circularGradientOutlineTwo()
+                    }
                 }
             }
             .padding(.horizontal)
@@ -176,7 +207,9 @@ struct AllBookmarks: View {
             }
             BookmarkGridView(
                 bookmarks: filteredAndSortedBookmarks,
-                moduleManager: moduleManager
+                moduleManager: moduleManager,
+                isSelecting: isSelecting,
+                selectedBookmarks: $selectedBookmarks
             )
             .withGridPadding()
             Spacer()
@@ -199,6 +232,7 @@ struct AllBookmarks: View {
 struct BookmarkCell: View {
     let bookmark: LibraryItem
     @EnvironmentObject private var moduleManager: ModuleManager
+    @EnvironmentObject private var libraryManager: LibraryManager
     
     var body: some View {
         if let module = moduleManager.modules.first(where: { $0.id.uuidString == bookmark.moduleId }) {
@@ -265,6 +299,13 @@ struct BookmarkCell: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .padding(4)
+            .contextMenu {
+                Button(role: .destructive, action: {
+                    libraryManager.removeBookmark(item: bookmark)
+                }) {
+                    Label("Remove from Bookmarks", systemImage: "trash")
+                }
+            }
         }
     }
 }

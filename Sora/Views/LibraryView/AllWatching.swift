@@ -36,6 +36,8 @@ struct AllWatchingView: View {
     @State private var sortOption: SortOption = .dateAdded
     @State private var searchText: String = ""
     @State private var isSearchActive: Bool = false
+    @State private var isSelecting: Bool = false
+    @State private var selectedItems: Set<ContinueWatchingItem.ID> = []
     
     enum SortOption: String, CaseIterable {
         case dateAdded = "Recently Added"
@@ -133,6 +135,36 @@ struct AllWatchingView: View {
                             )
                             .circularGradientOutline()
                     }
+                    Button(action: {
+                        if isSelecting {
+                            // If trash icon tapped
+                            if !selectedItems.isEmpty {
+                                for id in selectedItems {
+                                    if let item = continueWatchingItems.first(where: { $0.id == id }) {
+                                        ContinueWatchingManager.shared.remove(item: item)
+                                    }
+                                }
+                                selectedItems.removeAll()
+                                loadContinueWatchingItems()
+                            }
+                            isSelecting = false
+                        } else {
+                            isSelecting = true
+                        }
+                    }) {
+                        Image(systemName: isSelecting ? "trash" : "checkmark.circle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(isSelecting ? .red : .accentColor)
+                            .padding(10)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            )
+                            .circularGradientOutline()
+                    }
                 }
             }
             .padding(.horizontal)
@@ -198,7 +230,9 @@ struct AllWatchingView: View {
                             },
                             removeItem: {
                                 removeItem(item: item)
-                            }
+                            },
+                            isSelecting: isSelecting,
+                            selectedItems: $selectedItems
                         )
                     }
                 }
@@ -245,140 +279,86 @@ struct FullWidthContinueWatchingCell: View {
     let item: ContinueWatchingItem
     var markAsWatched: () -> Void
     var removeItem: () -> Void
+    var isSelecting: Bool
+    var selectedItems: Binding<Set<ContinueWatchingItem.ID>>
     
     @State private var currentProgress: Double = 0.0
     
+    var isSelected: Bool {
+        selectedItems.wrappedValue.contains(item.id)
+    }
+    
     var body: some View {
-        Button(action: {
-            if UserDefaults.standard.string(forKey: "externalPlayer") == "Default" {
-                let videoPlayerViewController = VideoPlayerViewController(module: item.module)
-                videoPlayerViewController.streamUrl = item.streamUrl
-                videoPlayerViewController.fullUrl = item.fullUrl
-                videoPlayerViewController.episodeImageUrl = item.imageUrl
-                videoPlayerViewController.episodeNumber = item.episodeNumber
-                videoPlayerViewController.mediaTitle = item.mediaTitle
-                videoPlayerViewController.subtitles = item.subtitles ?? ""
-                videoPlayerViewController.aniListID = item.aniListID ?? 0
-                videoPlayerViewController.modalPresentationStyle = .fullScreen
-                
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let rootVC = windowScene.windows.first?.rootViewController {
-                    findTopViewController.findViewController(rootVC).present(videoPlayerViewController, animated: true, completion: nil)
-                }
-            } else {
-                let customMediaPlayer = CustomMediaPlayerViewController(
-                    module: item.module,
-                    urlString: item.streamUrl,
-                    fullUrl: item.fullUrl,
-                    title: item.mediaTitle,
-                    episodeNumber: item.episodeNumber,
-                    onWatchNext: { },
-                    subtitlesURL: item.subtitles,
-                    aniListID: item.aniListID ?? 0,
-                    totalEpisodes: item.totalEpisodes,
-                    episodeImageUrl: item.imageUrl,
-                    headers: item.headers ?? nil
-                )
-                customMediaPlayer.modalPresentationStyle = .fullScreen
-                
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let rootVC = windowScene.windows.first?.rootViewController {
-                    findTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
-                }
-            }
-        }) {
-            GeometryReader { geometry in
-                ZStack(alignment: .bottomLeading) {
-                    LazyImage(url: URL(string: item.imageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : item.imageUrl)) { state in
-                        if let uiImage = state.imageContainer?.image {
-                            Image(uiImage: uiImage)
+        Group {
+            if isSelecting {
+                Button(action: {
+                    if isSelected {
+                        selectedItems.wrappedValue.remove(item.id)
+                    } else {
+                        selectedItems.wrappedValue.insert(item.id)
+                    }
+                }) {
+                    ZStack(alignment: .topTrailing) {
+                        cellContent
+                        if isSelected {
+                            Image(systemName: "checkmark.circle.fill")
                                 .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: geometry.size.width, height: 157.03)
-                                .cornerRadius(10)
-                                .clipped()
-                        } else {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(height: 157.03)
-                                .shimmering()
+                                .frame(width: 32, height: 32)
+                                .foregroundColor(.black)
+                                .background(Color.white.clipShape(Circle()).opacity(0.8))
+                                .offset(x: -8, y: 8)
                         }
                     }
-                    .overlay(
-                        ZStack {
-                            ProgressiveBlurView()
-                                .cornerRadius(10, corners: [.bottomLeft, .bottomRight])
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Spacer()
-                                Text(item.mediaTitle)
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                    .lineLimit(1)
-                                
-                                HStack {
-                                    Text("Episode \(item.episodeNumber)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.white.opacity(0.9))
-                                    
-                                    Spacer()
-                                    
-                                    Text("\(Int(item.progress * 100))% seen")
-                                        .font(.caption)
-                                        .foregroundColor(.white.opacity(0.9))
-                                }
-                            }
-                            .padding(10)
-                            .background(
-                                LinearGradient(
-                                    colors: [
-                                        .black.opacity(0.7),
-                                        .black.opacity(0.0)
-                                    ],
-                                    startPoint: .bottom,
-                                    endPoint: .top
-                                )
-                                    .clipped()
-                                    .cornerRadius(10, corners: [.bottomLeft, .bottomRight])
-                                    .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
-                            )
-                        },
-                        alignment: .bottom
-                    )
-                    .overlay(
-                        ZStack {
-                            Circle()
-                                .fill(Color.black.opacity(0.5))
-                                .frame(width: 28, height: 28)
-                                .overlay(
-                                    LazyImage(url: URL(string: item.module.metadata.iconUrl)) { state in
-                                        if let uiImage = state.imageContainer?.image {
-                                            Image(uiImage: uiImage)
-                                                .resizable()
-                                                .scaledToFill()
-                                                .frame(width: 32, height: 32)
-                                                .clipShape(Circle())
-                                        } else {
-                                            Circle()
-                                                .fill(Color.gray.opacity(0.3))
-                                                .frame(width: 32, height: 32)
-                                        }
-                                    }
-                                )
+                }
+            } else {
+                Button(action: {
+                    if UserDefaults.standard.string(forKey: "externalPlayer") == "Default" {
+                        let videoPlayerViewController = VideoPlayerViewController(module: item.module)
+                        videoPlayerViewController.streamUrl = item.streamUrl
+                        videoPlayerViewController.fullUrl = item.fullUrl
+                        videoPlayerViewController.episodeImageUrl = item.imageUrl
+                        videoPlayerViewController.episodeNumber = item.episodeNumber
+                        videoPlayerViewController.mediaTitle = item.mediaTitle
+                        videoPlayerViewController.subtitles = item.subtitles ?? ""
+                        videoPlayerViewController.aniListID = item.aniListID ?? 0
+                        videoPlayerViewController.modalPresentationStyle = .fullScreen
+                        
+                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                           let rootVC = windowScene.windows.first?.rootViewController {
+                            findTopViewController.findViewController(rootVC).present(videoPlayerViewController, animated: true, completion: nil)
                         }
-                            .padding(8),
-                        alignment: .topLeading
-                    )
+                    } else {
+                        let customMediaPlayer = CustomMediaPlayerViewController(
+                            module: item.module,
+                            urlString: item.streamUrl,
+                            fullUrl: item.fullUrl,
+                            title: item.mediaTitle,
+                            episodeNumber: item.episodeNumber,
+                            onWatchNext: { },
+                            subtitlesURL: item.subtitles,
+                            aniListID: item.aniListID ?? 0,
+                            totalEpisodes: item.totalEpisodes,
+                            episodeImageUrl: item.imageUrl,
+                            headers: item.headers ?? nil
+                        )
+                        customMediaPlayer.modalPresentationStyle = .fullScreen
+                        
+                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                           let rootVC = windowScene.windows.first?.rootViewController {
+                            findTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
+                        }
+                    }
+                }) {
+                    cellContent
                 }
             }
-            .frame(height: 157.03)
         }
         .contextMenu {
             Button(action: { markAsWatched() }) {
                 Label("Mark as Watched", systemImage: "checkmark.circle")
             }
             Button(role: .destructive, action: { removeItem() }) {
-                Label("Remove Item", systemImage: "trash")
+                Label("Remove from Continue Watching", systemImage: "trash")
             }
         }
         .onAppear {
@@ -387,6 +367,94 @@ struct FullWidthContinueWatchingCell: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             updateProgress()
         }
+    }
+    
+    private var cellContent: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .bottomLeading) {
+                LazyImage(url: URL(string: item.imageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : item.imageUrl)) { state in
+                    if let uiImage = state.imageContainer?.image {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: geometry.size.width, height: 157.03)
+                            .cornerRadius(10)
+                            .clipped()
+                    } else {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(height: 157.03)
+                            .shimmering()
+                    }
+                }
+                .overlay(
+                    ZStack {
+                        ProgressiveBlurView()
+                            .cornerRadius(10, corners: [.bottomLeft, .bottomRight])
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Spacer()
+                            Text(item.mediaTitle)
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                            
+                            HStack {
+                                Text("Episode \(item.episodeNumber)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.9))
+                                
+                                Spacer()
+                                
+                                Text("\(Int(item.progress * 100))% seen")
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.9))
+                            }
+                        }
+                        .padding(10)
+                        .background(
+                            LinearGradient(
+                                colors: [
+                                    .black.opacity(0.7),
+                                    .black.opacity(0.0)
+                                ],
+                                startPoint: .bottom,
+                                endPoint: .top
+                            )
+                                .clipped()
+                                .cornerRadius(10, corners: [.bottomLeft, .bottomRight])
+                                .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
+                        )
+                    },
+                    alignment: .bottom
+                )
+                .overlay(
+                    ZStack {
+                        Circle()
+                            .fill(Color.black.opacity(0.5))
+                            .frame(width: 28, height: 28)
+                            .overlay(
+                                LazyImage(url: URL(string: item.module.metadata.iconUrl)) { state in
+                                    if let uiImage = state.imageContainer?.image {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 32, height: 32)
+                                            .clipShape(Circle())
+                                    } else {
+                                        Circle()
+                                            .fill(Color.gray.opacity(0.3))
+                                            .frame(width: 32, height: 32)
+                                    }
+                                }
+                            )
+                    }
+                        .padding(8),
+                    alignment: .topLeading
+                )
+            }
+        }
+        .frame(height: 157.03)
     }
     
     private func updateProgress() {

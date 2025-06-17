@@ -1,0 +1,406 @@
+/* General */
+"About" = "O aplikaciji";
+"About Sora" = "O Sora aplikaciji";
+"Active" = "Aktivno";
+"Active Downloads" = "Aktivna preuzimanja";
+"Actively downloading media can be tracked from here." = "Mediji koji se trenutno preuzimaju mogu se pratiti odavde.";
+"Add Module" = "Dodaj modul";
+"Adjust the number of media items per row in portrait and landscape modes." = "Podesi broj medijskih stavki po redu u portretnom i pejzažnom načinu.";
+"Advanced" = "Napredno";
+"AKA Sulfur" = "Također poznat kao Sulfur";
+"All Bookmarks" = "Sve zabilješke";
+"All Watching" = "Sve što gledam";
+"Also known as Sulfur" = "Također poznat kao Sulfur";
+"AniList" = "AniList";
+"AniList ID" = "AniList ID";
+"AniList Match" = "AniList poklapanje";
+"AniList.co" = "AniList.co";
+"Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time." = "Anonimni podaci se prikupljaju za poboljšanje aplikacije. Lične informacije se ne prikupljaju. Ovo se može onemogućiti u bilo kojem trenutku.";
+"App Info" = "Informacije o aplikaciji";
+"App Language" = "Jezik aplikacije";
+"App Storage" = "Spremište aplikacije";
+"Appearance" = "Izgled";
+
+/* Alerts and Actions */
+"Are you sure you want to clear all cached data? This will help free up storage space." = "Jeste li sigurni da želite obrisati sve keširane podatke? Ovo će pomoći oslobađanju prostora za spremanje.";
+"Are you sure you want to delete '%@'?" = "Jeste li sigurni da želite obrisati '%@'?";
+"Are you sure you want to delete all %1$d episodes in '%2$@'?" = "Jeste li sigurni da želite obrisati sve %1$d epizode u '%2$@'?";
+"Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use." = "Jeste li sigurni da želite obrisati sve preuzete sadržaje? Možete odabrati da obrišete samo biblioteku zadržavajući preuzete datoteke za buduću upotrebu.";
+"Are you sure you want to erase all app data? This action cannot be undone." = "Jeste li sigurni da želite obrisati sve podatke aplikacije? Ova radnja se ne može poništiti.";
+
+/* Features */
+"Background Enabled" = "Pozadina omogućena";
+"Bookmark items for an easier access later." = "Zabilježite stavke za lakši pristup kasnije.";
+"Bookmarks" = "Zabilješke";
+"Bottom Padding" = "Donja margina";
+"Cancel" = "Otkaži";
+"Cellular Quality" = "Kvaliteta mobilne mreže";
+"Check out some community modules here!" = "Pogledajte neke module zajednice ovdje!";
+"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." = "Odaberite željenu rezoluciju videa za WiFi i mobilne konekcije. Veće rezolucije koriste više podataka ali pružaju bolji kvalitet. Ako točna kvaliteta nije dostupna, najbliža opcija će biti automatski odabrana.\n\nNapomena: Nisu svi video izvori i playeri podržavaju odabir kvalitete. Ova funkcija najbolje radi s HLS streamovima koristeći Sora player.";
+"Clear" = "Obriši";
+"Clear All Downloads" = "Obriši sva preuzimanja";
+"Clear Cache" = "Obriši keš";
+"Clear Library Only" = "Obriši samo biblioteku";
+"Clear Logs" = "Obriši logове";
+"Click the plus button to add a module!" = "Kliknite plus dugme da dodate modul!";
+"Continue Watching" = "Nastavi gledanje";
+"Continue Watching Episode %d" = "Nastavi gledanje epizode %d";
+"Contributors" = "Saradnici";
+"Copied to Clipboard" = "Kopirano u međuspremnik";
+"Copy to Clipboard" = "Kopiraj u međuspremnik";
+"Copy URL" = "Kopiraj URL";
+
+/* Episodes */
+"%lld Episodes" = "%lld epizoda";
+"%lld of %lld" = "%lld od %lld";
+"%lld-%lld" = "%lld-%lld";
+"%lld%% seen" = "%lld%% pogledano";
+"Episode %lld" = "Epizoda %lld";
+"Episodes" = "Epizode";
+"Episodes might not be available yet or there could be an issue with the source." = "Epizode možda još nisu dostupne ili možda postoji problem s izvorom.";
+"Episodes Range" = "Raspon epizoda";
+
+/* System */
+"cranci1" = "cranci1";
+"Dark" = "Tamno";
+"DATA & LOGS" = "PODACI I LOGOVI";
+"Debug" = "Otkrivanje grešaka";
+"Debugging and troubleshooting." = "Otkrivanje i rješavanje problema.";
+
+/* Actions */
+"Delete" = "Obriši";
+"Delete All" = "Obriši sve";
+"Delete All Downloads" = "Obriši sva preuzimanja";
+"Delete All Episodes" = "Obriši sve epizode";
+"Delete Download" = "Obriši preuzimanje";
+"Delete Episode" = "Obriši epizodu";
+
+/* Player */
+"Double Tap to Seek" = "Dvostruki dodir za traženje";
+"Double tapping the screen on it's sides will skip with the short tap setting." = "Dvostruki dodir ekrana sa strane će preskočiti s kratkim dodirom.";
+
+/* Downloads */
+"Download" = "Preuzmi";
+"Download Episode" = "Preuzmi epizodu";
+"Download Summary" = "Sažetak preuzimanja";
+"Download This Episode" = "Preuzmi ovu epizodu";
+"Downloaded" = "Preuzeto";
+"Downloaded Shows" = "Preuzete serije";
+"Downloading" = "Preuzimanje";
+"Downloads" = "Preuzimanja";
+
+/* Settings */
+"Enable Analytics" = "Omogući analitiku";
+"Enable Subtitles" = "Omogući titlove";
+
+/* Data Management */
+"Erase" = "Obriši";
+"Erase all App Data" = "Obriši sve podatke aplikacije";
+"Erase App Data" = "Obriši podatke aplikacije";
+
+/* Errors */
+"Error" = "Greška";
+"Error Fetching Results" = "Greška pri dohvaćanju rezultata";
+"Errors and critical issues." = "Greške i kritični problemi.";
+"Failed to load contributors" = "Neuspješno učitavanje saradnika";
+
+/* Features */
+"Fetch Episode metadata" = "Dohvati metapodatke epizode";
+"Files Downloaded" = "Datoteke preuzete";
+"Font Size" = "Veličina fonta";
+
+/* Interface */
+"Force Landscape" = "Forsiraj pejzažni način";
+"General" = "Općenito";
+"General events and activities." = "Općeniti događaji i aktivnosti.";
+"General Preferences" = "Općenite postavke";
+"Hide Splash Screen" = "Sakrij početni ekran";
+"HLS video downloading." = "HLS video preuzimanje.";
+"Hold Speed" = "Brzina držanja";
+
+/* Info */
+"Info" = "Informacije";
+"INFOS" = "INFORMACIJE";
+"Installed Modules" = "Instalirani moduli";
+"Interface" = "Sučelje";
+
+/* Social */
+"Join the Discord" = "Pridruži se Discordu";
+
+/* Layout */
+"Landscape Columns" = "Stupci u pejzažnom načinu";
+"Language" = "Jezik";
+"LESS" = "MANJE";
+
+/* Library */
+"Library" = "Biblioteka";
+"License (GPLv3.0)" = "Licenca (GPLv3.0)";
+"Light" = "Svijetlo";
+
+/* Loading States */
+"Loading Episode %lld..." = "Učitavam epizodu %lld...";
+"Loading logs..." = "Učitavam logove...";
+"Loading module information..." = "Učitavam informacije o modulu...";
+"Loading Stream" = "Učitavam stream";
+
+/* Logging */
+"Log Debug Info" = "Logiraj debug informacije";
+"Log Filters" = "Filtri logova";
+"Log In with AniList" = "Prijavite se s AniList";
+"Log In with Trakt" = "Prijavite se s Trakt";
+"Log Out from AniList" = "Odjavite se s AniList";
+"Log Out from Trakt" = "Odjavite se s Trakt";
+"Log Types" = "Tipovi logova";
+"Logged in as" = "Prijavljen kao";
+"Logged in as " = "Prijavljen kao ";
+
+/* Logs and Settings */
+"Logs" = "Logovi";
+"Long press Skip" = "Dugi pritisak za preskačanje";
+"MAIN" = "GLAVNO";
+"Main Developer" = "Glavni developer";
+"MAIN SETTINGS" = "GLAVNE POSTAVKE";
+
+/* Media Actions */
+"Mark All Previous Watched" = "Označi sve prethodne kao pogledane";
+"Mark as Watched" = "Označi kao pogledano";
+"Mark Episode as Watched" = "Označi epizodu kao pogledanu";
+"Mark Previous Episodes as Watched" = "Označi prethodne epizode kao pogledane";
+"Mark watched" = "Označi pogledano";
+"Match with AniList" = "Poklopi s AniList";
+"Match with TMDB" = "Poklopi s TMDB";
+"Matched ID: %lld" = "Poklopljeni ID: %lld";
+"Matched with: %@" = "Poklopljeno s: %@";
+"Max Concurrent Downloads" = "Maksimalno istovremenih preuzimanja";
+
+/* Media Interface */
+"Media Grid Layout" = "Mrežni raspored medija";
+"Media Player" = "Medijski player";
+"Media View" = "Pregled medija";
+"Metadata Provider" = "Pružatelj metapodataka";
+"Metadata Providers Order" = "Redoslijed pružatelja metapodataka";
+"Module Removed" = "Modul uklonjen";
+"Modules" = "Moduli";
+
+/* Headers */
+"MODULES" = "MODULI";
+"MORE" = "VIŠE";
+
+/* Status Messages */
+"No Active Downloads" = "Nema aktivnih preuzimanja";
+"No AniList matches found" = "Nisu pronađena AniList poklapanja";
+"No Data Available" = "Nema dostupnih podataka";
+"No Downloads" = "Nema preuzimanja";
+"No episodes available" = "Nema dostupnih epizoda";
+"No Episodes Available" = "Nema dostupnih epizoda";
+"No items to continue watching." = "Nema stavki za nastavak gledanja.";
+"No matches found" = "Nisu pronađena poklapanja";
+"No Module Selected" = "Nije odabran modul";
+"No Modules" = "Nema modula";
+"No Results Found" = "Nisu pronađeni rezultati";
+"No Search Results Found" = "Nisu pronađeni rezultati pretrage";
+"Nothing to Continue Watching" = "Nema ništa za nastavak gledanja";
+
+/* Notes and Messages */
+"Note that the modules will be replaced only if there is a different version string inside the JSON file." = "Imajte na umu da će moduli biti zamijenjeni samo ako postoji drugačiji string verzije u JSON datoteci.";
+
+/* Actions */
+"OK" = "U redu";
+"Open Community Library" = "Otvori biblioteku zajednice";
+
+/* External Services */
+"Open in AniList" = "Otvori u AniList";
+"Original Poster" = "Originalni poster";
+
+/* Playback */
+"Paused" = "Pauzirano";
+"Play" = "Reproduciraj";
+"Player" = "Player";
+
+/* System Messages */
+"Please restart the app to apply the language change." = "Molimo restartajte aplikaciju da primijenite promjenu jezika.";
+"Please select a module from settings" = "Molimo odaberite modul iz postavki";
+
+/* Interface */
+"Portrait Columns" = "Stupci u portretnom načinu";
+"Progress bar Marker Color" = "Boja oznake progress bara";
+"Provider: %@" = "Pružatelj: %@";
+
+/* Queue */
+"Queue" = "Red čekanja";
+"Queued" = "U redu čekanja";
+
+/* Content */
+"Recently watched content will appear here." = "Nedavno pogledani sadržaj će se pojaviti ovdje.";
+
+/* Settings */
+"Refresh Modules on Launch" = "Osvježi module pri pokretanju";
+"Refresh Storage Info" = "Osvježi informacije o spremištu";
+"Remember Playback speed" = "Zapamti brzinu reprodukcije";
+
+/* Actions */
+"Remove" = "Ukloni";
+"Remove All Cache" = "Ukloni sav keš";
+
+/* File Management */
+"Remove All Documents" = "Ukloni sve dokumente";
+"Remove Documents" = "Ukloni dokumente";
+"Remove Downloaded Media" = "Ukloni preuzete medije";
+"Remove Downloads" = "Ukloni preuzimanja";
+"Remove from Bookmarks" = "Ukloni iz zabilježaka";
+"Remove Item" = "Ukloni stavku";
+
+/* Support */
+"Report an Issue" = "Prijavite problem";
+
+/* Reset Options */
+"Reset" = "Resetiraj";
+"Reset AniList ID" = "Resetiraj AniList ID";
+"Reset Episode Progress" = "Resetiraj napredak epizode";
+"Reset progress" = "Resetiraj napredak";
+"Reset Progress" = "Resetiraj napredak";
+
+/* System */
+"Restart Required" = "Potreban restart";
+"Running Sora %@ - cranci1" = "Pokrenut Sora %@ - cranci1";
+
+/* Actions */
+"Save" = "Spremi";
+"Search" = "Pretraži";
+
+/* Search */
+"Search downloads" = "Pretraži preuzimanja";
+"Search for something..." = "Pretraži nešto...";
+"Search..." = "Pretraži...";
+
+/* Content */
+"Season %d" = "Sezona %d";
+"Season %lld" = "Sezona %lld";
+"Segments Color" = "Boja segmenata";
+
+/* Modules */
+"Select Module" = "Odaberi modul";
+"Set Custom AniList ID" = "Postavi prilagođeni AniList ID";
+
+/* Interface */
+"Settings" = "Postavke";
+"Shadow" = "Sjena";
+"Show More (%lld more characters)" = "Prikaži više (%lld više znakova)";
+"Show PiP Button" = "Prikaži PiP dugme";
+"Show Skip 85s Button" = "Prikaži dugme za preskakanje 85s";
+"Show Skip Intro / Outro Buttons" = "Prikaži dugmad za preskakanje intro / outro";
+"Shows" = "Serije";
+"Size (%@)" = "Veličina (%@)";
+"Skip Settings" = "Postavke preskakanja";
+
+/* Player Features */
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments." = "Neke funkcije su ograničene na Sora i zadani player, kao što su ForceLandscape, holdSpeed i prilagođeni vremenski intervali preskakanja.";
+
+/* App Info */
+"Sora" = "Sora";
+"Sora %@ by cranci1" = "Sora %@ od cranci1";
+"Sora and cranci1 are not affiliated with AniList or Trakt in any way.
+
+Also note that progress updates may not be 100% accurate." = "Sora i cranci1 nisu povezani s AniList ili Trakt na bilo koji način.
+
+Također imajte na umu da ažuriranja napretka možda neće biti 100% točna.";
+"Sora GitHub Repository" = "Sora GitHub repozitorij";
+"Sora/Sulfur will always remain free with no ADs!" = "Sora/Sulfur će uvijek ostati besplatan bez reklama!";
+
+/* Interface */
+"Sort" = "Sortiraj";
+"Speed Settings" = "Postavke brzine";
+
+/* Playback */
+"Start Watching" = "Počni gledati";
+"Start Watching Episode %d" = "Počni gledati epizodu %d";
+"Storage Used" = "Iskorišten prostor za spremanje";
+"Stream" = "Stream";
+"Streaming and video playback." = "Streaming i reprodukcija videa.";
+
+/* Subtitles */
+"Subtitle Color" = "Boja titlova";
+"Subtitle Settings" = "Postavke titlova";
+
+/* Sync */
+"Sync anime progress" = "Sinhroniziraj napredak animea";
+"Sync TV shows progress" = "Sinhroniziraj napredak TV serija";
+
+/* System */
+"System" = "Sistem";
+
+/* Instructions */
+"Tap a title to override the current match." = "Dodirnite naslov da pregazite trenutno poklapanje.";
+"Tap Skip" = "Dodirnite za preskakanje";
+"Tap to manage your modules" = "Dodirnite za upravljanje modulima";
+"Tap to select a module" = "Dodirnite da odaberete modul";
+
+/* App Information */
+"The app cache helps the app load images faster.
+
+Clearing the Documents folder will delete all downloaded modules.
+
+Do not erase App Data unless you understand the consequences — it may cause the app to malfunction." = "Keš aplikacije pomaže aplikaciji da učita slike brže.
+
+Brisanje mape Dokumenti će obrisati sve preuzete module.
+
+Ne brišite podatke aplikacije osim ako ne razumijete posljedice — može dovesti do kvarova aplikacije.";
+"The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.
+
+For episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers." = "Raspon epizoda kontroliše koliko epizoda se pojavljuje na svakoj stranici. Epizode su grupisane u setove (kao 1–25, 26–50, i tako dalje), omogućavajući vam lakše navigiranje kroz njih.
+
+Za metapodatke epizode, odnosi se na sličicu i naslov epizode, jer ponekad mogu sadržavati spojlere.";
+"The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases." = "Modul je pružio samo jednu epizodu, ovo je najvjerojatniji film, pa smo odlučili napraviti zasebne ekrane za ove slučajeve.";
+
+/* Interface */
+"Thumbnails Width" = "Širina sličica";
+"TMDB Match" = "TMDB poklapanje";
+"Trackers" = "Pratitelji";
+"Trakt" = "Trakt";
+"Trakt.tv" = "Trakt.tv";
+
+/* Search */
+"Try different keywords" = "Pokušajte s drugačijim ključnim riječima";
+"Try different search terms" = "Pokušajte s drugačijim pojmovima za pretragu";
+
+/* Player Controls */
+"Two Finger Hold for Pause" = "Držanje dva prsta za pauzu";
+"Unable to fetch matches. Please try again later." = "Nije moguće dohvatiti poklapanja. Molimo pokušajte ponovo kasnije.";
+"Use TMDB Poster Image" = "Koristi TMDB poster sliku";
+
+/* Version */
+"v%@" = "v%@";
+"Video Player" = "Video player";
+
+/* Video Settings */
+"Video Quality Preferences" = "Postavke kvalitete videa";
+"View All" = "Prikaži sve";
+"Watched" = "Pogledano";
+"Why am I not seeing any episodes?" = "Zašto ne vidim epizode?";
+"WiFi Quality" = "WiFi kvaliteta";
+
+/* User Status */
+"You are not logged in" = "Niste prijavljeni";
+"You have no items saved." = "Nemate spremljenih stavki.";
+"Your downloaded episodes will appear here" = "Vaše preuzete epizode će se pojaviti ovdje";
+"Your recently watched content will appear here" = "Vaš nedavno pogledani sadržaj će se pojaviti ovdje";
+
+/* Download Settings */
+"Download Settings" = "Postavke preuzimanja";
+"Max concurrent downloads controls how many episodes can download simultaneously. Higher values may use more bandwidth and device resources." = "Maksimalno istovremenih preuzimanja kontroliše koliko epizoda se može preuzeti istovremeno. Veće vrijednosti mogu koristiti više propusnog opsega i resursa uređaja.";
+"Quality" = "Kvaliteta";
+"Max Concurrent Downloads" = "Maksimalno istovremenih preuzimanja";
+"Allow Cellular Downloads" = "Dozvoli preuzimanja preko mobilne mreže";
+"Quality Information" = "Informacije o kvaliteti";
+
+/* Storage */
+"Storage Management" = "Upravljanje spremištem";
+"Storage Used" = "Iskorišten prostor";
+"Library cleared successfully" = "Biblioteka uspješno obrisana";
+"All downloads deleted successfully" = "Sva preuzimanja uspješno obrisana";
+
+/* New additions */
+"Recent searches" = "Nedavne pretrage";
+"me frfr" = "ja stvarno";
+"Data" = "Podaci";
+"Maximum Quality Available" = "Maksimalna dostupna kvaliteta";

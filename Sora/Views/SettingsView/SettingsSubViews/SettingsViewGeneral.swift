@@ -205,6 +205,7 @@ struct SettingsViewGeneral: View {
                         options: [
                             "English",
                             "Arabic",
+                            "Bosnian",
                             "Czech",
                             "Dutch",
                             "French",
@@ -223,6 +224,7 @@ struct SettingsViewGeneral: View {
                             case "French": return "Français"
                             case "German": return "Deutsch"
                             case "Arabic": return "العربية"
+                            case "Bosnian": return "Bosanski"
                             case "Czech": return "Čeština"
                             case "Slovak": return "Slovenčina"
                             case "Spanish": return "Español"

@@ -276,48 +276,54 @@ struct TranslatorsView: View {
     private let translators: [Translator] = [
         Translator(
             id: 1,
-            login: "paul",
+            login: "paul", 
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/54b3198dfb900837a9b8a7ec0b791add_webp.png?raw=true",
             language: "Dutch"
         ),
         Translator(
             id: 2,
+            login: "Utopia",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/2b3b696895d5b7e708e3e5efaad62411_webp.png?raw=true",
+            language: "Bosnian"
+        ),
+        Translator(
+            id: 3,
             login: "cranci",
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/28ac8bfaa250788579af747d8fb7f827_webp.png?raw=true",
             language: "Italian"
         ),
         Translator(
-            id: 3,
+            id: 4,
             login: "ibro",
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/05cd4f3508f99ba0a4ae2d0985c2f68c_webp.png?raw=true",
             language: "Russian, Czech, Kazakh"
         ),
         Translator(
-            id: 4,
+            id: 5,
             login: "Ciro",
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/4accfc2fcfa436165febe4cad18de978_webp.png?raw=true",
             language: "Arabic, French"
         ),
         Translator(
-            id: 5,
+            id: 6,
             login: "storm",
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/a6cc97f87d356523820461fd761fc3e1_webp.png?raw=true",
             language: "Norwegian, Swedish"
         ),
         Translator(
-            id: 6,
+            id: 7,
             login: "VastSector0",
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/bd8bccb82e0393b767bb705c4dc07113_webp.png?raw=true",
             language: "Spanish"
         ),
         Translator(
-            id: 7,
+            id: 8,
             login: "Seiike",
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/ca512dc4ce1f0997fd44503dce0a0fc8_webp.png?raw=true",
             language: "Slovak"
         ),
         Translator(
-            id: 8,
+            id: 9,
             login: "Cufiy",
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/y1wwm0ed_png.png?raw=true",
             language: "German"

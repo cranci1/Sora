@@ -202,6 +202,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var backgroundToken: Any?
     private var foregroundToken: Any?
     
+    private var timeBatteryContainer: UIView?
+    private var timeLabel: UILabel?
+    private var batteryLabel: UILabel?
+    private var timeUpdateTimer: Timer?
+    
     init(module: ScrapingModule,
          urlString: String,
          fullUrl: String,
@@ -311,6 +316,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         updateSkipButtonsVisibility()
         setupHoldSpeedIndicator()
         setupPipIfSupported()
+        setupTimeBatteryIndicator()
         
         view.bringSubviewToFront(subtitleStackView)
         subtitleStackView.isHidden = !SubtitleSettingsManager.shared.settings.enabled
@@ -454,28 +460,23 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     deinit {
+        if let timeUpdateTimer = timeUpdateTimer {
+            timeUpdateTimer.invalidate()
+        }
+        
+        NotificationCenter.default.removeObserver(self)
+        UIDevice.current.isBatteryMonitoringEnabled = false
+        
         inactivityTimer?.invalidate()
         inactivityTimer = nil
-        updateTimer?.invalidate()
-        updateTimer = nil
-        lockButtonTimer?.invalidate()
-        lockButtonTimer = nil
-        dimButtonTimer?.invalidate()
-        dimButtonTimer = nil
         
-        playerRateObserver?.invalidate()
-        playerRateObserver = nil
         loadedTimeRangesObservation?.invalidate()
         loadedTimeRangesObservation = nil
-        playerTimeControlStatusObserver?.invalidate()
-        playerTimeControlStatusObserver = nil
         volumeObserver?.invalidate()
         volumeObserver = nil
         
-        NotificationCenter.default.removeObserver(self)
         if let token = timeObserverToken {
             player?.removeTimeObserver(token)
-            timeObserverToken = nil
         }
         
         // Remove observer from player item if it exists
@@ -2827,6 +2828,95 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     @objc private func handleEscape() {
         dismiss(animated: true, completion: nil)
+    }
+    
+    private func setupTimeBatteryIndicator() {
+        // Create container
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.backgroundColor = .clear
+        container.layer.cornerRadius = 8
+        controlsContainerView.addSubview(container)
+        self.timeBatteryContainer = container
+        
+        // Create time label
+        let timeLabel = UILabel()
+        timeLabel.translatesAutoresizingMaskIntoConstraints = false
+        timeLabel.textColor = .white
+        timeLabel.font = .systemFont(ofSize: 12, weight: .medium)
+        timeLabel.textAlignment = .center
+        container.addSubview(timeLabel)
+        self.timeLabel = timeLabel
+        
+        // Create separator
+        let separator = UIView()
+        separator.translatesAutoresizingMaskIntoConstraints = false
+        separator.backgroundColor = .white.withAlphaComponent(0.5)
+        container.addSubview(separator)
+        
+        // Create battery label
+        let batteryLabel = UILabel()
+        batteryLabel.translatesAutoresizingMaskIntoConstraints = false
+        batteryLabel.textColor = .white
+        batteryLabel.font = .systemFont(ofSize: 12, weight: .medium)
+        batteryLabel.textAlignment = .center
+        container.addSubview(batteryLabel)
+        self.batteryLabel = batteryLabel
+        
+        // Setup constraints
+        NSLayoutConstraint.activate([
+            container.centerXAnchor.constraint(equalTo: controlsContainerView.centerXAnchor),
+            container.topAnchor.constraint(equalTo: sliderHostingController?.view.bottomAnchor ?? controlsContainerView.bottomAnchor, constant: 2),
+            container.heightAnchor.constraint(equalToConstant: 20),
+            
+            timeLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 12),
+            timeLabel.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            timeLabel.widthAnchor.constraint(equalToConstant: 50),
+            
+            separator.leadingAnchor.constraint(equalTo: timeLabel.trailingAnchor, constant: 8),
+            separator.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            separator.widthAnchor.constraint(equalToConstant: 1),
+            separator.heightAnchor.constraint(equalToConstant: 12),
+            
+            batteryLabel.leadingAnchor.constraint(equalTo: separator.trailingAnchor, constant: 8),
+            batteryLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -12),
+            batteryLabel.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            batteryLabel.widthAnchor.constraint(equalToConstant: 50)
+        ])
+        
+        // Start time updates
+        updateTime()
+        timeUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.updateTime()
+        }
+        
+        // Setup battery monitoring
+        UIDevice.current.isBatteryMonitoringEnabled = true
+        updateBatteryLevel()
+        NotificationCenter.default.addObserver(self,
+                                             selector: #selector(batteryLevelDidChange),
+                                             name: UIDevice.batteryLevelDidChangeNotification,
+                                             object: nil)
+    }
+    
+    private func updateTime() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        timeLabel?.text = formatter.string(from: Date())
+    }
+    
+    @objc private func batteryLevelDidChange() {
+        updateBatteryLevel()
+    }
+    
+    private func updateBatteryLevel() {
+        let batteryLevel = UIDevice.current.batteryLevel
+        if batteryLevel >= 0 {
+            let percentage = Int(batteryLevel * 100)
+            batteryLabel?.text = "\(percentage)%"
+        } else {
+            batteryLabel?.text = "N/A"
+        }
     }
 }
 

@@ -17,6 +17,8 @@ struct BookmarksDetailView: View {
     @State private var sortOption: SortOption = .dateAdded
     @State private var searchText: String = ""
     @State private var isSearchActive: Bool = false
+    @State private var isSelecting: Bool = false
+    @State private var selectedBookmarks: Set<LibraryItem.ID> = []
     
     enum SortOption: String, CaseIterable {
         case dateAdded = "Date Added"
@@ -108,6 +110,35 @@ struct BookmarksDetailView: View {
                             )
                             .circularGradientOutline()
                     }
+                    Button(action: {
+                        if isSelecting {
+                            // If trash icon tapped
+                            if !selectedBookmarks.isEmpty {
+                                for id in selectedBookmarks {
+                                    if let item = bookmarks.first(where: { $0.id == id }) {
+                                        libraryManager.removeBookmark(item: item)
+                                    }
+                                }
+                                selectedBookmarks.removeAll()
+                            }
+                            isSelecting = false
+                        } else {
+                            isSelecting = true
+                        }
+                    }) {
+                        Image(systemName: isSelecting ? "trash" : "checkmark.circle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(isSelecting ? .red : .accentColor)
+                            .padding(10)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            )
+                            .circularGradientOutline()
+                    }
                 }
             }
             .padding(.horizontal)
@@ -163,7 +194,9 @@ struct BookmarksDetailView: View {
             }
             BookmarksDetailGrid(
                 bookmarks: filteredAndSortedBookmarks,
-                moduleManager: moduleManager
+                moduleManager: moduleManager,
+                isSelecting: isSelecting,
+                selectedBookmarks: $selectedBookmarks
             )
         }
         .navigationBarBackButtonHidden(true)
@@ -212,12 +245,14 @@ private struct SortMenu: View {
 private struct BookmarksDetailGrid: View {
     let bookmarks: [LibraryItem]
     let moduleManager: ModuleManager
+    let isSelecting: Bool
+    @Binding var selectedBookmarks: Set<LibraryItem.ID>
     private let columns = [GridItem(.adaptive(minimum: 150))]
     var body: some View {
         ScrollView(showsIndicators: false) {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(bookmarks) { bookmark in
-                    BookmarksDetailGridCell(bookmark: bookmark, moduleManager: moduleManager)
+                    BookmarksDetailGridCell(bookmark: bookmark, moduleManager: moduleManager, isSelecting: isSelecting, selectedBookmarks: $selectedBookmarks)
                 }
             }
             .padding(.top)
@@ -230,15 +265,44 @@ private struct BookmarksDetailGrid: View {
 private struct BookmarksDetailGridCell: View {
     let bookmark: LibraryItem
     let moduleManager: ModuleManager
+    let isSelecting: Bool
+    @Binding var selectedBookmarks: Set<LibraryItem.ID>
+    
+    var isSelected: Bool {
+        selectedBookmarks.contains(bookmark.id)
+    }
+    
     var body: some View {
         if let module = moduleManager.modules.first(where: { $0.id.uuidString == bookmark.moduleId }) {
-            NavigationLink(destination: MediaInfoView(
-                title: bookmark.title,
-                imageUrl: bookmark.imageUrl,
-                href: bookmark.href,
-                module: module
-            )) {
-                BookmarkCell(bookmark: bookmark)
+            if isSelecting {
+                Button(action: {
+                    if isSelected {
+                        selectedBookmarks.remove(bookmark.id)
+                    } else {
+                        selectedBookmarks.insert(bookmark.id)
+                    }
+                }) {
+                    ZStack(alignment: .topTrailing) {
+                        BookmarkCell(bookmark: bookmark)
+                        if isSelected {
+                            Image(systemName: "checkmark.circle.fill")
+                                .resizable()
+                                .frame(width: 32, height: 32)
+                                .foregroundColor(.black)
+                                .background(Color.white.clipShape(Circle()).opacity(0.8))
+                                .offset(x: -8, y: 8)
+                        }
+                    }
+                }
+            } else {
+                NavigationLink(destination: MediaInfoView(
+                    title: bookmark.title,
+                    imageUrl: bookmark.imageUrl,
+                    href: bookmark.href,
+                    module: module
+                )) {
+                    BookmarkCell(bookmark: bookmark)
+                }
             }
         }
     }

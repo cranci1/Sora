@@ -692,119 +692,145 @@ struct EnhancedActiveDownloadCard: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 16) {
-                Group {
-                    if let imageURL = download.imageURL {
-                        LazyImage(url: imageURL) { state in
-                            if let uiImage = state.imageContainer?.image {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                            } else {
-                                Rectangle()
-                                    .fill(.tertiary)
-                            }
-                        }
-                    } else {
-                        Rectangle()
-                            .fill(.tertiary)
-                            .overlay(
-                                Image(systemName: "photo")
-                                    .foregroundStyle(.secondary)
-                            )
-                    }
-                }
-                .frame(width: 64, height: 64)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(download.title ?? download.originalURL.lastPathComponent)
-                        .font(.headline)
-                        .fontWeight(.medium)
-                        .lineLimit(2)
-                        .foregroundStyle(.primary)
-                    
-                    VStack(spacing: 6) {
-                        HStack {
-                            if download.queueStatus == .queued {
-                                Text(NSLocalizedString("Queued", comment: ""))
-                                    .font(.caption)
-                                    .fontWeight(.medium)
-                                    .foregroundStyle(.orange)
-                            } else {
-                                Text("\(Int(currentProgress * 100))%")
-                                    .font(.caption)
-                                    .fontWeight(.medium)
-                                    .foregroundStyle(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            HStack(spacing: 4) {
-                                Circle()
-                                    .fill(statusColor)
-                                    .frame(width: 6, height: 6)
-                                
-                                Text(statusText)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        
-                        if download.queueStatus == .queued {
-                            ProgressView()
-                                .progressViewStyle(LinearProgressViewStyle(tint: .orange))
-                                .scaleEffect(y: 0.8)
+        HStack(spacing: 14) {
+            // Thumbnail
+            Group {
+                if let imageURL = download.imageURL {
+                    LazyImage(url: imageURL) { state in
+                        if let uiImage = state.imageContainer?.image {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .clipped()
                         } else {
-                            ProgressView(value: currentProgress)
-                                .progressViewStyle(LinearProgressViewStyle(tint: currentProgress >= 1.0 ? .green : .accentColor))
-                                .scaleEffect(y: 0.8)
+                            Rectangle().fill(Color(white: 0.2))
                         }
                     }
-                }
-                
-                HStack(spacing: 12) {
-                    if download.queueStatus == .queued {
-                        Button(action: cancelDownload) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.title3)
-                                .foregroundStyle(.red)
-                        }
-                    } else {
-                        Button(action: toggleDownload) {
-                            Image(systemName: taskState == .running ? "pause.circle.fill" : "play.circle.fill")
-                                .font(.title3)
-                                .foregroundStyle(taskState == .running ? .orange : .accentColor)
-                        }
-                        
-                        Button(action: cancelDownload) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.title3)
-                                .foregroundStyle(.red)
-                        }
-                    }
+                } else {
+                    Rectangle().fill(Color(white: 0.2))
+                        .overlay(
+                            Image(systemName: "photo")
+                                .foregroundColor(.gray)
+                        )
                 }
             }
-            .padding(16)
+            .frame(width: 56, height: 56)
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             
-            if download != download {
-                Divider()
-                    .padding(.horizontal, 16)
+            // Center VStack
+            VStack(alignment: .leading, spacing: 4) {
+                Text(download.title ?? download.originalURL.lastPathComponent)
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                
+                HStack {
+                    Text("\(Int(currentProgress * 100))%")
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                    Spacer()
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 10, height: 10)
+                        Text(statusText)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(Color(white: 0.7))
+                            .lineLimit(1)
+                    }
+                }
+                
+                ProgressView(value: currentProgress)
+                    .progressViewStyle(LinearProgressViewStyle(tint: Color(white: 0.7)))
+                    .frame(height: 4)
+                    .cornerRadius(2)
+            }
+            .padding(.vertical, 4)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            // Right VStack (buttons)
+            VStack(spacing: 12) {
+                Button(action: cancelDownload) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.red)
+                            .opacity(0.85)
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                Circle().stroke(
+                                    LinearGradient(
+                                        gradient: Gradient(stops: [
+                                            .init(color: Color.white.opacity(0.25), location: 0),
+                                            .init(color: Color.white.opacity(0), location: 1)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ),
+                                    lineWidth: 2
+                                )
+                            )
+                        Image(systemName: "xmark")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                Button(action: toggleDownload) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.yellow)
+                            .opacity(0.85)
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                Circle().stroke(
+                                    LinearGradient(
+                                        gradient: Gradient(stops: [
+                                            .init(color: Color.white.opacity(0.25), location: 0),
+                                            .init(color: Color.white.opacity(0), location: 1)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ),
+                                    lineWidth: 2
+                                )
+                            )
+                        Image(systemName: taskState == .running ? "pause.fill" : "play.fill")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.black)
+                    }
+                }
+                .buttonStyle(PlainButtonStyle())
             }
         }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(UIColor.systemBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.gray.opacity(0.2))
+                )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: Color.accentColor.opacity(0.25), location: 0),
+                            .init(color: Color.accentColor.opacity(0), location: 1)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 0.5
+                )
+        )
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadProgressChanged"))) { _ in
             updateProgress()
-        }
-    }
-    
-    private var statusColor: Color {
-        if download.queueStatus == .queued {
-            return .orange
-        } else if taskState == .running {
-            return .green
-        } else {
-            return .orange
         }
     }
     
@@ -901,9 +927,12 @@ struct EnhancedDownloadGroupCard: View {
                             .foregroundStyle(.primary)
                         
                         HStack(spacing: 16) {
-                            Label("\(group.assetCount) \(group.assetCount == 1 ? "Episode" : "Episodes")", systemImage: "play.rectangle")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                            HStack(spacing: 4) {
+                                Image(systemName: "play.rectangle")
+                                Text("\(group.assetCount) \(group.assetCount == 1 ? "Episode" : "Episodes")")
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                             
                             Label(formatFileSize(group.totalFileSize), systemImage: "internaldrive")
                                 .font(.subheadline)
@@ -1162,7 +1191,21 @@ struct EnhancedShowEpisodesView: View {
                     .padding(.horizontal, 20)
                     .background(
                         RoundedRectangle(cornerRadius: 25)
-                            .fill(Color.red.opacity(0.1))
+                            .fill(Color.red.opacity(0.18))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(
+                                        LinearGradient(
+                                            gradient: Gradient(stops: [
+                                                .init(color: Color.red.opacity(0.25), location: 0),
+                                                .init(color: Color.red.opacity(0), location: 1)
+                                            ]),
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        ),
+                                        lineWidth: 1.5
+                                    )
+                            )
                     )
                 }
             }

@@ -724,20 +724,22 @@ struct EnhancedActiveDownloadCard: View {
                     .foregroundColor(.white)
                     .lineLimit(1)
                 
-                Text("\(Int(currentProgress * 100))%")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(Color.green)
-                        .frame(width: 10, height: 10)
-                    Text(statusText)
+                HStack {
+                    Text("\(Int(currentProgress * 100))%")
                         .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(Color(white: 0.7))
-                        .lineLimit(1)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                    Spacer()
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 10, height: 10)
+                        Text(statusText)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(Color(white: 0.7))
+                            .lineLimit(1)
+                    }
                 }
                 
                 ProgressView(value: currentProgress)
@@ -756,6 +758,19 @@ struct EnhancedActiveDownloadCard: View {
                             .fill(Color.red)
                             .opacity(0.85)
                             .frame(width: 40, height: 40)
+                            .overlay(
+                                Circle().stroke(
+                                    LinearGradient(
+                                        gradient: Gradient(stops: [
+                                            .init(color: Color.white.opacity(0.25), location: 0),
+                                            .init(color: Color.white.opacity(0), location: 1)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ),
+                                    lineWidth: 2
+                                )
+                            )
                         Image(systemName: "xmark")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(.white)
@@ -769,6 +784,19 @@ struct EnhancedActiveDownloadCard: View {
                             .fill(Color.yellow)
                             .opacity(0.85)
                             .frame(width: 40, height: 40)
+                            .overlay(
+                                Circle().stroke(
+                                    LinearGradient(
+                                        gradient: Gradient(stops: [
+                                            .init(color: Color.white.opacity(0.25), location: 0),
+                                            .init(color: Color.white.opacity(0), location: 1)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ),
+                                    lineWidth: 2
+                                )
+                            )
                         Image(systemName: taskState == .running ? "pause.fill" : "play.fill")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(.black)

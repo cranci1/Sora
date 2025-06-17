@@ -126,6 +126,7 @@
 		0410697B2E00ABE900A157BB /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = Localizable.strings; sourceTree = "<group>"; };
 		041069802E00C71000A157BB /* kk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = kk; path = Localizable.strings; sourceTree = "<group>"; };
 		041261012E00D14F00D05B47 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = Localizable.strings; sourceTree = "<group>"; };
+		0452339E2E02149C002EA23C /* bos */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bos; path = Localizable.strings; sourceTree = "<group>"; };
 		0457C5942DE7712A000AFBD9 /* DeviceScaleModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceScaleModifier.swift; sourceTree = "<group>"; };
 		0457C5992DE78267000AFBD9 /* BookmarkGridItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkGridItemView.swift; sourceTree = "<group>"; };
 		0457C59A2DE78267000AFBD9 /* BookmarkGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkGridView.swift; sourceTree = "<group>"; };
@@ -300,6 +301,14 @@
 				041261022E00D14F00D05B47 /* Localizable.strings */,
 			);
 			path = sv.lproj;
+			sourceTree = "<group>";
+		};
+		0452339C2E021491002EA23C /* bos.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				0452339D2E02149C002EA23C /* Localizable.strings */,
+			);
+			path = bos.lproj;
 			sourceTree = "<group>";
 		};
 		0457C5962DE7712A000AFBD9 /* ViewModifiers */ = {
@@ -616,6 +625,7 @@
 		13530BE02E00028E0048B7DE /* Localization */ = {
 			isa = PBXGroup;
 			children = (
+				0452339C2E021491002EA23C /* bos.lproj */,
 				041261032E00D14F00D05B47 /* sv.lproj */,
 				041069822E00C71000A157BB /* kk.lproj */,
 				0410697A2E00ABE900A157BB /* de.lproj */,
@@ -843,6 +853,8 @@
 				sk,
 				kk,
 				sv,
+				bos,
+				bs,
 			);
 			mainGroup = 133D7C612D2BE2500075467E;
 			packageReferences = (
@@ -1032,6 +1044,14 @@
 			isa = PBXVariantGroup;
 			children = (
 				041261012E00D14F00D05B47 /* sv */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		0452339D2E02149C002EA23C /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0452339E2E02149C002EA23C /* bos */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";

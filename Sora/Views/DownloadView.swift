@@ -679,6 +679,7 @@ struct DownloadedSection: View {
     }
 }
 
+@MainActor
 struct EnhancedActiveDownloadCard: View {
     let download: JSActiveDownload
     @State private var currentProgress: Double
@@ -870,7 +871,7 @@ struct EnhancedDownloadGroupCard: View {
                 HStack(spacing: 16) {
                     Group {
                         if let posterURL = group.posterURL {
-                            LazyImage(url: posterURL) { state in
+                            LazyImage(url: posterURL) { @MainActor state in
                                 if let uiImage = state.imageContainer?.image {
                                     Image(uiImage: uiImage)
                                         .resizable()
@@ -1051,7 +1052,7 @@ struct EnhancedShowEpisodesView: View {
     private var heroImageSection: some View {
         Group {
             if let posterURL = group.posterURL {
-                LazyImage(url: posterURL) { state in
+                LazyImage(url: posterURL) { @MainActor state in
                     if let uiImage = state.imageContainer?.image {
                         Image(uiImage: uiImage)
                             .resizable()
@@ -1244,6 +1245,7 @@ struct EnhancedShowEpisodesView: View {
     }
 }
 
+@MainActor
 struct EnhancedEpisodeRow: View {
     let asset: DownloadedAsset
     let showDivider: Bool
@@ -1295,7 +1297,7 @@ struct EnhancedEpisodeRow: View {
             // Thumbnail
             Group {
                 if let backdropURL = asset.metadata?.backdropURL ?? asset.metadata?.posterURL {
-                    LazyImage(url: backdropURL) { state in
+                    LazyImage(url: backdropURL) { @MainActor state in
                         if let uiImage = state.imageContainer?.image {
                             Image(uiImage: uiImage)
                                 .resizable()

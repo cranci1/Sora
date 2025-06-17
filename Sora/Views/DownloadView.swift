@@ -778,8 +778,29 @@ struct EnhancedActiveDownloadCard: View {
             }
         }
         .padding(12)
-        .background(Color(white: 0.13))
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(UIColor.systemBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.gray.opacity(0.2))
+                )
+        )
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: Color.accentColor.opacity(0.25), location: 0),
+                            .init(color: Color.accentColor.opacity(0), location: 1)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 0.5
+                )
+        )
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadProgressChanged"))) { _ in
             updateProgress()
         }
@@ -1142,7 +1163,21 @@ struct EnhancedShowEpisodesView: View {
                     .padding(.horizontal, 20)
                     .background(
                         RoundedRectangle(cornerRadius: 25)
-                            .fill(Color.red.opacity(0.1))
+                            .fill(Color.red.opacity(0.18))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(
+                                        LinearGradient(
+                                            gradient: Gradient(stops: [
+                                                .init(color: Color.red.opacity(0.25), location: 0),
+                                                .init(color: Color.red.opacity(0), location: 1)
+                                            ]),
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        ),
+                                        lineWidth: 1.5
+                                    )
+                            )
                     )
                 }
             }

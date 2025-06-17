@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+/*
 struct DeviceScaleModifier: ViewModifier {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -29,13 +29,13 @@ struct DeviceScaleModifier: ViewModifier {
         }
     }
 }
+*/
 
-/*
 struct DeviceScaleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content // does nothing for now
     }
-}*/
+}
 
 
 extension View {

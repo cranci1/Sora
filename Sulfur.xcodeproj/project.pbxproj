@@ -247,12 +247,12 @@
 			path = SearchView;
 			sourceTree = "<group>";
 		};
-		0409FE832DFF0870000DB00C /* cz.lproj */ = {
+		0409FE832DFF0870000DB00C /* cs.lproj */ = {
 			isa = PBXGroup;
 			children = (
 				0409FE822DFF0870000DB00C /* Localizable.strings */,
 			);
-			path = cz.lproj;
+			path = cs.lproj;
 			sourceTree = "<group>";
 		};
 		0409FE862DFF0870000DB00C /* es.lproj */ = {
@@ -632,7 +632,7 @@
 				0410697D2E00ABE900A157BB /* sk.lproj */,
 				04A1B73B2DFF39EB0064688A /* nn.lproj */,
 				0409FE8B2DFF2886000DB00C /* ru.lproj */,
-				0409FE832DFF0870000DB00C /* cz.lproj */,
+				0409FE832DFF0870000DB00C /* cs.lproj */,
 				0409FE862DFF0870000DB00C /* es.lproj */,
 				0488FA9B2DFDF385007575E1 /* ar.lproj */,
 				0488FA972DFDF334007575E1 /* fr.lproj */,

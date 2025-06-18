@@ -275,9 +275,6 @@ struct SettingsViewGeneral: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
                         
-                        Divider()
-                            .padding(.horizontal, 16)
-                        
                         List {
                             ForEach(Array(metadataProvidersOrder.enumerated()), id: \.element) { index, provider in
                                 HStack {
@@ -358,8 +355,6 @@ struct SettingsViewGeneral: View {
                 }
             }
             .padding(.vertical, 20)
-            .scrollViewBottomPadding()
-            .navigationTitle("General")
         }
         .navigationTitle(NSLocalizedString("General", comment: ""))
         .scrollViewBottomPadding()

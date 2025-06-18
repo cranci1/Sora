@@ -266,12 +266,17 @@ struct AllWatchingView: View {
         UserDefaults.standard.set(99999999.0, forKey: key)
         UserDefaults.standard.set(99999999.0, forKey: totalKey)
         ContinueWatchingManager.shared.remove(item: item)
-        loadContinueWatchingItems()
+        
+        DispatchQueue.main.async {
+            loadContinueWatchingItems()
+        }
     }
     
     private func removeItem(item: ContinueWatchingItem) {
         ContinueWatchingManager.shared.remove(item: item)
-        loadContinueWatchingItems()
+        DispatchQueue.main.async {
+            loadContinueWatchingItems()
+        }
     }
 }
 

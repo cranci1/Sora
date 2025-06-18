@@ -5,8 +5,8 @@
 //  Created by Francesco on 05/01/25.
 //
 
-import Foundation
 import Network
+import Foundation
 
 class FetchDelegate: NSObject, URLSessionTaskDelegate {
     private let allowRedirects: Bool

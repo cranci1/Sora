@@ -125,7 +125,6 @@ struct AllBookmarks: View {
                     }
                     Button(action: {
                         if isSelecting {
-                            // If trash icon tapped
                             if !selectedBookmarks.isEmpty {
                                 for id in selectedBookmarks {
                                     if let item = libraryManager.bookmarks.first(where: { $0.id == id }) {

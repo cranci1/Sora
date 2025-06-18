@@ -18,6 +18,13 @@ struct ModuleAdditionSettingsView: View {
     @State private var errorMessage: String?
     var moduleUrl: String
     
+    private var moduleAlreadyExists: Bool {
+        if let metadata = moduleMetadata {
+            return moduleManager.modules.contains(where: { $0.metadata.sourceName == metadata.sourceName })
+        }
+        return false
+    }
+    
     var body: some View {
         ZStack {
             LinearGradient(
@@ -87,7 +94,7 @@ struct ModuleAdditionSettingsView: View {
                                                     .fill(Color(.systemGray5))
                                             }
                                         }
-                                        .frame(width: 32, height: 32)
+                                        .frame(width: 40, height: 40)
                                         .clipShape(Circle())
                                         .shadow(
                                             color: colorScheme == .dark
@@ -194,10 +201,11 @@ struct ModuleAdditionSettingsView: View {
                     Button(action: addModule) {
                         HStack {
                             Image(systemName: "plus.circle.fill")
-                            Text("Add Module")
+                                .foregroundColor(colorScheme == .dark ? .black : .white)
+                            Text(moduleAlreadyExists ? "Module already added" : "Add Module")
                         }
                         .font(.headline)
-                        .foregroundColor(Color.accentColor)
+                        .foregroundColor(colorScheme == .dark ? .black : .white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(
@@ -219,8 +227,8 @@ struct ModuleAdditionSettingsView: View {
                         )
                         .padding(.horizontal, 20)
                     }
-                    .disabled(isLoading || moduleMetadata == nil)
-                    .opacity(isLoading ? 0.6 : 1)
+                    .disabled(isLoading || moduleMetadata == nil || moduleAlreadyExists)
+                    .opacity(isLoading || moduleAlreadyExists ? 0.6 : 1)
                     
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
                         Text("Cancel")

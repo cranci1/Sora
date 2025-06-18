@@ -30,7 +30,7 @@ struct SplashScreenView: View {
                         isAnimating = true
                     }
                     
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         withAnimation(.easeOut(duration: 0.5)) {
                             showMainApp = true
                         }

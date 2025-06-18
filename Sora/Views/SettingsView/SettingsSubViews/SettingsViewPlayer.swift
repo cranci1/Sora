@@ -378,7 +378,7 @@ struct SubtitleSettingsSection: View {
                 icon: "captions.bubble",
                 title: NSLocalizedString("Enable Subtitles", comment: ""),
                 isOn: $subtitlesEnabled,
-                showDivider: false
+                showDivider: true
             )
             .onChange(of: subtitlesEnabled) { newValue in
                 SubtitleSettingsManager.shared.update { settings in

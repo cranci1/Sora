@@ -1508,7 +1508,7 @@ struct MediaInfoView: View {
                 
                 alert.addAction(UIAlertAction(title: title, style: .default) { _ in
                     guard self.activeFetchID == fetchID else { return }
-                    self.playStream(url: streamUrl, fullURL: href, subtitles: subtitles, headers: headers, fetchID: fetchID)
+                    self.playStream(url: streamUrl, fullURL: fullURL, subtitles: subtitles, headers: headers, fetchID: fetchID)
                 })
                 
                 streamIndex += 1

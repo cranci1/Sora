@@ -20,9 +20,6 @@ struct LibraryView: View {
     @Environment(\.verticalSizeClass) var verticalSizeClass
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
-    @State private var selectedBookmark: LibraryItem? = nil
-    @State private var isDetailActive: Bool = false
-    
     @State private var continueWatchingItems: [ContinueWatchingItem] = []
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var selectedTab: Int = 0
@@ -111,16 +108,16 @@ struct LibraryView: View {
                         
                         HStack {
                             HStack(spacing: 4) {
-                                Image(systemName: "bookmark.fill")
+                                Image(systemName: "folder.fill")
                                     .font(.subheadline)
-                                Text("Bookmarks")
+                                Text("Collections")
                                     .font(.title3)
                                     .fontWeight(.semibold)
                             }
                             
                             Spacer()
                             
-                            NavigationLink(destination: BookmarksDetailView(bookmarks: $libraryManager.bookmarks)) {
+                            NavigationLink(destination: BookmarksDetailView()) {
                                 Text("View All")
                                     .font(.subheadline)
                                     .padding(.horizontal, 12)
@@ -132,32 +129,9 @@ struct LibraryView: View {
                         }
                         .padding(.horizontal, 20)
                         
-                        
-                        BookmarksSection(
-                            selectedBookmark: $selectedBookmark,
-                            isDetailActive: $isDetailActive
-                        )
+                        BookmarksSection()
                         
                         Spacer().frame(height: 100)
-                        
-                        NavigationLink(
-                            destination: Group {
-                                if let bookmark = selectedBookmark,
-                                   let module = moduleManager.modules.first(where: {
-                                       $0.id.uuidString == bookmark.moduleId
-                                   }) {
-                                    MediaInfoView(title: bookmark.title,
-                                                  imageUrl: bookmark.imageUrl,
-                                                  href: bookmark.href,
-                                                  module: module)
-                                } else {
-                                    Text("No Data Available")
-                                }
-                            },
-                            isActive: $isDetailActive
-                        ) {
-                            EmptyView()
-                        }
                     }
                     .padding(.bottom, 20)
                 }
@@ -462,154 +436,70 @@ extension View {
 struct BookmarksSection: View {
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
-    
-    @Binding var selectedBookmark: LibraryItem?
-    @Binding var isDetailActive: Bool
+    @State private var isShowingRenamePrompt: Bool = false
+    @State private var collectionToRename: BookmarkCollection? = nil
+    @State private var renameCollectionName: String = ""
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if libraryManager.bookmarks.isEmpty {
+            if libraryManager.collections.isEmpty {
                 EmptyBookmarksView()
             } else {
-                BookmarksGridView(
-                    selectedBookmark: $selectedBookmark,
-                    isDetailActive: $isDetailActive
-                )
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(Array(libraryManager.collections.prefix(5))) { collection in
+                            NavigationLink(destination: CollectionDetailView(collection: collection)) {
+                                BookmarkCollectionGridCell(collection: collection, width: 162, height: 162)
+                            }
+                            .contextMenu {
+                                Button("Rename") {
+                                    collectionToRename = collection
+                                    renameCollectionName = collection.name
+                                    isShowingRenamePrompt = true
+                                }
+                                Button(role: .destructive) {
+                                    libraryManager.deleteCollection(id: collection.id)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .frame(height: 220)
+                }
             }
         }
+        .alert("Rename Collection", isPresented: $isShowingRenamePrompt, presenting: collectionToRename) { collection in
+            TextField("Collection Name", text: $renameCollectionName)
+            Button("Cancel", role: .cancel) {
+                collectionToRename = nil
+                renameCollectionName = ""
+            }
+            Button("Rename") {
+                if !renameCollectionName.isEmpty {
+                    libraryManager.renameCollection(id: collection.id, newName: renameCollectionName)
+                }
+                collectionToRename = nil
+                renameCollectionName = ""
+            }
+        } message: { _ in EmptyView() }
     }
 }
 
 struct EmptyBookmarksView: View {
     var body: some View {
         VStack(spacing: 8) {
-            Image(systemName: "magazine")
+            Image(systemName: "folder")
                 .font(.largeTitle)
                 .foregroundColor(.secondary)
-            Text("You have no items saved.")
+            Text("No Collections")
                 .font(.headline)
-            Text("Bookmark items for an easier access later.")
+            Text("Create a collection to organize your bookmarks")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
         .padding()
         .frame(maxWidth: .infinity)
-    }
-}
-
-struct BookmarksGridView: View {
-    @EnvironmentObject private var libraryManager: LibraryManager
-    @EnvironmentObject private var moduleManager: ModuleManager
-    
-    @Binding var selectedBookmark: LibraryItem?
-    @Binding var isDetailActive: Bool
-    
-    private var recentBookmarks: [LibraryItem] {
-        Array(libraryManager.bookmarks.prefix(5))
-    }
-    
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                ForEach(recentBookmarks) { item in
-                    BookmarkItemView(
-                        item: item,
-                        selectedBookmark: $selectedBookmark,
-                        isDetailActive: $isDetailActive
-                    )
-                }
-            }
-            .padding(.horizontal, 20)
-            .frame(height: 243)
-        }
-    }
-}
-
-struct BookmarkItemView: View {
-    @EnvironmentObject private var libraryManager: LibraryManager
-    @EnvironmentObject private var moduleManager: ModuleManager
-    
-    let item: LibraryItem
-    @Binding var selectedBookmark: LibraryItem?
-    @Binding var isDetailActive: Bool
-    
-    var body: some View {
-        if let module = moduleManager.modules.first(where: { $0.id.uuidString == item.moduleId }) {
-            Button(action: {
-                selectedBookmark = item
-                isDetailActive = true
-            }) {
-                ZStack {
-                    LazyImage(url: URL(string: item.imageUrl)) { state in
-                        if let uiImage = state.imageContainer?.image {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .aspectRatio(0.72, contentMode: .fill)
-                                .frame(width: 162, height: 243)
-                                .cornerRadius(12)
-                                .clipped()
-                        } else {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.gray.opacity(0.3))
-                                .aspectRatio(2/3, contentMode: .fit)
-                                .redacted(reason: .placeholder)
-                        }
-                    }
-                    .overlay(
-                        ZStack {
-                            Circle()
-                                .fill(Color.black.opacity(0.5))
-                                .frame(width: 28, height: 28)
-                                .overlay(
-                                    LazyImage(url: URL(string: module.metadata.iconUrl)) { state in
-                                        if let uiImage = state.imageContainer?.image {
-                                            Image(uiImage: uiImage)
-                                                .resizable()
-                                                .scaledToFill()
-                                                .frame(width: 32, height: 32)
-                                                .clipShape(Circle())
-                                        } else {
-                                            Circle()
-                                                .fill(Color.gray.opacity(0.3))
-                                                .frame(width: 32, height: 32)
-                                        }
-                                    }
-                                )
-                        }
-                        .padding(8),
-                        alignment: .topLeading
-                    )
-                    
-                    VStack {
-                        Spacer()
-                        Text(item.title)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .lineLimit(2)
-                            .foregroundColor(.white)
-                            .padding(12)
-                            .background(
-                                LinearGradient(
-                                    colors: [
-                                        .black.opacity(0.7),
-                                        .black.opacity(0.0)
-                                    ],
-                                    startPoint: .bottom,
-                                    endPoint: .top
-                                )
-                                    .shadow(color: .black, radius: 4, x: 0, y: 2)
-                            )
-                    }
-                }
-                .frame(width: 162, height: 243)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-            .contextMenu {
-                Button(role: .destructive, action: {
-                    libraryManager.removeBookmark(item: item)
-                }) {
-                    Label("Remove from Bookmarks", systemImage: "trash")
-                }
-            }
-        }
     }
 }

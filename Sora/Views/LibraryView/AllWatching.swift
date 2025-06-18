@@ -246,7 +246,6 @@ struct AllWatchingView: View {
         .onAppear {
             loadContinueWatchingItems()
             
-            // Enable swipe back gesture
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first,
                let navigationController = window.rootViewController?.children.first as? UINavigationController {

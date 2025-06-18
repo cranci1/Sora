@@ -1,5 +1,5 @@
 //
-//  MediaInfoView.swift
+//  BookmarksDetailView.swift
 //  Sora
 //
 //  Created by paul on 28/05/25.
@@ -13,35 +13,34 @@ struct BookmarksDetailView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
     
-    @Binding var bookmarks: [LibraryItem]
-    @State private var sortOption: SortOption = .dateAdded
+    @State private var sortOption: SortOption = .dateCreated
     @State private var searchText: String = ""
     @State private var isSearchActive: Bool = false
     @State private var isSelecting: Bool = false
-    @State private var selectedBookmarks: Set<LibraryItem.ID> = []
+    @State private var selectedCollections: Set<UUID> = []
+    @State private var isShowingCreateCollection: Bool = false
+    @State private var newCollectionName: String = ""
+    @State private var isShowingRenamePrompt: Bool = false
+    @State private var collectionToRename: BookmarkCollection? = nil
+    @State private var renameCollectionName: String = ""
     
     enum SortOption: String, CaseIterable {
-        case dateAdded = "Date Added"
-        case title = "Title"
-        case source = "Source"
+        case dateCreated = "Date Created"
+        case name = "Name"
+        case itemCount = "Item Count"
     }
     
-    var filteredAndSortedBookmarks: [LibraryItem] {
-        let filtered = searchText.isEmpty ? bookmarks : bookmarks.filter { item in
-            item.title.localizedCaseInsensitiveContains(searchText) ||
-            item.moduleName.localizedCaseInsensitiveContains(searchText)
+    var filteredAndSortedCollections: [BookmarkCollection] {
+        let filtered = searchText.isEmpty ? libraryManager.collections : libraryManager.collections.filter { collection in
+            collection.name.localizedCaseInsensitiveContains(searchText)
         }
         switch sortOption {
-        case .dateAdded:
-            return filtered
-        case .title:
-            return filtered.sorted { $0.title.lowercased() < $1.title.lowercased() }
-        case .source:
-            return filtered.sorted { item1, item2 in
-                let module1 = moduleManager.modules.first { $0.id.uuidString == item1.moduleId }
-                let module2 = moduleManager.modules.first { $0.id.uuidString == item2.moduleId }
-                return (module1?.metadata.sourceName ?? "") < (module2?.metadata.sourceName ?? "")
-            }
+        case .dateCreated:
+            return filtered.sorted { $0.dateCreated > $1.dateCreated }
+        case .name:
+            return filtered.sorted { $0.name.lowercased() < $1.name.lowercased() }
+        case .itemCount:
+            return filtered.sorted { $0.bookmarks.count > $1.bookmarks.count }
         }
     }
     
@@ -54,12 +53,15 @@ struct BookmarksDetailView: View {
                         .foregroundColor(.primary)
                 }
                 Button(action: { dismiss() }) {
-                    Text("All Bookmarks")
+                    Text("Collections")
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .layoutPriority(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                Spacer()
                 HStack(spacing: 16) {
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.3)) {
@@ -112,14 +114,11 @@ struct BookmarksDetailView: View {
                     }
                     Button(action: {
                         if isSelecting {
-                            // If trash icon tapped
-                            if !selectedBookmarks.isEmpty {
-                                for id in selectedBookmarks {
-                                    if let item = bookmarks.first(where: { $0.id == id }) {
-                                        libraryManager.removeBookmark(item: item)
-                                    }
+                            if !selectedCollections.isEmpty {
+                                for id in selectedCollections {
+                                    libraryManager.deleteCollection(id: id)
                                 }
-                                selectedBookmarks.removeAll()
+                                selectedCollections.removeAll()
                             }
                             isSelecting = false
                         } else {
@@ -139,10 +138,28 @@ struct BookmarksDetailView: View {
                             )
                             .circularGradientOutline()
                     }
+                    Button(action: {
+                        isShowingCreateCollection = true
+                    }) {
+                        Image(systemName: "folder.badge.plus")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(.accentColor)
+                            .padding(10)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            )
+                            .circularGradientOutline()
+                    }
                 }
+                .layoutPriority(0)
             }
             .padding(.horizontal)
             .padding(.top)
+            
             if isSearchActive {
                 HStack(spacing: 12) {
                     HStack(spacing: 12) {
@@ -151,7 +168,7 @@ struct BookmarksDetailView: View {
                             .scaledToFit()
                             .frame(width: 18, height: 18)
                             .foregroundColor(.secondary)
-                        TextField("Search bookmarks...", text: $searchText)
+                        TextField("Search collections...", text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
                             .foregroundColor(.primary)
                         if !searchText.isEmpty {
@@ -192,15 +209,115 @@ struct BookmarksDetailView: View {
                     removal: .move(edge: .top).combined(with: .opacity)
                 ))
             }
-            BookmarksDetailGrid(
-                bookmarks: filteredAndSortedBookmarks,
-                moduleManager: moduleManager,
-                isSelecting: isSelecting,
-                selectedBookmarks: $selectedBookmarks
-            )
+            
+            if filteredAndSortedCollections.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "folder")
+                        .font(.largeTitle)
+                        .foregroundColor(.secondary)
+                    Text("No Collections")
+                        .font(.headline)
+                    Text("Create a collection to organize your bookmarks")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView(showsIndicators: false) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 162), spacing: 16)], spacing: 16) {
+                        ForEach(filteredAndSortedCollections) { collection in
+                            if isSelecting {
+                                Button(action: {
+                                    if selectedCollections.contains(collection.id) {
+                                        selectedCollections.remove(collection.id)
+                                    } else {
+                                        selectedCollections.insert(collection.id)
+                                    }
+                                }) {
+                                    BookmarkCollectionGridCell(collection: collection, width: 162, height: 162)
+                                        .overlay(
+                                            selectedCollections.contains(collection.id) ?
+                                            ZStack {
+                                                Circle()
+                                                    .fill(Color.white)
+                                                    .frame(width: 32, height: 32)
+                                                Image(systemName: "checkmark")
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .frame(width: 18, height: 18)
+                                                    .foregroundColor(.black)
+                                            }
+                                            .padding(8)
+                                            : nil,
+                                            alignment: .topTrailing
+                                        )
+                                }
+                                .contextMenu {
+                                    Button("Rename") {
+                                        collectionToRename = collection
+                                        renameCollectionName = collection.name
+                                        isShowingRenamePrompt = true
+                                    }
+                                    Button(role: .destructive) {
+                                        libraryManager.deleteCollection(id: collection.id)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                            } else {
+                                NavigationLink(destination: CollectionDetailView(collection: collection)) {
+                                    BookmarkCollectionGridCell(collection: collection, width: 162, height: 162)
+                                }
+                                .contextMenu {
+                                    Button("Rename") {
+                                        collectionToRename = collection
+                                        renameCollectionName = collection.name
+                                        isShowingRenamePrompt = true
+                                    }
+                                    Button(role: .destructive) {
+                                        libraryManager.deleteCollection(id: collection.id)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top)
+                    .scrollViewBottomPadding()
+                }
+            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
+        .alert("Create Collection", isPresented: $isShowingCreateCollection) {
+            TextField("Collection Name", text: $newCollectionName)
+            Button("Cancel", role: .cancel) {
+                newCollectionName = ""
+            }
+            Button("Create") {
+                if !newCollectionName.isEmpty {
+                    libraryManager.createCollection(name: newCollectionName)
+                    newCollectionName = ""
+                }
+            }
+        }
+        .alert("Rename Collection", isPresented: $isShowingRenamePrompt, presenting: collectionToRename) { collection in
+            TextField("Collection Name", text: $renameCollectionName)
+            Button("Cancel", role: .cancel) {
+                collectionToRename = nil
+                renameCollectionName = ""
+            }
+            Button("Rename") {
+                if !renameCollectionName.isEmpty {
+                    libraryManager.renameCollection(id: collection.id, newName: renameCollectionName)
+                }
+                collectionToRename = nil
+                renameCollectionName = ""
+            }
+        } message: { _ in EmptyView() }
         .onAppear {
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first,
@@ -285,12 +402,17 @@ private struct BookmarksDetailGridCell: View {
                     ZStack(alignment: .topTrailing) {
                         BookmarkCell(bookmark: bookmark)
                         if isSelected {
-                            Image(systemName: "checkmark.circle.fill")
-                                .resizable()
-                                .frame(width: 32, height: 32)
-                                .foregroundColor(.black)
-                                .background(Color.white.clipShape(Circle()).opacity(0.8))
-                                .offset(x: -8, y: 8)
+                            ZStack {
+                                Circle()
+                                    .fill(Color.white)
+                                    .frame(width: 32, height: 32)
+                                Image(systemName: "checkmark")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 18, height: 18)
+                                    .foregroundColor(.accentColor)
+                            }
+                            .offset(x: -8, y: 8)
                         }
                     }
                 }

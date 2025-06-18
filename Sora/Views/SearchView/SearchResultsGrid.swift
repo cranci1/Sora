@@ -127,5 +127,10 @@ struct SearchResultsGrid: View {
                 }
             }
         }
+        .sheet(isPresented: $libraryManager.isShowingCollectionPicker) {
+            if let bookmark = libraryManager.bookmarkToAdd {
+                CollectionPickerView(bookmark: bookmark)
+            }
+        }
     }
 }

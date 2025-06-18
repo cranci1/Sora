@@ -1,78 +1,68 @@
 //
-//  AllBookmarks.swift
-//  Sulfur
+//  CollectionDetailView.swift
+//  Sora
 //
-//  Created by paul on 29/04/2025.
+//  Created by paul on 18/06/25.
 //
 
-import UIKit
-import NukeUI
 import SwiftUI
+import NukeUI
 
-extension View {
-    func circularGradientOutlineTwo() -> some View {
-        self.background(
-            Circle()
-                .stroke(
-                    LinearGradient(
-                        gradient: Gradient(stops: [
-                            .init(color: Color.accentColor.opacity(0.25), location: 0),
-                            .init(color: Color.accentColor.opacity(0), location: 1)
-                        ]),
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 0.5
-                )
-        )
-    }
-}
-
-struct AllBookmarks: View {
-    @EnvironmentObject var libraryManager: LibraryManager
-    @EnvironmentObject var moduleManager: ModuleManager
+struct CollectionDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var libraryManager: LibraryManager
+    @EnvironmentObject private var moduleManager: ModuleManager
+    
+    let collection: BookmarkCollection
+    @State private var sortOption: SortOption = .dateAdded
     @State private var searchText: String = ""
     @State private var isSearchActive: Bool = false
-    @State private var sortOption: SortOption = .title
     @State private var isSelecting: Bool = false
     @State private var selectedBookmarks: Set<LibraryItem.ID> = []
     
     enum SortOption: String, CaseIterable {
-        case title = "Title"
         case dateAdded = "Date Added"
+        case title = "Title"
         case source = "Source"
     }
     
-    var filteredAndSortedBookmarks: [LibraryItem] {
-        let filtered = searchText.isEmpty ? libraryManager.bookmarks : libraryManager.bookmarks.filter { item in
+    private var filteredAndSortedBookmarks: [LibraryItem] {
+        let filtered = searchText.isEmpty ? collection.bookmarks : collection.bookmarks.filter { item in
             item.title.localizedCaseInsensitiveContains(searchText) ||
             item.moduleName.localizedCaseInsensitiveContains(searchText)
         }
         switch sortOption {
-        case .title:
-            return filtered.sorted { $0.title.lowercased() < $1.title.lowercased() }
         case .dateAdded:
             return filtered
+        case .title:
+            return filtered.sorted { $0.title.lowercased() < $1.title.lowercased() }
         case .source:
-            return filtered.sorted { $0.moduleName < $1.moduleName }
+            return filtered.sorted { item1, item2 in
+                let module1 = moduleManager.modules.first { $0.id.uuidString == item1.moduleId }
+                let module2 = moduleManager.modules.first { $0.id.uuidString == item2.moduleId }
+                return (module1?.metadata.sourceName ?? "") < (module2?.metadata.sourceName ?? "")
+            }
         }
     }
     
     var body: some View {
         VStack(alignment: .leading) {
-            HStack {
-                Button(action: { }) {
+            HStack(spacing: 8) {
+                Button(action: { dismiss() }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 24))
                         .foregroundColor(.primary)
                 }
-                Button(action: { }) {
-                    Text("All Bookmarks")
+                Button(action: { dismiss() }) {
+                    Text(collection.name)
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .layoutPriority(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                Spacer()
                 HStack(spacing: 16) {
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.3)) {
@@ -93,7 +83,7 @@ struct AllBookmarks: View {
                                     .fill(Color.gray.opacity(0.2))
                                     .shadow(color: .accentColor.opacity(0.2), radius: 2)
                             )
-                            .circularGradientOutlineTwo()
+                            .circularGradientOutline()
                     }
                     Menu {
                         ForEach(SortOption.allCases, id: \.self) { option in
@@ -121,14 +111,14 @@ struct AllBookmarks: View {
                                     .fill(Color.gray.opacity(0.2))
                                     .shadow(color: .accentColor.opacity(0.2), radius: 2)
                             )
-                            .circularGradientOutlineTwo()
+                            .circularGradientOutline()
                     }
                     Button(action: {
                         if isSelecting {
                             if !selectedBookmarks.isEmpty {
                                 for id in selectedBookmarks {
-                                    if let item = libraryManager.bookmarks.first(where: { $0.id == id }) {
-                                        libraryManager.removeBookmark(item: item)
+                                    if let item = collection.bookmarks.first(where: { $0.id == id }) {
+                                        libraryManager.removeBookmarkFromCollection(bookmarkId: id, collectionId: collection.id)
                                     }
                                 }
                                 selectedBookmarks.removeAll()
@@ -149,12 +139,14 @@ struct AllBookmarks: View {
                                     .fill(Color.gray.opacity(0.2))
                                     .shadow(color: .accentColor.opacity(0.2), radius: 2)
                             )
-                            .circularGradientOutlineTwo()
+                            .circularGradientOutline()
                     }
                 }
+                .layoutPriority(0)
             }
             .padding(.horizontal)
             .padding(.top)
+            
             if isSearchActive {
                 HStack(spacing: 12) {
                     HStack(spacing: 12) {
@@ -204,122 +196,92 @@ struct AllBookmarks: View {
                     removal: .move(edge: .top).combined(with: .opacity)
                 ))
             }
-            BookmarkGridView(
-                bookmarks: filteredAndSortedBookmarks,
-                moduleManager: moduleManager,
-                isSelecting: isSelecting,
-                selectedBookmarks: $selectedBookmarks
-            )
-            .withGridPadding()
-            Spacer()
+            
+            if filteredAndSortedBookmarks.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "bookmark")
+                        .font(.largeTitle)
+                        .foregroundColor(.secondary)
+                    Text("No Bookmarks")
+                        .font(.headline)
+                    Text("Add bookmarks to this collection")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView(showsIndicators: false) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))], spacing: 16) {
+                        ForEach(filteredAndSortedBookmarks) { bookmark in
+                            if let module = moduleManager.modules.first(where: { $0.id.uuidString == bookmark.moduleId }) {
+                                if isSelecting {
+                                    Button(action: {
+                                        if selectedBookmarks.contains(bookmark.id) {
+                                            selectedBookmarks.remove(bookmark.id)
+                                        } else {
+                                            selectedBookmarks.insert(bookmark.id)
+                                        }
+                                    }) {
+                                        BookmarkGridItemView(item: bookmark, module: module)
+                                            .overlay(
+                                                selectedBookmarks.contains(bookmark.id) ?
+                                                ZStack {
+                                                    Circle()
+                                                        .fill(Color.white)
+                                                        .frame(width: 32, height: 32)
+                                                    Image(systemName: "checkmark")
+                                                        .resizable()
+                                                        .scaledToFit()
+                                                        .frame(width: 18, height: 18)
+                                                        .foregroundColor(.black)
+                                                }
+                                                .padding(8)
+                                                : nil,
+                                                alignment: .topTrailing
+                                            )
+                                    }
+                                    .contextMenu {
+                                        Button(role: .destructive) {
+                                            libraryManager.removeBookmarkFromCollection(bookmarkId: bookmark.id, collectionId: collection.id)
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
+                                } else {
+                                    NavigationLink(destination: MediaInfoView(
+                                        title: bookmark.title,
+                                        imageUrl: bookmark.imageUrl,
+                                        href: bookmark.href,
+                                        module: module
+                                    )) {
+                                        BookmarkGridItemView(item: bookmark, module: module)
+                                    }
+                                    .contextMenu {
+                                        Button(role: .destructive) {
+                                            libraryManager.removeBookmarkFromCollection(bookmarkId: bookmark.id, collectionId: collection.id)
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding()
+                    .scrollViewBottomPadding()
+                }
+            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear(perform: setupNavigationController)
-    }
-    
-    private func setupNavigationController() {
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first,
-           let navigationController = window.rootViewController?.children.first as? UINavigationController {
-            navigationController.interactivePopGestureRecognizer?.isEnabled = true
-            navigationController.interactivePopGestureRecognizer?.delegate = nil
-        }
-    }
-}
-
-struct BookmarkCell: View {
-    let bookmark: LibraryItem
-    @EnvironmentObject private var moduleManager: ModuleManager
-    @EnvironmentObject private var libraryManager: LibraryManager
-    
-    var body: some View {
-        if let module = moduleManager.modules.first(where: { $0.id.uuidString == bookmark.moduleId }) {
-            ZStack {
-                LazyImage(url: URL(string: bookmark.imageUrl)) { state in
-                    if let uiImage = state.imageContainer?.image {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .aspectRatio(0.72, contentMode: .fill)
-                            .frame(width: 162, height: 243)
-                            .cornerRadius(12)
-                            .clipped()
-                    } else {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(width: 162, height: 243)
-                    }
-                }
-                .overlay(
-                    ZStack {
-                        Circle()
-                            .fill(Color.black.opacity(0.5))
-                            .frame(width: 28, height: 28)
-                            .overlay(
-                                LazyImage(url: URL(string: module.metadata.iconUrl)) { state in
-                                    if let uiImage = state.imageContainer?.image {
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 32, height: 32)
-                                            .clipShape(Circle())
-                                    } else {
-                                        Circle()
-                                            .fill(Color.gray.opacity(0.3))
-                                            .frame(width: 32, height: 32)
-                                    }
-                                }
-                            )
-                    }
-                    .padding(8),
-                    alignment: .topLeading
-                )
-                
-                VStack {
-                    Spacer()
-                    Text(bookmark.title)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .lineLimit(2)
-                        .foregroundColor(.white)
-                        .padding(12)
-                        .background(
-                            LinearGradient(
-                                colors: [
-                                    .black.opacity(0.7),
-                                    .black.opacity(0.0)
-                                ],
-                                startPoint: .bottom,
-                                endPoint: .top
-                            )
-                            .shadow(color: .black, radius: 4, x: 0, y: 2)
-                        )
-                }
-                .frame(width: 162)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .padding(4)
-            .contextMenu {
-                Button(role: .destructive, action: {
-                    libraryManager.removeBookmark(item: bookmark)
-                }) {
-                    Label("Remove from Bookmarks", systemImage: "trash")
-                }
+        .onAppear {
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let navigationController = window.rootViewController?.children.first as? UINavigationController {
+                navigationController.interactivePopGestureRecognizer?.isEnabled = true
+                navigationController.interactivePopGestureRecognizer?.delegate = nil
             }
         }
     }
-}
-
-private extension View {
-    func withNavigationBarModifiers() -> some View {
-        self
-            .navigationBarBackButtonHidden(true)
-            .navigationBarTitleDisplayMode(.inline)
-    }
-    
-    func withGridPadding() -> some View {
-        self
-            .padding(.top)
-            .padding()
-            .scrollViewBottomPadding()
-    }
-}
+} 

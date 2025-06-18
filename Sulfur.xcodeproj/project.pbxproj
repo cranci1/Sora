@@ -29,12 +29,15 @@
 		0488FA9A2DFDF380007575E1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0488FA982DFDF380007575E1 /* Localizable.strings */; };
 		0488FA9E2DFDF3BB007575E1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0488FA9C2DFDF3BB007575E1 /* Localizable.strings */; };
 		04A1B73C2DFF39EB0064688A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 04A1B73A2DFF39EB0064688A /* Localizable.strings */; };
+		04AD070F2E035D6E00EB74C1 /* BookmarkCollectionGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04AD070D2E035D6E00EB74C1 /* BookmarkCollectionGridCell.swift */; };
+		04AD07102E035D6E00EB74C1 /* CollectionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04AD070E2E035D6E00EB74C1 /* CollectionDetailView.swift */; };
+		04AD07122E0360CD00EB74C1 /* CollectionPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04AD07112E0360CD00EB74C1 /* CollectionPickerView.swift */; };
+		04AD07162E03704700EB74C1 /* BookmarkCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04AD07152E03704700EB74C1 /* BookmarkCell.swift */; };
 		04CD76DB2DE20F2200733536 /* AllWatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04CD76DA2DE20F2200733536 /* AllWatching.swift */; };
 		04EAC39A2DF9E0DB00BBD483 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04EAC3992DF9E0DB00BBD483 /* SplashScreenView.swift */; };
 		04F08EDC2DE10BF3006B29D9 /* ProgressiveBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EDB2DE10BEC006B29D9 /* ProgressiveBlurView.swift */; };
 		04F08EDF2DE10C1D006B29D9 /* TabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EDE2DE10C1A006B29D9 /* TabBar.swift */; };
 		04F08EE22DE10C40006B29D9 /* TabItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EE12DE10C27006B29D9 /* TabItem.swift */; };
-		04F08EE42DE10D6F006B29D9 /* AllBookmarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F08EE32DE10D6B006B29D9 /* AllBookmarks.swift */; };
 		130326B62DF979AC00AEF610 /* WebAuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130326B52DF979AC00AEF610 /* WebAuthenticationManager.swift */; };
 		130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */; };
 		13103E8B2D58E028000F0673 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13103E8A2D58E028000F0673 /* View.swift */; };
@@ -137,12 +140,15 @@
 		0488FA992DFDF380007575E1 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = Localizable.strings; sourceTree = "<group>"; };
 		0488FA9D2DFDF3BB007575E1 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = Localizable.strings; sourceTree = "<group>"; };
 		04A1B7392DFF39EB0064688A /* nn */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nn; path = Localizable.strings; sourceTree = "<group>"; };
+		04AD070D2E035D6E00EB74C1 /* BookmarkCollectionGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkCollectionGridCell.swift; sourceTree = "<group>"; };
+		04AD070E2E035D6E00EB74C1 /* CollectionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDetailView.swift; sourceTree = "<group>"; };
+		04AD07112E0360CD00EB74C1 /* CollectionPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionPickerView.swift; sourceTree = "<group>"; };
+		04AD07152E03704700EB74C1 /* BookmarkCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkCell.swift; sourceTree = "<group>"; };
 		04CD76DA2DE20F2200733536 /* AllWatching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllWatching.swift; sourceTree = "<group>"; };
 		04EAC3992DF9E0DB00BBD483 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		04F08EDB2DE10BEC006B29D9 /* ProgressiveBlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressiveBlurView.swift; sourceTree = "<group>"; };
 		04F08EDE2DE10C1A006B29D9 /* TabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBar.swift; sourceTree = "<group>"; };
 		04F08EE12DE10C27006B29D9 /* TabItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabItem.swift; sourceTree = "<group>"; };
-		04F08EE32DE10D6B006B29D9 /* AllBookmarks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllBookmarks.swift; sourceTree = "<group>"; };
 		130326B52DF979AC00AEF610 /* WebAuthenticationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebAuthenticationManager.swift; sourceTree = "<group>"; };
 		130C6BF82D53A4C200DC1432 /* Sora.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sora.entitlements; sourceTree = "<group>"; };
 		130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
@@ -322,6 +328,10 @@
 		0457C59C2DE78267000AFBD9 /* BookmarkComponents */ = {
 			isa = PBXGroup;
 			children = (
+				04AD07152E03704700EB74C1 /* BookmarkCell.swift */,
+				04AD07112E0360CD00EB74C1 /* CollectionPickerView.swift */,
+				04AD070D2E035D6E00EB74C1 /* BookmarkCollectionGridCell.swift */,
+				04AD070E2E035D6E00EB74C1 /* CollectionDetailView.swift */,
 				0457C5A02DE78385000AFBD9 /* BookmarksDetailView.swift */,
 				0457C5992DE78267000AFBD9 /* BookmarkGridItemView.swift */,
 				0457C59A2DE78267000AFBD9 /* BookmarkGridView.swift */,
@@ -604,7 +614,6 @@
 			children = (
 				0457C59C2DE78267000AFBD9 /* BookmarkComponents */,
 				04CD76DA2DE20F2200733536 /* AllWatching.swift */,
-				04F08EE32DE10D6B006B29D9 /* AllBookmarks.swift */,
 				133F55BA2D33B55100E08EEA /* LibraryManager.swift */,
 				133D7C7E2D2BE2630075467E /* LibraryView.swift */,
 			);
@@ -855,6 +864,7 @@
 				sv,
 				bos,
 				bs,
+				cs,
 			);
 			mainGroup = 133D7C612D2BE2500075467E;
 			packageReferences = (
@@ -919,8 +929,8 @@
 				136BBE802DB1038000906B5E /* Notification+Name.swift in Sources */,
 				13DB46902D900A38008CBC03 /* URL.swift in Sources */,
 				130326B62DF979AC00AEF610 /* WebAuthenticationManager.swift in Sources */,
-				04F08EE42DE10D6F006B29D9 /* AllBookmarks.swift in Sources */,
 				138FE1D02DECA00D00936D81 /* TMDB-FetchID.swift in Sources */,
+				04AD07162E03704700EB74C1 /* BookmarkCell.swift in Sources */,
 				130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */,
 				0402DA172DE7B7B8003BB42C /* SearchViewComponents.swift in Sources */,
 				1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */,
@@ -934,6 +944,8 @@
 				13D99CF72D4E73C300250A86 /* ModuleAdditionSettingsView.swift in Sources */,
 				13C0E5EC2D5F85F800E7F619 /* ContinueWatchingItem.swift in Sources */,
 				13CBA0882D60F19C00EFE70A /* VTTSubtitlesLoader.swift in Sources */,
+				04AD070F2E035D6E00EB74C1 /* BookmarkCollectionGridCell.swift in Sources */,
+				04AD07102E035D6E00EB74C1 /* CollectionDetailView.swift in Sources */,
 				13EA2BD62D32D97400C1EBD7 /* Double+Extension.swift in Sources */,
 				133D7C8F2D2BE2640075467E /* MediaInfoView.swift in Sources */,
 				04F08EE22DE10C40006B29D9 /* TabItem.swift in Sources */,
@@ -949,6 +961,7 @@
 				138AA1B82D2D66FD0021F9DF /* EpisodeCell.swift in Sources */,
 				722248662DCBC13E00CABE2D /* JSController-Downloads.swift in Sources */,
 				133D7C8C2D2BE2640075467E /* SearchView.swift in Sources */,
+				04AD07122E0360CD00EB74C1 /* CollectionPickerView.swift in Sources */,
 				133CF6A62DFEBE9000BD13F9 /* VideoWatchingActivity.swift in Sources */,
 				13DB468E2D90093A008CBC03 /* Anilist-Token.swift in Sources */,
 				1EAC7A322D888BC50083984D /* MusicProgressSlider.swift in Sources */,

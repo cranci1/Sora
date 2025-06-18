@@ -197,6 +197,11 @@ struct MediaInfoView: View {
             
             navigationOverlay
         }
+        .sheet(isPresented: $libraryManager.isShowingCollectionPicker) {
+            if let bookmark = libraryManager.bookmarkToAdd {
+                CollectionPickerView(bookmark: bookmark)
+            }
+        }
     }
     
     @ViewBuilder

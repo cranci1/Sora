@@ -1,5 +1,5 @@
 //
-//  MediaInfoView.swift
+//  BookmarkLink.swift
 //  Sora
 //
 //  Created by paul on 28/05/25.

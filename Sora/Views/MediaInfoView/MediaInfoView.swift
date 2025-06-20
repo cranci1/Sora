@@ -163,7 +163,6 @@ struct MediaInfoView: View {
         return NSLocalizedString("Mark watched", comment: "")
     }
     
-    // Add state for chapter range selection and chunk size
     @State private var selectedChapterRange: Range<Int> = {
         let size = UserDefaults.standard.integer(forKey: "chapterChunkSize")
         let chunk = size == 0 ? 100 : size
@@ -363,7 +362,9 @@ struct MediaInfoView: View {
             Text(title)
                 .font(.system(size: 28, weight: .bold))
                 .foregroundColor(.primary)
-                .lineLimit(3)
+                .fixedSize(horizontal: false, vertical: true)
+                .multilineTextAlignment(.leading)
+                .lineLimit(nil)
                 .onLongPressGesture {
                     copyTitleToClipboard()
                 }

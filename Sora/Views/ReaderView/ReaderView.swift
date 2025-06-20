@@ -16,11 +16,14 @@ struct ReaderView: View {
     @State private var htmlContent: String = ""
     @State private var isLoading: Bool = true
     @State private var error: Error?
+    @State private var isHeaderVisible: Bool = true
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var tabBarController: TabBarController
     
     var body: some View {
         ZStack {
+            Color(UIColor.systemBackground).ignoresSafeArea()
+            
             if isLoading {
                 ProgressView()
             } else if let error = error {
@@ -32,14 +35,35 @@ struct ReaderView: View {
                         .foregroundColor(.secondary)
                 }
             } else {
-                HTMLView(htmlContent: htmlContent)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(.horizontal)
-                    .ignoresSafeArea(.container, edges: .vertical)
+                ZStack {
+                    HTMLView(htmlContent: htmlContent)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding(.horizontal)
+                    
+                    VStack {
+                        Rectangle()
+                            .fill(Color.clear)
+                            .frame(height: 150)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.6)) {
+                                    isHeaderVisible.toggle()
+                                }
+                            }
+                        Spacer()
+                    }
+                }
             }
+            
+            headerView
+                .opacity(isHeaderVisible ? 1 : 0)
+                .offset(y: isHeaderVisible ? 0 : -100)
+                .allowsHitTesting(isHeaderVisible)
+                .animation(.easeInOut(duration: 0.6), value: isHeaderVisible)
         }
-        .navigationTitle(chapterTitle)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
+        .navigationBarBackButtonHidden(true)
+        .ignoresSafeArea()
         .onAppear {
             tabBarController.hideTabBar()
         }
@@ -58,16 +82,54 @@ struct ReaderView: View {
             }
         }
     }
+    
+    private var headerView: some View {
+        VStack {
+            HStack {
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.primary)
+                        .padding(12)
+                        .background(Color.gray.opacity(0.2))
+                        .clipShape(Circle())
+                        .circularGradientOutline()
+                }
+                .padding(.leading)
+                
+                Text(chapterTitle)
+                    .font(.headline)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                
+                Spacer()
+            }
+            .padding(.top, (UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0))
+            .padding(.bottom, 30)
+            .background(ProgressiveBlurView())
+            .onTapGesture {
+                withAnimation(.easeInOut(duration: 0.6)) {
+                    isHeaderVisible = false
+                }
+            }
+            
+            Spacer()
+        }
+        .ignoresSafeArea()
+    }
 }
 
 struct HTMLView: UIViewRepresentable {
     let htmlContent: String
-    
+
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.backgroundColor = .clear
         webView.isOpaque = false
         webView.scrollView.backgroundColor = .clear
+
         return webView
     }
     
@@ -112,13 +174,3 @@ struct HTMLView: UIViewRepresentable {
         webView.loadHTMLString(htmlTemplate, baseURL: nil)
     }
 }
-
-#Preview {
-    NavigationView {
-        ReaderView(
-            moduleId: "test",
-            chapterHref: "example.com/chapter1",
-            chapterTitle: "Chapter 1: The Beginning"
-        )
-    }
-} 

@@ -28,6 +28,7 @@ struct MediaInfoView: View {
     @State private var synopsis: String = ""
     @State private var airdate: String = ""
     @State private var episodeLinks: [EpisodeLink] = []
+    @State private var chapters: [[String: Any]] = []
     @State private var itemID: Int?
     @State private var tmdbID: Int?
     @State private var tmdbType: TMDBFetcher.MediaType? = nil
@@ -119,29 +120,37 @@ struct MediaInfoView: View {
         return isCompactLayout ? 20 : 16
     }
     
-    private var startWatchingText: String {
-        let indices = finishedAndUnfinishedIndices()
-        let finished = indices.finished
-        let unfinished = indices.unfinished
-        
-        if episodeLinks.count == 1 {
-            if let _ = unfinished {
-                return NSLocalizedString("Continue Watching", comment: "")
+    private var startActionText: String {
+        if module.metadata.novel == true {
+            let lastReadChapter = UserDefaults.standard.string(forKey: "lastReadChapter")
+            if let lastRead = lastReadChapter, chapters.contains(where: { $0["href"] as! String == lastRead }) {
+                return NSLocalizedString("Continue Reading", comment: "")
             }
+            return NSLocalizedString("Start Reading", comment: "")
+        } else {
+            let indices = finishedAndUnfinishedIndices()
+            let finished = indices.finished
+            let unfinished = indices.unfinished
+            
+            if episodeLinks.count == 1 {
+                if let _ = unfinished {
+                    return NSLocalizedString("Continue Watching", comment: "")
+                }
+                return NSLocalizedString("Start Watching", comment: "")
+            }
+            
+            if let finishedIndex = finished, finishedIndex < episodeLinks.count - 1 {
+                let nextEp = episodeLinks[finishedIndex + 1]
+                return String(format: NSLocalizedString("Start Watching Episode %d", comment: ""), nextEp.number)
+            }
+            
+            if let unfinishedIndex = unfinished {
+                let currentEp = episodeLinks[unfinishedIndex]
+                return String(format: NSLocalizedString("Continue Watching Episode %d", comment: ""), currentEp.number)
+            }
+            
             return NSLocalizedString("Start Watching", comment: "")
         }
-        
-        if let finishedIndex = finished, finishedIndex < episodeLinks.count - 1 {
-            let nextEp = episodeLinks[finishedIndex + 1]
-            return String(format: NSLocalizedString("Start Watching Episode %d", comment: ""), nextEp.number)
-        }
-        
-        if let unfinishedIndex = unfinished {
-            let currentEp = episodeLinks[unfinishedIndex]
-            return String(format: NSLocalizedString("Continue Watching Episode %d", comment: ""), currentEp.number)
-        }
-        
-        return NSLocalizedString("Start Watching", comment: "")
     }
     
     private var singleEpisodeWatchText: String {
@@ -153,6 +162,15 @@ struct MediaInfoView: View {
         }
         return NSLocalizedString("Mark watched", comment: "")
     }
+    
+    // Add state for chapter range selection and chunk size
+    @State private var selectedChapterRange: Range<Int> = {
+        let size = UserDefaults.standard.integer(forKey: "chapterChunkSize")
+        let chunk = size == 0 ? 100 : size
+        return 0..<chunk
+    }()
+    @AppStorage("chapterChunkSize") private var chapterChunkSize: Int = 100
+    private var selectedChapterRangeKey: String { "selectedChapterRangeStart_\(href)" }
     
     var body: some View {
         ZStack {
@@ -175,8 +193,10 @@ struct MediaInfoView: View {
             .onChange(of: selectedSeason) { newValue in
                 UserDefaults.standard.set(newValue, forKey: selectedSeasonKey)
             }
+            .onChange(of: selectedChapterRange) { newValue in
+                UserDefaults.standard.set(newValue.lowerBound, forKey: selectedChapterRangeKey)
+            }
             .onDisappear {
-                tabBarController.showTabBar()
                 currentFetchTask?.cancel()
                 activeFetchID = nil
             }
@@ -282,10 +302,30 @@ struct MediaInfoView: View {
                 
                 VStack(alignment: .leading, spacing: 16) {
                     headerSection
-                    if !episodeLinks.isEmpty {
-                        episodesSection
+                    
+                    if !synopsis.isEmpty {
+                        synopsisSection
+                    }
+                    
+                    if !aliases.isEmpty {
+                        Text(aliases)
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                            .padding(.top, 4)
+                    }
+                    
+                    if module.metadata.novel ?? false {
+                        if !chapters.isEmpty {
+                            chaptersSection
+                        } else {
+                            noContentSection
+                        }
                     } else {
-                        noEpisodesSection
+                        if !episodeLinks.isEmpty {
+                            episodesSection
+                        } else {
+                            noContentSection
+                        }
                     }
                 }
                 .padding()
@@ -372,7 +412,7 @@ struct MediaInfoView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "play.fill")
                         .foregroundColor(colorScheme == .dark ? .black : .white)
-                    Text(startWatchingText)
+                    Text(startActionText)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(colorScheme == .dark ? .black : .white)
                 }
@@ -481,6 +521,7 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var episodesSection: some View {
+        let _ = Logger.shared.log("episodesSection: episodeLinks count = \(episodeLinks.count)", type: "Debug")
         if episodeLinks.count != 1 {
             VStack(alignment: .leading, spacing: 16) {
                 episodesSectionHeader
@@ -624,18 +665,71 @@ struct MediaInfoView: View {
     }
     
     @ViewBuilder
-    private var noEpisodesSection: some View {
+    private var chaptersSection: some View {
+        let _ = Logger.shared.log("chaptersSection: chapters count = \(chapters.count)", type: "Debug")
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text(NSLocalizedString("Chapters", comment: ""))
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(.primary)
+                Spacer()
+                if chapters.count > chapterChunkSize {
+                    Menu {
+                        ForEach(generateChapterRanges(), id: \..self) { range in
+                            Button(action: { selectedChapterRange = range }) {
+                                Text("\(range.lowerBound + 1)-\(range.upperBound)")
+                            }
+                        }
+                    } label: {
+                        Text("\(selectedChapterRange.lowerBound + 1)-\(selectedChapterRange.upperBound)")
+                            .font(.system(size: 14))
+                            .foregroundColor(.accentColor)
+                    }
+                }
+                HStack(spacing: 4) {
+                    sourceButton
+                    menuButton
+                }
+            }
+            LazyVStack(spacing: 15) {
+                ForEach(chapters.indices.filter { selectedChapterRange.contains($0) }, id: \..self) { i in
+                    let chapter = chapters[i]
+                    if let href = chapter["href"] as? String,
+                       let number = chapter["number"] as? Int,
+                       let title = chapter["title"] as? String {
+                        NavigationLink(
+                            destination: ReaderView(
+                                moduleId: module.id.uuidString,
+                                chapterHref: href,
+                                chapterTitle: title
+                            )
+                        ) {
+                            ChapterCell(
+                                chapterNumber: String(number),
+                                chapterTitle: title,
+                                isCurrentChapter: UserDefaults.standard.string(forKey: "lastReadChapter") == href
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var noContentSection: some View {
         VStack(spacing: 8) {
-            Image(systemName: "tv.slash")
+            Image(systemName: module.metadata.novel == true ? "book.slash" : "tv.slash")
                 .font(.system(size: 48))
                 .foregroundColor(.secondary)
             
-            Text(NSLocalizedString("No Episodes Available", comment: ""))
+            Text(module.metadata.novel == true ? NSLocalizedString("No Chapters Available", comment: "") : NSLocalizedString("No Episodes Available", comment: ""))
                 .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundColor(.primary)
             
-            Text(NSLocalizedString("Episodes might not be available yet or there could be an issue with the source.", comment: ""))
+            Text(module.metadata.novel == true ? NSLocalizedString("Chapters might not be available yet or there could be an issue with the source.", comment: "") : NSLocalizedString("Episodes might not be available yet or there could be an issue with the source.", comment: ""))
                 .font(.body)
                 .lineLimit(0)
                 .foregroundColor(.secondary)
@@ -676,7 +770,7 @@ struct MediaInfoView: View {
         .sheet(isPresented: $isMatchingPresented) {
             AnilistMatchPopupView(seriesTitle: title) { id, matched in
                 handleAniListMatch(selectedID: id)
-                matchedTitle = matched            // ← now in scope
+                matchedTitle = matched          
                 fetchMetadataIDIfNeeded()
             }
         }
@@ -684,7 +778,7 @@ struct MediaInfoView: View {
             TMDBMatchPopupView(seriesTitle: title) { id, type, matched in
                 tmdbID   = id
                 tmdbType = type
-                matchedTitle = matched            // ← now in scope
+                matchedTitle = matched         
                 fetchMetadataIDIfNeeded()
             }
         }
@@ -755,37 +849,57 @@ struct MediaInfoView: View {
     }
     
     private func setupInitialData() async {
-        guard !hasFetched else { return }
-        
-        let savedCustomID = UserDefaults.standard.integer(forKey: "custom_anilist_id_\(href)")
-        if savedCustomID != 0 { customAniListID = savedCustomID }
-        
-        if let savedPoster = UserDefaults.standard.string(forKey: "tmdbPosterURL_\(href)") {
-            imageUrl = savedPoster
+        do {
+            Logger.shared.log("setupInitialData: module.metadata.novel = \(String(describing: module.metadata.novel))", type: "Debug")
+            if module.metadata.novel == true {
+                DispatchQueue.main.async {
+                    DropManager.shared.showDrop(
+                        title: "Fetching Data",
+                        subtitle: "Please wait while fetching.",
+                        duration: 0.5,
+                        icon: UIImage(systemName: "arrow.triangle.2.circlepath")
+                    )
+                }
+                let fetchedChapters = try await JSController.shared.extractChapters(moduleId: module.id.uuidString, href: href)
+                DispatchQueue.main.async {
+                    Logger.shared.log("setupInitialData: fetchedChapters count = \(fetchedChapters.count)", type: "Debug")
+                    Logger.shared.log("setupInitialData: fetchedChapters = \(fetchedChapters)", type: "Debug")
+                    self.chapters = fetchedChapters
+                    self.fetchDetails()
+                    self.hasFetched = true
+                    self.isLoading = false
+                }
+            } else {
+                let savedCustomID = UserDefaults.standard.integer(forKey: "custom_anilist_id_\(href)")
+                if savedCustomID != 0 { customAniListID = savedCustomID }
+                if let savedPoster = UserDefaults.standard.string(forKey: "tmdbPosterURL_\(href)") {
+                    imageUrl = savedPoster
+                }
+                DropManager.shared.showDrop(
+                    title: "Fetching Data",
+                    subtitle: "Please wait while fetching.",
+                    duration: 0.5,
+                    icon: UIImage(systemName: "arrow.triangle.2.circlepath")
+                )
+                fetchDetails()
+                if savedCustomID != 0 {
+                    itemID = savedCustomID
+                    activeProvider = "AniList"
+                    UserDefaults.standard.set("AniList", forKey: "metadataProviders")
+                } else {
+                    fetchMetadataIDIfNeeded()
+                }
+                hasFetched = true
+                AnalyticsManager.shared.sendEvent(
+                    event: "MediaInfoView",
+                    additionalData: ["title": title]
+                )
+            }
+        } catch {
+            isError = true
+            isLoading = false
+            Logger.shared.log("Error loading media info: \(error)", type: "Error")
         }
-        
-        DropManager.shared.showDrop(
-            title: "Fetching Data",
-            subtitle: "Please wait while fetching.",
-            duration: 0.5,
-            icon: UIImage(systemName: "arrow.triangle.2.circlepath")
-        )
-        
-        fetchDetails()
-        
-        if savedCustomID != 0 {
-            itemID = savedCustomID
-            activeProvider = "AniList"
-            UserDefaults.standard.set("AniList", forKey: "metadataProviders")
-        } else {
-            fetchMetadataIDIfNeeded()
-        }
-        
-        hasFetched = true
-        AnalyticsManager.shared.sendEvent(
-            event: "MediaInfoView",
-            additionalData: ["title": title]
-        )
     }
     
     private func cancelCurrentFetch() {
@@ -1169,6 +1283,7 @@ struct MediaInfoView: View {
     
     
     func fetchDetails() {
+        Logger.shared.log("fetchDetails: called", type: "Debug")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             Task {
                 do {
@@ -1176,27 +1291,45 @@ struct MediaInfoView: View {
                     jsController.loadScript(jsContent)
                     if module.metadata.asyncJS == true {
                         jsController.fetchDetailsJS(url: href) { items, episodes in
+                            Logger.shared.log("fetchDetails: items = \(items)", type: "Debug")
+                            Logger.shared.log("fetchDetails: episodes = \(episodes)", type: "Debug")
                             if let item = items.first {
                                 self.synopsis = item.description
                                 self.aliases = item.aliases
                                 self.airdate = item.airdate
                             }
-                            self.episodeLinks = episodes
-                            self.restoreSelectionState()
-                            self.isLoading = false
-                            self.isRefetching = false
+                            if self.module.metadata.novel ?? false {
+                                Logger.shared.log("fetchDetails: (novel) chapters count = \(self.chapters.count)", type: "Debug")
+                                self.isLoading = false
+                                self.isRefetching = false
+                            } else {
+                                Logger.shared.log("fetchDetails: (episodes) episodes count = \(episodes.count)", type: "Debug")
+                                self.episodeLinks = episodes
+                                self.restoreSelectionState()
+                                self.isLoading = false
+                                self.isRefetching = false
+                            }
                         }
                     } else {
                         jsController.fetchDetails(url: href) { items, episodes in
+                            Logger.shared.log("fetchDetails: items = \(items)", type: "Debug")
+                            Logger.shared.log("fetchDetails: episodes = \(episodes)", type: "Debug")
                             if let item = items.first {
                                 self.synopsis = item.description
                                 self.aliases = item.aliases
                                 self.airdate = item.airdate
                             }
-                            self.episodeLinks = episodes
-                            self.restoreSelectionState()
-                            self.isLoading = false
-                            self.isRefetching = false
+                            if self.module.metadata.novel ?? false {
+                                Logger.shared.log("fetchDetails: (novel) chapters count = \(self.chapters.count)", type: "Debug")
+                                self.isLoading = false
+                                self.isRefetching = false
+                            } else {
+                                Logger.shared.log("fetchDetails: (episodes) episodes count = \(episodes.count)", type: "Debug")
+                                self.episodeLinks = episodes
+                                self.restoreSelectionState()
+                                self.isLoading = false
+                                self.isRefetching = false
+                            }
                         }
                     }
                 } catch {
@@ -1940,5 +2073,16 @@ struct MediaInfoView: View {
             
             findTopViewController.findViewController(rootVC).present(alert, animated: true)
         }
+    }
+    
+    private func generateChapterRanges() -> [Range<Int>] {
+        let chunkSize = chapterChunkSize
+        let totalChapters = chapters.count
+        var ranges: [Range<Int>] = []
+        for i in stride(from: 0, to: totalChapters, by: chunkSize) {
+            let end = min(i + chunkSize, totalChapters)
+            ranges.append(i..<end)
+        }
+        return ranges
     }
 }

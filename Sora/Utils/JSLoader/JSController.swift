@@ -42,6 +42,35 @@ class JSController: NSObject, ObservableObject {
     
     func setupContext() {
         context.setupJavaScriptEnvironment()
+        // Inject async Promise bridge for extractChapters with debug logging
+        let asyncChaptersHelper = """
+        function extractChaptersWithCallback(href, callback) {
+            try {
+                console.log('[JS] extractChaptersWithCallback called with href:', href);
+                var result = extractChapters(href);
+                if (result && typeof result.then === 'function') {
+                    result.then(function(arr) {
+                        console.log('[JS] extractChaptersWithCallback Promise resolved, arr.length:', arr && arr.length);
+                        callback(arr);
+                    }).catch(function(e) {
+                        console.log('[JS] extractChaptersWithCallback Promise rejected:', e);
+                        callback([]);
+                    });
+                } else {
+                    console.log('[JS] extractChaptersWithCallback result is not a Promise:', result);
+                    callback(result);
+                }
+            } catch (e) {
+                console.log('[JS] extractChaptersWithCallback threw:', e);
+                callback([]);
+            }
+        }
+        """
+        context.evaluateScript(asyncChaptersHelper)
+        // Print JS exceptions to Xcode console
+        context.exceptionHandler = { context, exception in
+            print("[JS Exception]", exception?.toString() ?? "unknown")
+        }
         setupDownloadSession()
     }
     

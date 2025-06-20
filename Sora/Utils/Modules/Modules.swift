@@ -24,6 +24,7 @@ struct ModuleMetadata: Codable, Hashable {
     let multiStream: Bool?
     let multiSubs: Bool?
     let type: String?
+    let novel: Bool?
 
     struct Author: Codable, Hashable {
         let name: String

@@ -303,10 +303,6 @@ struct MediaInfoView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     headerSection
                     
-                    if !synopsis.isEmpty {
-                        synopsisSection
-                    }
-                    
                     if !aliases.isEmpty {
                         Text(aliases)
                             .font(.system(size: 14))

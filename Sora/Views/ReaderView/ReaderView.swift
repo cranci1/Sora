@@ -20,6 +20,10 @@ struct ReaderView: View {
     @State private var fontSize: CGFloat = 16
     @State private var selectedFont: String = "-apple-system"
     @State private var fontWeight: String = "normal"
+    @State private var isAutoScrolling: Bool = false
+    @State private var autoScrollSpeed: Double = 1.0
+    @State private var autoScrollTimer: Timer?
+    @State private var selectedColorPreset: Int = 0
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var tabBarController: TabBarController
     
@@ -38,19 +42,40 @@ struct ReaderView: View {
         ("bold", "Bold")
     ]
     
+    private let colorPresets = [
+        (name: "Pure", background: "#ffffff", text: "#000000"),
+        (name: "Warm", background: "#f9f1e4", text: "#000000"),
+        (name: "Slate", background: "#49494d", text: "#ffffff"),
+        (name: "Dark", background: "#000000", text: "#ffffff")
+    ]
+    
+    // Computed property to get current theme colors
+    private var currentTheme: (background: Color, text: Color) {
+        let preset = colorPresets[selectedColorPreset]
+        return (
+            background: Color(hex: preset.background),
+            text: Color(hex: preset.text)
+        )
+    }
+    
     var body: some View {
         ZStack {
-            Color(UIColor.systemBackground).ignoresSafeArea()
+            currentTheme.background.ignoresSafeArea()
             
             if isLoading {
                 ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: currentTheme.text))
+                    .onDisappear {
+                        stopAutoScroll()
+                    }
             } else if let error = error {
                 VStack {
                     Text("Error loading chapter")
                         .font(.headline)
+                        .foregroundColor(currentTheme.text)
                     Text(error.localizedDescription)
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(currentTheme.text.opacity(0.7))
                 }
             } else {
                 ZStack {
@@ -58,7 +83,10 @@ struct ReaderView: View {
                         htmlContent: htmlContent,
                         fontSize: fontSize,
                         fontFamily: selectedFont,
-                        fontWeight: fontWeight
+                        fontWeight: fontWeight,
+                        isAutoScrolling: $isAutoScrolling,
+                        autoScrollSpeed: autoScrollSpeed,
+                        colorPreset: colorPresets[selectedColorPreset]
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.horizontal)
@@ -121,6 +149,12 @@ struct ReaderView: View {
         }
     }
     
+    private func stopAutoScroll() {
+        autoScrollTimer?.invalidate()
+        autoScrollTimer = nil
+        isAutoScrolling = false
+    }
+    
     private var headerView: some View {
         VStack {
             HStack {
@@ -129,9 +163,9 @@ struct ReaderView: View {
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.primary)
+                        .foregroundColor(currentTheme.text)
                         .padding(12)
-                        .background(Color(UIColor.secondarySystemBackground))
+                        .background(currentTheme.background.opacity(0.8))
                         .clipShape(Circle())
                         .circularGradientOutline()
                 }
@@ -139,6 +173,7 @@ struct ReaderView: View {
                 
                 Text(chapterTitle)
                     .font(.headline)
+                    .foregroundColor(currentTheme.text)
                     .lineLimit(1)
                     .truncationMode(.tail)
                 
@@ -179,9 +214,9 @@ struct ReaderView: View {
                     } label: {
                         Image(systemName: "textformat.size")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.primary)
+                            .foregroundColor(currentTheme.text)
                             .padding(12)
-                            .background(Color(UIColor.secondarySystemBackground))
+                            .background(currentTheme.background.opacity(0.8))
                             .clipShape(Circle())
                             .circularGradientOutline()
                     }
@@ -204,10 +239,10 @@ struct ReaderView: View {
                         }
                     } label: {
                         Image(systemName: "textformat.characters")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.primary)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(currentTheme.text)
                             .padding(12)
-                            .background(Color(UIColor.secondarySystemBackground))
+                            .background(currentTheme.background.opacity(0.8))
                             .clipShape(Circle())
                             .circularGradientOutline()
                     }
@@ -219,7 +254,7 @@ struct ReaderView: View {
                             }) {
                                 HStack {
                                     Text(weight.1)
-                                        .fontWeight(weight.0 == "300" ? .light : 
+                                        .fontWeight(weight.0 == "300" ? .light :
                                                   weight.0 == "normal" ? .regular :
                                                   weight.0 == "600" ? .semibold : .bold)
                                     Spacer()
@@ -233,11 +268,74 @@ struct ReaderView: View {
                     } label: {
                         Image(systemName: "bold")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.primary)
+                            .foregroundColor(currentTheme.text)
                             .padding(12)
-                            .background(Color(UIColor.secondarySystemBackground))
+                            .background(currentTheme.background.opacity(0.8))
                             .clipShape(Circle())
                             .circularGradientOutline()
+                    }
+                    
+                    Menu {
+                        ForEach(0..<colorPresets.count, id: \.self) { index in
+                            Button(action: {
+                                selectedColorPreset = index
+                            }) {
+                                HStack {
+                                    ColorPreviewCircle(
+                                        backgroundColor: colorPresets[index].background,
+                                        textColor: colorPresets[index].text
+                                    )
+                                    .frame(width: 20, height: 20)
+                                    
+                                    Text(colorPresets[index].name)
+                                    
+                                    Spacer()
+                                    
+                                    if selectedColorPreset == index {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(.blue)
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "paintpalette")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(currentTheme.text)
+                            .padding(12)
+                            .background(currentTheme.background.opacity(0.8))
+                            .clipShape(Circle())
+                            .circularGradientOutline()
+                    }
+                    
+                    Button(action: {
+                        isAutoScrolling.toggle()
+                    }) {
+                        Image(systemName: isAutoScrolling ? "pause.fill" : "play.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(isAutoScrolling ? .red : currentTheme.text)
+                            .padding(12)
+                            .background(currentTheme.background.opacity(0.8))
+                            .clipShape(Circle())
+                            .circularGradientOutline()
+                    }
+                    .contextMenu {
+                        VStack {
+                            Text("Auto Scroll Speed")
+                                .font(.headline)
+                                .padding(.bottom, 8)
+                            
+                            Slider(value: $autoScrollSpeed, in: 0.2...3.0, step: 0.1) {
+                                Text("Speed")
+                            }
+                            .padding(.horizontal)
+                            
+                            Text("Speed: \(String(format: "%.1f", autoScrollSpeed))x")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 4)
+                        }
+                        .padding()
                     }
                 }
                 .padding(.top, 20)
@@ -255,68 +353,154 @@ struct ReaderView: View {
     }
 }
 
+struct ColorPreviewCircle: View {
+    let backgroundColor: String
+    let textColor: String
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(hex: backgroundColor),
+                            Color(hex: textColor)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+        }
+    }
+}
+
 struct HTMLView: UIViewRepresentable {
     let htmlContent: String
     let fontSize: CGFloat
     let fontFamily: String
     let fontWeight: String
+    @Binding var isAutoScrolling: Bool
+    let autoScrollSpeed: Double
+    let colorPreset: (name: String, background: String, text: String)
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject {
+        var parent: HTMLView
+        var scrollTimer: Timer?
+        var lastHtmlContent: String = ""
+        var lastFontSize: CGFloat = 0
+        var lastFontFamily: String = ""
+        var lastFontWeight: String = ""
+        var lastColorPreset: String = ""
+        
+        init(_ parent: HTMLView) {
+            self.parent = parent
+        }
+        
+        func startAutoScroll(webView: WKWebView) {
+            stopAutoScroll()
+            
+            scrollTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+                let scrollAmount = self.parent.autoScrollSpeed * 2.0 // Adjust scroll increment
+                
+                webView.evaluateJavaScript("window.scrollBy(0, \(scrollAmount));") { _, error in
+                    if let error = error {
+                        print("Scroll error: \(error)")
+                    }
+                }
+                
+                // Check if we've reached the bottom
+                webView.evaluateJavaScript("(window.pageYOffset + window.innerHeight) >= document.body.scrollHeight") { result, _ in
+                    if let isAtBottom = result as? Bool, isAtBottom {
+                        DispatchQueue.main.async {
+                            self.parent.isAutoScrolling = false
+                        }
+                    }
+                }
+            }
+        }
+        
+        func stopAutoScroll() {
+            scrollTimer?.invalidate()
+            scrollTimer = nil
+        }
+    }
 
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.backgroundColor = .clear
         webView.isOpaque = false
         webView.scrollView.backgroundColor = .clear
-
+        
         return webView
     }
     
     func updateUIView(_ webView: WKWebView, context: Context) {
+        let coordinator = context.coordinator
+        
+        // Handle auto scroll state changes
+        if isAutoScrolling {
+            coordinator.startAutoScroll(webView: webView)
+        } else {
+            coordinator.stopAutoScroll()
+        }
+        
         guard !htmlContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return
         }
         
-        let htmlTemplate = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-                body {
-                    font-family: \(fontFamily), system-ui;
-                    font-size: \(fontSize)px;
-                    font-weight: \(fontWeight);
-                    line-height: 1.6;
-                    padding: 0;
-                    margin: 0;
-                    color: var(--text-color);
-                    background-color: transparent;
-                    transition: all 0.3s ease;
-                }
-                p, div, span, h1, h2, h3, h4, h5, h6 {
-                    font-size: inherit;
-                    font-family: inherit;
-                    font-weight: inherit;
-                    line-height: inherit;
-                }
-                @media (prefers-color-scheme: dark) {
-                    :root {
-                        --text-color: #FFFFFF;
-                    }
-                }
-                @media (prefers-color-scheme: light) {
-                    :root {
-                        --text-color: #000000;
-                    }
-                }
-            </style>
-        </head>
-        <body>
-            \(htmlContent)
-        </body>
-        </html>
-        """
+        // Only reload HTML if content or styling has actually changed
+        let contentChanged = coordinator.lastHtmlContent != htmlContent
+        let fontSizeChanged = coordinator.lastFontSize != fontSize
+        let fontFamilyChanged = coordinator.lastFontFamily != fontFamily
+        let fontWeightChanged = coordinator.lastFontWeight != fontWeight
+        let colorChanged = coordinator.lastColorPreset != colorPreset.name
         
-        Logger.shared.log("Loading HTML content into WebView", type: "Debug")
-        webView.loadHTMLString(htmlTemplate, baseURL: nil)
+        if contentChanged || fontSizeChanged || fontFamilyChanged || fontWeightChanged || colorChanged {
+            let htmlTemplate = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                    body {
+                        font-family: \(fontFamily), system-ui;
+                        font-size: \(fontSize)px;
+                        font-weight: \(fontWeight);
+                        line-height: 1.6;
+                        padding: 0;
+                        margin: 0;
+                        color: \(colorPreset.text);
+                        background-color: \(colorPreset.background);
+                        transition: all 0.3s ease;
+                    }
+                    p, div, span, h1, h2, h3, h4, h5, h6 {
+                        font-size: inherit;
+                        font-family: inherit;
+                        font-weight: inherit;
+                        line-height: inherit;
+                        color: inherit;
+                    }
+                </style>
+            </head>
+            <body>
+                \(htmlContent)
+            </body>
+            </html>
+            """
+            
+            Logger.shared.log("Loading HTML content into WebView", type: "Debug")
+            webView.loadHTMLString(htmlTemplate, baseURL: nil)
+            
+            // Update the cached values
+            coordinator.lastHtmlContent = htmlContent
+            coordinator.lastFontSize = fontSize
+            coordinator.lastFontFamily = fontFamily
+            coordinator.lastFontWeight = fontWeight
+            coordinator.lastColorPreset = colorPreset.name
+        }
     }
 }

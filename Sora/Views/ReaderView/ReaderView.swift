@@ -164,7 +164,6 @@ struct ReaderView: View {
             
             VStack {
                 HStack(spacing: 20) {
-                    // Font size control with context menu slider
                     Menu {
                         VStack {
                             Text("Font Size: \(Int(fontSize))pt")
@@ -187,7 +186,6 @@ struct ReaderView: View {
                             .circularGradientOutline()
                     }
                     
-                    // Font family control with context menu
                     Menu {
                         ForEach(fontOptions, id: \.0) { font in
                             Button(action: {
@@ -205,7 +203,7 @@ struct ReaderView: View {
                             }
                         }
                     } label: {
-                        Image(systemName: "textformat")
+                        Image(systemName: "textformat.characters")
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.primary)
                             .padding(12)
@@ -214,7 +212,6 @@ struct ReaderView: View {
                             .circularGradientOutline()
                     }
                     
-                    // Font weight control with context menu
                     Menu {
                         ForEach(weightOptions, id: \.0) { weight in
                             Button(action: {

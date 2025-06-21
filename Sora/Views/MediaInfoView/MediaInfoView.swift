@@ -383,17 +383,20 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var synopsisSection: some View {
-        HStack(alignment: .bottom) {
+        VStack(alignment: .leading, spacing: 2) {
             Text(synopsis)
                 .font(.system(size: 16))
                 .foregroundColor(.secondary)
                 .lineLimit(showFullSynopsis ? nil : 3)
                 .animation(nil, value: showFullSynopsis)
-            
-            Text(showFullSynopsis ? NSLocalizedString("LESS", comment: "") : NSLocalizedString("MORE", comment: ""))
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(.accentColor)
-                .animation(.easeInOut(duration: 0.3), value: showFullSynopsis)
+
+            HStack {
+                Spacer()
+                Text(showFullSynopsis ? NSLocalizedString("LESS", comment: "") : NSLocalizedString("MORE", comment: ""))
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.accentColor)
+                    .animation(.easeInOut(duration: 0.3), value: showFullSynopsis)
+            }
         }
         .onTapGesture {
             withAnimation(.easeInOut(duration: 0.3)) {

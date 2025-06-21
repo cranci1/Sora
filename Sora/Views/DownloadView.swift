@@ -11,6 +11,7 @@ import SwiftUI
 
 struct DownloadView: View {
     @EnvironmentObject var jsController: JSController
+    @EnvironmentObject var tabBarController: TabBarController
     @State private var searchText = ""
     @State private var selectedTab = 0
     @State private var sortOption: SortOption = .newest
@@ -69,6 +70,9 @@ struct DownloadView: View {
                 if let asset = assetToDelete {
                     Text(String(format: NSLocalizedString("Are you sure you want to delete '%@'?", comment: ""), asset.episodeDisplayName))
                 }
+            }
+            .onAppear {
+                tabBarController.showTabBar()
             }
         }
         .deviceScaled()
@@ -232,7 +236,8 @@ struct DownloadView: View {
             softsub: nil,
             multiStream: nil,
             multiSubs: nil,
-            type: nil
+            type: nil,
+            novel: false
         )
         
         let dummyModule = ScrapingModule(
@@ -241,7 +246,6 @@ struct DownloadView: View {
             metadataUrl: ""
         )
         
-        // Always use CustomMediaPlayerViewController for consistency
         let customPlayer = CustomMediaPlayerViewController(
             module: dummyModule,
             urlString: asset.localURL.absoluteString,
@@ -1026,7 +1030,6 @@ struct EnhancedShowEpisodesView: View {
         }
         .onAppear {
             tabBarController.hideTabBar()
-            // Enable swipe-to-go-back gesture
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first,
                let navigationController = window.rootViewController?.children.first as? UINavigationController {

@@ -131,6 +131,7 @@ struct SettingsView: View {
     @Environment(\.colorScheme) var colorScheme
     @StateObject var settings = Settings()
     @EnvironmentObject var moduleManager: ModuleManager
+    @EnvironmentObject var tabBarController: TabBarController
     @State private var isNavigationActive = false
     
     var body: some View {
@@ -144,7 +145,6 @@ struct SettingsView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 16)
                     
-                    // Modules Section at the top
                     VStack(alignment: .leading, spacing: 4) {
                         Text("MODULES")
                             .font(.footnote)
@@ -330,6 +330,7 @@ struct SettingsView: View {
         }
         .onAppear {
             settings.updateAccentColor(currentColorScheme: colorScheme)
+            tabBarController.showTabBar()
         }
     }
 }

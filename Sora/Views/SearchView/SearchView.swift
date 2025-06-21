@@ -23,6 +23,7 @@ struct SearchView: View {
     
     @StateObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
+    @EnvironmentObject var tabBarController: TabBarController
     @Environment(\.verticalSizeClass) var verticalSizeClass
     
     @Binding public var searchQuery: String
@@ -141,6 +142,7 @@ struct SearchView: View {
             if !searchQuery.isEmpty {
                 performSearch()
             }
+            tabBarController.showTabBar()
         }
         .onChange(of: selectedModuleId) { _ in
             if !searchQuery.isEmpty {

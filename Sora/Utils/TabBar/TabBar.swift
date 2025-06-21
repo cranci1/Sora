@@ -90,7 +90,7 @@ struct TabBar: View {
                                         .stroke(
                                             LinearGradient(
                                                 gradient: Gradient(stops: [
-                                                    .init(color: Color.accentColor.opacity(gradientOpacity), location: 0),
+                                                    .init(color: Color.accentColor.opacity(0.25), location: 0),
                                                     .init(color: Color.accentColor.opacity(0), location: 1)
                                                 ]),
                                                 startPoint: .top,
@@ -162,7 +162,7 @@ struct TabBar: View {
                     .strokeBorder(
                         LinearGradient(
                             gradient: Gradient(stops: [
-                                .init(color: Color.accentColor.opacity(gradientOpacity), location: 0),
+                                .init(color: Color.accentColor.opacity(0.25), location: 0),
                                 .init(color: Color.accentColor.opacity(0), location: 1)
                             ]),
                             startPoint: .top,

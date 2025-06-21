@@ -335,7 +335,6 @@
 "The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nDo not erase App Data unless you understand the consequences — it may cause the app to malfunction." = "The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nDo not erase App Data unless you understand the consequences — it may cause the app to malfunction.";
 "The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers." = "The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily.\n\nFor episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers.";
 "The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases." = "The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases.";
-
 /* Interface */
 "Thumbnails Width" = "Thumbnails Width";
 "TMDB Match" = "TMDB Match";
@@ -388,3 +387,4 @@
 "Recent searches" = "Recent searches";
 "me frfr" = "me frfr";
 "Data" = "Data"; 
+

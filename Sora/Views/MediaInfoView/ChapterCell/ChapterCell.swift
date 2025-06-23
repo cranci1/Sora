@@ -13,9 +13,9 @@ struct ChapterCell: View {
     let isCurrentChapter: Bool
     
     var body: some View {
-        HStack(alignment: .center, spacing: 16) {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(alignment: .center, spacing: 8) {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(alignment: .center, spacing: 6) {
                     Text("Chapter \(chapterNumber)")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(.primary)
@@ -25,8 +25,8 @@ struct ChapterCell: View {
                         Text("Current")
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(.blue)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
                             .background(
                                 RoundedRectangle(cornerRadius: 6)
                                     .fill(Color.blue.opacity(0.18))
@@ -41,8 +41,8 @@ struct ChapterCell: View {
             }
             Spacer()
         }
-        .padding(.vertical, 18)
-        .padding(.horizontal, 18)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color(UIColor.systemBackground))

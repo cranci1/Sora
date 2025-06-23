@@ -65,24 +65,25 @@ extension JSController {
     
     func fetchDetailsJS(url: String, completion: @escaping ([MediaItem], [EpisodeLink]) -> Void) {
         guard let url = URL(string: url) else {
+            Logger.shared.log("Invalid URL in fetchDetailsJS: \(url)", type: "Error")
             completion([], [])
             return
         }
         
         if let exception = context.exception {
-            Logger.shared.log("JavaScript exception: \(exception)",type: "Error")
+            Logger.shared.log("JavaScript exception: \(exception)", type: "Error")
             completion([], [])
             return
         }
         
         guard let extractDetailsFunction = context.objectForKeyedSubscript("extractDetails") else {
-            Logger.shared.log("No JavaScript function extractDetails found",type: "Error")
+            Logger.shared.log("No JavaScript function extractDetails found", type: "Error")
             completion([], [])
             return
         }
         
         guard let extractEpisodesFunction = context.objectForKeyedSubscript("extractEpisodes") else {
-            Logger.shared.log("No JavaScript function extractEpisodes found",type: "Error")
+            Logger.shared.log("No JavaScript function extractEpisodes found", type: "Error")
             completion([], [])
             return
         }
@@ -95,13 +96,13 @@ extension JSController {
         dispatchGroup.enter()
         let promiseValueDetails = extractDetailsFunction.call(withArguments: [url.absoluteString])
         guard let promiseDetails = promiseValueDetails else {
-            Logger.shared.log("extractDetails did not return a Promise",type: "Error")
+            Logger.shared.log("extractDetails did not return a Promise", type: "Error")
+            dispatchGroup.leave()
             completion([], [])
             return
         }
         
         let thenBlockDetails: @convention(block) (JSValue) -> Void = { result in
-            Logger.shared.log(result.toString(),type: "Debug")
             if let jsonOfDetails = result.toString(),
                let dataDetails = jsonOfDetails.data(using: .utf8) {
                 do {
@@ -114,19 +115,19 @@ extension JSController {
                             )
                         }
                     } else {
-                        Logger.shared.log("Failed to parse JSON of extractDetails",type: "Error")
+                        Logger.shared.log("Failed to parse JSON of extractDetails", type: "Error")
                     }
                 } catch {
-                    Logger.shared.log("JSON parsing error of extract details: \(error)",type: "Error")
+                    Logger.shared.log("JSON parsing error of extract details: \(error)", type: "Error")
                 }
             } else {
-                Logger.shared.log("Result is not a string of extractDetails",type: "Error")
+                Logger.shared.log("Result is not a string of extractDetails", type: "Error")
             }
             dispatchGroup.leave()
         }
         
         let catchBlockDetails: @convention(block) (JSValue) -> Void = { error in
-            Logger.shared.log("Promise rejected of extractDetails: \(String(describing: error.toString()))",type: "Error")
+            Logger.shared.log("Promise rejected of extractDetails: \(String(describing: error.toString()))", type: "Error")
             dispatchGroup.leave()
         }
         
@@ -138,14 +139,23 @@ extension JSController {
         
         dispatchGroup.enter()
         let promiseValueEpisodes = extractEpisodesFunction.call(withArguments: [url.absoluteString])
+        
+        let timeoutWorkItem = DispatchWorkItem {
+            Logger.shared.log("Timeout for extractEpisodes", type: "Warning")
+            dispatchGroup.leave()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: timeoutWorkItem)
+        
         guard let promiseEpisodes = promiseValueEpisodes else {
-            Logger.shared.log("extractEpisodes did not return a Promise",type: "Error")
+            Logger.shared.log("extractEpisodes did not return a Promise", type: "Error")
+            timeoutWorkItem.cancel()
+            dispatchGroup.leave()
             completion([], [])
             return
         }
         
         let thenBlockEpisodes: @convention(block) (JSValue) -> Void = { result in
-            Logger.shared.log(result.toString(),type: "Debug")
+            timeoutWorkItem.cancel()
             if let jsonOfEpisodes = result.toString(),
                let dataEpisodes = jsonOfEpisodes.data(using: .utf8) {
                 do {
@@ -159,19 +169,20 @@ extension JSController {
                             )
                         }
                     } else {
-                        Logger.shared.log("Failed to parse JSON of extractEpisodes",type: "Error")
+                        Logger.shared.log("Failed to parse JSON of extractEpisodes", type: "Error")
                     }
                 } catch {
-                    Logger.shared.log("JSON parsing error of extractEpisodes: \(error)",type: "Error")
+                    Logger.shared.log("JSON parsing error of extractEpisodes: \(error)", type: "Error")
                 }
             } else {
-                Logger.shared.log("Result is not a string of extractEpisodes",type: "Error")
+                Logger.shared.log("Result is not a string of extractEpisodes", type: "Error")
             }
             dispatchGroup.leave()
         }
         
         let catchBlockEpisodes: @convention(block) (JSValue) -> Void = { error in
-            Logger.shared.log("Promise rejected of extractEpisodes: \(String(describing: error.toString()))",type: "Error")
+            timeoutWorkItem.cancel()
+            Logger.shared.log("Promise rejected of extractEpisodes: \(String(describing: error.toString()))", type: "Error")
             dispatchGroup.leave()
         }
         

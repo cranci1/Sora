@@ -302,7 +302,7 @@ struct MediaInfoView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     headerSection
                     
-                    if !aliases.isEmpty {
+                    if !aliases.isEmpty && !(module.metadata.novel ?? false) {
                         Text(aliases)
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
@@ -369,7 +369,11 @@ struct MediaInfoView: View {
                     copyTitleToClipboard()
                 }
             
-            if !synopsis.isEmpty {
+            if !synopsis.isEmpty && !(module.metadata.novel ?? false) {
+                synopsisSection
+            }
+            
+            if module.metadata.novel ?? false && !synopsis.isEmpty {
                 synopsisSection
             }
             
@@ -668,6 +672,22 @@ struct MediaInfoView: View {
     private var chaptersSection: some View {
         let _ = Logger.shared.log("chaptersSection: chapters count = \(chapters.count)", type: "Debug")
         VStack(alignment: .leading, spacing: 16) {
+            if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
+                HStack(spacing: 4) {
+                    Image(systemName: "calendar")
+                        .foregroundColor(.accentColor)
+                    Text(airdate)
+                        .font(.system(size: 14))
+                        .foregroundColor(.accentColor)
+                    Spacer()
+                }
+            }
+            if !aliases.isEmpty {
+                Text(aliases)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+            }
+
             HStack {
                 Text(NSLocalizedString("Chapters", comment: ""))
                     .font(.system(size: 22, weight: .bold))
@@ -865,7 +885,7 @@ struct MediaInfoView: View {
                     Logger.shared.log("setupInitialData: fetchedChapters count = \(fetchedChapters.count)", type: "Debug")
                     Logger.shared.log("setupInitialData: fetchedChapters = \(fetchedChapters)", type: "Debug")
                     self.chapters = fetchedChapters
-                    self.fetchDetails()
+                    self.fetchDetails() // FIX: also fetch details for novels
                     self.hasFetched = true
                     self.isLoading = false
                 }
@@ -1293,11 +1313,31 @@ struct MediaInfoView: View {
                         jsController.fetchDetailsJS(url: href) { items, episodes in
                             Logger.shared.log("fetchDetails: items = \(items)", type: "Debug")
                             Logger.shared.log("fetchDetails: episodes = \(episodes)", type: "Debug")
-                            if let item = items.first {
+                            
+                            if let mediaItems = items as? [MediaItem], let item = mediaItems.first {
                                 self.synopsis = item.description
                                 self.aliases = item.aliases
                                 self.airdate = item.airdate
+                            } else if let str = items as? String {
+                                if let data = str.data(using: .utf8),
+                                   let arr = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+                                   let dict = arr.first {
+                                    self.synopsis = dict["description"] as? String ?? ""
+                                    self.aliases = dict["aliases"] as? String ?? ""
+                                    self.airdate = dict["airdate"] as? String ?? ""
+                                }
+                            } else if let dict = items as? [String: Any] {
+                                self.synopsis = dict["description"] as? String ?? ""
+                                self.aliases = dict["aliases"] as? String ?? ""
+                                self.airdate = dict["airdate"] as? String ?? ""
+                            } else if let arr = items as? [[String: Any]], let dict = arr.first {
+                                self.synopsis = dict["description"] as? String ?? ""
+                                self.aliases = dict["aliases"] as? String ?? ""
+                                self.airdate = dict["airdate"] as? String ?? ""
+                            } else {
+                                Logger.shared.log("Failed to process items of type: \(type(of: items))", type: "Error")
                             }
+                            
                             if self.module.metadata.novel ?? false {
                                 Logger.shared.log("fetchDetails: (novel) chapters count = \(self.chapters.count)", type: "Debug")
                                 self.isLoading = false
@@ -1314,11 +1354,31 @@ struct MediaInfoView: View {
                         jsController.fetchDetails(url: href) { items, episodes in
                             Logger.shared.log("fetchDetails: items = \(items)", type: "Debug")
                             Logger.shared.log("fetchDetails: episodes = \(episodes)", type: "Debug")
-                            if let item = items.first {
+                            
+                            if let mediaItems = items as? [MediaItem], let item = mediaItems.first {
                                 self.synopsis = item.description
                                 self.aliases = item.aliases
                                 self.airdate = item.airdate
+                            } else if let str = items as? String {
+                                if let data = str.data(using: .utf8),
+                                   let arr = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+                                   let dict = arr.first {
+                                    self.synopsis = dict["description"] as? String ?? ""
+                                    self.aliases = dict["aliases"] as? String ?? ""
+                                    self.airdate = dict["airdate"] as? String ?? ""
+                                }
+                            } else if let dict = items as? [String: Any] {
+                                self.synopsis = dict["description"] as? String ?? ""
+                                self.aliases = dict["aliases"] as? String ?? ""
+                                self.airdate = dict["airdate"] as? String ?? ""
+                            } else if let arr = items as? [[String: Any]], let dict = arr.first {
+                                self.synopsis = dict["description"] as? String ?? ""
+                                self.aliases = dict["aliases"] as? String ?? ""
+                                self.airdate = dict["airdate"] as? String ?? ""
+                            } else {
+                                Logger.shared.log("Failed to process items of type: \(type(of: items))", type: "Error")
                             }
+                            
                             if self.module.metadata.novel ?? false {
                                 Logger.shared.log("fetchDetails: (novel) chapters count = \(self.chapters.count)", type: "Debug")
                                 self.isLoading = false

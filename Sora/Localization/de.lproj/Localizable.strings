@@ -49,6 +49,9 @@
 "Copied to Clipboard" = "In die Zwischenablage kopiert";
 "Copy to Clipboard" = "In die Zwischenablage kopieren";
 "Copy URL" = "URL kopieren";
+"Collections" = "Sammlungen";
+"No Collections" = "Keine Sammlungen vorhanden";
+"Create a collection to organize your bookmarks" = "Erstelle eine Sammlung für mehr Organisation";
 
 /* Episodes */
 "%lld Episodes" = "%lld Folgen";
@@ -84,7 +87,7 @@
 "Download Episode" = "Folge herunterladen";
 "Download Summary" = "Download-Übersicht";
 "Download This Episode" = "Diese Folge herunterladen";
-"Downloaded" = "Heruntergeladen";
+"Downloaded" = "Geladen";
 "Downloaded Shows" = "Heruntergeladene Serien";
 "Downloading" = "Lädt herunter";
 "Downloads" = "Downloads";
@@ -115,6 +118,7 @@
 "General events and activities." = "Allgemeine Aktivitäten.";
 "General Preferences" = "Allgemeine Einstellungen";
 "Hide Splash Screen" = "Startbildschirm ausblenden";
+"Use Native Tab Bar" = "System Bar verwenden";
 "HLS video downloading." = "HLS Video-Downloads.";
 "Hold Speed" = "Geschwindigkeit halten";
 
@@ -382,6 +386,12 @@
 "Storage Used" = "Belegter Speicher";
 "Library cleared successfully" = "Bibliothek erfolgreich geleert";
 "All downloads deleted successfully" = "Alle Downloads erfolgreich gelöscht";
+
+/* TabView */
+"LibraryTab" = "Bibliothek";
+"DownloadsTab" = "Downloads";
+"SettingsTab" = "Einstellungen";
+"SearchTab" = "Suchen";
 
 /* New additions */
 "Recent searches" = "Letzte Suchanfragen";

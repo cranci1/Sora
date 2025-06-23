@@ -16,48 +16,58 @@ struct ContentView_Previews: PreviewProvider {
 }
 
 struct ContentView: View {
+    @AppStorage("useNativeTabBar") private var useNativeTabBar: Bool = false
     @StateObject private var tabBarController = TabBarController()
     @State var selectedTab: Int = 0
     @State var lastTab: Int = 0
     @State private var searchQuery: String = ""
     
     let tabs: [TabItem] = [
-        TabItem(icon: "square.stack", title: ""),
-        TabItem(icon: "arrow.down.circle", title: ""),
-        TabItem(icon: "gearshape", title: ""),
-        TabItem(icon: "magnifyingglass", title: "")
+        TabItem(icon: "square.stack", title: NSLocalizedString("LibraryTab", comment: "")),
+        TabItem(icon: "arrow.down.circle", title: NSLocalizedString("DownloadsTab", comment: "")),
+        TabItem(icon: "gearshape", title: NSLocalizedString("SettingsTab", comment: "")),
+        TabItem(icon: "magnifyingglass", title: NSLocalizedString("SearchTab", comment: ""))
     ]
+
+    private func tabView(for index: Int) -> some View {
+        switch index {
+            case 1: return AnyView(DownloadView())
+            case 2: return AnyView(SettingsView())
+            case 3: return AnyView(SearchView(searchQuery: $searchQuery))
+            default: return AnyView(LibraryView())
+        }
+    }
     
     var body: some View {
-        ZStack(alignment: .bottom) {
-            switch selectedTab {
-            case 0:
-                LibraryView()
-                    .environmentObject(tabBarController)
-            case 1:
-                DownloadView()
-                    .environmentObject(tabBarController)
-            case 2:
-                SettingsView()
-                    .environmentObject(tabBarController)
-            case 3:
-                SearchView(searchQuery: $searchQuery)
-                    .environmentObject(tabBarController)
-            default:
-                LibraryView()
-                    .environmentObject(tabBarController)
+        if #available(iOS 26, *), useNativeTabBar == true {
+            TabView {
+                ForEach(Array(tabs.enumerated()), id: \.offset) { index, item in
+                    tabView(for: index)
+                        .tabItem {
+                            Label(item.title, systemImage: item.icon)
+                        }
+                }
             }
-            
-            TabBar(
-                tabs: tabs,
-                selectedTab: $selectedTab,
-                lastTab: $lastTab,
-                searchQuery: $searchQuery,
-                controller: tabBarController
-            )
+            .searchable(text: $searchQuery)
+            .environmentObject(tabBarController)
+        } else {
+            ZStack(alignment: .bottom) {
+                Group {
+                    tabView(for: selectedTab)
+                }
+                .environmentObject(tabBarController)
+
+                TabBar(
+                    tabs: tabs,
+                    selectedTab: $selectedTab,
+                    lastTab: $lastTab,
+                    searchQuery: $searchQuery,
+                    controller: tabBarController
+                )
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            .ignoresSafeArea(.keyboard, edges: .bottom)
+            .padding(.bottom, -20)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-        .ignoresSafeArea(.keyboard, edges: .bottom)
-        .padding(.bottom, -20)
     }
 }

@@ -43,24 +43,29 @@ extension JSController {
     private static var progressUpdateTimer: Timer?
     
     func initializeDownloadSession() {
-        // Create a unique identifier for the background session
-        let sessionIdentifier = "hls-downloader-\(UUID().uuidString)"
-        
-        let configuration = URLSessionConfiguration.background(withIdentifier: sessionIdentifier)
-        
-        // Configure session
-        configuration.allowsCellularAccess = true
-        configuration.shouldUseExtendedBackgroundIdleMode = true
-        configuration.waitsForConnectivity = true
-        
-        // Create session with configuration
-        downloadURLSession = AVAssetDownloadURLSession(
-            configuration: configuration,
-            assetDownloadDelegate: self,
-            delegateQueue: .main
-        )
-        
-        print("Download session initialized with ID: \(sessionIdentifier)")
+        #if targetEnvironment(simulator)
+            Logger.shared.log("Download Sessions are not available on Simulator", type: "Error")
+        #else
+            // Create a unique identifier for the background session
+            let sessionIdentifier = "hls-downloader-\(UUID().uuidString)"
+
+            let configuration = URLSessionConfiguration.background(withIdentifier: sessionIdentifier)
+
+            // Configure session
+            configuration.allowsCellularAccess = true
+            configuration.shouldUseExtendedBackgroundIdleMode = true
+            configuration.waitsForConnectivity = true
+
+            // Create session with configuration
+            downloadURLSession = AVAssetDownloadURLSession(
+                configuration: configuration,
+                assetDownloadDelegate: self,
+                delegateQueue: .main
+            )
+
+            print("Download session initialized with ID: \(sessionIdentifier)")
+        #endif
+
         loadSavedAssets()
     }
     

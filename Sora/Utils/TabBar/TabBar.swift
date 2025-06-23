@@ -227,33 +227,14 @@ struct TabBar: View {
                 }
             }
         }) {
-            if tab.title.isEmpty {
-                Image(systemName: tab.icon + (selectedTab == index ? ".fill" : ""))
-                    .frame(width: 28, height: 28)
-                    .matchedGeometryEffect(id: tab.icon, in: animation)
-                    .foregroundStyle(selectedTab == index ? .black : .gray)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 10)
-                    .frame(width: 70)
-                    .opacity(selectedTab == index ? 1 : 0.5)
-            } else {
-                VStack {
-                    Image(systemName: tab.icon + (selectedTab == index ? ".fill" : ""))
-                        .frame(width: 36, height: 18)
-                        .matchedGeometryEffect(id: tab.icon, in: animation)
-                        .foregroundStyle(selectedTab == index ? .black : .gray)
-                    
-                    Text(tab.title)
-                        .font(.caption)
-                        .frame(width: 60)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                }
+            Image(systemName: tab.icon + (selectedTab == index ? ".fill" : ""))
+                .frame(width: 28, height: 28)
+                .matchedGeometryEffect(id: tab.icon, in: animation)
+                .foregroundStyle(selectedTab == index ? .black : .gray)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 10)
-                .frame(width: 80)
+                .frame(width: 70)
                 .opacity(selectedTab == index ? 1 : 0.5)
-            }
         }
         .background(
             selectedTab == index ?

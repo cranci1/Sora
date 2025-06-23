@@ -23,12 +23,17 @@ class DownloadManager: NSObject, ObservableObject {
     }
     
     private func initializeDownloadSession() {
-        let configuration = URLSessionConfiguration.background(withIdentifier: "hls-downloader")
-        assetDownloadURLSession = AVAssetDownloadURLSession(
-            configuration: configuration,
-            assetDownloadDelegate: self,
-            delegateQueue: .main
-        )
+        #if targetEnvironment(simulator)
+            Logger.shared.log("Download Sessions are not available on Simulator", type: "Error")
+        #else
+            let configuration = URLSessionConfiguration.background(withIdentifier: "hls-downloader")
+
+            assetDownloadURLSession = AVAssetDownloadURLSession(
+                configuration: configuration,
+                assetDownloadDelegate: self,
+                delegateQueue: .main
+            )
+        #endif
     }
     
     func downloadAsset(from url: URL) {

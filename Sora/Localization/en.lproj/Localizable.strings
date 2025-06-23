@@ -49,6 +49,9 @@
 "Copied to Clipboard" = "Copied to Clipboard";
 "Copy to Clipboard" = "Copy to Clipboard";
 "Copy URL" = "Copy URL";
+"Collections" = "Collections";
+"No Collections" = "No Collections";
+"Create a collection to organize your bookmarks" = "Create a collection to organize your bookmarks";
 
 /* Episodes */
 "%lld Episodes" = "%lld Episodes";
@@ -115,6 +118,7 @@
 "General events and activities." = "General events and activities.";
 "General Preferences" = "General Preferences";
 "Hide Splash Screen" = "Hide Splash Screen";
+"Use Native Tab Bar" = "Use Native Tabs";
 "HLS video downloading." = "HLS video downloading.";
 "Hold Speed" = "Hold Speed";
 
@@ -382,6 +386,12 @@
 "Storage Used" = "Storage Used";
 "Library cleared successfully" = "Library cleared successfully";
 "All downloads deleted successfully" = "All downloads deleted successfully";
+
+/* TabView */
+"LibraryTab" = "Library";
+"DownloadsTab" = "Downloads";
+"SettingsTab" = "Settings";
+"SearchTab" = "Search";
 
 /* New additions */
 "Recent searches" = "Recent searches";

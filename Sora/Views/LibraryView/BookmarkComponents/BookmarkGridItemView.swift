@@ -12,6 +12,10 @@ struct BookmarkGridItemView: View {
     let item: LibraryItem
     let module: Module
     
+    var isNovel: Bool {
+        module.metadata.novel ?? false
+    }
+    
     var body: some View {
         ZStack {
             LazyImage(url: URL(string: item.imageUrl)) { state in
@@ -30,7 +34,7 @@ struct BookmarkGridItemView: View {
                 }
             }
             .overlay(
-                ZStack {
+                ZStack(alignment: .bottomTrailing) {
                     Circle()
                         .fill(Color.black.opacity(0.5))
                         .frame(width: 28, height: 28)
@@ -49,6 +53,13 @@ struct BookmarkGridItemView: View {
                                 }
                             }
                         )
+                    // Book/TV icon overlay, bottom right of module icon
+                    Image(systemName: isNovel ? "book.fill" : "tv.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 14, height: 14)
+                        .foregroundColor(.accentColor)
+                        .offset(x: 6, y: 6)
                 }
                 .padding(8),
                 alignment: .topLeading

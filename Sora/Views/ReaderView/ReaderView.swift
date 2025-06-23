@@ -173,6 +173,7 @@ struct ReaderView: View {
         .ignoresSafeArea()
         .onAppear {
             tabBarController.hideTabBar()
+            UserDefaults.standard.set(chapterHref, forKey: "lastReadChapter")
         }
         .task {
             do {

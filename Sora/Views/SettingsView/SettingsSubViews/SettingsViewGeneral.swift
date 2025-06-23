@@ -154,6 +154,7 @@ struct SettingsViewGeneral: View {
     @AppStorage("fetchEpisodeMetadata") private var fetchEpisodeMetadata: Bool = true
     @AppStorage("analyticsEnabled") private var analyticsEnabled: Bool = false
     @AppStorage("hideSplashScreen") private var hideSplashScreenEnable: Bool = false
+    @AppStorage("useNativeTabBar") private var useNativeTabBar: Bool = false
     @AppStorage("metadataProvidersOrder") private var metadataProvidersOrderData: Data = {
         try! JSONEncoder().encode(["TMDB","AniList"])
     }()
@@ -171,7 +172,11 @@ struct SettingsViewGeneral: View {
     private let metadataProvidersList = ["TMDB", "AniList"]
     @EnvironmentObject var settings: Settings
     @State private var showRestartAlert = false
-    
+
+    private let isiOS26OrLater: Bool = {
+        if #available(iOS 26, *) { return true } else { return false }
+    }()
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
@@ -194,8 +199,17 @@ struct SettingsViewGeneral: View {
                         icon: "wand.and.rays.inverse",
                         title: NSLocalizedString("Hide Splash Screen", comment: ""),
                         isOn: $hideSplashScreenEnable,
-                        showDivider: false
+                        showDivider: isiOS26OrLater
                     )
+
+                    if isiOS26OrLater {
+                        SettingsToggleRow(
+                            icon: "inset.filled.bottomthird.rectangle",
+                            title: NSLocalizedString("Use Native Tab Bar", comment: ""),
+                            isOn: $useNativeTabBar,
+                            showDivider: false
+                        )
+                    }
                 }
                 
                 SettingsSection(title: NSLocalizedString("Language", comment: "")) {

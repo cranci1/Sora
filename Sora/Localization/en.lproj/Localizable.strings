@@ -384,6 +384,13 @@
 "Library cleared successfully" = "Library cleared successfully";
 "All downloads deleted successfully" = "All downloads deleted successfully";
 
+/* TabView */
+"ExploreTab" = "Explore";
+"HomeTab" = "Home";
+"DownloadsTab" = "Downloads";
+"SettingsTab" = "Settings";
+"SearchTab" = "Search";
+
 /* New additions */
 "Recent searches" = "Recent searches";
 "me frfr" = "me frfr";

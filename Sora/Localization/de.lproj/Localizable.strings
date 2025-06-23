@@ -383,6 +383,12 @@
 "Library cleared successfully" = "Bibliothek erfolgreich geleert";
 "All downloads deleted successfully" = "Alle Downloads erfolgreich gelöscht";
 
+/* TabView */
+"HomeTab" = "Home";
+"DownloadsTab" = "Downloads";
+"SettingsTab" = "Einstellungen";
+"SearchTab" = "Suchen";
+
 /* New additions */
 "Recent searches" = "Letzte Suchanfragen";
 "me frfr" = "Ich, ohne Witz";

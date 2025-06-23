@@ -152,6 +152,7 @@ struct ReaderView: View {
                         }
                     })
                 }
+                .padding(.top, isHeaderVisible ? 0 : (UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0))
             }
             
             headerView

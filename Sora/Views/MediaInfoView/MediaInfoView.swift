@@ -751,9 +751,9 @@ struct MediaInfoView: View {
             
             Text(module.metadata.novel == true ? NSLocalizedString("Chapters might not be available yet or there could be an issue with the source.", comment: "") : NSLocalizedString("Episodes might not be available yet or there could be an issue with the source.", comment: ""))
                 .font(.body)
-                .lineLimit(0)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal)
         }
         .padding(.vertical, 50)
@@ -880,12 +880,60 @@ struct MediaInfoView: View {
                         icon: UIImage(systemName: "arrow.triangle.2.circlepath")
                     )
                 }
-                let fetchedChapters = try await JSController.shared.extractChapters(moduleId: module.id.uuidString, href: href)
+                let jsContent = try? moduleManager.getModuleContent(module)
+                if let jsContent = jsContent {
+                    jsController.loadScript(jsContent)
+                }
+
+                await withTaskGroup(of: Void.self) { group in
+                    var chaptersLoaded = false
+                    var detailsLoaded = false
+                    let timeout: TimeInterval = 8.0
+                    let start = Date()
+
+                    group.addTask {
+                        let fetchedChapters = try? await JSController.shared.extractChapters(moduleId: module.id.uuidString, href: href)
+                        DispatchQueue.main.async {
+                            if let fetchedChapters = fetchedChapters {
+                                Logger.shared.log("setupInitialData: fetchedChapters count = \(fetchedChapters.count)", type: "Debug")
+                                Logger.shared.log("setupInitialData: fetchedChapters = \(fetchedChapters)", type: "Debug")
+                                self.chapters = fetchedChapters
+                            }
+                            chaptersLoaded = true
+                        }
+                    }
+                    group.addTask {
+                        await withCheckedContinuation { continuation in
+                            self.fetchDetails()
+                            var checkDetails: (() -> Void)?
+                            checkDetails = {
+                                if !(self.synopsis.isEmpty && self.aliases.isEmpty && self.airdate.isEmpty) {
+                                    detailsLoaded = true
+                                    continuation.resume()
+                                } else if Date().timeIntervalSince(start) > timeout {
+                                    detailsLoaded = true
+                                    continuation.resume()
+                                } else {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                        checkDetails?()
+                                    }
+                                }
+                            }
+                            checkDetails?()
+                        }
+                    }
+                    group.addTask {
+                        try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+                        DispatchQueue.main.async {
+                            chaptersLoaded = true
+                            detailsLoaded = true
+                        }
+                    }
+                    while !(chaptersLoaded && detailsLoaded) {
+                        try? await Task.sleep(nanoseconds: 100_000_000)
+                    }
+                }
                 DispatchQueue.main.async {
-                    Logger.shared.log("setupInitialData: fetchedChapters count = \(fetchedChapters.count)", type: "Debug")
-                    Logger.shared.log("setupInitialData: fetchedChapters = \(fetchedChapters)", type: "Debug")
-                    self.chapters = fetchedChapters
-                    self.fetchDetails() // FIX: also fetch details for novels
                     self.hasFetched = true
                     self.isLoading = false
                 }

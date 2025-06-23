@@ -70,10 +70,10 @@ struct ReaderView: View {
         (name: "Pure", background: "#ffffff", text: "#000000"),
         (name: "Warm", background: "#f9f1e4", text: "#4f321c"),
         (name: "Slate", background: "#49494d", text: "#d7d7d8"),
+        (name: "Off-Black", background: "#121212", text: "#EAEAEA"),
         (name: "Dark", background: "#000000", text: "#ffffff")
     ]
     
-    // Computed property to get current theme colors
     private var currentTheme: (background: Color, text: Color) {
         let preset = colorPresets[selectedColorPreset]
         return (
@@ -87,7 +87,6 @@ struct ReaderView: View {
         self.chapterHref = chapterHref
         self.chapterTitle = chapterTitle
         
-        // Load saved settings
         _fontSize = State(initialValue: UserDefaults.standard.cgFloat(forKey: "readerFontSize") ?? 16)
         _selectedFont = State(initialValue: UserDefaults.standard.string(forKey: "readerFontFamily") ?? "-apple-system")
         _fontWeight = State(initialValue: UserDefaults.standard.string(forKey: "readerFontWeight") ?? "normal")
@@ -118,7 +117,6 @@ struct ReaderView: View {
                 }
             } else {
                 ZStack {
-                    // Content area with tap gesture
                     Color.clear
                         .contentShape(Rectangle())
                         .onTapGesture {
@@ -161,12 +159,12 @@ struct ReaderView: View {
                 .offset(y: isHeaderVisible ? 0 : -100)
                 .allowsHitTesting(isHeaderVisible)
                 .animation(.easeInOut(duration: 0.6), value: isHeaderVisible)
-                .zIndex(1) // Header above content
+                .zIndex(1) 
             
             if isHeaderVisible {
             footerView
                     .transition(.move(edge: .bottom))
-                    .zIndex(2) // Footer above everything
+                    .zIndex(2) 
             }
         }
         .navigationBarHidden(true)
@@ -223,7 +221,6 @@ struct ReaderView: View {
                     
                     Spacer()
 
-                    // Placeholder to reserve space for settings button
                     Color.clear
                         .frame(width: 44, height: 44)
                         .padding(.trailing)
@@ -239,11 +236,9 @@ struct ReaderView: View {
                     }
                 }
 
-                // Settings menu overlay
                 HStack {
                     Spacer()
                     ZStack(alignment: .topTrailing) {
-                        // Main settings button (three dots)
                         Button(action: {
                             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                                 isSettingsExpanded.toggle()
@@ -262,10 +257,8 @@ struct ReaderView: View {
                         .offset(y: isHeaderVisible ? 0 : -100)
                         .animation(.easeInOut(duration: 0.6), value: isHeaderVisible)
                         
-                        // Settings buttons that are conditionally rendered
                         if isSettingsExpanded {
                             VStack(spacing: 8) {
-                                // Font size
                                 Menu {
                                     VStack {
                                         Text("Font Size: \(Int(fontSize))pt")
@@ -288,7 +281,6 @@ struct ReaderView: View {
                                     settingsButtonLabel(icon: "textformat.size")
                                 }
                                 
-                                // Font family
                                 Menu {
                                     ForEach(fontOptions, id: \.0) { font in
                                         Button(action: {
@@ -310,7 +302,6 @@ struct ReaderView: View {
                                     settingsButtonLabel(icon: "textformat.characters")
                                 }
                                 
-                                // Font weight
                                 Menu {
                                     ForEach(weightOptions, id: \.0) { weight in
                                         Button(action: {
@@ -332,6 +323,36 @@ struct ReaderView: View {
                                     }
                                 } label: {
                                     settingsButtonLabel(icon: "bold")
+                                }
+
+                                Menu {
+                                    ForEach(0..<colorPresets.count, id: \.self) { index in
+                                        Button(action: {
+                                            selectedColorPreset = index
+                                            UserDefaults.standard.set(index, forKey: "readerColorPreset")
+                                        }) {
+                                            Label {
+                                                HStack {
+                                                    Text(colorPresets[index].name)
+                                                    Spacer()
+                                                    if selectedColorPreset == index {
+                                                        Image(systemName: "checkmark")
+                                                            .foregroundColor(.blue)
+                                                    }
+                                                }
+                                            } icon: {
+                                                Circle()
+                                                    .fill(Color(hex: colorPresets[index].background))
+                                                    .frame(width: 16, height: 16)
+                                                    .overlay(
+                                                        Circle()
+                                                            .stroke(Color(hex: colorPresets[index].text), lineWidth: 1)
+                                                    )
+                                            }
+                                        }
+                                    }
+                                } label: {
+                                    settingsButtonLabel(icon: "paintpalette")
                                 }
 
                                 Menu {
@@ -406,7 +427,7 @@ struct ReaderView: View {
                                     settingsButtonLabel(icon: "text.alignleft")
                                 }
                             }
-                            .padding(.top, 50) // Position below the three dots
+                            .padding(.top, 50) 
                             .transition(.opacity)
                         }
                     }
@@ -427,46 +448,7 @@ struct ReaderView: View {
             Spacer()
             
             HStack(spacing: 20) {
-                // Themes button - all the way left
-                Menu {
-                    ForEach(0..<colorPresets.count, id: \.self) { index in
-                        Button(action: {
-                            selectedColorPreset = index
-                            UserDefaults.standard.set(index, forKey: "readerColorPreset")
-                        }) {
-                            Label {
-                                HStack {
-                                    Text(colorPresets[index].name)
-                                    Spacer()
-                                    if selectedColorPreset == index {
-                                        Image(systemName: "checkmark")
-                                            .foregroundColor(.blue)
-                                    }
-                                }
-                            } icon: {
-                                Circle()
-                                    .fill(Color(hex: colorPresets[index].background))
-                                    .frame(width: 16, height: 16)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color(hex: colorPresets[index].text), lineWidth: 1)
-                                    )
-                            }
-                        }
-                    }
-                } label: {
-                    Image(systemName: "paintpalette")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(currentTheme.text)
-                        .padding(12)
-                        .background(currentTheme.background.opacity(0.8))
-                        .clipShape(Circle())
-                        .circularGradientOutline()
-                }
-
                 Spacer()
-
-                // Auto scroll button - on the right
                 Button(action: {
                     isAutoScrolling.toggle()
                 }) {
@@ -592,7 +574,6 @@ struct HTMLView: UIViewRepresentable {
                     }
                 }
                 
-                // Check if we've reached the bottom
                 webView.evaluateJavaScript("(window.pageYOffset + window.innerHeight) >= document.body.scrollHeight") { result, _ in
                     if let isAtBottom = result as? Bool, isAtBottom {
                         DispatchQueue.main.async {
@@ -615,7 +596,6 @@ struct HTMLView: UIViewRepresentable {
         webView.isOpaque = false
         webView.scrollView.backgroundColor = .clear
         
-        // Disable horizontal scrolling and bouncing
         webView.scrollView.showsHorizontalScrollIndicator = false
         webView.scrollView.bounces = false
         webView.scrollView.alwaysBounceHorizontal = false
@@ -627,7 +607,6 @@ struct HTMLView: UIViewRepresentable {
     func updateUIView(_ webView: WKWebView, context: Context) {
         let coordinator = context.coordinator
         
-        // Handle auto scroll state changes
         if isAutoScrolling {
             coordinator.startAutoScroll(webView: webView)
         } else {
@@ -638,7 +617,6 @@ struct HTMLView: UIViewRepresentable {
             return
         }
         
-        // Only reload HTML if content or styling has actually changed
         let contentChanged = coordinator.lastHtmlContent != htmlContent
         let fontSizeChanged = coordinator.lastFontSize != fontSize
         let fontFamilyChanged = coordinator.lastFontFamily != fontFamily
@@ -704,7 +682,6 @@ struct HTMLView: UIViewRepresentable {
             Logger.shared.log("Loading HTML content into WebView", type: "Debug")
             webView.loadHTMLString(htmlTemplate, baseURL: nil)
             
-            // Update the cached values
             coordinator.lastHtmlContent = htmlContent
             coordinator.lastFontSize = fontSize
             coordinator.lastFontFamily = fontFamily

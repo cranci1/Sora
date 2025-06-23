@@ -23,7 +23,7 @@ struct ContentView: View {
     @State private var searchQuery: String = ""
     
     let tabs: [TabItem] = [
-        TabItem(icon: "square.stack", title: NSLocalizedString("HomeTab", comment: "")),
+        TabItem(icon: "square.stack", title: NSLocalizedString("LibraryTab", comment: "")),
         TabItem(icon: "arrow.down.circle", title: NSLocalizedString("DownloadsTab", comment: "")),
         TabItem(icon: "gearshape", title: NSLocalizedString("SettingsTab", comment: "")),
         TabItem(icon: "magnifyingglass", title: NSLocalizedString("SearchTab", comment: ""))

@@ -384,7 +384,7 @@
 "All downloads deleted successfully" = "Alle Downloads erfolgreich gelöscht";
 
 /* TabView */
-"HomeTab" = "Home";
+"LibraryTab" = "Bibliothek";
 "DownloadsTab" = "Downloads";
 "SettingsTab" = "Einstellungen";
 "SearchTab" = "Suchen";

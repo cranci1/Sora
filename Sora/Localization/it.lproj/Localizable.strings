@@ -193,7 +193,7 @@
 "Please restart the app to apply the language change." = "Riavvia l'app per effettuare i cambiamenti";
 "Please select a module from settings" = "Seleziona un Modulo dalle impostazioni";
 /* Interface */
-"Portrait Columns" = "";
+"Portrait Columns" = "Colonne in Vista Verticale";
 "Progress bar Marker Color" = "Colore Barra di Progresso";
 "Provider: %@" = "Provider: %@";
 /* Queue */
@@ -251,7 +251,7 @@
 "Size (%@)" = "Dimensione (%@)";
 "Skip Settings" = "Salta Impostazioni";
 /* Player Features */
-"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments." = "Qualche Features sono limitate a Sora e al Default Player, Come "Forza Visualizzazione Orizzontale", "Mantieni per Velocizzare" e "Skip di Tempo Custom"";
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments." = "Qualche Features sono limitate a Sora e al Default Player, Come Forza Visualizzazione Orizzontale, Mantieni per Velocizzare e Skip di Tempo Custom";
 /* App Info */
 "Sora" = "Sora";
 "Sora %@ by cranci1" = "Sora %@ by cranci1";

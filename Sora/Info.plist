@@ -6,6 +6,25 @@
 	<array>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	</array>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>ar</string>
+		<string>bos</string>
+		<string>cs</string>
+		<string>nl</string>
+		<string>fr</string>
+		<string>de</string>
+		<string>it</string>
+		<string>kk</string>
+		<string>nn</string>
+		<string>ru</string>
+		<string>sk</string>
+		<string>es</string>
+		<string>sv</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

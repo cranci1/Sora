@@ -288,8 +288,8 @@ struct TranslatorsView: View {
         ),
         Translator(
             id: 3,
-            login: "cranci",
-            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/28ac8bfaa250788579af747d8fb7f827_webp.png?raw=true",
+            login: "simplymox",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/9131174855bd67fc445206e888505a6a_webp.png?raw=true",
             language: "Italian"
         ),
         Translator(

@@ -235,7 +235,7 @@ struct MediaInfoView: View {
                         .font(.system(size: 24))
                         .foregroundColor(.primary)
                         .padding(12)
-                        .background(Color.gray.opacity(0.2))
+                        .background(Color(.systemBackground).opacity(0.8))
                         .clipShape(Circle())
                         .circularGradientOutline()
                 }

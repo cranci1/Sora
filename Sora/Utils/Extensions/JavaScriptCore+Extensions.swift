@@ -76,13 +76,28 @@ extension JSContext {
     }
     
     func setupFetchV2() {
-        let fetchV2NativeFunction: @convention(block) (String, [String: String]?, String?, String?, ObjCBool, String?, JSValue, JSValue) -> Void = { urlString, headers, method, body, redirect, encoding, resolve, reject in
+        let fetchV2NativeFunction: @convention(block) (String, Any?, String?, String?, ObjCBool, String?, JSValue, JSValue) -> Void = { urlString, headersAny, method, body, redirect, encoding, resolve, reject in
             guard let url = URL(string: urlString) else {
                 Logger.shared.log("Invalid URL", type: "Error")
                 DispatchQueue.main.async {
                     reject.call(withArguments: ["Invalid URL"])
                 }
                 return
+            }
+            
+            var headers: [String: String]? = nil
+            if let headersDict = headersAny as? [String: Any] {
+                var safeHeaders: [String: String] = [:]
+                for (key, value) in headersDict {
+                    if let valueStr = value as? String {
+                        safeHeaders[key] = valueStr
+                    } else {
+                        Logger.shared.log("Header value is not a String: \(key): \(value)", type: "Error")
+                    }
+                }
+                headers = safeHeaders
+            } else if headersAny != nil {
+                Logger.shared.log("Headers argument is not a dictionary", type: "Error")
             }
             
             let httpMethod = method ?? "GET"

@@ -304,7 +304,7 @@ struct MediaInfoView: View {
                     
                     if !aliases.isEmpty && !(module.metadata.novel ?? false) {
                         Text(aliases)
-                            .font(.system(size: 14))
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.secondary)
                             .padding(.top, 4)
                     }
@@ -353,7 +353,7 @@ struct MediaInfoView: View {
                     Image(systemName: "calendar")
                         .foregroundColor(.accentColor)
                     Text(airdate)
-                        .font(.system(size: 14))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.accentColor)
                     Spacer()
                 }
@@ -389,7 +389,7 @@ struct MediaInfoView: View {
     private var synopsisSection: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(synopsis)
-                .font(.system(size: 16))
+                .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.secondary)
                 .lineLimit(showFullSynopsis ? nil : 3)
                 .animation(nil, value: showFullSynopsis)
@@ -417,7 +417,7 @@ struct MediaInfoView: View {
                     Image(systemName: "play.fill")
                         .foregroundColor(colorScheme == .dark ? .black : .white)
                     Text(startActionText)
-                        .font(.system(size: 16, weight: .medium))
+                        .font(.system(size: 16, weight: .bold))
                         .foregroundColor(colorScheme == .dark ? .black : .white)
                 }
                 .frame(maxWidth: .infinity)
@@ -529,8 +529,73 @@ struct MediaInfoView: View {
         if episodeLinks.count != 1 {
             VStack(alignment: .leading, spacing: 16) {
                 episodesSectionHeader
+                // --- New Selectors Row ---
+                if isGroupedBySeasons || episodeLinks.count > episodeChunkSize {
+                    HStack {
+                        if isGroupedBySeasons {
+                            seasonSelectorStyled
+                        } else {
+                            Spacer()
+                        }
+                        Spacer()
+                        if episodeLinks.count > episodeChunkSize {
+                            rangeSelectorStyled
+                        }
+                    }
+                    .padding(.bottom, 0)
+                }
+                // --- End New Selectors Row ---
                 episodeListSection
             }
+        }
+    }
+
+    // Styled Season Selector
+    @ViewBuilder
+    private var seasonSelectorStyled: some View {
+        let seasons = groupedEpisodes()
+        if seasons.count > 1 {
+            Menu {
+                ForEach(0..<seasons.count, id: \..self) { index in
+                    Button(action: { selectedSeason = index }) {
+                        Text(String(format: NSLocalizedString("Season %d", comment: ""), index + 1))
+                    }
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Text("Season \(selectedSeason + 1)")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(.accentColor)
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.accentColor)
+                }
+                .padding(.vertical, 2)
+                .padding(.horizontal, 4)
+            }
+        }
+    }
+
+    // Styled Range Selector
+    @ViewBuilder
+    private var rangeSelectorStyled: some View {
+        Menu {
+            ForEach(generateRanges(), id: \..self) { range in
+                Button(action: { selectedRange = range }) {
+                    Text("\(range.lowerBound + 1)-\(range.upperBound)")
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text("\(selectedRange.lowerBound + 1)-\(selectedRange.upperBound)")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.accentColor)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(.accentColor)
+            }
+            .padding(.vertical, 2)
+            .padding(.horizontal, 4)
         }
     }
     
@@ -543,57 +608,9 @@ struct MediaInfoView: View {
             
             Spacer()
             
-            episodeNavigationSection
-            
             HStack(spacing: 4) {
                 sourceButton
                 menuButton
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private var episodeNavigationSection: some View {
-        Group {
-            if !isGroupedBySeasons && episodeLinks.count <= episodeChunkSize {
-                EmptyView()
-            } else if !isGroupedBySeasons && episodeLinks.count > episodeChunkSize {
-                rangeSelectionMenu
-            } else if isGroupedBySeasons {
-                seasonSelectionMenu
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private var rangeSelectionMenu: some View {
-        Menu {
-            ForEach(generateRanges(), id: \.self) { range in
-                Button(action: { selectedRange = range }) {
-                    Text("\(range.lowerBound + 1)-\(range.upperBound)")
-                }
-            }
-        } label: {
-            Text("\(selectedRange.lowerBound + 1)-\(selectedRange.upperBound)")
-                .font(.system(size: 14))
-                .foregroundColor(.accentColor)
-        }
-    }
-    
-    @ViewBuilder
-    private var seasonSelectionMenu: some View {
-        let seasons = groupedEpisodes()
-        if seasons.count > 1 {
-            Menu {
-                ForEach(0..<seasons.count, id: \.self) { index in
-                    Button(action: { selectedSeason = index }) {
-                        Text(String(format: NSLocalizedString("Season %d", comment: ""), index + 1))
-                    }
-                }
-            } label: {
-                Text("Season \(selectedSeason + 1)")
-                    .font(.system(size: 14))
-                    .foregroundColor(.accentColor)
             }
         }
     }
@@ -677,40 +694,35 @@ struct MediaInfoView: View {
                     Image(systemName: "calendar")
                         .foregroundColor(.accentColor)
                     Text(airdate)
-                        .font(.system(size: 14))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.accentColor)
                     Spacer()
                 }
             }
             if !aliases.isEmpty {
                 Text(aliases)
-                    .font(.system(size: 14))
+                    .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.secondary)
             }
-
             HStack {
                 Text(NSLocalizedString("Chapters", comment: ""))
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(.primary)
                 Spacer()
-                if chapters.count > chapterChunkSize {
-                    Menu {
-                        ForEach(generateChapterRanges(), id: \..self) { range in
-                            Button(action: { selectedChapterRange = range }) {
-                                Text("\(range.lowerBound + 1)-\(range.upperBound)")
-                            }
-                        }
-                    } label: {
-                        Text("\(selectedChapterRange.lowerBound + 1)-\(selectedChapterRange.upperBound)")
-                            .font(.system(size: 14))
-                            .foregroundColor(.accentColor)
-                    }
-                }
                 HStack(spacing: 4) {
                     sourceButton
                     menuButton
                 }
             }
+            // --- New Selectors Row for Chapters ---
+            if chapters.count > chapterChunkSize {
+                HStack {
+                    Spacer()
+                    chapterRangeSelectorStyled
+                }
+                .padding(.bottom, 0)
+            }
+            // --- End New Selectors Row ---
             LazyVStack(spacing: 15) {
                 ForEach(chapters.indices.filter { selectedChapterRange.contains($0) }, id: \..self) { i in
                     let chapter = chapters[i]
@@ -734,6 +746,29 @@ struct MediaInfoView: View {
                     }
                 }
             }
+        }
+    }
+
+    // Styled Chapter Range Selector
+    @ViewBuilder
+    private var chapterRangeSelectorStyled: some View {
+        Menu {
+            ForEach(generateChapterRanges(), id: \..self) { range in
+                Button(action: { selectedChapterRange = range }) {
+                    Text("\(range.lowerBound + 1)-\(range.upperBound)")
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text("\(selectedChapterRange.lowerBound + 1)-\(selectedChapterRange.upperBound)")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.accentColor)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(.accentColor)
+            }
+            .padding(.vertical, 2)
+            .padding(.horizontal, 4)
         }
     }
     

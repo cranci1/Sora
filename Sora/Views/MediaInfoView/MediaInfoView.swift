@@ -893,7 +893,7 @@ struct MediaInfoView: View {
 
                     group.addTask {
                         let fetchedChapters = try? await JSController.shared.extractChapters(moduleId: module.id.uuidString, href: href)
-                        DispatchQueue.main.async {
+                        await MainActor.run {
                             if let fetchedChapters = fetchedChapters {
                                 Logger.shared.log("setupInitialData: fetchedChapters count = \(fetchedChapters.count)", type: "Debug")
                                 Logger.shared.log("setupInitialData: fetchedChapters = \(fetchedChapters)", type: "Debug")
@@ -903,33 +903,38 @@ struct MediaInfoView: View {
                         }
                     }
                     group.addTask {
-                        await withCheckedContinuation { continuation in
+                        await MainActor.run {
                             self.fetchDetails()
-                            var checkDetails: (() -> Void)?
-                            checkDetails = {
-                                if !(self.synopsis.isEmpty && self.aliases.isEmpty && self.airdate.isEmpty) {
-                                    detailsLoaded = true
-                                    continuation.resume()
-                                } else if Date().timeIntervalSince(start) > timeout {
-                                    detailsLoaded = true
-                                    continuation.resume()
-                                } else {
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                        checkDetails?()
+                        }
+                        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                            func checkDetails() {
+                                Task { @MainActor in
+                                    if !(self.synopsis.isEmpty && self.aliases.isEmpty && self.airdate.isEmpty) {
+                                        detailsLoaded = true
+                                        continuation.resume()
+                                    } else if Date().timeIntervalSince(start) > timeout {
+                                        detailsLoaded = true
+                                        continuation.resume()
+                                    } else {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                            checkDetails()
+                                        }
                                     }
                                 }
                             }
-                            checkDetails?()
+                            checkDetails()
                         }
                     }
                     group.addTask {
                         try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
-                        DispatchQueue.main.async {
+                        await MainActor.run {
                             chaptersLoaded = true
                             detailsLoaded = true
                         }
                     }
-                    while !(chaptersLoaded && detailsLoaded) {
+                    while true {
+                        let loaded = await MainActor.run { chaptersLoaded && detailsLoaded }
+                        if loaded { break }
                         try? await Task.sleep(nanoseconds: 100_000_000)
                     }
                 }

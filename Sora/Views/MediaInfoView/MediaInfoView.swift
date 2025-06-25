@@ -733,7 +733,8 @@ struct MediaInfoView: View {
                             destination: ReaderView(
                                 moduleId: module.id.uuidString,
                                 chapterHref: href,
-                                chapterTitle: title
+                                chapterTitle: title,
+                                chapters: chapters
                             )
                         ) {
                             ChapterCell(

@@ -530,18 +530,17 @@ struct MediaInfoView: View {
             VStack(alignment: .leading, spacing: 16) {
                 episodesSectionHeader
                 if isGroupedBySeasons || episodeLinks.count > episodeChunkSize {
-                    HStack {
+                    HStack(spacing: 8) {
                         if isGroupedBySeasons {
                             seasonSelectorStyled
-                        } else {
-                            Spacer()
                         }
                         Spacer()
                         if episodeLinks.count > episodeChunkSize {
                             rangeSelectorStyled
+                                .padding(.trailing, 4)
                         }
                     }
-                    .padding(.bottom, 0)
+                    .padding(.top, -8)
                 }
                 episodeListSection
             }
@@ -568,7 +567,6 @@ struct MediaInfoView: View {
                         .foregroundColor(.accentColor)
                 }
                 .padding(.vertical, 2)
-                .padding(.horizontal, 4)
             }
         }
     }

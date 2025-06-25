@@ -141,8 +141,8 @@ struct DownloadView: View {
     private var emptyActiveDownloadsView: some View {
         VStack(spacing: 20) {
             Image(systemName: "arrow.down.circle")
-                .font(.system(size: 64, weight: .ultraLight))
-                .foregroundStyle(.tertiary)
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
             
             VStack(spacing: 8) {
                 Text(NSLocalizedString("No Active Downloads", comment: ""))
@@ -162,9 +162,9 @@ struct DownloadView: View {
     
     private var emptyDownloadsView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "arrow.down.circle")
-                .font(.system(size: 64, weight: .ultraLight))
-                .foregroundStyle(.tertiary)
+            Image(systemName: "arrow.down.circle")                                    
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
             
             VStack(spacing: 8) {
                 Text(NSLocalizedString("No Downloads", comment: ""))

@@ -5,11 +5,11 @@
 //  Created by Francesco on 05/01/25.
 //
 
-import JavaScriptCore
-import Foundation
-import SwiftUI
 import AVKit
+import SwiftUI
+import Foundation
 import AVFoundation
+import JavaScriptCore
 
 typealias Module = ScrapingModule
 
@@ -42,7 +42,6 @@ class JSController: NSObject, ObservableObject {
     
     func setupContext() {
         context.setupJavaScriptEnvironment()
-        // Inject async Promise bridge for extractChapters with debug logging
         let asyncChaptersHelper = """
         function extractChaptersWithCallback(href, callback) {
             try {
@@ -67,7 +66,6 @@ class JSController: NSObject, ObservableObject {
         }
         """
         context.evaluateScript(asyncChaptersHelper)
-        // Print JS exceptions to Xcode console
         context.exceptionHandler = { context, exception in
             print("[JS Exception]", exception?.toString() ?? "unknown")
         }
@@ -101,10 +99,6 @@ class JSController: NSObject, ObservableObject {
                     self?.processDownloadQueue()
                 }
             }
-        } else {
-            Logger.shared.log("No queued downloads to process or queue is already being processed")
         }
     }
 }
-
-

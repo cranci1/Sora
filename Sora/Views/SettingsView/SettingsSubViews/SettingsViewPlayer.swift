@@ -199,6 +199,7 @@ struct SettingsViewPlayer: View {
     @AppStorage("holdSpeedPlayer") private var holdSpeedPlayer: Double = 2.0
     @AppStorage("skipIncrement") private var skipIncrement: Double = 10.0
     @AppStorage("skipIncrementHold") private var skipIncrementHold: Double = 30.0
+    @AppStorage("remainingTimePercentage") private var remainingTimePercentage: Double = 90.0
     @AppStorage("holdForPauseEnabled") private var holdForPauseEnabled = false
     @AppStorage("skip85Visible") private var skip85Visible: Bool = true
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
@@ -216,7 +217,7 @@ struct SettingsViewPlayer: View {
             VStack(spacing: 24) {
                 SettingsSection(
                     title: NSLocalizedString("Media Player", comment: ""),
-                    footer: NSLocalizedString("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.", comment: "")
+                    footer: NSLocalizedString("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.\n\nThe completion percentage setting determines at what point before the end of a video the app will mark it as completed on AniList and Trakt.", comment: "")
                 ) {
                     SettingsPickerRow(
                         icon: "play.circle",
@@ -243,6 +244,15 @@ struct SettingsViewPlayer: View {
                         icon: "pip",
                         title: NSLocalizedString("Show PiP Button", comment: ""),
                         isOn: $pipButtonVisible,
+                        showDivider: true
+                    )
+                    
+                    SettingsPickerRow(
+                        icon: "timer",
+                        title: NSLocalizedString("Completion Percentage", comment: ""),
+                        options: [60.0, 70.0, 80.0, 90.0, 95.0, 100.0],
+                        optionToString: { "\(Int($0))%" },
+                        selection: $remainingTimePercentage,
                         showDivider: false
                     )
                 }

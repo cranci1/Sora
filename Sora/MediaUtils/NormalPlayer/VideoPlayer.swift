@@ -320,8 +320,10 @@ class VideoPlayerViewController: UIViewController {
             }
             
             let remainingPercentage = (duration - currentTime) / duration
+            let remainingTimePercentage = UserDefaults.standard.object(forKey: "remainingTimePercentage") != nil ? UserDefaults.standard.double(forKey: "remainingTimePercentage") : 90.0
+            let threshold = (100.0 - remainingTimePercentage) / 100.0
             
-            if remainingPercentage < 0.1 {
+            if remainingPercentage <= threshold {
                 if self.aniListID != 0 && !self.aniListUpdateSent {
                     self.sendAniListUpdate()
                 }

@@ -196,6 +196,7 @@ struct MediaInfoView: View {
                 UserDefaults.standard.set(newValue.lowerBound, forKey: selectedChapterRangeKey)
             }
             .onDisappear {
+                tabBarController.showTabBar()
                 currentFetchTask?.cancel()
                 activeFetchID = nil
             }

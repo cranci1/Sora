@@ -4,6 +4,7 @@
 //
 //  Created by Francesco on 06/01/25.
 //
+
 import SwiftUI
 
 struct ContentView_Previews: PreviewProvider {
@@ -28,13 +29,13 @@ struct ContentView: View {
         TabItem(icon: "gearshape", title: NSLocalizedString("SettingsTab", comment: "")),
         TabItem(icon: "magnifyingglass", title: NSLocalizedString("SearchTab", comment: ""))
     ]
-
+    
     private func tabView(for index: Int) -> some View {
         switch index {
-            case 1: return AnyView(DownloadView())
-            case 2: return AnyView(SettingsView())
-            case 3: return AnyView(SearchView(searchQuery: $searchQuery))
-            default: return AnyView(LibraryView())
+        case 1: return AnyView(DownloadView())
+        case 2: return AnyView(SettingsView())
+        case 3: return AnyView(SearchView(searchQuery: $searchQuery))
+        default: return AnyView(LibraryView())
         }
     }
     
@@ -56,7 +57,7 @@ struct ContentView: View {
                     tabView(for: selectedTab)
                 }
                 .environmentObject(tabBarController)
-
+                
                 TabBar(
                     tabs: tabs,
                     selectedTab: $selectedTab,

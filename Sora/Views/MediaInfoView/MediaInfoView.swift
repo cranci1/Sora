@@ -908,13 +908,15 @@ struct MediaInfoView: View {
         do {
             Logger.shared.log("setupInitialData: module.metadata.novel = \(String(describing: module.metadata.novel))", type: "Debug")
             if module.metadata.novel == true {
-                DispatchQueue.main.async {
-                    DropManager.shared.showDrop(
-                        title: "Fetching Data",
-                        subtitle: "Please wait while fetching.",
-                        duration: 0.5,
-                        icon: UIImage(systemName: "arrow.triangle.2.circlepath")
-                    )
+                if !hasFetched {
+                    DispatchQueue.main.async {
+                        DropManager.shared.showDrop(
+                            title: "Fetching Data",
+                            subtitle: "Please wait while fetching.",
+                            duration: 0.5,
+                            icon: UIImage(systemName: "arrow.triangle.2.circlepath")
+                        )
+                    }
                 }
                 let jsContent = try? moduleManager.getModuleContent(module)
                 if let jsContent = jsContent {
@@ -984,12 +986,14 @@ struct MediaInfoView: View {
                 if let savedPoster = UserDefaults.standard.string(forKey: "tmdbPosterURL_\(href)") {
                     imageUrl = savedPoster
                 }
-                DropManager.shared.showDrop(
-                    title: "Fetching Data",
-                    subtitle: "Please wait while fetching.",
-                    duration: 0.5,
-                    icon: UIImage(systemName: "arrow.triangle.2.circlepath")
-                )
+                if !hasFetched {
+                    DropManager.shared.showDrop(
+                        title: "Fetching Data",
+                        subtitle: "Please wait while fetching.",
+                        duration: 0.5,
+                        icon: UIImage(systemName: "arrow.triangle.2.circlepath")
+                    )
+                }
                 fetchDetails()
                 if savedCustomID != 0 {
                     itemID = savedCustomID

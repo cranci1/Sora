@@ -529,7 +529,6 @@ struct MediaInfoView: View {
         if episodeLinks.count != 1 {
             VStack(alignment: .leading, spacing: 16) {
                 episodesSectionHeader
-                // --- New Selectors Row ---
                 if isGroupedBySeasons || episodeLinks.count > episodeChunkSize {
                     HStack {
                         if isGroupedBySeasons {
@@ -544,13 +543,11 @@ struct MediaInfoView: View {
                     }
                     .padding(.bottom, 0)
                 }
-                // --- End New Selectors Row ---
                 episodeListSection
             }
         }
     }
 
-    // Styled Season Selector
     @ViewBuilder
     private var seasonSelectorStyled: some View {
         let seasons = groupedEpisodes()
@@ -576,7 +573,6 @@ struct MediaInfoView: View {
         }
     }
 
-    // Styled Range Selector
     @ViewBuilder
     private var rangeSelectorStyled: some View {
         Menu {
@@ -714,7 +710,6 @@ struct MediaInfoView: View {
                     menuButton
                 }
             }
-            // --- New Selectors Row for Chapters ---
             if chapters.count > chapterChunkSize {
                 HStack {
                     Spacer()
@@ -722,7 +717,6 @@ struct MediaInfoView: View {
                 }
                 .padding(.bottom, 0)
             }
-            // --- End New Selectors Row ---
             LazyVStack(spacing: 15) {
                 ForEach(chapters.indices.filter { selectedChapterRange.contains($0) }, id: \..self) { i in
                     let chapter = chapters[i]
@@ -750,7 +744,6 @@ struct MediaInfoView: View {
         }
     }
 
-    // Styled Chapter Range Selector
     @ViewBuilder
     private var chapterRangeSelectorStyled: some View {
         Menu {

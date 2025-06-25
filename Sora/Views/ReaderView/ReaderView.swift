@@ -184,7 +184,6 @@ struct ReaderView: View {
             UserDefaults.standard.set(chapterHref, forKey: "lastReadChapter")
         }
         .onDisappear {
-            // If there's a next chapter waiting, present it
             if let next = navigator.currentChapter,
                next.href != chapterHref {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
@@ -274,7 +273,6 @@ struct ReaderView: View {
                 HStack {
                     Spacer()
                     HStack(spacing: 8) {
-                        // Next Chapter Button
                         Button(action: {
                             goToNextChapter()
                         }) {

@@ -53,13 +53,19 @@ struct BookmarkGridItemView: View {
                                 }
                             }
                         )
-                    // Book/TV icon overlay, bottom right of module icon
-                    Image(systemName: isNovel ? "book.fill" : "tv.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 14, height: 14)
-                        .foregroundColor(.accentColor)
-                        .offset(x: 6, y: 6)
+                    ZStack {
+                        Circle()
+                            .fill(Color.gray.opacity(0.8))
+                            .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            .frame(width: 20, height: 20)
+                        Image(systemName: isNovel ? "book.fill" : "tv.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 10, height: 10)
+                            .foregroundColor(.white)
+                    }
+                    .circularGradientOutline()
+                    .offset(x: 6, y: 6)
                 }
                 .padding(8),
                 alignment: .topLeading

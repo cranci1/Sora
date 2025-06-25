@@ -22,6 +22,7 @@ struct LibraryView: View {
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     @State private var continueWatchingItems: [ContinueWatchingItem] = []
+    @State private var continueReadingItems: [ContinueReadingItem] = []
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var selectedTab: Int = 0
     
@@ -109,6 +110,53 @@ struct LibraryView: View {
                         
                         HStack {
                             HStack(spacing: 4) {
+                                Image(systemName: "book.fill")
+                                    .font(.subheadline)
+                                Text("Continue Reading")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                            }
+                            
+                            Spacer()
+                            
+                            NavigationLink(destination: AllReadingView()) {
+                                Text("View All")
+                                    .font(.subheadline)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(15)
+                                    .gradientOutline()
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                        
+                        if continueReadingItems.isEmpty {
+                            VStack(spacing: 8) {
+                                Image(systemName: "book.closed")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.secondary)
+                                Text("Nothing to Continue Reading")
+                                    .font(.headline)
+                                Text("Your recently read novels will appear here")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                        } else {
+                            ContinueReadingSection(items: $continueReadingItems, markAsRead: {
+                                item in
+                                markContinueReadingItemAsRead(item: item)
+                            }, removeItem: {
+                                item in
+                                removeContinueReadingItem(item: item)
+                            })
+                        }
+                        
+                        HStack {
+                            HStack(spacing: 4) {
                                 Image(systemName: "folder.fill")
                                     .font(.subheadline)
                                 Text("Collections")
@@ -129,6 +177,7 @@ struct LibraryView: View {
                             }
                         }
                         .padding(.horizontal, 20)
+                        .padding(.top, 20)
                         
                         BookmarksSection()
                         
@@ -140,11 +189,13 @@ struct LibraryView: View {
                 .deviceScaled()
                 .onAppear {
                     fetchContinueWatching()
+                    fetchContinueReading()
                     tabBarController.showTabBar()
                 }
                 .onChange(of: scenePhase) { newPhase in
                     if newPhase == .active {
                         fetchContinueWatching()
+                        fetchContinueReading()
                     }
                 }
             }
@@ -170,6 +221,30 @@ struct LibraryView: View {
     private func removeContinueWatchingItem(item: ContinueWatchingItem) {
         ContinueWatchingManager.shared.remove(item: item)
         continueWatchingItems.removeAll {
+            $0.id == item.id
+        }
+    }
+    
+    private func fetchContinueReading() {
+        continueReadingItems = ContinueReadingManager.shared.fetchItems()
+        Logger.shared.log("Fetched \(continueReadingItems.count) continue reading items", type: "Debug")
+        
+        if !continueReadingItems.isEmpty {
+            for (index, item) in continueReadingItems.enumerated() {
+                Logger.shared.log("Reading item \(index): \(item.mediaTitle), chapter \(item.chapterNumber), progress \(item.progress)", type: "Debug")
+            }
+        }
+    }
+    
+    private func markContinueReadingItemAsRead(item: ContinueReadingItem) {
+        UserDefaults.standard.set(1.0, forKey: "readingProgress_\(item.href)")
+        ContinueReadingManager.shared.updateProgress(for: item.href, progress: 1.0)
+        fetchContinueReading()
+    }
+    
+    private func removeContinueReadingItem(item: ContinueReadingItem) {
+        ContinueReadingManager.shared.remove(item: item)
+        continueReadingItems.removeAll {
             $0.id == item.id
         }
     }

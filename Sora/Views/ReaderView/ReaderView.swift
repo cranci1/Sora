@@ -47,6 +47,8 @@ struct ReaderView: View {
     @State private var textAlignment: String = "left"
     @State private var lineSpacing: CGFloat = 1.6
     @State private var margin: CGFloat = 4
+    @State private var readingProgress: Double = 0.0
+    @State private var lastProgressUpdate: Date = Date()
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var tabBarController: TabBarController
     @StateObject private var navigator = ChapterNavigator.shared
@@ -137,18 +139,29 @@ struct ReaderView: View {
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                    HTMLView(
-                        htmlContent: htmlContent,
-                        fontSize: fontSize,
-                        fontFamily: selectedFont,
-                        fontWeight: fontWeight,
-                        textAlignment: textAlignment,
-                        lineSpacing: lineSpacing,
-                        margin: margin,
-                        isAutoScrolling: $isAutoScrolling,
-                        autoScrollSpeed: autoScrollSpeed,
-                        colorPreset: colorPresets[selectedColorPreset]
-                    )
+                                    HTMLView(
+                    htmlContent: htmlContent,
+                    fontSize: fontSize,
+                    fontFamily: selectedFont,
+                    fontWeight: fontWeight,
+                    textAlignment: textAlignment,
+                    lineSpacing: lineSpacing,
+                    margin: margin,
+                    isAutoScrolling: $isAutoScrolling,
+                    autoScrollSpeed: autoScrollSpeed,
+                    colorPreset: colorPresets[selectedColorPreset],
+                    chapterHref: chapterHref,
+                    onProgressChanged: { progress in
+                        self.readingProgress = progress
+                        
+                        // Update progress more frequently (every 2 seconds)
+                        if Date().timeIntervalSince(self.lastProgressUpdate) > 2.0 {
+                            self.updateReadingProgress(progress: progress)
+                            self.lastProgressUpdate = Date()
+                            Logger.shared.log("Progress updated to \(progress)", type: "Debug")
+                        }
+                    }
+                )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.horizontal)
                     .simultaneousGesture(TapGesture().onEnded {
@@ -182,6 +195,7 @@ struct ReaderView: View {
         .onAppear {
             tabBarController.hideTabBar()
             UserDefaults.standard.set(chapterHref, forKey: "lastReadChapter")
+            saveReadingProgress()
         }
         .onDisappear {
             if let next = navigator.currentChapter,
@@ -575,10 +589,262 @@ struct ReaderView: View {
         let nextChapter = chapters[currentIndex + 1]
         if let nextHref = nextChapter["href"] as? String,
            let nextTitle = nextChapter["title"] as? String {
+            // Mark current chapter as completed
+            updateReadingProgress(progress: 1.0)
+            
             // Set the next chapter in the navigator
             navigator.currentChapter = (moduleId: moduleId, href: nextHref, title: nextTitle, chapters: chapters)
             dismiss()
         }
+    }
+    
+    private func saveReadingProgress() {
+        // Find the current novel title and chapter number from the chapters
+        var mediaTitle = "Unknown Novel"
+        var currentChapterNumber = 1
+        
+        // Log all chapter data to help debug the title extraction
+        Logger.shared.log("All chapter data for debugging:", type: "Debug")
+        for (index, chapter) in chapters.enumerated() {
+            let keys = chapter.keys.joined(separator: ", ")
+            Logger.shared.log("Chapter \(index) keys: \(keys)", type: "Debug")
+            
+            // Print some key values if they exist
+            if let title = chapter["title"] as? String {
+                Logger.shared.log("Chapter \(index) title: \(title)", type: "Debug")
+            }
+            if let number = chapter["number"] as? Int {
+                Logger.shared.log("Chapter \(index) number: \(number)", type: "Debug")
+            }
+        }
+        
+        // Don't try to extract from moduleId if it looks like a UUID
+        // UUIDs typically have this format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+        let uuidPattern = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+        let isUUID = moduleId.range(of: uuidPattern, options: .regularExpression, range: nil, locale: nil) != nil
+        
+        if !isUUID {
+            // Try extracting from moduleId if it's not a UUID
+            let components = moduleId.components(separatedBy: "-")
+            if components.count > 1 {
+                let potentialTitle = components.dropLast().joined(separator: "-")
+                    .replacingOccurrences(of: "_", with: " ")
+                    .capitalized
+                
+                if !potentialTitle.isEmpty && potentialTitle != "Unknown" {
+                    mediaTitle = potentialTitle
+                    Logger.shared.log("Extracted title from moduleId: \(mediaTitle)", type: "Debug")
+                }
+            }
+        }
+        
+        // If still unknown, try to extract from all chapter data
+        if mediaTitle == "Unknown Novel" {
+            for chapter in chapters {
+                // Check for novel title in various fields
+                for key in ["novelTitle", "mediaTitle", "seriesTitle", "series", "bookTitle", "mangaTitle", "title"] {
+                    if let title = chapter[key] as? String, !title.isEmpty, title != "Chapter" {
+                        // If the title contains "Chapter", it's probably not the novel title
+                        if !title.lowercased().contains("chapter") {
+                            mediaTitle = title
+                            Logger.shared.log("Extracted title from key \(key): \(mediaTitle)", type: "Debug")
+                            break
+                        }
+                    }
+                }
+                
+                if mediaTitle != "Unknown Novel" {
+                    break
+                }
+            }
+        }
+        
+        // Try to extract from the URL if it contains book or novel information
+        if mediaTitle == "Unknown Novel" && !chapterHref.isEmpty {
+            // Extract from URL patterns like https://novelfire.net/book/lord-of-the-mysteries/chapter-6
+            if let url = URL(string: chapterHref) {
+                let pathComponents = url.pathComponents
+                
+                // Look for "book" or "novel" in the path
+                for (index, component) in pathComponents.enumerated() {
+                    if component == "book" || component == "novel" {
+                        // The next component is likely the book title
+                        if index + 1 < pathComponents.count {
+                            let bookTitle = pathComponents[index + 1]
+                                .replacingOccurrences(of: "-", with: " ")
+                                .replacingOccurrences(of: "_", with: " ")
+                                .capitalized
+                            
+                            if !bookTitle.isEmpty {
+                                mediaTitle = bookTitle
+                                Logger.shared.log("Extracted title from URL: \(mediaTitle)", type: "Debug")
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // If still unknown, try to extract from chapter title
+        if mediaTitle == "Unknown Novel" && !chapterTitle.isEmpty {
+            // Often chapter titles are like "Series Name - Chapter X" or "Series Name: Chapter X"
+            for separator in [" - ", " – ", ": ", " | ", " ~ "] {
+                if let range = chapterTitle.range(of: separator) {
+                    let potentialTitle = chapterTitle[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !potentialTitle.isEmpty && !potentialTitle.lowercased().contains("chapter") {
+                        mediaTitle = String(potentialTitle)
+                        Logger.shared.log("Extracted title from chapter title with separator \(separator): \(mediaTitle)", type: "Debug")
+                        break
+                    }
+                }
+            }
+            
+            // If still unknown and the title contains "Chapter", extract everything before "Chapter"
+            if mediaTitle == "Unknown Novel" && chapterTitle.lowercased().contains("chapter") {
+                if let range = chapterTitle.range(of: "Chapter", options: .caseInsensitive) {
+                    let potentialTitle = chapterTitle[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !potentialTitle.isEmpty {
+                        mediaTitle = String(potentialTitle)
+                        Logger.shared.log("Extracted title from chapter title before 'Chapter': \(mediaTitle)", type: "Debug")
+                    }
+                }
+            }
+        }
+        
+        // Get chapter number
+        if let currentIndex = chapters.firstIndex(where: { $0["href"] as? String == chapterHref }) {
+            currentChapterNumber = chapters[currentIndex]["number"] as? Int ?? currentIndex + 1
+        }
+        
+        // Get the stored progress or use 0 as default
+        var progress = UserDefaults.standard.double(forKey: "readingProgress_\(chapterHref)") 
+        
+        // Always set at least 1% progress when opening a chapter
+        if progress < 0.01 {
+            progress = 0.01
+        }
+        
+        // Log the data we're saving for debugging
+        Logger.shared.log("Saving continue reading item: title=\(mediaTitle), chapter=\(chapterTitle), number=\(currentChapterNumber), href=\(chapterHref), progress=\(progress)", type: "Debug")
+        
+        let item = ContinueReadingItem(
+            mediaTitle: mediaTitle,
+            chapterTitle: chapterTitle,
+            chapterNumber: currentChapterNumber,
+            imageUrl: "", // This will be updated when we have image URLs for chapters
+            href: chapterHref,
+            moduleId: moduleId,
+            progress: progress,
+            totalChapters: chapters.count,
+            lastReadDate: Date()
+        )
+        
+        ContinueReadingManager.shared.save(item: item)
+    }
+    
+    private func updateReadingProgress(progress: Double) {
+        // Round up to 100% if very close
+        let roundedProgress = progress >= 0.95 ? 1.0 : progress
+        
+        UserDefaults.standard.set(roundedProgress, forKey: "readingProgress_\(chapterHref)")
+        
+        // Find the current novel title and chapter number from the chapters
+        var mediaTitle = "Unknown Novel"
+        var currentChapterNumber = 1
+        
+        // Try extracting from moduleId first (it often contains the novel name)
+        let components = moduleId.components(separatedBy: "-")
+        if components.count > 1 {
+            let potentialTitle = components.dropLast().joined(separator: "-")
+                .replacingOccurrences(of: "_", with: " ")
+                .capitalized
+            
+            if !potentialTitle.isEmpty && potentialTitle != "Unknown" {
+                mediaTitle = potentialTitle
+            }
+        }
+        
+        // If still unknown, try to extract from all chapter data
+        if mediaTitle == "Unknown Novel" {
+            for chapter in chapters {
+                // Check for novel title in various fields
+                for key in ["novelTitle", "mediaTitle", "seriesTitle", "series", "bookTitle", "mangaTitle", "title"] {
+                    if let title = chapter[key] as? String, !title.isEmpty, title != "Chapter" {
+                        // If the title contains "Chapter", it's probably not the novel title
+                        if !title.lowercased().contains("chapter") {
+                            mediaTitle = title
+                            break
+                        }
+                    }
+                }
+                
+                if mediaTitle != "Unknown Novel" {
+                    break
+                }
+            }
+        }
+        
+        // If still unknown, try to extract from chapter title
+        if mediaTitle == "Unknown Novel" && !chapterTitle.isEmpty {
+            // Often chapter titles are like "Series Name - Chapter X" or "Series Name: Chapter X"
+            for separator in [" - ", " – ", ": ", " | ", " ~ "] {
+                if let range = chapterTitle.range(of: separator) {
+                    let potentialTitle = chapterTitle[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !potentialTitle.isEmpty && !potentialTitle.lowercased().contains("chapter") {
+                        mediaTitle = String(potentialTitle)
+                        break
+                    }
+                }
+            }
+            
+            // If still unknown and the title contains "Chapter", extract everything before "Chapter"
+            if mediaTitle == "Unknown Novel" && chapterTitle.lowercased().contains("chapter") {
+                if let range = chapterTitle.range(of: "Chapter", options: .caseInsensitive) {
+                    let potentialTitle = chapterTitle[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !potentialTitle.isEmpty {
+                        mediaTitle = String(potentialTitle)
+                    }
+                }
+            }
+        }
+        
+        // Get chapter number
+        if let currentIndex = chapters.firstIndex(where: { $0["href"] as? String == chapterHref }) {
+            currentChapterNumber = chapters[currentIndex]["number"] as? Int ?? currentIndex + 1
+        }
+        
+        // Log the progress update
+        Logger.shared.log("Updating reading progress: \(roundedProgress) for \(chapterHref), title: \(mediaTitle)", type: "Debug")
+        
+        // Check if we should consider this chapter completed
+        let isCompleted = roundedProgress >= 0.98
+        
+        // If completed, we'll show notification but still keep in continue reading
+        // until user explicitly removes it or moves to next chapter
+        if isCompleted && readingProgress < 0.98 {
+            DropManager.shared.showDrop(
+                title: NSLocalizedString("Chapter Completed", comment: ""),
+                subtitle: "",
+                duration: 0.5,
+                icon: UIImage(systemName: "checkmark.circle")
+            )
+            Logger.shared.log("Chapter marked as completed", type: "Debug")
+        }
+        
+        let item = ContinueReadingItem(
+            mediaTitle: mediaTitle,
+            chapterTitle: chapterTitle,
+            chapterNumber: currentChapterNumber,
+            imageUrl: "", // This will be updated when we have image URLs for chapters
+            href: chapterHref,
+            moduleId: moduleId,
+            progress: roundedProgress,
+            totalChapters: chapters.count,
+            lastReadDate: Date()
+        )
+        
+        ContinueReadingManager.shared.save(item: item)
     }
 }
 
@@ -614,12 +880,21 @@ struct HTMLView: UIViewRepresentable {
     @Binding var isAutoScrolling: Bool
     let autoScrollSpeed: Double
     let colorPreset: (name: String, background: String, text: String)
+    let chapterHref: String?
+    
+    // Reading progress tracking
+    var onProgressChanged: ((Double) -> Void)? = nil
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
     
-    class Coordinator: NSObject {
+    // Cleanup when the view disappears
+    static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
+        coordinator.stopProgressTracking()
+    }
+    
+    class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         var parent: HTMLView
         var scrollTimer: Timer?
         var lastHtmlContent: String = ""
@@ -630,9 +905,40 @@ struct HTMLView: UIViewRepresentable {
         var lastLineSpacing: CGFloat = 0
         var lastMargin: CGFloat = 0
         var lastColorPreset: String = ""
+        var progressUpdateTimer: Timer?
+        weak var webView: WKWebView?
+        var savedScrollPosition: Double?
         
         init(_ parent: HTMLView) {
             self.parent = parent
+        }
+        
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            // Restore scroll position after navigation completes
+            if let href = parent.chapterHref {
+                let savedPosition = UserDefaults.standard.double(forKey: "scrollPosition_\(href)")
+                if savedPosition > 0.01 {
+                    let script = "window.scrollTo(0, document.documentElement.scrollHeight * \(savedPosition));"
+                    webView.evaluateJavaScript(script, completionHandler: { _, error in
+                        if let error = error {
+                            Logger.shared.log("Error restoring scroll position after navigation: \(error)", type: "Error")
+                        } else {
+                            Logger.shared.log("Restored scroll position to \(savedPosition) after navigation", type: "Debug")
+                        }
+                    })
+                }
+            }
+            
+            // Start tracking progress after navigation completes
+            startProgressTracking(webView: webView)
+        }
+        
+        // Handle scroll events from JavaScript
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if message.name == "scrollHandler", let webView = self.webView {
+                // Update reading progress when scroll events are received
+                updateReadingProgress(webView: webView)
+            }
         }
         
         func startAutoScroll(webView: WKWebView) {
@@ -661,6 +967,106 @@ struct HTMLView: UIViewRepresentable {
             scrollTimer?.invalidate()
             scrollTimer = nil
         }
+        
+        func startProgressTracking(webView: WKWebView) {
+            stopProgressTracking()
+            
+            // Update immediately on start
+            updateReadingProgress(webView: webView)
+            
+            // Then set up a timer for periodic updates - use a weaker timer that won't fire when the app is in the background
+            progressUpdateTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self, weak webView] _ in
+                // Only update if webView is still valid (view is still visible)
+                guard let strongSelf = self, let webView = webView, webView.window != nil else {
+                    // If webView is no longer in window hierarchy, stop tracking
+                    self?.stopProgressTracking()
+                    return
+                }
+                strongSelf.updateReadingProgress(webView: webView)
+            }
+            
+            // Also track scroll events for more responsive updates
+            let script = """
+            document.addEventListener('scroll', function() {
+                window.webkit.messageHandlers.scrollHandler.postMessage('scroll');
+            }, { passive: true });
+            """
+            
+            // Add a user script to track scroll events
+            let userScript = WKUserScript(source: script, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+            webView.configuration.userContentController.addUserScript(userScript)
+            
+            // Add a message handler for scroll events
+            webView.configuration.userContentController.add(self, name: "scrollHandler")
+        }
+        
+        func stopProgressTracking() {
+            progressUpdateTimer?.invalidate()
+            progressUpdateTimer = nil
+            
+            // Clean up message handlers
+            if let webView = self.webView {
+                webView.configuration.userContentController.removeAllUserScripts()
+                webView.configuration.userContentController.removeScriptMessageHandler(forName: "scrollHandler")
+            }
+        }
+        
+        func updateReadingProgress(webView: WKWebView) {
+            // Check if webView is actually visible in the window hierarchy
+            guard webView.window != nil else {
+                // WebView is not visible, stop tracking
+                stopProgressTracking()
+                return
+            }
+            
+            let script = """
+            (function() {
+                var scrollHeight = document.documentElement.scrollHeight;
+                var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                var clientHeight = document.documentElement.clientHeight;
+                
+                // Calculate progress as a percentage
+                var rawProgress = scrollHeight > 0 ? (scrollTop + clientHeight) / scrollHeight : 0;
+                
+                // If we're very close to the bottom (within 5%), consider it complete
+                var progress = rawProgress > 0.95 ? 1.0 : rawProgress;
+                
+                return {
+                    scrollHeight: scrollHeight,
+                    scrollTop: scrollTop,
+                    clientHeight: clientHeight,
+                    progress: progress,
+                    isAtBottom: (scrollTop + clientHeight >= scrollHeight - 10),
+                    scrollPosition: scrollTop / scrollHeight
+                };
+            })();
+            """
+            
+            webView.evaluateJavaScript(script) { [weak self] result, error in
+                guard let self = self, let dict = result as? [String: Any],
+                      let progress = dict["progress"] as? Double else {
+                    return
+                }
+                
+                // Save the scroll position for reopening
+                if let scrollPosition = dict["scrollPosition"] as? Double {
+                    self.savedScrollPosition = scrollPosition
+                    
+                    // Save the scroll position to UserDefaults
+                    if let href = self.parent.chapterHref {
+                        UserDefaults.standard.set(scrollPosition, forKey: "scrollPosition_\(href)")
+                    }
+                }
+                
+                // Log the progress for debugging
+                if let isAtBottom = dict["isAtBottom"] as? Bool, isAtBottom {
+                    Logger.shared.log("Reader at bottom of page, setting progress to 100%", type: "Debug")
+                    self.parent.onProgressChanged?(1.0)
+                } else {
+                    self.parent.onProgressChanged?(progress)
+                }
+            }
+        }
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -673,6 +1079,10 @@ struct HTMLView: UIViewRepresentable {
         webView.scrollView.bounces = false
         webView.scrollView.alwaysBounceHorizontal = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never
+        webView.navigationDelegate = context.coordinator
+        
+        // Store the webView reference in the coordinator for later use
+        context.coordinator.webView = webView
         
         return webView
     }
@@ -684,6 +1094,13 @@ struct HTMLView: UIViewRepresentable {
             coordinator.startAutoScroll(webView: webView)
         } else {
             coordinator.stopAutoScroll()
+        }
+        
+        // Only track reading progress when the view is active
+        if webView.window != nil {
+            coordinator.startProgressTracking(webView: webView)
+        } else {
+            coordinator.stopProgressTracking()
         }
         
         guard !htmlContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -754,6 +1171,24 @@ struct HTMLView: UIViewRepresentable {
             
             Logger.shared.log("Loading HTML content into WebView", type: "Debug")
             webView.loadHTMLString(htmlTemplate, baseURL: nil)
+            
+            // Restore scroll position after the content loads
+            if let href = chapterHref {
+                let savedPosition = UserDefaults.standard.double(forKey: "scrollPosition_\(href)")
+                if savedPosition > 0.01 {
+                    // Wait for the content to load before scrolling
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        let script = "window.scrollTo(0, document.documentElement.scrollHeight * \(savedPosition));"
+                        webView.evaluateJavaScript(script, completionHandler: { _, error in
+                            if let error = error {
+                                Logger.shared.log("Error restoring scroll position: \(error)", type: "Error")
+                            } else {
+                                Logger.shared.log("Restored scroll position to \(savedPosition)", type: "Debug")
+                            }
+                        })
+                    }
+                }
+            }
             
             coordinator.lastHtmlContent = htmlContent
             coordinator.lastFontSize = fontSize

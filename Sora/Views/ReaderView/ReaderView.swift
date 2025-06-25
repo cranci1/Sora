@@ -277,9 +277,9 @@ struct ReaderView: View {
                             goToNextChapter()
                         }) {
                             Image(systemName: "forward.end.fill")
-                                .font(.system(size: 18, weight: .bold))
+                                .font(.system(size: 14, weight: .bold))
                                 .foregroundColor(currentTheme.text)
-                                .padding(12)
+                                .padding(8)
                                 .background(currentTheme.background.opacity(0.8))
                                 .clipShape(Circle())
                                 .circularGradientOutline()

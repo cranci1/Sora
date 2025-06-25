@@ -28,10 +28,15 @@ struct CollectionDetailView: View {
     }
     
     private var filteredAndSortedBookmarks: [LibraryItem] {
-        let filtered = searchText.isEmpty ? collection.bookmarks : collection.bookmarks.filter { item in
+        let validBookmarks = collection.bookmarks.filter { bookmark in
+            moduleManager.modules.contains { $0.id.uuidString == bookmark.moduleId }
+        }
+        
+        let filtered = searchText.isEmpty ? validBookmarks : validBookmarks.filter { item in
             item.title.localizedCaseInsensitiveContains(searchText) ||
             item.moduleName.localizedCaseInsensitiveContains(searchText)
         }
+        
         switch sortOption {
         case .dateAdded:
             return filtered

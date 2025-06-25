@@ -7,6 +7,8 @@
 
 import Foundation
 import SwiftUI
+import NukeUI
+import Nuke
 
 struct BookmarkCollection: Codable, Identifiable {
     let id: UUID
@@ -55,11 +57,36 @@ class LibraryManager: ObservableObject {
         loadCollections()
         
         NotificationCenter.default.addObserver(self, selector: #selector(handleiCloudSync), name: .iCloudSyncDidComplete, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleModuleRemoval), name: .moduleRemoved, object: nil)
     }
     
     @objc private func handleiCloudSync() {
         DispatchQueue.main.async {
             self.loadCollections()
+        }
+    }
+    
+    @objc private func handleModuleRemoval(_ notification: Notification) {
+        if let moduleId = notification.object as? String {
+            cleanupBookmarksForModule(moduleId: moduleId)
+        }
+    }
+    
+    private func cleanupBookmarksForModule(moduleId: String) {
+        var didChange = false
+        
+        for (collectionIndex, collection) in collections.enumerated() {
+            let originalCount = collection.bookmarks.count
+            collections[collectionIndex].bookmarks.removeAll { $0.moduleId == moduleId }
+            
+            if collections[collectionIndex].bookmarks.count != originalCount {
+                didChange = true
+            }
+        }
+        
+        if didChange {
+            ImagePipeline.shared.cache.removeAll()
+            saveCollections()
         }
     }
     
@@ -71,16 +98,13 @@ class LibraryManager: ObservableObject {
         do {
             let oldBookmarks = try JSONDecoder().decode([LibraryItem].self, from: data)
             if !oldBookmarks.isEmpty {
-                // Check if "Old Bookmarks" collection already exists
                 if let existingIndex = collections.firstIndex(where: { $0.name == "Old Bookmarks" }) {
-                    // Add new bookmarks to existing collection, avoiding duplicates
                     for bookmark in oldBookmarks {
                         if !collections[existingIndex].bookmarks.contains(where: { $0.href == bookmark.href }) {
                             collections[existingIndex].bookmarks.insert(bookmark, at: 0)
                         }
                     }
                 } else {
-                    // Create new "Old Bookmarks" collection
                     let oldCollection = BookmarkCollection(name: "Old Bookmarks", bookmarks: oldBookmarks)
                     collections.append(oldCollection)
                 }

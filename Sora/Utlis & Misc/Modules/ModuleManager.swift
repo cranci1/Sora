@@ -196,6 +196,8 @@ class ModuleManager: ObservableObject {
         modules.removeAll { $0.id == module.id }
         saveModules()
         Logger.shared.log("Deleted module: \(module.metadata.sourceName)")
+        
+        NotificationCenter.default.post(name: .moduleRemoved, object: module.id.uuidString)
     }
     
     func getModuleContent(_ module: ScrapingModule) throws -> String {

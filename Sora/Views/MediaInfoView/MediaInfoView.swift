@@ -708,16 +708,17 @@ struct MediaInfoView: View {
                     menuButton
                 }
             }
-            if chapters.count > chapterChunkSize {
-                HStack {
-                    Spacer()
-                    chapterRangeSelectorStyled
+                            if chapters.count > chapterChunkSize {
+                    HStack {
+                        Spacer()
+                        chapterRangeSelectorStyled
+                    }
+                    .padding(.bottom, 0)
                 }
-                .padding(.bottom, 0)
-            }
-            LazyVStack(spacing: 15) {
-                ForEach(chapters.indices.filter { selectedChapterRange.contains($0) }, id: \..self) { i in
-                    let chapter = chapters[i]
+                LazyVStack(spacing: 15) {
+                    ForEach(chapters.indices.filter { selectedChapterRange.contains($0) }, id: \..self) { i in
+                        let chapter = chapters[i]
+                        let _ = refreshTrigger // Force refresh when trigger changes
                     if let href = chapter["href"] as? String,
                        let number = chapter["number"] as? Int,
                        let title = chapter["title"] as? String {
@@ -726,14 +727,36 @@ struct MediaInfoView: View {
                                 moduleId: module.id.uuidString,
                                 chapterHref: href,
                                 chapterTitle: title,
-                                chapters: chapters
+                                chapters: chapters,
+                                mediaTitle: self.title
                             )
                         ) {
                             ChapterCell(
                                 chapterNumber: String(number),
                                 chapterTitle: title,
-                                isCurrentChapter: UserDefaults.standard.string(forKey: "lastReadChapter") == href
+                                isCurrentChapter: false, // Disabled current chapter indicator
+                                progress: UserDefaults.standard.double(forKey: "readingProgress_\(href)"),
+                                href: href
                             )
+                        }
+                        .contextMenu {
+                            Button(action: {
+                                markChapterAsRead(href: href, number: number)
+                            }) {
+                                Label("Mark as Read", systemImage: "checkmark.circle")
+                            }
+                            
+                            Button(action: {
+                                resetChapterProgress(href: href)
+                            }) {
+                                Label("Reset Progress", systemImage: "arrow.counterclockwise")
+                            }
+                            
+                            Button(action: {
+                                markAllPreviousChaptersAsRead(currentNumber: number)
+                            }) {
+                                Label("Mark Previous as Read", systemImage: "checkmark.circle.badge.plus")
+                            }
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -2228,5 +2251,56 @@ struct MediaInfoView: View {
             ranges.append(i..<end)
         }
         return ranges
+    }
+    
+    private func markChapterAsRead(href: String, number: Int) {
+        UserDefaults.standard.set(1.0, forKey: "readingProgress_\(href)")
+        ContinueReadingManager.shared.updateProgress(for: href, progress: 1.0)
+        DropManager.shared.showDrop(
+            title: "Chapter \(number) Marked as Read",
+            subtitle: "",
+            duration: 1.0,
+            icon: UIImage(systemName: "checkmark.circle.fill")
+        )
+        refreshTrigger.toggle()
+    }
+    
+    private func resetChapterProgress(href: String) {
+        UserDefaults.standard.set(0.0, forKey: "readingProgress_\(href)")
+        ContinueReadingManager.shared.updateProgress(for: href, progress: 0.0)
+        DropManager.shared.showDrop(
+            title: "Progress Reset",
+            subtitle: "",
+            duration: 1.0,
+            icon: UIImage(systemName: "arrow.counterclockwise")
+        )
+        refreshTrigger.toggle()
+    }
+    
+    private func markAllPreviousChaptersAsRead(currentNumber: Int) {
+        let userDefaults = UserDefaults.standard
+        var markedCount = 0
+        
+        for chapter in chapters {
+            if let number = chapter["number"] as? Int,
+               let href = chapter["href"] as? String {
+                if number < currentNumber {
+                    userDefaults.set(1.0, forKey: "readingProgress_\(href)")
+                    ContinueReadingManager.shared.updateProgress(for: href, progress: 1.0)
+                    markedCount += 1
+                }
+            }
+        }
+        
+        userDefaults.synchronize()
+        
+        DropManager.shared.showDrop(
+            title: "Marked \(markedCount) Chapters as Read",
+            subtitle: "",
+            duration: 1.0,
+            icon: UIImage(systemName: "checkmark.circle.fill")
+        )
+        
+        refreshTrigger.toggle()
     }
 }

@@ -1,3 +1,10 @@
+//
+//  ContinueReadingSection.swift
+//  Sora
+//
+//  Created by paul on 26/06/25.
+//
+
 import SwiftUI
 import NukeUI
 
@@ -34,7 +41,8 @@ struct ContinueReadingCell: View {
         NavigationLink(destination: ReaderView(
             moduleId: item.moduleId,
             chapterHref: item.href,
-            chapterTitle: item.chapterTitle
+            chapterTitle: item.chapterTitle,
+            mediaTitle: item.mediaTitle
         )) {
             ZStack(alignment: .bottomLeading) {
                 LazyImage(url: URL(string: item.imageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : item.imageUrl)) { state in

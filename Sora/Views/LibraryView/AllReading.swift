@@ -1,3 +1,10 @@
+//
+//  AllReading.swift
+//  Sora
+//
+//  Created by paul on 26/06/25.
+//
+
 import SwiftUI
 import NukeUI
 
@@ -8,17 +15,21 @@ struct AllReadingView: View {
     
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 20) {
                 if continueReadingItems.isEmpty {
                     emptyStateView
                 } else {
-                    ForEach(continueReadingItems) { item in
-                        ContinueReadingListCell(item: item, 
-                                               markAsRead: {
-                            markContinueReadingItemAsRead(item: item)
-                        }, removeItem: {
-                            removeContinueReadingItem(item: item)
-                        })
+                    LazyVGrid(columns: [
+                        GridItem(.adaptive(minimum: 280), spacing: 16)
+                    ], spacing: 16) {
+                        ForEach(continueReadingItems) { item in
+                            ContinueReadingListCell(item: item, 
+                                                   markAsRead: {
+                                markContinueReadingItemAsRead(item: item)
+                            }, removeItem: {
+                                removeContinueReadingItem(item: item)
+                            })
+                        }
                     }
                 }
             }
@@ -81,76 +92,88 @@ struct ContinueReadingListCell: View {
     var markAsRead: () -> Void
     var removeItem: () -> Void
     
+    @Environment(\.colorScheme) private var colorScheme
+    
     var body: some View {
         NavigationLink(destination: ReaderView(
             moduleId: item.moduleId,
             chapterHref: item.href,
-            chapterTitle: item.chapterTitle
+            chapterTitle: item.chapterTitle,
+            mediaTitle: item.mediaTitle
         )) {
-            HStack(alignment: .center, spacing: 12) {
-                // Cover image
+            ZStack(alignment: .bottomLeading) {
                 LazyImage(url: URL(string: item.imageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : item.imageUrl)) { state in
                     if let uiImage = state.imageContainer?.image {
                         Image(uiImage: uiImage)
                             .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 80, height: 120)
-                            .cornerRadius(8)
+                            .aspectRatio(16/9, contentMode: .fill)
+                            .frame(width: 280, height: 157.03)
+                            .cornerRadius(10)
+                            .clipped()
                     } else {
-                        Rectangle()
+                        RoundedRectangle(cornerRadius: 10)
                             .fill(Color.gray.opacity(0.3))
-                            .frame(width: 80, height: 120)
-                            .cornerRadius(8)
+                            .frame(width: 280, height: 157.03)
+                            .redacted(reason: .placeholder)
                     }
                 }
-                
-                // Content
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.mediaTitle)
-                        .font(.headline)
-                        .lineLimit(2)
-                    
-                    Text(item.chapterTitle)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                    
-                    HStack {
-                        Text("Chapter \(item.chapterNumber)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        if item.progress >= 0.98 {
-                            HStack(spacing: 2) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(.green)
-                                Text("Completed")
-                                    .foregroundColor(.green)
+                .overlay(
+                    ZStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Spacer()
+                            Text(item.mediaTitle)
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                            
+                            HStack {
+                                Text("Chapter \(item.chapterNumber)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.9))
+                                
+                                Spacer()
+                                
+                                Text("\(Int(item.progress * 100))% read")
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.9))
                             }
-                            .font(.caption)
-                        } else {
-                            Text("\(Int(item.progress * 100))% read")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
                         }
-                    }
-                    
-                    // Progress bar
-                    ProgressView(value: item.progress)
-                        .progressViewStyle(LinearProgressViewStyle())
-                        .frame(height: 4)
-                }
-                
-                Spacer()
+                        .padding(10)
+                        .background(
+                            LinearGradient(
+                                colors: [
+                                    .black.opacity(0.7),
+                                    .black.opacity(0.0)
+                                ],
+                                startPoint: .bottom,
+                                endPoint: .top
+                            )
+                                .clipped()
+                                .cornerRadius(10, corners: [.bottomLeft, .bottomRight])
+                                .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
+                        )
+                    },
+                    alignment: .bottom
+                )
+                .overlay(
+                    ZStack {
+                        Circle()
+                            .fill(Color.black.opacity(0.5))
+                            .frame(width: 28, height: 28)
+                            .overlay(
+                                Image(systemName: "book")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 14, height: 14)
+                                    .foregroundColor(.white)
+                            )
+                            .padding(8)
+                    },
+                    alignment: .topLeading
+                )
             }
-            .padding(12)
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(12)
+            .frame(width: 280, height: 157.03)
         }
-        .buttonStyle(PlainButtonStyle())
         .contextMenu {
             Button(action: {
                 markAsRead()

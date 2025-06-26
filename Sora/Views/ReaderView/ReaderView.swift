@@ -10,7 +10,7 @@ import WebKit
 
 class ChapterNavigator: ObservableObject {
     static let shared = ChapterNavigator()
-    @Published var currentChapter: (moduleId: String, href: String, title: String, chapters: [[String: Any]])? = nil
+    @Published var currentChapter: (moduleId: String, href: String, title: String, chapters: [[String: Any]], mediaTitle: String)? = nil
 }
 
 extension UserDefaults {
@@ -31,6 +31,7 @@ struct ReaderView: View {
     let chapterHref: String
     let chapterTitle: String
     let chapters: [[String: Any]]
+    let mediaTitle: String // Added to store the actual novel title
     
     @State private var htmlContent: String = ""
     @State private var isLoading: Bool = true
@@ -91,11 +92,12 @@ struct ReaderView: View {
         )
     }
     
-    init(moduleId: String, chapterHref: String, chapterTitle: String, chapters: [[String: Any]] = []) {
+    init(moduleId: String, chapterHref: String, chapterTitle: String, chapters: [[String: Any]] = [], mediaTitle: String = "Unknown Novel") {
         self.moduleId = moduleId
         self.chapterHref = chapterHref
         self.chapterTitle = chapterTitle
         self.chapters = chapters
+        self.mediaTitle = mediaTitle
         
         _fontSize = State(initialValue: UserDefaults.standard.cgFloat(forKey: "readerFontSize") ?? 16)
         _selectedFont = State(initialValue: UserDefaults.standard.string(forKey: "readerFontFamily") ?? "-apple-system")
@@ -208,7 +210,8 @@ struct ReaderView: View {
                             moduleId: next.moduleId,
                             chapterHref: next.href,
                             chapterTitle: next.title,
-                            chapters: next.chapters
+                            chapters: next.chapters,
+                            mediaTitle: next.mediaTitle
                         )
                         .environmentObject(tabBarController)
                         
@@ -592,121 +595,90 @@ struct ReaderView: View {
             // Mark current chapter as completed
             updateReadingProgress(progress: 1.0)
             
-            // Set the next chapter in the navigator
-            navigator.currentChapter = (moduleId: moduleId, href: nextHref, title: nextTitle, chapters: chapters)
+            // Set the next chapter in the navigator with the same mediaTitle
+            navigator.currentChapter = (moduleId: moduleId, href: nextHref, title: nextTitle, chapters: chapters, mediaTitle: mediaTitle)
             dismiss()
         }
     }
     
     private func saveReadingProgress() {
-        // Find the current novel title and chapter number from the chapters
-        var mediaTitle = "Unknown Novel"
+        // Use the provided mediaTitle directly instead of trying to extract it
+        var novelTitle = self.mediaTitle
         var currentChapterNumber = 1
         
-        // Log all chapter data to help debug the title extraction
-        Logger.shared.log("All chapter data for debugging:", type: "Debug")
-        for (index, chapter) in chapters.enumerated() {
-            let keys = chapter.keys.joined(separator: ", ")
-            Logger.shared.log("Chapter \(index) keys: \(keys)", type: "Debug")
-            
-            // Print some key values if they exist
-            if let title = chapter["title"] as? String {
-                Logger.shared.log("Chapter \(index) title: \(title)", type: "Debug")
-            }
-            if let number = chapter["number"] as? Int {
-                Logger.shared.log("Chapter \(index) number: \(number)", type: "Debug")
-            }
-        }
+        // Log the title we're using
+        Logger.shared.log("Using novel title: \(novelTitle)", type: "Debug")
         
-        // Don't try to extract from moduleId if it looks like a UUID
-        // UUIDs typically have this format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-        let uuidPattern = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
-        let isUUID = moduleId.range(of: uuidPattern, options: .regularExpression, range: nil, locale: nil) != nil
-        
-        if !isUUID {
-            // Try extracting from moduleId if it's not a UUID
-            let components = moduleId.components(separatedBy: "-")
-            if components.count > 1 {
-                let potentialTitle = components.dropLast().joined(separator: "-")
-                    .replacingOccurrences(of: "_", with: " ")
-                    .capitalized
-                
-                if !potentialTitle.isEmpty && potentialTitle != "Unknown" {
-                    mediaTitle = potentialTitle
-                    Logger.shared.log("Extracted title from moduleId: \(mediaTitle)", type: "Debug")
-                }
-            }
-        }
-        
-        // If still unknown, try to extract from all chapter data
-        if mediaTitle == "Unknown Novel" {
+        // If the title is still unknown, try to extract from chapter data or URL as fallback
+        if novelTitle == "Unknown Novel" {
+            // Try to extract from all chapter data
             for chapter in chapters {
                 // Check for novel title in various fields
                 for key in ["novelTitle", "mediaTitle", "seriesTitle", "series", "bookTitle", "mangaTitle", "title"] {
                     if let title = chapter[key] as? String, !title.isEmpty, title != "Chapter" {
                         // If the title contains "Chapter", it's probably not the novel title
                         if !title.lowercased().contains("chapter") {
-                            mediaTitle = title
-                            Logger.shared.log("Extracted title from key \(key): \(mediaTitle)", type: "Debug")
+                            novelTitle = title
+                            Logger.shared.log("Extracted title from key \(key): \(novelTitle)", type: "Debug")
                             break
                         }
                     }
                 }
                 
-                if mediaTitle != "Unknown Novel" {
+                if novelTitle != "Unknown Novel" {
                     break
                 }
             }
-        }
-        
-        // Try to extract from the URL if it contains book or novel information
-        if mediaTitle == "Unknown Novel" && !chapterHref.isEmpty {
-            // Extract from URL patterns like https://novelfire.net/book/lord-of-the-mysteries/chapter-6
-            if let url = URL(string: chapterHref) {
-                let pathComponents = url.pathComponents
-                
-                // Look for "book" or "novel" in the path
-                for (index, component) in pathComponents.enumerated() {
-                    if component == "book" || component == "novel" {
-                        // The next component is likely the book title
-                        if index + 1 < pathComponents.count {
-                            let bookTitle = pathComponents[index + 1]
-                                .replacingOccurrences(of: "-", with: " ")
-                                .replacingOccurrences(of: "_", with: " ")
-                                .capitalized
-                            
-                            if !bookTitle.isEmpty {
-                                mediaTitle = bookTitle
-                                Logger.shared.log("Extracted title from URL: \(mediaTitle)", type: "Debug")
-                                break
+            
+            // Try to extract from the URL if it contains book or novel information
+            if novelTitle == "Unknown Novel" && !chapterHref.isEmpty {
+                // Extract from URL patterns like https://novelfire.net/book/lord-of-the-mysteries/chapter-6
+                if let url = URL(string: chapterHref) {
+                    let pathComponents = url.pathComponents
+                    
+                    // Look for "book" or "novel" in the path
+                    for (index, component) in pathComponents.enumerated() {
+                        if component == "book" || component == "novel" {
+                            // The next component is likely the book title
+                            if index + 1 < pathComponents.count {
+                                let bookTitle = pathComponents[index + 1]
+                                    .replacingOccurrences(of: "-", with: " ")
+                                    .replacingOccurrences(of: "_", with: " ")
+                                    .capitalized
+                                
+                                if !bookTitle.isEmpty {
+                                    novelTitle = bookTitle
+                                    Logger.shared.log("Extracted title from URL: \(novelTitle)", type: "Debug")
+                                    break
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        
-        // If still unknown, try to extract from chapter title
-        if mediaTitle == "Unknown Novel" && !chapterTitle.isEmpty {
-            // Often chapter titles are like "Series Name - Chapter X" or "Series Name: Chapter X"
-            for separator in [" - ", " – ", ": ", " | ", " ~ "] {
-                if let range = chapterTitle.range(of: separator) {
-                    let potentialTitle = chapterTitle[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !potentialTitle.isEmpty && !potentialTitle.lowercased().contains("chapter") {
-                        mediaTitle = String(potentialTitle)
-                        Logger.shared.log("Extracted title from chapter title with separator \(separator): \(mediaTitle)", type: "Debug")
-                        break
+            
+            // If still unknown, try to extract from chapter title
+            if novelTitle == "Unknown Novel" && !chapterTitle.isEmpty {
+                // Often chapter titles are like "Series Name - Chapter X" or "Series Name: Chapter X"
+                for separator in [" - ", " – ", ": ", " | ", " ~ "] {
+                    if let range = chapterTitle.range(of: separator) {
+                        let potentialTitle = chapterTitle[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !potentialTitle.isEmpty && !potentialTitle.lowercased().contains("chapter") {
+                            novelTitle = String(potentialTitle)
+                            Logger.shared.log("Extracted title from chapter title with separator \(separator): \(novelTitle)", type: "Debug")
+                            break
+                        }
                     }
                 }
-            }
-            
-            // If still unknown and the title contains "Chapter", extract everything before "Chapter"
-            if mediaTitle == "Unknown Novel" && chapterTitle.lowercased().contains("chapter") {
-                if let range = chapterTitle.range(of: "Chapter", options: .caseInsensitive) {
-                    let potentialTitle = chapterTitle[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !potentialTitle.isEmpty {
-                        mediaTitle = String(potentialTitle)
-                        Logger.shared.log("Extracted title from chapter title before 'Chapter': \(mediaTitle)", type: "Debug")
+                
+                // If still unknown and the title contains "Chapter", extract everything before "Chapter"
+                if novelTitle == "Unknown Novel" && chapterTitle.lowercased().contains("chapter") {
+                    if let range = chapterTitle.range(of: "Chapter", options: .caseInsensitive) {
+                        let potentialTitle = chapterTitle[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !potentialTitle.isEmpty {
+                            novelTitle = String(potentialTitle)
+                            Logger.shared.log("Extracted title from chapter title before 'Chapter': \(novelTitle)", type: "Debug")
+                        }
                     }
                 }
             }
@@ -726,10 +698,10 @@ struct ReaderView: View {
         }
         
         // Log the data we're saving for debugging
-        Logger.shared.log("Saving continue reading item: title=\(mediaTitle), chapter=\(chapterTitle), number=\(currentChapterNumber), href=\(chapterHref), progress=\(progress)", type: "Debug")
+        Logger.shared.log("Saving continue reading item: title=\(novelTitle), chapter=\(chapterTitle), number=\(currentChapterNumber), href=\(chapterHref), progress=\(progress)", type: "Debug")
         
         let item = ContinueReadingItem(
-            mediaTitle: mediaTitle,
+            mediaTitle: novelTitle,
             chapterTitle: chapterTitle,
             chapterNumber: currentChapterNumber,
             imageUrl: "", // This will be updated when we have image URLs for chapters
@@ -749,65 +721,9 @@ struct ReaderView: View {
         
         UserDefaults.standard.set(roundedProgress, forKey: "readingProgress_\(chapterHref)")
         
-        // Find the current novel title and chapter number from the chapters
-        var mediaTitle = "Unknown Novel"
+        // Use the provided mediaTitle directly
+        var novelTitle = self.mediaTitle
         var currentChapterNumber = 1
-        
-        // Try extracting from moduleId first (it often contains the novel name)
-        let components = moduleId.components(separatedBy: "-")
-        if components.count > 1 {
-            let potentialTitle = components.dropLast().joined(separator: "-")
-                .replacingOccurrences(of: "_", with: " ")
-                .capitalized
-            
-            if !potentialTitle.isEmpty && potentialTitle != "Unknown" {
-                mediaTitle = potentialTitle
-            }
-        }
-        
-        // If still unknown, try to extract from all chapter data
-        if mediaTitle == "Unknown Novel" {
-            for chapter in chapters {
-                // Check for novel title in various fields
-                for key in ["novelTitle", "mediaTitle", "seriesTitle", "series", "bookTitle", "mangaTitle", "title"] {
-                    if let title = chapter[key] as? String, !title.isEmpty, title != "Chapter" {
-                        // If the title contains "Chapter", it's probably not the novel title
-                        if !title.lowercased().contains("chapter") {
-                            mediaTitle = title
-                            break
-                        }
-                    }
-                }
-                
-                if mediaTitle != "Unknown Novel" {
-                    break
-                }
-            }
-        }
-        
-        // If still unknown, try to extract from chapter title
-        if mediaTitle == "Unknown Novel" && !chapterTitle.isEmpty {
-            // Often chapter titles are like "Series Name - Chapter X" or "Series Name: Chapter X"
-            for separator in [" - ", " – ", ": ", " | ", " ~ "] {
-                if let range = chapterTitle.range(of: separator) {
-                    let potentialTitle = chapterTitle[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !potentialTitle.isEmpty && !potentialTitle.lowercased().contains("chapter") {
-                        mediaTitle = String(potentialTitle)
-                        break
-                    }
-                }
-            }
-            
-            // If still unknown and the title contains "Chapter", extract everything before "Chapter"
-            if mediaTitle == "Unknown Novel" && chapterTitle.lowercased().contains("chapter") {
-                if let range = chapterTitle.range(of: "Chapter", options: .caseInsensitive) {
-                    let potentialTitle = chapterTitle[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !potentialTitle.isEmpty {
-                        mediaTitle = String(potentialTitle)
-                    }
-                }
-            }
-        }
         
         // Get chapter number
         if let currentIndex = chapters.firstIndex(where: { $0["href"] as? String == chapterHref }) {
@@ -815,13 +731,12 @@ struct ReaderView: View {
         }
         
         // Log the progress update
-        Logger.shared.log("Updating reading progress: \(roundedProgress) for \(chapterHref), title: \(mediaTitle)", type: "Debug")
+        Logger.shared.log("Updating reading progress: \(roundedProgress) for \(chapterHref), title: \(novelTitle)", type: "Debug")
         
         // Check if we should consider this chapter completed
         let isCompleted = roundedProgress >= 0.98
         
-        // If completed, we'll show notification but still keep in continue reading
-        // until user explicitly removes it or moves to next chapter
+        // If completed, show notification and update progress
         if isCompleted && readingProgress < 0.98 {
             DropManager.shared.showDrop(
                 title: NSLocalizedString("Chapter Completed", comment: ""),
@@ -830,21 +745,26 @@ struct ReaderView: View {
                 icon: UIImage(systemName: "checkmark.circle")
             )
             Logger.shared.log("Chapter marked as completed", type: "Debug")
+            
+            // For completed chapters, update progress directly in ContinueReadingManager
+            // which will remove it from continue reading list
+            ContinueReadingManager.shared.updateProgress(for: chapterHref, progress: roundedProgress)
+        } else {
+            // For in-progress chapters, create/update the continue reading item
+            let item = ContinueReadingItem(
+                mediaTitle: novelTitle,
+                chapterTitle: chapterTitle,
+                chapterNumber: currentChapterNumber,
+                imageUrl: "", // This will be updated when we have image URLs for chapters
+                href: chapterHref,
+                moduleId: moduleId,
+                progress: roundedProgress,
+                totalChapters: chapters.count,
+                lastReadDate: Date()
+            )
+            
+            ContinueReadingManager.shared.save(item: item)
         }
-        
-        let item = ContinueReadingItem(
-            mediaTitle: mediaTitle,
-            chapterTitle: chapterTitle,
-            chapterNumber: currentChapterNumber,
-            imageUrl: "", // This will be updated when we have image URLs for chapters
-            href: chapterHref,
-            moduleId: moduleId,
-            progress: roundedProgress,
-            totalChapters: chapters.count,
-            lastReadDate: Date()
-        )
-        
-        ContinueReadingManager.shared.save(item: item)
     }
 }
 

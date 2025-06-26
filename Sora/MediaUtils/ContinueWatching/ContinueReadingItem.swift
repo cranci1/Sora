@@ -1,3 +1,10 @@
+//
+//  ContinueReadingItem.swift
+//  Sora
+//
+//  Created by paul on 26/06/25.
+//
+
 import Foundation
 
 struct ContinueReadingItem: Identifiable, Codable {

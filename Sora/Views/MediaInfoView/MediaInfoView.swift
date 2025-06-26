@@ -2255,7 +2255,11 @@ struct MediaInfoView: View {
     
     private func markChapterAsRead(href: String, number: Int) {
         UserDefaults.standard.set(1.0, forKey: "readingProgress_\(href)")
+        
+        UserDefaults.standard.set(1.0, forKey: "scrollPosition_\(href)")
+        
         ContinueReadingManager.shared.updateProgress(for: href, progress: 1.0)
+        
         DropManager.shared.showDrop(
             title: "Chapter \(number) Marked as Read",
             subtitle: "",
@@ -2267,7 +2271,11 @@ struct MediaInfoView: View {
     
     private func resetChapterProgress(href: String) {
         UserDefaults.standard.set(0.0, forKey: "readingProgress_\(href)")
+        
+        UserDefaults.standard.removeObject(forKey: "scrollPosition_\(href)")
+        
         ContinueReadingManager.shared.updateProgress(for: href, progress: 0.0)
+        
         DropManager.shared.showDrop(
             title: "Progress Reset",
             subtitle: "",
@@ -2285,7 +2293,13 @@ struct MediaInfoView: View {
             if let number = chapter["number"] as? Int,
                let href = chapter["href"] as? String {
                 if number < currentNumber {
+                    // Set reading progress to 100%
                     userDefaults.set(1.0, forKey: "readingProgress_\(href)")
+                    
+                    // Set scroll position to end of chapter
+                    userDefaults.set(1.0, forKey: "scrollPosition_\(href)")
+                    
+                    // Update continue reading manager
                     ContinueReadingManager.shared.updateProgress(for: href, progress: 1.0)
                     markedCount += 1
                 }

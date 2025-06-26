@@ -40,11 +40,18 @@ class ContinueReadingManager {
     
     func fetchItems() -> [ContinueReadingItem] {
         guard let data = userDefaults.data(forKey: continueReadingKey) else {
+            Logger.shared.log("No continue reading items found in UserDefaults", type: "Debug")
             return []
         }
         
         do {
             let items = try JSONDecoder().decode([ContinueReadingItem].self, from: data)
+            Logger.shared.log("Fetched \(items.count) continue reading items", type: "Debug")
+            
+            for (index, item) in items.enumerated() {
+                Logger.shared.log("Item \(index): \(item.mediaTitle), Image URL: \(item.imageUrl)", type: "Debug")
+            }
+            
             return items.sorted(by: { $0.lastReadDate > $1.lastReadDate })
         } catch {
             Logger.shared.log("Error decoding continue reading items: \(error)", type: "Error")
@@ -87,6 +94,68 @@ class ContinueReadingManager {
             }
         }
         
+        // Log the incoming image URL for debugging
+        Logger.shared.log("Incoming item image URL: \(updatedItem.imageUrl)", type: "Debug")
+        
+        // If no image URL is provided, use a default one
+        if updatedItem.imageUrl.isEmpty {
+            // Use a default novel cover image
+            let defaultImageUrl = "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/novel_cover.jpg"
+            updatedItem = ContinueReadingItem(
+                id: updatedItem.id,
+                mediaTitle: updatedItem.mediaTitle,
+                chapterTitle: updatedItem.chapterTitle,
+                chapterNumber: updatedItem.chapterNumber,
+                imageUrl: defaultImageUrl,
+                href: updatedItem.href,
+                moduleId: updatedItem.moduleId,
+                progress: updatedItem.progress,
+                totalChapters: updatedItem.totalChapters,
+                lastReadDate: updatedItem.lastReadDate
+            )
+            Logger.shared.log("Using default image URL: \(defaultImageUrl)", type: "Debug")
+        }
+        
+        if !updatedItem.imageUrl.isEmpty {
+            if URL(string: updatedItem.imageUrl) == nil {
+                Logger.shared.log("Invalid image URL format: \(updatedItem.imageUrl)", type: "Warning")
+                
+                if let encodedUrl = updatedItem.imageUrl.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                   let _ = URL(string: encodedUrl) {
+                    updatedItem = ContinueReadingItem(
+                        id: updatedItem.id,
+                        mediaTitle: updatedItem.mediaTitle,
+                        chapterTitle: updatedItem.chapterTitle,
+                        chapterNumber: updatedItem.chapterNumber,
+                        imageUrl: encodedUrl,
+                        href: updatedItem.href,
+                        moduleId: updatedItem.moduleId,
+                        progress: updatedItem.progress,
+                        totalChapters: updatedItem.totalChapters,
+                        lastReadDate: updatedItem.lastReadDate
+                    )
+                    Logger.shared.log("Fixed image URL with encoding: \(encodedUrl)", type: "Debug")
+                } else {
+                    let defaultImageUrl = "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/novel_cover.jpg"
+                    updatedItem = ContinueReadingItem(
+                        id: updatedItem.id,
+                        mediaTitle: updatedItem.mediaTitle,
+                        chapterTitle: updatedItem.chapterTitle,
+                        chapterNumber: updatedItem.chapterNumber,
+                        imageUrl: defaultImageUrl,
+                        href: updatedItem.href,
+                        moduleId: updatedItem.moduleId,
+                        progress: updatedItem.progress,
+                        totalChapters: updatedItem.totalChapters,
+                        lastReadDate: updatedItem.lastReadDate
+                    )
+                    Logger.shared.log("Using default image URL after encoding failed: \(defaultImageUrl)", type: "Debug")
+                }
+            }
+        }
+        
+        Logger.shared.log("Saving item with image URL: \(updatedItem.imageUrl)", type: "Debug")
+        
         items.append(updatedItem)
         
         if items.count > 20 {
@@ -96,6 +165,7 @@ class ContinueReadingManager {
         do {
             let data = try JSONEncoder().encode(items)
             userDefaults.set(data, forKey: continueReadingKey)
+            Logger.shared.log("Successfully saved continue reading item", type: "Debug")
         } catch {
             Logger.shared.log("Error encoding continue reading items: \(error)", type: "Error")
         }
@@ -150,6 +220,9 @@ class ContinueReadingManager {
                 totalChapters: updatedItem.totalChapters,
                 lastReadDate: Date()
             )
+            
+            Logger.shared.log("Updating item with image URL: \(newItem.imageUrl)", type: "Debug")
+            
             items[index] = newItem
             
             do {

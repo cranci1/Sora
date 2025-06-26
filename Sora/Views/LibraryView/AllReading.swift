@@ -9,34 +9,220 @@ import SwiftUI
 import NukeUI
 
 struct AllReadingView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var continueReadingItems: [ContinueReadingItem] = []
     @State private var isRefreshing: Bool = false
+    @State private var sortOption: SortOption = .dateAdded
+    @State private var searchText: String = ""
+    @State private var isSearchActive: Bool = false
+    @State private var isSelecting: Bool = false
+    @State private var selectedItems: Set<ContinueReadingItem.ID> = []
     @Environment(\.scenePhase) private var scenePhase
     
+    enum SortOption: String, CaseIterable {
+        case dateAdded = "Recently Added"
+        case title = "Novel Title"
+        case progress = "Read Progress"
+    }
+    
+    var filteredAndSortedItems: [ContinueReadingItem] {
+        let filtered = searchText.isEmpty ? continueReadingItems : continueReadingItems.filter { item in
+            item.mediaTitle.localizedCaseInsensitiveContains(searchText)
+        }
+        switch sortOption {
+        case .dateAdded:
+            return filtered.reversed()
+        case .title:
+            return filtered.sorted { $0.mediaTitle.lowercased() < $1.mediaTitle.lowercased() }
+        case .progress:
+            return filtered.sorted { $0.progress > $1.progress }
+        }
+    }
+    
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                if continueReadingItems.isEmpty {
-                    emptyStateView
-                } else {
-                    LazyVGrid(columns: [
-                        GridItem(.adaptive(minimum: 280), spacing: 16)
-                    ], spacing: 16) {
-                        ForEach(continueReadingItems) { item in
-                            ContinueReadingListCell(item: item, 
-                                                   markAsRead: {
-                                markContinueReadingItemAsRead(item: item)
-                            }, removeItem: {
-                                removeContinueReadingItem(item: item)
-                            })
+        VStack(alignment: .leading) {
+            HStack {
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 24))
+                        .foregroundColor(.primary)
+                }
+                
+                Button(action: {
+                    dismiss()
+                }) {
+                    Text("All Reading")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                }
+                
+                Spacer()
+                
+                HStack(spacing: 16) {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isSearchActive.toggle()
                         }
+                        if !isSearchActive {
+                            searchText = ""
+                        }
+                    }) {
+                        Image(systemName: isSearchActive ? "xmark.circle.fill" : "magnifyingglass")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(.accentColor)
+                            .padding(10)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            )
+                            .circularGradientOutline()
+                    }
+                    Menu {
+                        ForEach(SortOption.allCases, id: \.self) { option in
+                            Button {
+                                sortOption = option
+                            } label: {
+                                HStack {
+                                    Text(option.rawValue)
+                                    if option == sortOption {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(.accentColor)
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(.accentColor)
+                            .padding(10)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            )
+                            .circularGradientOutline()
+                    }
+                    Button(action: {
+                        if isSelecting {
+                            // If trash icon tapped
+                            if !selectedItems.isEmpty {
+                                for id in selectedItems {
+                                    if let item = continueReadingItems.first(where: { $0.id == id }) {
+                                        ContinueReadingManager.shared.remove(item: item)
+                                    }
+                                }
+                                selectedItems.removeAll()
+                                fetchContinueReading()
+                            }
+                            isSelecting = false
+                        } else {
+                            isSelecting = true
+                        }
+                    }) {
+                        Image(systemName: isSelecting ? "trash" : "checkmark.circle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(isSelecting ? .red : .accentColor)
+                            .padding(10)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .shadow(color: .accentColor.opacity(0.2), radius: 2)
+                            )
+                            .circularGradientOutline()
                     }
                 }
             }
             .padding(.horizontal)
             .padding(.top)
+            
+            if isSearchActive {
+                HStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "magnifyingglass")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(.secondary)
+                        TextField("Search reading...", text: $searchText)
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .foregroundColor(.primary)
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 18, height: 18)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: Color.accentColor.opacity(0.25), location: 0),
+                                        .init(color: Color.accentColor.opacity(0), location: 1)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 1.5
+                            )
+                    )
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .top).combined(with: .opacity),
+                    removal: .move(edge: .top).combined(with: .opacity)
+                ))
+            }
+            
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    if filteredAndSortedItems.isEmpty {
+                        emptyStateView
+                    } else {
+                        ForEach(filteredAndSortedItems) { item in
+                            FullWidthContinueReadingCell(
+                                item: item, 
+                                markAsRead: {
+                                    markContinueReadingItemAsRead(item: item)
+                                }, 
+                                removeItem: {
+                                    removeContinueReadingItem(item: item)
+                                },
+                                isSelecting: isSelecting,
+                                selectedItems: $selectedItems
+                            )
+                        }
+                    }
+                }
+                .padding(.top)
+                .padding(.horizontal)
+            }
+            .scrollViewBottomPadding()
         }
-        .navigationTitle("Continue Reading")
+        .navigationBarBackButtonHidden(true)
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             fetchContinueReading()
         }
@@ -73,6 +259,10 @@ struct AllReadingView: View {
     
     private func fetchContinueReading() {
         continueReadingItems = ContinueReadingManager.shared.fetchItems()
+        
+        for (index, item) in continueReadingItems.enumerated() {
+            print("Reading item \(index): Title: \(item.mediaTitle), Image URL: \(item.imageUrl)")
+        }
     }
     
     private func markContinueReadingItemAsRead(item: ContinueReadingItem) {
@@ -87,104 +277,167 @@ struct AllReadingView: View {
     }
 }
 
-struct ContinueReadingListCell: View {
+struct FullWidthContinueReadingCell: View {
     let item: ContinueReadingItem
     var markAsRead: () -> Void
     var removeItem: () -> Void
+    var isSelecting: Bool
+    var selectedItems: Binding<Set<ContinueReadingItem.ID>>
     
-    @Environment(\.colorScheme) private var colorScheme
+    var isSelected: Bool {
+        selectedItems.wrappedValue.contains(item.id)
+    }
+    
+    private var imageURL: URL {
+        print("Processing image URL: \(item.imageUrl)")
+        
+        if !item.imageUrl.isEmpty {
+            if let url = URL(string: item.imageUrl) {
+                print("Valid URL: \(url)")
+                return url
+            }
+            
+            if let encodedUrlString = item.imageUrl.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+               let url = URL(string: encodedUrlString) {
+                print("Using encoded URL: \(encodedUrlString)")
+                return url
+            }
+        }
+        
+        print("Using fallback URL")
+        return URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png")!
+    }
     
     var body: some View {
-        NavigationLink(destination: ReaderView(
-            moduleId: item.moduleId,
-            chapterHref: item.href,
-            chapterTitle: item.chapterTitle,
-            mediaTitle: item.mediaTitle
-        )) {
-            ZStack(alignment: .bottomLeading) {
-                LazyImage(url: URL(string: item.imageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : item.imageUrl)) { state in
-                    if let uiImage = state.imageContainer?.image {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .aspectRatio(16/9, contentMode: .fill)
-                            .frame(width: 280, height: 157.03)
-                            .cornerRadius(10)
-                            .clipped()
+        Group {
+            if isSelecting {
+                Button(action: {
+                    if isSelected {
+                        selectedItems.wrappedValue.remove(item.id)
                     } else {
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(width: 280, height: 157.03)
-                            .redacted(reason: .placeholder)
+                        selectedItems.wrappedValue.insert(item.id)
+                    }
+                }) {
+                    ZStack(alignment: .topTrailing) {
+                        cellContent
+                        if isSelected {
+                            Image(systemName: "checkmark.circle.fill")
+                                .resizable()
+                                .frame(width: 32, height: 32)
+                                .foregroundColor(.black)
+                                .background(Color.white.clipShape(Circle()).opacity(0.8))
+                                .offset(x: -8, y: 8)
+                        }
                     }
                 }
-                .overlay(
-                    ZStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Spacer()
-                            Text(item.mediaTitle)
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .lineLimit(1)
-                            
-                            HStack {
-                                Text("Chapter \(item.chapterNumber)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.9))
-                                
-                                Spacer()
-                                
-                                Text("\(Int(item.progress * 100))% read")
-                                    .font(.caption)
-                                    .foregroundColor(.white.opacity(0.9))
-                            }
-                        }
-                        .padding(10)
-                        .background(
-                            LinearGradient(
-                                colors: [
-                                    .black.opacity(0.7),
-                                    .black.opacity(0.0)
-                                ],
-                                startPoint: .bottom,
-                                endPoint: .top
-                            )
-                                .clipped()
-                                .cornerRadius(10, corners: [.bottomLeft, .bottomRight])
-                                .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
-                        )
-                    },
-                    alignment: .bottom
-                )
-                .overlay(
-                    ZStack {
-                        Circle()
-                            .fill(Color.black.opacity(0.5))
-                            .frame(width: 28, height: 28)
-                            .overlay(
-                                Image(systemName: "book")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 14, height: 14)
-                                    .foregroundColor(.white)
-                            )
-                            .padding(8)
-                    },
-                    alignment: .topLeading
-                )
+            } else {
+                NavigationLink(destination: ReaderView(
+                    moduleId: item.moduleId,
+                    chapterHref: item.href,
+                    chapterTitle: item.chapterTitle,
+                    mediaTitle: item.mediaTitle
+                )) {
+                    cellContent
+                }
             }
-            .frame(width: 280, height: 157.03)
         }
         .contextMenu {
-            Button(action: {
-                markAsRead()
-            }) {
+            Button(action: { markAsRead() }) {
                 Label("Mark as Read", systemImage: "checkmark.circle")
             }
-            Button(role: .destructive, action: {
-                removeItem()
-            }) {
-                Label("Remove Item", systemImage: "trash")
+            Button(role: .destructive, action: { removeItem() }) {
+                Label("Remove from Continue Reading", systemImage: "trash")
             }
         }
+    }
+    
+    private var cellContent: some View {
+        GeometryReader { geometry in
+            ZStack {
+                // Main container
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.black.opacity(0.2))
+                    .frame(height: 157.03)
+                
+                HStack(spacing: 0) {
+                    ZStack(alignment: .topLeading) {
+                        LazyImage(url: imageURL) { state in
+                            if let image = state.imageContainer?.image {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: geometry.size.width * 0.6, height: 157.03)
+                                    .blur(radius: 3)
+                                    .opacity(0.7)
+                                    .clipped()
+                            } else {
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.3))
+                                    .frame(width: geometry.size.width * 0.6, height: 157.03)
+                            }
+                        }
+                        .onAppear {
+                            print("Left image loading: \(imageURL)")
+                        }
+                        
+                        Rectangle()
+                            .fill(Color.black.opacity(0.5))
+                            .frame(width: geometry.size.width * 0.6, height: 157.03)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(Int(item.progress * 100))%")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .padding(.vertical, 4)
+                                .padding(.horizontal, 8)
+                                .background(Color.black.opacity(0.6))
+                                .cornerRadius(4)
+                            
+                            Spacer()
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Chapter \(item.chapterNumber)")
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.9))
+                                
+                                Text(item.mediaTitle)
+                                    .font(.headline)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                                    .lineLimit(2)
+                            }
+                        }
+                        .padding(12)
+                    }
+                    .frame(width: geometry.size.width * 0.6, height: 157.03)
+                    
+                    LazyImage(url: imageURL) { state in
+                        if let image = state.imageContainer?.image {
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: geometry.size.width * 0.4, height: 157.03)
+                                .clipped()
+                        } else {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: geometry.size.width * 0.4, height: 157.03)
+                        }
+                    }
+                    .onAppear {
+                        print("Right image loading: \(imageURL)")
+                    }
+                    .frame(width: geometry.size.width * 0.4, height: 157.03)
+                }
+            }
+            .frame(height: 157.03)
+            .cornerRadius(10)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+            )
+        }
+        .frame(height: 157.03)
     }
 } 

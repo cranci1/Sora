@@ -921,6 +921,10 @@ struct MediaInfoView: View {
     private func setupInitialData() async {
         do {
             Logger.shared.log("setupInitialData: module.metadata.novel = \(String(describing: module.metadata.novel))", type: "Debug")
+            
+            UserDefaults.standard.set(imageUrl, forKey: "mediaInfoImageUrl_\(module.id.uuidString)")
+            Logger.shared.log("Saved MediaInfoView image URL: \(imageUrl) for module \(module.id.uuidString)", type: "Debug")
+            
             if module.metadata.novel == true {
                 if !hasFetched {
                     DispatchQueue.main.async {

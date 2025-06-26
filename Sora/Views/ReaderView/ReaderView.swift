@@ -31,7 +31,7 @@ struct ReaderView: View {
     let chapterHref: String
     let chapterTitle: String
     let chapters: [[String: Any]]
-    let mediaTitle: String // Added to store the actual novel title
+    let mediaTitle: String 
     
     @State private var htmlContent: String = ""
     @State private var isLoading: Bool = true
@@ -156,7 +156,6 @@ struct ReaderView: View {
                     onProgressChanged: { progress in
                         self.readingProgress = progress
                         
-                        // Update progress more frequently (every 2 seconds)
                         if Date().timeIntervalSince(self.lastProgressUpdate) > 2.0 {
                             self.updateReadingProgress(progress: progress)
                             self.lastProgressUpdate = Date()
@@ -579,7 +578,6 @@ struct ReaderView: View {
     private func goToNextChapter() {
         guard let currentIndex = chapters.firstIndex(where: { $0["href"] as? String == chapterHref }),
               currentIndex + 1 < chapters.count else {
-            // Show a message when there's no next chapter
             DropManager.shared.showDrop(
                 title: NSLocalizedString("No Next Chapter", comment: ""),
                 subtitle: "",
@@ -592,28 +590,53 @@ struct ReaderView: View {
         let nextChapter = chapters[currentIndex + 1]
         if let nextHref = nextChapter["href"] as? String,
            let nextTitle = nextChapter["title"] as? String {
-            // Mark current chapter as completed
             updateReadingProgress(progress: 1.0)
             
-            // Set the next chapter in the navigator with the same mediaTitle
             navigator.currentChapter = (moduleId: moduleId, href: nextHref, title: nextTitle, chapters: chapters, mediaTitle: mediaTitle)
             dismiss()
         }
     }
     
     private func saveReadingProgress() {
-        // Use the provided mediaTitle directly instead of trying to extract it
         var novelTitle = self.mediaTitle
         var currentChapterNumber = 1
+        var imageUrl = ""
         
-        // Log the title we're using
         Logger.shared.log("Using novel title: \(novelTitle)", type: "Debug")
         
-        // If the title is still unknown, try to extract from chapter data or URL as fallback
-        if novelTitle == "Unknown Novel" {
-            // Try to extract from all chapter data
+        if let savedImageUrl = UserDefaults.standard.string(forKey: "mediaInfoImageUrl_\(moduleId)") {
+            imageUrl = savedImageUrl
+            Logger.shared.log("Using saved MediaInfoView image URL: \(imageUrl)", type: "Debug")
+        }
+        
+        if imageUrl.isEmpty {
             for chapter in chapters {
-                // Check for novel title in various fields
+                for key in ["imageUrl", "coverUrl", "cover", "image", "thumbnail", "posterUrl", "poster"] {
+                    if let url = chapter[key] as? String, !url.isEmpty {
+                        imageUrl = url
+                        Logger.shared.log("Found image URL from key \(key): \(imageUrl)", type: "Debug")
+                        break
+                    }
+                }
+                
+                if !imageUrl.isEmpty {
+                    break
+                }
+            }
+        }
+        
+        if imageUrl.isEmpty, let currentChapter = chapters.first(where: { $0["href"] as? String == chapterHref }) {
+            for key in ["imageUrl", "coverUrl", "cover", "image", "thumbnail", "posterUrl", "poster"] {
+                if let url = currentChapter[key] as? String, !url.isEmpty {
+                    imageUrl = url
+                    Logger.shared.log("Found image URL from current chapter key \(key): \(imageUrl)", type: "Debug")
+                    break
+                }
+            }
+        }
+        
+        if novelTitle == "Unknown Novel" {
+            for chapter in chapters {
                 for key in ["novelTitle", "mediaTitle", "seriesTitle", "series", "bookTitle", "mangaTitle", "title"] {
                     if let title = chapter[key] as? String, !title.isEmpty, title != "Chapter" {
                         // If the title contains "Chapter", it's probably not the novel title
@@ -630,16 +653,12 @@ struct ReaderView: View {
                 }
             }
             
-            // Try to extract from the URL if it contains book or novel information
             if novelTitle == "Unknown Novel" && !chapterHref.isEmpty {
-                // Extract from URL patterns like https://novelfire.net/book/lord-of-the-mysteries/chapter-6
                 if let url = URL(string: chapterHref) {
                     let pathComponents = url.pathComponents
                     
-                    // Look for "book" or "novel" in the path
                     for (index, component) in pathComponents.enumerated() {
                         if component == "book" || component == "novel" {
-                            // The next component is likely the book title
                             if index + 1 < pathComponents.count {
                                 let bookTitle = pathComponents[index + 1]
                                     .replacingOccurrences(of: "-", with: " ")
@@ -657,9 +676,7 @@ struct ReaderView: View {
                 }
             }
             
-            // If still unknown, try to extract from chapter title
             if novelTitle == "Unknown Novel" && !chapterTitle.isEmpty {
-                // Often chapter titles are like "Series Name - Chapter X" or "Series Name: Chapter X"
                 for separator in [" - ", " – ", ": ", " | ", " ~ "] {
                     if let range = chapterTitle.range(of: separator) {
                         let potentialTitle = chapterTitle[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
@@ -671,7 +688,6 @@ struct ReaderView: View {
                     }
                 }
                 
-                // If still unknown and the title contains "Chapter", extract everything before "Chapter"
                 if novelTitle == "Unknown Novel" && chapterTitle.lowercased().contains("chapter") {
                     if let range = chapterTitle.range(of: "Chapter", options: .caseInsensitive) {
                         let potentialTitle = chapterTitle[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
@@ -684,27 +700,30 @@ struct ReaderView: View {
             }
         }
         
-        // Get chapter number
         if let currentIndex = chapters.firstIndex(where: { $0["href"] as? String == chapterHref }) {
             currentChapterNumber = chapters[currentIndex]["number"] as? Int ?? currentIndex + 1
         }
         
-        // Get the stored progress or use 0 as default
+        if imageUrl.isEmpty {
+            imageUrl = "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/novel_cover.jpg"
+            Logger.shared.log("Using default novel cover image URL", type: "Debug")
+        }
+        
+        UserDefaults.standard.set(imageUrl, forKey: "novelImageUrl_\(moduleId)_\(novelTitle)")
+        
         var progress = UserDefaults.standard.double(forKey: "readingProgress_\(chapterHref)") 
         
-        // Always set at least 1% progress when opening a chapter
         if progress < 0.01 {
             progress = 0.01
         }
         
-        // Log the data we're saving for debugging
-        Logger.shared.log("Saving continue reading item: title=\(novelTitle), chapter=\(chapterTitle), number=\(currentChapterNumber), href=\(chapterHref), progress=\(progress)", type: "Debug")
+        Logger.shared.log("Saving continue reading item: title=\(novelTitle), chapter=\(chapterTitle), number=\(currentChapterNumber), href=\(chapterHref), progress=\(progress), imageUrl=\(imageUrl)", type: "Debug")
         
         let item = ContinueReadingItem(
             mediaTitle: novelTitle,
             chapterTitle: chapterTitle,
             chapterNumber: currentChapterNumber,
-            imageUrl: "", // This will be updated when we have image URLs for chapters
+            imageUrl: imageUrl, 
             href: chapterHref,
             moduleId: moduleId,
             progress: progress,
@@ -716,27 +735,56 @@ struct ReaderView: View {
     }
     
     private func updateReadingProgress(progress: Double) {
-        // Round up to 100% if very close
         let roundedProgress = progress >= 0.95 ? 1.0 : progress
         
         UserDefaults.standard.set(roundedProgress, forKey: "readingProgress_\(chapterHref)")
         
-        // Use the provided mediaTitle directly
         var novelTitle = self.mediaTitle
         var currentChapterNumber = 1
+        var imageUrl = ""
         
-        // Get chapter number
+        if let savedImageUrl = UserDefaults.standard.string(forKey: "mediaInfoImageUrl_\(moduleId)") {
+            imageUrl = savedImageUrl
+        } else if let savedImageUrl = UserDefaults.standard.string(forKey: "novelImageUrl_\(moduleId)_\(novelTitle)") {
+            imageUrl = savedImageUrl
+        }
+        
+        if imageUrl.isEmpty {
+            for chapter in chapters {
+                for key in ["imageUrl", "coverUrl", "cover", "image", "thumbnail", "posterUrl", "poster"] {
+                    if let url = chapter[key] as? String, !url.isEmpty {
+                        imageUrl = url
+                        break
+                    }
+                }
+                
+                if !imageUrl.isEmpty {
+                    break
+                }
+            }
+        }
+        
+        if imageUrl.isEmpty, let currentChapter = chapters.first(where: { $0["href"] as? String == chapterHref }) {
+            for key in ["imageUrl", "coverUrl", "cover", "image", "thumbnail", "posterUrl", "poster"] {
+                if let url = currentChapter[key] as? String, !url.isEmpty {
+                    imageUrl = url
+                    break
+                }
+            }
+        }
+        
+        if imageUrl.isEmpty {
+            imageUrl = "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/novel_cover.jpg"
+        }
+        
         if let currentIndex = chapters.firstIndex(where: { $0["href"] as? String == chapterHref }) {
             currentChapterNumber = chapters[currentIndex]["number"] as? Int ?? currentIndex + 1
         }
         
-        // Log the progress update
-        Logger.shared.log("Updating reading progress: \(roundedProgress) for \(chapterHref), title: \(novelTitle)", type: "Debug")
+        Logger.shared.log("Updating reading progress: \(roundedProgress) for \(chapterHref), title: \(novelTitle), image: \(imageUrl)", type: "Debug")
         
-        // Check if we should consider this chapter completed
         let isCompleted = roundedProgress >= 0.98
         
-        // If completed, show notification and update progress
         if isCompleted && readingProgress < 0.98 {
             DropManager.shared.showDrop(
                 title: NSLocalizedString("Chapter Completed", comment: ""),
@@ -746,16 +794,13 @@ struct ReaderView: View {
             )
             Logger.shared.log("Chapter marked as completed", type: "Debug")
             
-            // For completed chapters, update progress directly in ContinueReadingManager
-            // which will remove it from continue reading list
             ContinueReadingManager.shared.updateProgress(for: chapterHref, progress: roundedProgress)
         } else {
-            // For in-progress chapters, create/update the continue reading item
             let item = ContinueReadingItem(
                 mediaTitle: novelTitle,
                 chapterTitle: chapterTitle,
                 chapterNumber: currentChapterNumber,
-                imageUrl: "", // This will be updated when we have image URLs for chapters
+                imageUrl: imageUrl, 
                 href: chapterHref,
                 moduleId: moduleId,
                 progress: roundedProgress,
@@ -802,14 +847,12 @@ struct HTMLView: UIViewRepresentable {
     let colorPreset: (name: String, background: String, text: String)
     let chapterHref: String?
     
-    // Reading progress tracking
     var onProgressChanged: ((Double) -> Void)? = nil
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
     
-    // Cleanup when the view disappears
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
         coordinator.stopProgressTracking()
     }
@@ -834,7 +877,6 @@ struct HTMLView: UIViewRepresentable {
         }
         
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            // Restore scroll position after navigation completes
             if let href = parent.chapterHref {
                 let savedPosition = UserDefaults.standard.double(forKey: "scrollPosition_\(href)")
                 if savedPosition > 0.01 {
@@ -849,14 +891,11 @@ struct HTMLView: UIViewRepresentable {
                 }
             }
             
-            // Start tracking progress after navigation completes
             startProgressTracking(webView: webView)
         }
         
-        // Handle scroll events from JavaScript
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if message.name == "scrollHandler", let webView = self.webView {
-                // Update reading progress when scroll events are received
                 updateReadingProgress(webView: webView)
             }
         }
@@ -864,8 +903,8 @@ struct HTMLView: UIViewRepresentable {
         func startAutoScroll(webView: WKWebView) {
             stopAutoScroll()
             
-            scrollTimer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in // 60fps for smoother scrolling
-                let scrollAmount = self.parent.autoScrollSpeed * 0.5 // Reduced increment for smoother scrolling
+            scrollTimer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in 
+                let scrollAmount = self.parent.autoScrollSpeed * 0.5 
                 
                 webView.evaluateJavaScript("window.scrollBy(0, \(scrollAmount));") { _, error in
                     if let error = error {
@@ -891,32 +930,25 @@ struct HTMLView: UIViewRepresentable {
         func startProgressTracking(webView: WKWebView) {
             stopProgressTracking()
             
-            // Update immediately on start
             updateReadingProgress(webView: webView)
             
-            // Then set up a timer for periodic updates - use a weaker timer that won't fire when the app is in the background
             progressUpdateTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self, weak webView] _ in
-                // Only update if webView is still valid (view is still visible)
                 guard let strongSelf = self, let webView = webView, webView.window != nil else {
-                    // If webView is no longer in window hierarchy, stop tracking
                     self?.stopProgressTracking()
                     return
                 }
                 strongSelf.updateReadingProgress(webView: webView)
             }
             
-            // Also track scroll events for more responsive updates
             let script = """
             document.addEventListener('scroll', function() {
                 window.webkit.messageHandlers.scrollHandler.postMessage('scroll');
             }, { passive: true });
             """
             
-            // Add a user script to track scroll events
             let userScript = WKUserScript(source: script, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
             webView.configuration.userContentController.addUserScript(userScript)
             
-            // Add a message handler for scroll events
             webView.configuration.userContentController.add(self, name: "scrollHandler")
         }
         
@@ -924,7 +956,6 @@ struct HTMLView: UIViewRepresentable {
             progressUpdateTimer?.invalidate()
             progressUpdateTimer = nil
             
-            // Clean up message handlers
             if let webView = self.webView {
                 webView.configuration.userContentController.removeAllUserScripts()
                 webView.configuration.userContentController.removeScriptMessageHandler(forName: "scrollHandler")
@@ -932,9 +963,7 @@ struct HTMLView: UIViewRepresentable {
         }
         
         func updateReadingProgress(webView: WKWebView) {
-            // Check if webView is actually visible in the window hierarchy
             guard webView.window != nil else {
-                // WebView is not visible, stop tracking
                 stopProgressTracking()
                 return
             }
@@ -968,17 +997,14 @@ struct HTMLView: UIViewRepresentable {
                     return
                 }
                 
-                // Save the scroll position for reopening
                 if let scrollPosition = dict["scrollPosition"] as? Double {
                     self.savedScrollPosition = scrollPosition
                     
-                    // Save the scroll position to UserDefaults
                     if let href = self.parent.chapterHref {
                         UserDefaults.standard.set(scrollPosition, forKey: "scrollPosition_\(href)")
                     }
                 }
                 
-                // Log the progress for debugging
                 if let isAtBottom = dict["isAtBottom"] as? Bool, isAtBottom {
                     Logger.shared.log("Reader at bottom of page, setting progress to 100%", type: "Debug")
                     self.parent.onProgressChanged?(1.0)
@@ -1001,7 +1027,6 @@ struct HTMLView: UIViewRepresentable {
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.navigationDelegate = context.coordinator
         
-        // Store the webView reference in the coordinator for later use
         context.coordinator.webView = webView
         
         return webView
@@ -1016,7 +1041,6 @@ struct HTMLView: UIViewRepresentable {
             coordinator.stopAutoScroll()
         }
         
-        // Only track reading progress when the view is active
         if webView.window != nil {
             coordinator.startProgressTracking(webView: webView)
         } else {
@@ -1092,11 +1116,9 @@ struct HTMLView: UIViewRepresentable {
             Logger.shared.log("Loading HTML content into WebView", type: "Debug")
             webView.loadHTMLString(htmlTemplate, baseURL: nil)
             
-            // Restore scroll position after the content loads
             if let href = chapterHref {
                 let savedPosition = UserDefaults.standard.double(forKey: "scrollPosition_\(href)")
                 if savedPosition > 0.01 {
-                    // Wait for the content to load before scrolling
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         let script = "window.scrollTo(0, document.documentElement.scrollHeight * \(savedPosition));"
                         webView.evaluateJavaScript(script, completionHandler: { _, error in

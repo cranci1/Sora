@@ -36,6 +36,36 @@ struct ContinueReadingCell: View {
     var removeItem: () -> Void
     
     @Environment(\.colorScheme) private var colorScheme
+    @State private var imageLoadError: Bool = false
+    
+    private var imageURL: URL {
+        print("Processing image URL in ContinueReadingCell: \(item.imageUrl)")
+        
+        if !item.imageUrl.isEmpty {
+            if let url = URL(string: item.imageUrl) {
+                print("Valid direct URL: \(url)")
+                return url
+            }
+            
+            if let encodedUrlString = item.imageUrl.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+               let url = URL(string: encodedUrlString) {
+                print("Using encoded URL: \(encodedUrlString)")
+                return url
+            }
+            
+            if item.imageUrl.hasPrefix("http://") {
+                let httpsUrl = "https://" + item.imageUrl.dropFirst(7)
+                if let url = URL(string: httpsUrl) {
+                    print("Using https URL: \(httpsUrl)")
+                    return url
+                }
+            }
+        }
+        
+        print("Using fallback URL")
+        // Default fallback image
+        return URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png")!
+    }
     
     var body: some View {
         NavigationLink(destination: ReaderView(
@@ -44,88 +74,95 @@ struct ContinueReadingCell: View {
             chapterTitle: item.chapterTitle,
             mediaTitle: item.mediaTitle
         )) {
-            ZStack(alignment: .bottomLeading) {
-                LazyImage(url: URL(string: item.imageUrl.isEmpty ? "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png" : item.imageUrl)) { state in
-                    if let uiImage = state.imageContainer?.image {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .aspectRatio(16/9, contentMode: .fill)
-                            .frame(width: 280, height: 157.03)
-                            .cornerRadius(10)
-                            .clipped()
-                    } else {
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(width: 280, height: 157.03)
-                            .redacted(reason: .placeholder)
-                    }
-                }
-                .overlay(
-                    ZStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Spacer()
-                            Text(item.mediaTitle)
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .lineLimit(1)
-                            
-                            HStack {
-                                Text("Chapter \(item.chapterNumber)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.9))
-                                
-                                Spacer()
-                                
-                                if item.progress >= 0.98 {
-                                    HStack(spacing: 2) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 10))
-                                        Text("Completed")
-                                    }
-                                    .font(.caption)
-                                    .foregroundColor(.green.opacity(0.9))
-                                } else {
-                                    Text("\(Int(item.progress * 100))% read")
-                                        .font(.caption)
-                                        .foregroundColor(.white.opacity(0.9))
-                                }
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.black.opacity(0.2))
+                    .frame(width: 280, height: 157.03)
+                
+                HStack(spacing: 0) {
+                    ZStack(alignment: .topLeading) {
+                        LazyImage(url: imageURL) { state in
+                            if let image = state.imageContainer?.image {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 170, height: 157.03)
+                                    .blur(radius: 3)
+                                    .opacity(0.7)
+                                    .clipped()
+                            } else {
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.3))
+                                    .frame(width: 170, height: 157.03)
                             }
                         }
-                        .padding(10)
-                        .background(
-                            LinearGradient(
-                                colors: [
-                                    .black.opacity(0.7),
-                                    .black.opacity(0.0)
-                                ],
-                                startPoint: .bottom,
-                                endPoint: .top
-                            )
-                                .clipped()
-                                .cornerRadius(10, corners: [.bottomLeft, .bottomRight])
-                                .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
-                        )
-                    },
-                    alignment: .bottom
-                )
-                .overlay(
-                    ZStack {
-                        Circle()
+                        .onAppear {
+                            print("Left image loading: \(imageURL)")
+                        }
+                        .onDisappear {
+                            print("Left image disappeared")
+                        }
+                        
+                        Rectangle()
                             .fill(Color.black.opacity(0.5))
-                            .frame(width: 28, height: 28)
-                            .overlay(
-                                Image(systemName: "book")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 14, height: 14)
+                            .frame(width: 170, height: 157.03)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(Int(item.progress * 100))%")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .padding(.vertical, 4)
+                                .padding(.horizontal, 8)
+                                .background(Color.black.opacity(0.6))
+                                .cornerRadius(4)
+                            
+                            Spacer()
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Chapter \(item.chapterNumber)")
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.9))
+                                
+                                Text(item.mediaTitle)
+                                    .font(.headline)
+                                    .fontWeight(.bold)
                                     .foregroundColor(.white)
-                            )
-                            .padding(8)
-                    },
-                    alignment: .topLeading
-                )
+                                    .lineLimit(2)
+                            }
+                        }
+                        .padding(12)
+                    }
+                    .frame(width: 170, height: 157.03)
+                    
+                    LazyImage(url: imageURL) { state in
+                        if let image = state.imageContainer?.image {
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 110, height: 157.03)
+                                .clipped()
+                        } else {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 110, height: 157.03)
+                        }
+                    }
+                    .onAppear {
+                        print("Right image loading: \(imageURL)")
+                    }
+                    .onDisappear {
+                        print("Right image disappeared")
+                    }
+                    .frame(width: 110, height: 157.03)
+                }
             }
             .frame(width: 280, height: 157.03)
+            .cornerRadius(10)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+            )
         }
         .contextMenu {
             Button(action: {
@@ -138,6 +175,12 @@ struct ContinueReadingCell: View {
             }) {
                 Label("Remove Item", systemImage: "trash")
             }
+        }
+        .onAppear {
+            print("ContinueReadingCell appeared for: \(item.mediaTitle)")
+            print("Image URL: \(item.imageUrl)")
+            print("Chapter: \(item.chapterNumber)")
+            print("Progress: \(item.progress)")
         }
     }
 } 

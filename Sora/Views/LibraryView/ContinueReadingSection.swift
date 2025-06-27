@@ -71,6 +71,7 @@ struct ContinueReadingCell: View {
             moduleId: item.moduleId,
             chapterHref: item.href,
             chapterTitle: item.chapterTitle,
+            chapters: [],
             mediaTitle: item.mediaTitle
         )) {
             ZStack {
@@ -182,4 +183,4 @@ struct ContinueReadingCell: View {
             print("Progress: \(item.progress)")
         }
     }
-} 
+}

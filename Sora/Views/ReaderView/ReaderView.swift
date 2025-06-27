@@ -108,6 +108,18 @@ struct ReaderView: View {
         _margin = State(initialValue: UserDefaults.standard.cgFloat(forKey: "readerMargin") ?? 4)
     }
     
+    private func ensureModuleLoaded() {
+        if let module = ModuleManager().modules.first(where: { $0.id.uuidString == moduleId }) {
+            do {
+                let moduleContent = try ModuleManager().getModuleContent(module)
+                JSController.shared.loadScript(moduleContent)
+                Logger.shared.log("Loaded script for module \(moduleId)", type: "Debug")
+            } catch {
+                Logger.shared.log("Failed to load module script: \(error)", type: "Error")
+            }
+        }
+    }
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             currentTheme.background.ignoresSafeArea()
@@ -174,7 +186,7 @@ struct ReaderView: View {
                         }
                     })
                 }
-                .padding(.top, isHeaderVisible ? 0 : (UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0))
+                .padding(.top, isHeaderVisible ? 0 : (UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.safeAreaInsets.top ?? 0))
             }
             
             headerView
@@ -221,20 +233,106 @@ struct ReaderView: View {
                         findTopViewController.findViewController(rootVC).present(hostingController, animated: true)
                     }
                 }
+            } else {
+                if !htmlContent.isEmpty {
+                    let validHtmlContent = (!htmlContent.isEmpty && 
+                                          !htmlContent.contains("undefined") && 
+                                          htmlContent.count > 50) ? htmlContent : nil
+                    
+                    if validHtmlContent == nil {
+                        Logger.shared.log("Not caching HTML content on disappear as it appears invalid", type: "Warning")
+                    } else {
+                        let item = ContinueReadingItem(
+                            mediaTitle: mediaTitle,
+                            chapterTitle: chapterTitle,
+                            chapterNumber: 1, 
+                            imageUrl: UserDefaults.standard.string(forKey: "novelImageUrl_\(moduleId)_\(mediaTitle)") ?? "",
+                            href: chapterHref,
+                            moduleId: moduleId,
+                            progress: readingProgress,
+                            totalChapters: chapters.count,
+                            lastReadDate: Date(),
+                            cachedHtml: validHtmlContent
+                        )
+                        ContinueReadingManager.shared.save(item: item, htmlContent: validHtmlContent)
+                        Logger.shared.log("Saved HTML content on view disappear for \(chapterHref)", type: "Debug")
+                    }
+                }
             }
         }
         .task {
             do {
-                let content = try await JSController.shared.extractText(moduleId: moduleId, href: chapterHref)
-                if !content.isEmpty {
-                    htmlContent = content
+                ensureModuleLoaded()
+                
+                if let cachedContent = ContinueReadingManager.shared.getCachedHtml(for: chapterHref), 
+                   !cachedContent.isEmpty && 
+                   !cachedContent.contains("undefined") && 
+                   cachedContent.count > 50 {
+                    
+                    Logger.shared.log("Using cached HTML content for \(chapterHref)", type: "Debug")
+                    htmlContent = cachedContent
                     isLoading = false
                 } else {
-                    throw JSError.invalidResponse
+                    Logger.shared.log("Fetching HTML content from network for \(chapterHref)", type: "Debug")
+                    
+                    var content = ""
+                    var attempts = 0
+                    var lastError: Error? = nil
+                    
+                    while attempts < 3 && (content.isEmpty || content.contains("undefined") || content.count < 50) {
+                        do {
+                            attempts += 1
+                            content = try await JSController.shared.extractText(moduleId: moduleId, href: chapterHref)
+
+                            if content.isEmpty || content.contains("undefined") || content.count < 50 {
+                                Logger.shared.log("Received invalid content on attempt \(attempts), retrying...", type: "Warning")
+                                try await Task.sleep(nanoseconds: 500_000_000)
+                            }
+                        } catch {
+                            lastError = error
+                            Logger.shared.log("Error fetching content on attempt \(attempts): \(error.localizedDescription)", type: "Error")
+                            try await Task.sleep(nanoseconds: 500_000_000)
+                        }
+                    }
+                    
+                    if !content.isEmpty && !content.contains("undefined") && content.count >= 50 {
+                        htmlContent = content
+                        isLoading = false
+                        
+                        if let cachedContent = ContinueReadingManager.shared.getCachedHtml(for: chapterHref),
+                           cachedContent.isEmpty || cachedContent.contains("undefined") || cachedContent.count < 50 {
+                            let item = ContinueReadingItem(
+                                mediaTitle: mediaTitle,
+                                chapterTitle: chapterTitle,
+                                chapterNumber: 1,
+                                imageUrl: UserDefaults.standard.string(forKey: "novelImageUrl_\(moduleId)_\(mediaTitle)") ?? "",
+                                href: chapterHref,
+                                moduleId: moduleId,
+                                progress: readingProgress,
+                                totalChapters: chapters.count,
+                                lastReadDate: Date(),
+                                cachedHtml: content
+                            )
+                            ContinueReadingManager.shared.save(item: item, htmlContent: content)
+                        }
+                    } else if let lastError = lastError {
+                        throw lastError
+                    } else {
+                        throw JSError.emptyContent
+                    }
                 }
             } catch {
                 self.error = error
                 isLoading = false
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    DropManager.shared.showDrop(
+                        title: "Error Loading Content",
+                        subtitle: error.localizedDescription,
+                        duration: 2.0,
+                        icon: UIImage(systemName: "exclamationmark.triangle")
+                    )
+                }
             }
         }
     }
@@ -248,7 +346,6 @@ struct ReaderView: View {
     private var headerView: some View {
         VStack {
             ZStack(alignment: .top) {
-                // Base header content
                 HStack {
                     Button(action: {
                         dismiss()
@@ -501,7 +598,7 @@ struct ReaderView: View {
                     }
                 }
             }
-            .padding(.top, (UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0))
+            .padding(.top, (UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.safeAreaInsets.top ?? 0))
             .padding(.bottom, 30)
             .background(ProgressiveBlurView())
             
@@ -548,7 +645,7 @@ struct ReaderView: View {
             }
             .padding(.horizontal, 20)
             .padding(.top, 20)
-            .padding(.bottom, (UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0) + 20)
+            .padding(.bottom, (UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.safeAreaInsets.bottom ?? 0) + 20)
             .frame(maxWidth: .infinity)
             .background(ProgressiveBlurView())
             .opacity(isHeaderVisible ? 1 : 0)
@@ -719,6 +816,15 @@ struct ReaderView: View {
         
         Logger.shared.log("Saving continue reading item: title=\(novelTitle), chapter=\(chapterTitle), number=\(currentChapterNumber), href=\(chapterHref), progress=\(progress), imageUrl=\(imageUrl)", type: "Debug")
         
+        // Only cache valid HTML content
+        let validHtmlContent = (!htmlContent.isEmpty && 
+                               !htmlContent.contains("undefined") && 
+                               htmlContent.count > 50) ? htmlContent : nil
+        
+        if validHtmlContent == nil && !htmlContent.isEmpty {
+            Logger.shared.log("Not caching HTML content as it appears invalid", type: "Warning")
+        }
+        
         let item = ContinueReadingItem(
             mediaTitle: novelTitle,
             chapterTitle: chapterTitle,
@@ -728,10 +834,11 @@ struct ReaderView: View {
             moduleId: moduleId,
             progress: progress,
             totalChapters: chapters.count,
-            lastReadDate: Date()
+            lastReadDate: Date(),
+            cachedHtml: validHtmlContent
         )
         
-        ContinueReadingManager.shared.save(item: item)
+        ContinueReadingManager.shared.save(item: item, htmlContent: validHtmlContent)
     }
     
     private func updateReadingProgress(progress: Double) {
@@ -783,6 +890,15 @@ struct ReaderView: View {
         
         Logger.shared.log("Updating reading progress: \(roundedProgress) for \(chapterHref), title: \(novelTitle), image: \(imageUrl)", type: "Debug")
         
+        // Only cache valid HTML content
+        let validHtmlContent = (!htmlContent.isEmpty && 
+                               !htmlContent.contains("undefined") && 
+                               htmlContent.count > 50) ? htmlContent : nil
+        
+        if validHtmlContent == nil && !htmlContent.isEmpty {
+            Logger.shared.log("Not caching HTML content as it appears invalid", type: "Warning")
+        }
+        
         let isCompleted = roundedProgress >= 0.98
         
         if isCompleted && readingProgress < 0.98 {
@@ -794,7 +910,7 @@ struct ReaderView: View {
             )
             Logger.shared.log("Chapter marked as completed", type: "Debug")
             
-            ContinueReadingManager.shared.updateProgress(for: chapterHref, progress: roundedProgress)
+            ContinueReadingManager.shared.updateProgress(for: chapterHref, progress: roundedProgress, htmlContent: validHtmlContent)
         } else {
             let item = ContinueReadingItem(
                 mediaTitle: novelTitle,
@@ -805,10 +921,11 @@ struct ReaderView: View {
                 moduleId: moduleId,
                 progress: roundedProgress,
                 totalChapters: chapters.count,
-                lastReadDate: Date()
+                lastReadDate: Date(),
+                cachedHtml: validHtmlContent
             )
             
-            ContinueReadingManager.shared.save(item: item)
+            ContinueReadingManager.shared.save(item: item, htmlContent: validHtmlContent)
         }
     }
 }

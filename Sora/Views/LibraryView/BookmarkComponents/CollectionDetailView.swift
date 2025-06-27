@@ -123,7 +123,7 @@ struct CollectionDetailView: View {
                         if isSelecting {
                             if !selectedBookmarks.isEmpty {
                                 for id in selectedBookmarks {
-                                    if let item = collection.bookmarks.first(where: { $0.id == id }) {
+                                    if collection.bookmarks.contains(where: { $0.id == id }) {
                                         libraryManager.removeBookmarkFromCollection(bookmarkId: id, collectionId: collection.id)
                                     }
                                 }

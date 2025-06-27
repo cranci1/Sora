@@ -59,7 +59,7 @@ class ContinueReadingManager {
         }
     }
     
-    func save(item: ContinueReadingItem) {
+    func save(item: ContinueReadingItem, htmlContent: String? = nil) {
         var items = fetchItems()
         
         items.removeAll { $0.href == item.href }
@@ -89,17 +89,15 @@ class ContinueReadingManager {
                     moduleId: item.moduleId,
                     progress: item.progress,
                     totalChapters: item.totalChapters,
-                    lastReadDate: item.lastReadDate
+                    lastReadDate: item.lastReadDate,
+                    cachedHtml: htmlContent ?? item.cachedHtml
                 )
             }
         }
         
-        // Log the incoming image URL for debugging
         Logger.shared.log("Incoming item image URL: \(updatedItem.imageUrl)", type: "Debug")
         
-        // If no image URL is provided, use a default one
         if updatedItem.imageUrl.isEmpty {
-            // Use a default novel cover image
             let defaultImageUrl = "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/novel_cover.jpg"
             updatedItem = ContinueReadingItem(
                 id: updatedItem.id,
@@ -111,7 +109,8 @@ class ContinueReadingManager {
                 moduleId: updatedItem.moduleId,
                 progress: updatedItem.progress,
                 totalChapters: updatedItem.totalChapters,
-                lastReadDate: updatedItem.lastReadDate
+                lastReadDate: updatedItem.lastReadDate,
+                cachedHtml: htmlContent ?? updatedItem.cachedHtml
             )
             Logger.shared.log("Using default image URL: \(defaultImageUrl)", type: "Debug")
         }
@@ -132,7 +131,8 @@ class ContinueReadingManager {
                         moduleId: updatedItem.moduleId,
                         progress: updatedItem.progress,
                         totalChapters: updatedItem.totalChapters,
-                        lastReadDate: updatedItem.lastReadDate
+                        lastReadDate: updatedItem.lastReadDate,
+                        cachedHtml: htmlContent ?? updatedItem.cachedHtml
                     )
                     Logger.shared.log("Fixed image URL with encoding: \(encodedUrl)", type: "Debug")
                 } else {
@@ -147,7 +147,8 @@ class ContinueReadingManager {
                         moduleId: updatedItem.moduleId,
                         progress: updatedItem.progress,
                         totalChapters: updatedItem.totalChapters,
-                        lastReadDate: updatedItem.lastReadDate
+                        lastReadDate: updatedItem.lastReadDate,
+                        cachedHtml: htmlContent ?? updatedItem.cachedHtml
                     )
                     Logger.shared.log("Using default image URL after encoding failed: \(defaultImageUrl)", type: "Debug")
                 }
@@ -183,12 +184,20 @@ class ContinueReadingManager {
         }
     }
     
-    func updateProgress(for href: String, progress: Double) {
+    func updateProgress(for href: String, progress: Double, htmlContent: String? = nil) {
         var items = fetchItems()
         if let index = items.firstIndex(where: { $0.href == href }) {
-            var updatedItem = items[index]
+            let updatedItem = items[index]
             
             if progress >= 0.98 {
+                let cachedHtml = htmlContent ?? updatedItem.cachedHtml
+                
+                if let html = cachedHtml, !html.isEmpty && !html.contains("undefined") && html.count > 50 {
+                    let completedChapterKey = "completedChapterHtml_\(href)"
+                    UserDefaults.standard.set(html, forKey: completedChapterKey)
+                    Logger.shared.log("Saved HTML content for completed chapter \(href)", type: "Debug")
+                }
+                
                 items.remove(at: index)
                 userDefaults.set(progress, forKey: "readingProgress_\(href)")
                 
@@ -218,7 +227,8 @@ class ContinueReadingManager {
                 moduleId: updatedItem.moduleId,
                 progress: progress,
                 totalChapters: updatedItem.totalChapters,
-                lastReadDate: Date()
+                lastReadDate: Date(),
+                cachedHtml: htmlContent ?? updatedItem.cachedHtml
             )
             
             Logger.shared.log("Updating item with image URL: \(newItem.imageUrl)", type: "Debug")
@@ -246,5 +256,20 @@ class ContinueReadingManager {
         }
         
         return false
+    }
+    
+    func getCachedHtml(for href: String) -> String? {
+        let completedChapterKey = "completedChapterHtml_\(href)"
+        if let completedHtml = UserDefaults.standard.string(forKey: completedChapterKey),
+           !completedHtml.isEmpty && !completedHtml.contains("undefined") && completedHtml.count > 50 {
+            Logger.shared.log("Using cached HTML for completed chapter \(href)", type: "Debug")
+            return completedHtml
+        }
+        
+        let items = fetchItems()
+        if let item = items.first(where: { $0.href == href }) {
+            return item.cachedHtml
+        }
+        return nil
     }
 } 

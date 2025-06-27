@@ -18,6 +18,7 @@ struct ContinueReadingItem: Identifiable, Codable {
     let progress: Double
     let totalChapters: Int
     let lastReadDate: Date
+    let cachedHtml: String?
     
     init(
         id: UUID = UUID(),
@@ -29,7 +30,8 @@ struct ContinueReadingItem: Identifiable, Codable {
         moduleId: String,
         progress: Double = 0.0,
         totalChapters: Int = 0,
-        lastReadDate: Date = Date()
+        lastReadDate: Date = Date(),
+        cachedHtml: String? = nil
     ) {
         self.id = id
         self.mediaTitle = mediaTitle
@@ -41,5 +43,6 @@ struct ContinueReadingItem: Identifiable, Codable {
         self.progress = progress
         self.totalChapters = totalChapters
         self.lastReadDate = lastReadDate
+        self.cachedHtml = cachedHtml
     }
 } 

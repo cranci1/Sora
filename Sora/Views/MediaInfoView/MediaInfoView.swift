@@ -1026,10 +1026,10 @@ struct MediaInfoView: View {
                     additionalData: ["title": title]
                 )
             }
-        } catch {
+        } catch let loadError {
             isError = true
             isLoading = false
-            Logger.shared.log("Error loading media info: \(error)", type: "Error")
+            Logger.shared.log("Error loading media info: \(loadError)", type: "Error")
         }
     }
     

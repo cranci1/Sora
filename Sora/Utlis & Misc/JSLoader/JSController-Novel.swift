@@ -34,7 +34,7 @@ enum JSError: Error {
 extension JSController {
     @MainActor
     func extractChapters(moduleId: String, href: String) async throws -> [[String: Any]] {
-        guard let module = ModuleManager().modules.first(where: { $0.id.uuidString == moduleId }) else {
+        guard ModuleManager().modules.first(where: { $0.id.uuidString == moduleId }) != nil else {
             throw JSError.moduleNotFound
         }
         
@@ -122,17 +122,59 @@ extension JSController {
         }
         
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Error>) in
-            DispatchQueue.main.async { [weak self] in
+            let workItem = DispatchWorkItem { [weak self] in
                 guard let self = self else {
                     continuation.resume(throwing: JSError.invalidResponse)
                     return
                 }
                 
-                let function = self.context.objectForKeyedSubscript("extractText")
-                let result = function?.call(withArguments: [href])
+                if self.context.objectForKeyedSubscript("extractText") == nil {
+                    Logger.shared.log("extractText function not found, attempting to load module script", type: "Debug")
+                    do {
+                        let moduleContent = try ModuleManager().getModuleContent(module)
+                        self.loadScript(moduleContent)
+                        Logger.shared.log("Successfully loaded module script", type: "Debug")
+                    } catch {
+                        Logger.shared.log("Failed to load module script: \(error)", type: "Error")
+                    }
+                }
+                
+                guard let function = self.context.objectForKeyedSubscript("extractText") else {
+                    Logger.shared.log("extractText function not available after loading module script", type: "Error")
+                    
+                    let task = Task<String, Error> {
+                        return try await self.fetchContentDirectly(from: href)
+                    }
+                    
+                    Task {
+                        do {
+                            let content = try await task.value
+                            continuation.resume(returning: content)
+                        } catch {
+                            continuation.resume(throwing: JSError.invalidResponse)
+                        }
+                    }
+                    return
+                }
+                
+                let result = function.call(withArguments: [href])
                 
                 if let exception = self.context.exception {
                     Logger.shared.log("Error extracting text: \(exception)", type: "Error")
+                    
+                    let task = Task<String, Error> {
+                        return try await self.fetchContentDirectly(from: href)
+                    }
+                    
+                    Task {
+                        do {
+                            let content = try await task.value
+                            continuation.resume(returning: content)
+                        } catch {
+                            continuation.resume(throwing: JSError.jsException(exception.toString() ?? "Unknown JS error"))
+                        }
+                    }
+                    return
                 }
                 
                 if let result = result, result.hasProperty("then") {
@@ -163,25 +205,116 @@ extension JSController {
                     result.invokeMethod("then", withArguments: [thenBlock])
                     result.invokeMethod("catch", withArguments: [catchBlock])
                     
-                    group.notify(queue: .main) {
+                    let notifyWorkItem = DispatchWorkItem {
                         if !extractedText.isEmpty {
                             continuation.resume(returning: extractedText)
                         } else if let error = extractError {
-                            continuation.resume(throwing: error)
+                            let fetchTask = Task<String, Error> {
+                                return try await self.fetchContentDirectly(from: href)
+                            }
+                            
+                            Task {
+                                do {
+                                    let content = try await fetchTask.value
+                                    continuation.resume(returning: content)
+                                } catch {
+                                    continuation.resume(throwing: error)
+                                }
+                            }
                         } else {
-                            continuation.resume(throwing: JSError.emptyContent)
+                            let fetchTask = Task<String, Error> {
+                                return try await self.fetchContentDirectly(from: href)
+                            }
+                            
+                            Task {
+                                do {
+                                    let content = try await fetchTask.value
+                                    continuation.resume(returning: content)
+                                } catch _ {
+                                    continuation.resume(throwing: JSError.emptyContent)
+                                }
+                            }
                         }
                     }
+                    
+                    group.notify(queue: .main, work: notifyWorkItem)
                 } else {
                     if let text = result?.toString(), !text.isEmpty {
                         Logger.shared.log("extractText: direct string result", type: "Debug")
                         continuation.resume(returning: text)
                     } else {
-                        Logger.shared.log("extractText: could not parse direct result", type: "Error")
-                        continuation.resume(throwing: JSError.emptyContent)
+                        Logger.shared.log("extractText: could not parse direct result, trying direct fetch", type: "Error")
+                        let task = Task<String, Error> {
+                            return try await self.fetchContentDirectly(from: href)
+                        }
+                        
+                        Task {
+                            do {
+                                let content = try await task.value
+                                continuation.resume(returning: content)
+                            } catch {
+                                continuation.resume(throwing: JSError.emptyContent)
+                            }
+                        }
                     }
                 }
             }
+            
+            DispatchQueue.main.async(execute: workItem)
         }
+    }
+    
+    private func fetchContentDirectly(from url: String) async throws -> String {
+        guard let url = URL(string: url) else {
+            throw JSError.invalidResponse
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1", forHTTPHeaderField: "User-Agent")
+        
+        Logger.shared.log("Attempting direct fetch from: \(url.absoluteString)", type: "Debug")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse, 
+              (200...299).contains(httpResponse.statusCode) else {
+            Logger.shared.log("Direct fetch failed with status code: \((response as? HTTPURLResponse)?.statusCode ?? -1)", type: "Error")
+            throw JSError.invalidResponse
+        }
+        
+        guard let htmlString = String(data: data, encoding: .utf8) else {
+            Logger.shared.log("Failed to decode response data", type: "Error")
+            throw JSError.invalidResponse
+        }
+        
+        var content = ""
+        
+        if let contentRange = htmlString.range(of: "<article", options: .caseInsensitive),
+           let endRange = htmlString.range(of: "</article>", options: .caseInsensitive) {
+            let startIndex = contentRange.lowerBound
+            let endIndex = endRange.upperBound
+            content = String(htmlString[startIndex..<endIndex])
+        } else if let contentRange = htmlString.range(of: "<div class=\"chapter-content\"", options: .caseInsensitive),
+                  let endRange = htmlString.range(of: "</div>", options: .caseInsensitive, range: contentRange.upperBound..<htmlString.endIndex) {
+            let startIndex = contentRange.lowerBound
+            let endIndex = endRange.upperBound
+            content = String(htmlString[startIndex..<endIndex])
+        } else if let contentRange = htmlString.range(of: "<div class=\"content\"", options: .caseInsensitive),
+                  let endRange = htmlString.range(of: "</div>", options: .caseInsensitive, range: contentRange.upperBound..<htmlString.endIndex) {
+            let startIndex = contentRange.lowerBound
+            let endIndex = endRange.upperBound
+            content = String(htmlString[startIndex..<endIndex])
+        } else if let bodyRange = htmlString.range(of: "<body", options: .caseInsensitive),
+                  let endBodyRange = htmlString.range(of: "</body>", options: .caseInsensitive) {
+            let startIndex = bodyRange.lowerBound
+            let endIndex = endBodyRange.upperBound
+            content = String(htmlString[startIndex..<endIndex])
+        } else {
+            content = htmlString
+        }
+        
+        Logger.shared.log("Direct fetch successful, content length: \(content.count)", type: "Debug")
+        return content
     }
 } 

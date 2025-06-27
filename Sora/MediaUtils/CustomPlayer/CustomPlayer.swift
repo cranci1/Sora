@@ -1957,21 +1957,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     @objc private func dimTapped() {
         isDimmed.toggle()
-        isControlsVisible = !isDimmed
         dimButtonTimer?.invalidate()
-        
         UIView.animate(withDuration: 0.25) {
             self.blackCoverView.alpha = self.isDimmed ? 1.0 : 0.4
-            for v in self.controlsToHide { v.alpha = self.isDimmed ? 0 :  1 }
-            self.dimButton.alpha  = self.isDimmed ? 0 : 1
-            self.lockButton.alpha = self.isDimmed ? 0 : 1
-            
-            self.subtitleBottomToSafeAreaConstraint?.isActive = !self.isControlsVisible
-            self.subtitleBottomToSliderConstraint?.isActive    =  self.isControlsVisible
-            
-            self.view.layoutIfNeeded()
         }
-        
         dimButtonToSlider.isActive = !isDimmed
         dimButtonToRight.isActive  =  isDimmed
     }

@@ -388,222 +388,221 @@ struct ReaderView: View {
 
                 HStack {
                     Spacer()
-                    HStack(spacing: 8) {
-                        Button(action: {
-                            goToNextChapter()
-                        }) {
-                            Image(systemName: "forward.end.fill")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(currentTheme.text)
-                                .padding(8)
-                                .background(currentTheme.background.opacity(0.8))
-                                .clipShape(Circle())
-                                .circularGradientOutline()
-                        }
-                        .opacity(isHeaderVisible ? 1 : 0)
-                        .offset(y: isHeaderVisible ? 0 : -100)
-                        .animation(.easeInOut(duration: 0.6), value: isHeaderVisible)
-                        
-                        ZStack(alignment: .topTrailing) {
-                            Button(action: {
-                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                    isSettingsExpanded.toggle()
-                                }
-                            }) {
-                                Image(systemName: "ellipsis")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(currentTheme.text)
-                                    .padding(12)
-                                    .background(currentTheme.background.opacity(0.8))
-                                    .clipShape(Circle())
-                                    .circularGradientOutline()
-                                    .rotationEffect(.degrees(isSettingsExpanded ? 90 : 0))
-                            }
-                            .opacity(isHeaderVisible ? 1 : 0)
-                            .offset(y: isHeaderVisible ? 0 : -100)
-                            .animation(.easeInOut(duration: 0.6), value: isHeaderVisible)
-                            
-                            if isSettingsExpanded {
-                                VStack(spacing: 8) {
-                                    Menu {
-                                        VStack {
-                                            Text("Font Size: \(Int(fontSize))pt")
-                                                .font(.headline)
-                                                .padding(.bottom, 8)
-                                            
-                                            Slider(value: Binding(
-                                                get: { fontSize },
-                                                set: { newValue in
-                                                    fontSize = newValue
-                                                    UserDefaults.standard.set(newValue, forKey: "readerFontSize")
-                                                }
-                                            ), in: 12...32, step: 1) {
-                                                Text("Font Size")
-                                            }
-                                            .padding(.horizontal)
-                                        }
-                                        .padding()
-                                    } label: {
-                                        settingsButtonLabel(icon: "textformat.size")
-                                    }
-                                    
-                                    Menu {
-                                        ForEach(fontOptions, id: \.0) { font in
-                                            Button(action: {
-                                                selectedFont = font.0
-                                                UserDefaults.standard.set(font.0, forKey: "readerFontFamily")
-                                            }) {
-                                                HStack {
-                                                    Text(font.1)
-                                                        .font(.custom(font.0, size: 16))
-                                                    Spacer()
-                                                    if selectedFont == font.0 {
-                                                        Image(systemName: "checkmark")
-                                                            .foregroundColor(.blue)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } label: {
-                                        settingsButtonLabel(icon: "textformat.characters")
-                                    }
-                                    
-                                    Menu {
-                                        ForEach(weightOptions, id: \.0) { weight in
-                                            Button(action: {
-                                                fontWeight = weight.0
-                                                UserDefaults.standard.set(weight.0, forKey: "readerFontWeight")
-                                            }) {
-                                                HStack {
-                                                    Text(weight.1)
-                                                        .fontWeight(weight.0 == "300" ? .light :
-                                                                  weight.0 == "normal" ? .regular :
-                                                                  weight.0 == "600" ? .semibold : .bold)
-                                                    Spacer()
-                                                    if fontWeight == weight.0 {
-                                                        Image(systemName: "checkmark")
-                                                            .foregroundColor(.blue)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } label: {
-                                        settingsButtonLabel(icon: "bold")
-                                    }
-
-                                    Menu {
-                                        ForEach(0..<colorPresets.count, id: \.self) { index in
-                                            Button(action: {
-                                                selectedColorPreset = index
-                                                UserDefaults.standard.set(index, forKey: "readerColorPreset")
-                                            }) {
-                                                Label {
-                                                    HStack {
-                                                        Text(colorPresets[index].name)
-                                                        Spacer()
-                                                        if selectedColorPreset == index {
-                                                            Image(systemName: "checkmark")
-                                                                .foregroundColor(.blue)
-                                                        }
-                                                    }
-                                                } icon: {
-                                                    Circle()
-                                                        .fill(Color(hex: colorPresets[index].background))
-                                                        .frame(width: 16, height: 16)
-                                                        .overlay(
-                                                            Circle()
-                                                                .stroke(Color(hex: colorPresets[index].text), lineWidth: 1)
-                                                        )
-                                                }
-                                            }
-                                        }
-                                    } label: {
-                                        settingsButtonLabel(icon: "paintpalette")
-                                    }
-
-                                    Menu {
-                                        VStack {
-                                            Text("Line Spacing: \(String(format: "%.1f", lineSpacing))")
-                                                .font(.headline)
-                                                .padding(.bottom, 8)
-                                            
-                                            Slider(value: Binding(
-                                                get: { lineSpacing },
-                                                set: { newValue in
-                                                    lineSpacing = newValue
-                                                    UserDefaults.standard.set(newValue, forKey: "readerLineSpacing")
-                                                }
-                                            ), in: 1.0...3.0, step: 0.1) {
-                                                Text("Line Spacing")
-                                            }
-                                            .padding(.horizontal)
-                                        }
-                                        .padding()
-                                    } label: {
-                                        Image(systemName: "arrow.left.and.right.text.vertical")
-                                            .font(.system(size: 16, weight: .bold))
-                                            .foregroundColor(currentTheme.text)
-                                            .padding(10)
-                                            .background(currentTheme.background.opacity(0.8))
-                                            .clipShape(Circle())
-                                            .circularGradientOutline()
-                                            .rotationEffect(.degrees(-90))
-                                    }
-                                    
-                                    Menu {
-                                        VStack {
-                                            Text("Margin: \(Int(margin))px")
-                                                .font(.headline)
-                                                .padding(.bottom, 8)
-                                            
-                                            Slider(value: Binding(
-                                                get: { margin },
-                                                set: { newValue in
-                                                    margin = newValue
-                                                    UserDefaults.standard.set(newValue, forKey: "readerMargin")
-                                                }
-                                            ), in: 0...30, step: 1) {
-                                                Text("Margin")
-                                            }
-                                            .padding(.horizontal)
-                                        }
-                                        .padding()
-                                    } label: {
-                                        settingsButtonLabel(icon: "rectangle.inset.filled")
-                                    }
-
-                                    Menu {
-                                        ForEach(alignmentOptions, id: \.0) { alignment in
-                                            Button(action: {
-                                                textAlignment = alignment.0
-                                                UserDefaults.standard.set(alignment.0, forKey: "readerTextAlignment")
-                                            }) {
-                                                HStack {
-                                                    Image(systemName: alignment.2)
-                                                    Text(alignment.1)
-                                                    Spacer()
-                                                    if textAlignment == alignment.0 {
-                                                        Image(systemName: "checkmark")
-                                                            .foregroundColor(.blue)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } label: {
-                                        settingsButtonLabel(icon: "text.alignleft")
-                                    }
-                                }
-                                .padding(.top, 50) 
-                                .transition(.opacity)
-                            }
-                        }
-                        .padding(.trailing)
+                    Button(action: {
+                        goToNextChapter()
+                    }) {
+                        Image(systemName: "forward.end.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(currentTheme.text)
+                            .padding(8)
+                            .background(currentTheme.background.opacity(0.8))
+                            .clipShape(Circle())
+                            .circularGradientOutline()
                     }
+                    .opacity(isHeaderVisible ? 1 : 0)
+                    .offset(y: isHeaderVisible ? 0 : -100)
+                    .animation(.easeInOut(duration: 0.6), value: isHeaderVisible)
+                    
+                    Button(action: {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                            isSettingsExpanded.toggle()
+                        }
+                    }) {
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(currentTheme.text)
+                            .padding(12)
+                            .background(currentTheme.background.opacity(0.8))
+                            .clipShape(Circle())
+                            .circularGradientOutline()
+                            .rotationEffect(.degrees(isSettingsExpanded ? 90 : 0))
+                    }
+                    .opacity(isHeaderVisible ? 1 : 0)
+                    .offset(y: isHeaderVisible ? 0 : -100)
+                    .animation(.easeInOut(duration: 0.6), value: isHeaderVisible)
                 }
             }
+            .padding(.trailing, 8)
             .padding(.top, (UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.safeAreaInsets.top ?? 0))
             .padding(.bottom, 30)
             .background(ProgressiveBlurView())
+            .overlay(
+                Group {
+                    if isSettingsExpanded {
+                        VStack(spacing: 8) {
+                            Menu {
+                                VStack {
+                                    Text("Font Size: \(Int(fontSize))pt")
+                                        .font(.headline)
+                                        .padding(.bottom, 8)
+                                    
+                                    Slider(value: Binding(
+                                        get: { fontSize },
+                                        set: { newValue in
+                                            fontSize = newValue
+                                            UserDefaults.standard.set(newValue, forKey: "readerFontSize")
+                                        }
+                                    ), in: 12...32, step: 1) {
+                                        Text("Font Size")
+                                    }
+                                    .padding(.horizontal)
+                                }
+                                .padding()
+                            } label: {
+                                settingsButtonLabel(icon: "textformat.size")
+                            }
+                            
+                            Menu {
+                                ForEach(fontOptions, id: \.0) { font in
+                                    Button(action: {
+                                        selectedFont = font.0
+                                        UserDefaults.standard.set(font.0, forKey: "readerFontFamily")
+                                    }) {
+                                        HStack {
+                                            Text(font.1)
+                                                .font(.custom(font.0, size: 16))
+                                            Spacer()
+                                            if selectedFont == font.0 {
+                                                Image(systemName: "checkmark")
+                                                    .foregroundColor(.blue)
+                                            }
+                                        }
+                                    }
+                                }
+                            } label: {
+                                settingsButtonLabel(icon: "textformat.characters")
+                            }
+                            
+                            Menu {
+                                ForEach(weightOptions, id: \.0) { weight in
+                                    Button(action: {
+                                        fontWeight = weight.0
+                                        UserDefaults.standard.set(weight.0, forKey: "readerFontWeight")
+                                    }) {
+                                        HStack {
+                                            Text(weight.1)
+                                                .fontWeight(weight.0 == "300" ? .light :
+                                                                weight.0 == "normal" ? .regular :
+                                                                weight.0 == "600" ? .semibold : .bold)
+                                            Spacer()
+                                            if fontWeight == weight.0 {
+                                                Image(systemName: "checkmark")
+                                                    .foregroundColor(.blue)
+                                            }
+                                        }
+                                    }
+                                }
+                            } label: {
+                                settingsButtonLabel(icon: "bold")
+                            }
+                            
+                            Menu {
+                                ForEach(0..<colorPresets.count, id: \.self) { index in
+                                    Button(action: {
+                                        selectedColorPreset = index
+                                        UserDefaults.standard.set(index, forKey: "readerColorPreset")
+                                    }) {
+                                        Label {
+                                            HStack {
+                                                Text(colorPresets[index].name)
+                                                Spacer()
+                                                if selectedColorPreset == index {
+                                                    Image(systemName: "checkmark")
+                                                        .foregroundColor(.blue)
+                                                }
+                                            }
+                                        } icon: {
+                                            Circle()
+                                                .fill(Color(hex: colorPresets[index].background))
+                                                .frame(width: 16, height: 16)
+                                                .overlay(
+                                                    Circle()
+                                                        .stroke(Color(hex: colorPresets[index].text), lineWidth: 1)
+                                                )
+                                        }
+                                    }
+                                }
+                            } label: {
+                                settingsButtonLabel(icon: "paintpalette")
+                            }
+                            
+                            Menu {
+                                VStack {
+                                    Text("Line Spacing: \(String(format: "%.1f", lineSpacing))")
+                                        .font(.headline)
+                                        .padding(.bottom, 8)
+                                    
+                                    Slider(value: Binding(
+                                        get: { lineSpacing },
+                                        set: { newValue in
+                                            lineSpacing = newValue
+                                            UserDefaults.standard.set(newValue, forKey: "readerLineSpacing")
+                                        }
+                                    ), in: 1.0...3.0, step: 0.1) {
+                                        Text("Line Spacing")
+                                    }
+                                    .padding(.horizontal)
+                                }
+                                .padding()
+                            } label: {
+                                Image(systemName: "arrow.left.and.right.text.vertical")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundColor(currentTheme.text)
+                                    .padding(10)
+                                    .background(currentTheme.background.opacity(0.8))
+                                    .clipShape(Circle())
+                                    .circularGradientOutline()
+                                    .rotationEffect(.degrees(-90))
+                            }
+                            
+                            Menu {
+                                VStack {
+                                    Text("Margin: \(Int(margin))px")
+                                        .font(.headline)
+                                        .padding(.bottom, 8)
+                                    
+                                    Slider(value: Binding(
+                                        get: { margin },
+                                        set: { newValue in
+                                            margin = newValue
+                                            UserDefaults.standard.set(newValue, forKey: "readerMargin")
+                                        }
+                                    ), in: 0...30, step: 1) {
+                                        Text("Margin")
+                                    }
+                                    .padding(.horizontal)
+                                }
+                                .padding()
+                            } label: {
+                                settingsButtonLabel(icon: "rectangle.inset.filled")
+                            }
+                            
+                            Menu {
+                                ForEach(alignmentOptions, id: \.0) { alignment in
+                                    Button(action: {
+                                        textAlignment = alignment.0
+                                        UserDefaults.standard.set(alignment.0, forKey: "readerTextAlignment")
+                                    }) {
+                                        HStack {
+                                            Image(systemName: alignment.2)
+                                            Text(alignment.1)
+                                            Spacer()
+                                            if textAlignment == alignment.0 {
+                                                Image(systemName: "checkmark")
+                                                    .foregroundColor(.blue)
+                                            }
+                                        }
+                                    }
+                                }
+                            } label: {
+                                settingsButtonLabel(icon: "text.alignleft")
+                            }
+                        }
+                        .padding(.top, 80)
+                        .transition(.opacity)
+                    }
+                }, alignment: .topTrailing
+            )
             
             Spacer()
         }
@@ -739,7 +738,6 @@ struct ReaderView: View {
             for chapter in chapters {
                 for key in ["novelTitle", "mediaTitle", "seriesTitle", "series", "bookTitle", "mangaTitle", "title"] {
                     if let title = chapter[key] as? String, !title.isEmpty, title != "Chapter" {
-                        // If the title contains "Chapter", it's probably not the novel title
                         if !title.lowercased().contains("chapter") {
                             novelTitle = title
                             Logger.shared.log("Extracted title from key \(key): \(novelTitle)", type: "Debug")
@@ -819,7 +817,6 @@ struct ReaderView: View {
         
         Logger.shared.log("Saving continue reading item: title=\(novelTitle), chapter=\(chapterTitle), number=\(currentChapterNumber), href=\(chapterHref), progress=\(progress), imageUrl=\(imageUrl)", type: "Debug")
         
-        // Only cache valid HTML content
         let validHtmlContent = (!htmlContent.isEmpty && 
                                !htmlContent.contains("undefined") && 
                                htmlContent.count > 50) ? htmlContent : nil

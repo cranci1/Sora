@@ -208,7 +208,7 @@ extension JSController {
                     let notifyWorkItem = DispatchWorkItem {
                         if !extractedText.isEmpty {
                             continuation.resume(returning: extractedText)
-                        } else if let error = extractError {
+                        } else if extractError != nil {
                             let fetchTask = Task<String, Error> {
                                 return try await self.fetchContentDirectly(from: href)
                             }

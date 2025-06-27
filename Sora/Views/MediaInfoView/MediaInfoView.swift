@@ -728,7 +728,8 @@ struct MediaInfoView: View {
                                 chapterHref: href,
                                 chapterTitle: title,
                                 chapters: chapters,
-                                mediaTitle: self.title
+                                mediaTitle: self.title,
+                                chapterNumber: number
                             )
                         ) {
                             ChapterCell(

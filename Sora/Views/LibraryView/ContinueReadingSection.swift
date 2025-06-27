@@ -72,68 +72,63 @@ struct ContinueReadingCell: View {
             chapterHref: item.href,
             chapterTitle: item.chapterTitle,
             chapters: [],
-            mediaTitle: item.mediaTitle
+            mediaTitle: item.mediaTitle,
+            chapterNumber: item.chapterNumber
         )) {
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.black.opacity(0.2))
+                LazyImage(url: imageURL) { state in
+                    if let image = state.imageContainer?.image {
+                        Image(uiImage: image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 280, height: 157.03)
+                            .blur(radius: 3)
+                            .opacity(0.7)
+                    } else {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 280, height: 157.03)
+                    }
+                }
+                .onAppear {
+                    print("Background image loading: \(imageURL)")
+                }
+                
+                Rectangle()
+                    .fill(LinearGradient(
+                        gradient: Gradient(colors: [Color.black.opacity(0.7), Color.black.opacity(0.4)]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ))
                     .frame(width: 280, height: 157.03)
                 
                 HStack(spacing: 0) {
-                    ZStack(alignment: .topLeading) {
-                        LazyImage(url: imageURL) { state in
-                            if let image = state.imageContainer?.image {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 170, height: 157.03)
-                                    .blur(radius: 3)
-                                    .opacity(0.7)
-                                    .clipped()
-                            } else {
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .frame(width: 170, height: 157.03)
-                            }
-                        }
-                        .onAppear {
-                            print("Left image loading: \(imageURL)")
-                        }
-                        .onDisappear {
-                            print("Left image disappeared")
-                        }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(Int(item.progress * 100))%")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 8)
+                            .background(Color.black.opacity(0.6))
+                            .cornerRadius(4)
                         
-                        Rectangle()
-                            .fill(Color.black.opacity(0.5))
-                            .frame(width: 170, height: 157.03)
+                        Spacer()
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("\(Int(item.progress * 100))%")
+                            Text("Chapter \(item.chapterNumber)")
                                 .font(.caption)
-                                .fontWeight(.semibold)
+                                .foregroundColor(.white.opacity(0.9))
+                            
+                            Text(item.mediaTitle)
+                                .font(.headline)
+                                .fontWeight(.bold)
                                 .foregroundColor(.white)
-                                .padding(.vertical, 4)
-                                .padding(.horizontal, 8)
-                                .background(Color.black.opacity(0.6))
-                                .cornerRadius(4)
-                            
-                            Spacer()
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Chapter \(item.chapterNumber)")
-                                    .font(.caption)
-                                    .foregroundColor(.white.opacity(0.9))
-                                
-                                Text(item.mediaTitle)
-                                    .font(.headline)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.white)
-                                    .lineLimit(2)
-                            }
+                                .lineLimit(2)
                         }
-                        .padding(12)
                     }
-                    .frame(width: 170, height: 157.03)
+                    .padding(12)
+                    .frame(width: 170, alignment: .leading)
                     
                     LazyImage(url: imageURL) { state in
                         if let image = state.imageContainer?.image {

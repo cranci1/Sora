@@ -31,7 +31,7 @@ struct AllReadingView: View {
         }
         switch sortOption {
         case .dateAdded:
-            return filtered.reversed()
+            return filtered.sorted { $0.lastReadDate > $1.lastReadDate }
         case .title:
             return filtered.sorted { $0.mediaTitle.lowercased() < $1.mediaTitle.lowercased() }
         case .progress:
@@ -336,7 +336,8 @@ struct FullWidthContinueReadingCell: View {
                     moduleId: item.moduleId,
                     chapterHref: item.href,
                     chapterTitle: item.chapterTitle,
-                    mediaTitle: item.mediaTitle
+                    mediaTitle: item.mediaTitle,
+                    chapterNumber: item.chapterNumber
                 )) {
                     cellContent
                 }
@@ -356,64 +357,64 @@ struct FullWidthContinueReadingCell: View {
     private var cellContent: some View {
         GeometryReader { geometry in
             ZStack {
-                // Main container
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.black.opacity(0.2))
-                    .frame(height: 157.03)
+                // Background image now covers the entire cell
+                LazyImage(url: imageURL) { state in
+                    if let image = state.imageContainer?.image {
+                        Image(uiImage: image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: geometry.size.width, height: 157.03)
+                            .blur(radius: 3)
+                            .opacity(0.7)
+                    } else {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: geometry.size.width, height: 157.03)
+                    }
+                }
+                .onAppear {
+                    print("Background image loading: \(imageURL)")
+                }
+                
+                // Gradient overlay for better text readability
+                Rectangle()
+                    .fill(LinearGradient(
+                        gradient: Gradient(colors: [Color.black.opacity(0.7), Color.black.opacity(0.4)]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ))
+                    .frame(width: geometry.size.width, height: 157.03)
                 
                 HStack(spacing: 0) {
-                    ZStack(alignment: .topLeading) {
-                        LazyImage(url: imageURL) { state in
-                            if let image = state.imageContainer?.image {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: geometry.size.width * 0.6, height: 157.03)
-                                    .blur(radius: 3)
-                                    .opacity(0.7)
-                                    .clipped()
-                            } else {
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .frame(width: geometry.size.width * 0.6, height: 157.03)
-                            }
-                        }
-                        .onAppear {
-                            print("Left image loading: \(imageURL)")
-                        }
+                    // Left content area
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(Int(item.progress * 100))%")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 8)
+                            .background(Color.black.opacity(0.6))
+                            .cornerRadius(4)
                         
-                        Rectangle()
-                            .fill(Color.black.opacity(0.5))
-                            .frame(width: geometry.size.width * 0.6, height: 157.03)
+                        Spacer()
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("\(Int(item.progress * 100))%")
+                            Text("Chapter \(item.chapterNumber)")
                                 .font(.caption)
-                                .fontWeight(.semibold)
+                                .foregroundColor(.white.opacity(0.9))
+                            
+                            Text(item.mediaTitle)
+                                .font(.headline)
+                                .fontWeight(.bold)
                                 .foregroundColor(.white)
-                                .padding(.vertical, 4)
-                                .padding(.horizontal, 8)
-                                .background(Color.black.opacity(0.6))
-                                .cornerRadius(4)
-                            
-                            Spacer()
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Chapter \(item.chapterNumber)")
-                                    .font(.caption)
-                                    .foregroundColor(.white.opacity(0.9))
-                                
-                                Text(item.mediaTitle)
-                                    .font(.headline)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.white)
-                                    .lineLimit(2)
-                            }
+                                .lineLimit(2)
                         }
-                        .padding(12)
                     }
-                    .frame(width: geometry.size.width * 0.6, height: 157.03)
+                    .padding(12)
+                    .frame(width: geometry.size.width * 0.6, alignment: .leading)
                     
+                    // Right image area
                     LazyImage(url: imageURL) { state in
                         if let image = state.imageContainer?.image {
                             Image(uiImage: image)

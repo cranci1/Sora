@@ -10,7 +10,7 @@ import WebKit
 
 class ChapterNavigator: ObservableObject {
     static let shared = ChapterNavigator()
-    @Published var currentChapter: (moduleId: String, href: String, title: String, chapters: [[String: Any]], mediaTitle: String)? = nil
+    @Published var currentChapter: (moduleId: String, href: String, title: String, chapters: [[String: Any]], mediaTitle: String, chapterNumber: Int)? = nil
 }
 
 extension UserDefaults {
@@ -32,6 +32,7 @@ struct ReaderView: View {
     let chapterTitle: String
     let chapters: [[String: Any]]
     let mediaTitle: String 
+    let chapterNumber: Int
     
     @State private var htmlContent: String = ""
     @State private var isLoading: Bool = true
@@ -92,12 +93,13 @@ struct ReaderView: View {
         )
     }
     
-    init(moduleId: String, chapterHref: String, chapterTitle: String, chapters: [[String: Any]] = [], mediaTitle: String = "Unknown Novel") {
+    init(moduleId: String, chapterHref: String, chapterTitle: String, chapters: [[String: Any]] = [], mediaTitle: String = "Unknown Novel", chapterNumber: Int = 1) {
         self.moduleId = moduleId
         self.chapterHref = chapterHref
         self.chapterTitle = chapterTitle
         self.chapters = chapters
         self.mediaTitle = mediaTitle
+        self.chapterNumber = chapterNumber
         
         _fontSize = State(initialValue: UserDefaults.standard.cgFloat(forKey: "readerFontSize") ?? 16)
         _selectedFont = State(initialValue: UserDefaults.standard.string(forKey: "readerFontFamily") ?? "-apple-system")
@@ -222,7 +224,8 @@ struct ReaderView: View {
                             chapterHref: next.href,
                             chapterTitle: next.title,
                             chapters: next.chapters,
-                            mediaTitle: next.mediaTitle
+                            mediaTitle: next.mediaTitle,
+                            chapterNumber: next.chapterNumber
                         )
                         .environmentObject(tabBarController)
                         
@@ -245,7 +248,7 @@ struct ReaderView: View {
                         let item = ContinueReadingItem(
                             mediaTitle: mediaTitle,
                             chapterTitle: chapterTitle,
-                            chapterNumber: 1, 
+                            chapterNumber: chapterNumber,
                             imageUrl: UserDefaults.standard.string(forKey: "novelImageUrl_\(moduleId)_\(mediaTitle)") ?? "",
                             href: chapterHref,
                             moduleId: moduleId,
@@ -304,7 +307,7 @@ struct ReaderView: View {
                             let item = ContinueReadingItem(
                                 mediaTitle: mediaTitle,
                                 chapterTitle: chapterTitle,
-                                chapterNumber: 1,
+                                chapterNumber: chapterNumber,
                                 imageUrl: UserDefaults.standard.string(forKey: "novelImageUrl_\(moduleId)_\(mediaTitle)") ?? "",
                                 href: chapterHref,
                                 moduleId: moduleId,
@@ -689,7 +692,7 @@ struct ReaderView: View {
            let nextTitle = nextChapter["title"] as? String {
             updateReadingProgress(progress: 1.0)
             
-            navigator.currentChapter = (moduleId: moduleId, href: nextHref, title: nextTitle, chapters: chapters, mediaTitle: mediaTitle)
+            navigator.currentChapter = (moduleId: moduleId, href: nextHref, title: nextTitle, chapters: chapters, mediaTitle: mediaTitle, chapterNumber: nextChapter["number"] as? Int ?? 1)
             dismiss()
         }
     }

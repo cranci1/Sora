@@ -14,6 +14,7 @@ struct SearchResultsGrid: View {
     @Environment(\.verticalSizeClass) var verticalSizeClass
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
+    @EnvironmentObject private var tabBarController: TabBarController
     @State private var showBookmarkToast: Bool = false
     @State private var toastMessage: String = ""
     
@@ -35,7 +36,12 @@ struct SearchResultsGrid: View {
         ZStack {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columnsCount), spacing: 12) {
                 ForEach(items) { item in
-                    NavigationLink(destination: MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule)) {
+                    NavigationLink(destination: 
+                        MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule)
+                            .onDisappear {
+                                tabBarController.showTabBar()
+                            }
+                    ) {
                         ZStack {
                             LazyImage(url: URL(string: item.imageUrl)) { state in
                                 if let uiImage = state.imageContainer?.image {
@@ -81,6 +87,7 @@ struct SearchResultsGrid: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .padding(4)
                     }
+                    .isDetailLink(true)
                     .id(item.href)
                     .contextMenu {
                         Button(action: {

@@ -142,7 +142,9 @@ struct SearchView: View {
             if !searchQuery.isEmpty {
                 performSearch()
             }
-            tabBarController.showTabBar()
+            DispatchQueue.main.async {
+                tabBarController.showTabBar()
+            }
         }
         .onChange(of: selectedModuleId) { _ in
             if !searchQuery.isEmpty {

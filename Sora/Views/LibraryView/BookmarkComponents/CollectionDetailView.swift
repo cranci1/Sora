@@ -263,6 +263,7 @@ struct CollectionDetailView: View {
                                     )) {
                                         BookmarkGridItemView(item: bookmark, module: module)
                                     }
+                                    .isDetailLink(true)
                                     .contextMenu {
                                         Button(role: .destructive) {
                                             libraryManager.removeBookmarkFromCollection(bookmarkId: bookmark.id, collectionId: collection.id)

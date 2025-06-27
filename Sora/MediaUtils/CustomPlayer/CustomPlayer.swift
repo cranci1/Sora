@@ -332,10 +332,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             self?.checkForHLSStream()
         }
         
-        if isHoldPauseEnabled {
-            holdForPause()
-        }
-        
         do {
             try audioSession.setActive(true)
         } catch {
@@ -394,6 +390,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         if let slider = hiddenVolumeView.subviews.first(where: { $0 is UISlider }) as? UISlider {
             systemVolumeSlider = slider
         }
+        
+        let twoFingerTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTwoFingerTapPause(_:)))
+        twoFingerTapGesture.numberOfTouchesRequired = 2
+        twoFingerTapGesture.delegate = self
+        view.addGestureRecognizer(twoFingerTapGesture)
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -765,11 +766,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         ])
     }
     
-    func holdForPause() {
-        let holdForPauseGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleHoldForPause(_:)))
-        holdForPauseGesture.minimumPressDuration = 1
-        holdForPauseGesture.numberOfTouchesRequired = 2
-        view.addGestureRecognizer(holdForPauseGesture)
+    @objc private func handleTwoFingerTapPause(_ gesture: UITapGestureRecognizer) {
+        if gesture.state == .ended {
+            togglePlayPause()
+        }
     }
     
     func addInvisibleControlOverlays() {
@@ -1947,14 +1947,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600))
     }
     
-    @objc private func handleHoldForPause(_ gesture: UILongPressGestureRecognizer) {
-        guard isHoldPauseEnabled else { return }
-        
-        if gesture.state == .began {
-            togglePlayPause()
-        }
-    }
-    
     @objc private func dimTapped() {
         isDimmed.toggle()
         dimButtonTimer?.invalidate()
@@ -2948,6 +2940,12 @@ extension CustomMediaPlayerViewController: AVPictureInPictureControllerDelegate 
     
     func pictureInPictureController(_ pipController: AVPictureInPictureController, failedToStartPictureInPictureWithError error: Error) {
         Logger.shared.log("PiP failed to start: \(error.localizedDescription)", type: "Error")
+    }
+}
+
+extension CustomMediaPlayerViewController {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
     }
 }
 

@@ -308,6 +308,7 @@ struct FullWidthContinueReadingCell: View {
         return URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png")!
     }
     
+    @MainActor
     var body: some View {
         Group {
             if isSelecting {
@@ -351,6 +352,7 @@ struct FullWidthContinueReadingCell: View {
         }
     }
     
+    @MainActor
     private var cellContent: some View {
         GeometryReader { geometry in
             ZStack {

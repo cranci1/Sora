@@ -63,7 +63,6 @@ struct ContinueReadingCell: View {
         }
         
         print("Using fallback URL")
-        // Default fallback image
         return URL(string: "https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/banner2.png")!
     }
     

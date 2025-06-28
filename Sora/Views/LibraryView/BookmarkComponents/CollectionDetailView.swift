@@ -12,7 +12,7 @@ struct CollectionDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
-    @EnvironmentObject private var tabBarController: TabBarController
+
     
     let collection: BookmarkCollection
     @State private var sortOption: SortOption = .dateAdded
@@ -289,7 +289,8 @@ struct CollectionDetailView: View {
                 navigationController.interactivePopGestureRecognizer?.isEnabled = true
                 navigationController.interactivePopGestureRecognizer?.delegate = nil
             }
-            tabBarController.showTabBar()
+            
+            NotificationCenter.default.post(name: .showTabBar, object: nil)
         }
     }
 } 

@@ -14,7 +14,7 @@ struct SearchResultsGrid: View {
     @Environment(\.verticalSizeClass) var verticalSizeClass
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
-    @EnvironmentObject private var tabBarController: TabBarController
+
     @State private var showBookmarkToast: Bool = false
     @State private var toastMessage: String = ""
     
@@ -39,7 +39,7 @@ struct SearchResultsGrid: View {
                     NavigationLink(destination: 
                         MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule)
                             .onDisappear {
-                                tabBarController.showTabBar()
+                
                             }
                     ) {
                         ZStack {

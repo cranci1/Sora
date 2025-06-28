@@ -52,7 +52,7 @@ struct ReaderView: View {
     @State private var readingProgress: Double = 0.0
     @State private var lastProgressUpdate: Date = Date()
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var tabBarController: TabBarController
+
     @StateObject private var navigator = ChapterNavigator.shared
     
     private let fontOptions = [
@@ -121,6 +121,8 @@ struct ReaderView: View {
             }
         }
     }
+    
+
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -208,13 +210,34 @@ struct ReaderView: View {
         .navigationBarBackButtonHidden(true)
         .ignoresSafeArea()
         .onAppear {
-            tabBarController.hideTabBar()
+            UserDefaults.standard.set(false, forKey: "navigatingToReaderView")
             UserDefaults.standard.set(chapterHref, forKey: "lastReadChapter")
             saveReadingProgress()
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let navigationController = window.rootViewController?.children.first as? UINavigationController {
+                navigationController.interactivePopGestureRecognizer?.isEnabled = false
+            }
+            
+            NotificationCenter.default.post(name: .hideTabBar, object: nil)
+            UserDefaults.standard.set(true, forKey: "isReaderActive")
         }
         .onDisappear {
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let navigationController = window.rootViewController?.children.first as? UINavigationController {
+                navigationController.interactivePopGestureRecognizer?.isEnabled = true
+                navigationController.interactivePopGestureRecognizer?.delegate = nil
+            }
+            
+            if navigator.currentChapter != nil && navigator.currentChapter?.href != chapterHref {
+                UserDefaults.standard.set(true, forKey: "navigatingToReaderView")
+            }
+            
             if let next = navigator.currentChapter,
                next.href != chapterHref {
+                UserDefaults.standard.set(true, forKey: "navigatingToReaderView")
+                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                        let window = windowScene.windows.first,
@@ -227,7 +250,7 @@ struct ReaderView: View {
                             mediaTitle: next.mediaTitle,
                             chapterNumber: next.chapterNumber
                         )
-                        .environmentObject(tabBarController)
+
                         
                         let hostingController = UIHostingController(rootView: nextReader)
                         hostingController.modalPresentationStyle = .fullScreen
@@ -262,7 +285,9 @@ struct ReaderView: View {
                     }
                 }
             }
+            UserDefaults.standard.set(false, forKey: "isReaderActive")
         }
+        
         .task {
             do {
                 ensureModuleLoaded()
@@ -890,7 +915,6 @@ struct ReaderView: View {
         
         Logger.shared.log("Updating reading progress: \(roundedProgress) for \(chapterHref), title: \(novelTitle), image: \(imageUrl)", type: "Debug")
         
-        // Only cache valid HTML content
         let validHtmlContent = (!htmlContent.isEmpty && 
                                !htmlContent.contains("undefined") && 
                                htmlContent.count > 50) ? htmlContent : nil
@@ -1091,10 +1115,8 @@ struct HTMLView: UIViewRepresentable {
                 var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                 var clientHeight = document.documentElement.clientHeight;
                 
-                // Calculate progress as a percentage
                 var rawProgress = scrollHeight > 0 ? (scrollTop + clientHeight) / scrollHeight : 0;
                 
-                // If we're very close to the bottom (within 5%), consider it complete
                 var progress = rawProgress > 0.95 ? 1.0 : rawProgress;
                 
                 return {

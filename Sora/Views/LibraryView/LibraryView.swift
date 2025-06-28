@@ -12,7 +12,7 @@ import SwiftUI
 struct LibraryView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
-    @EnvironmentObject var tabBarController: TabBarController
+
     @Environment(\.scenePhase) private var scenePhase
     
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
@@ -190,7 +190,8 @@ struct LibraryView: View {
                 .onAppear {
                     fetchContinueWatching()
                     fetchContinueReading()
-                    tabBarController.showTabBar()
+                    
+                    NotificationCenter.default.post(name: .showTabBar, object: nil)
                 }
                 .onChange(of: scenePhase) { newPhase in
                     if newPhase == .active {
@@ -201,6 +202,7 @@ struct LibraryView: View {
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        
     }
     
     private func fetchContinueWatching() {

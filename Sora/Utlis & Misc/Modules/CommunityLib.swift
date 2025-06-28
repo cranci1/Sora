@@ -15,7 +15,7 @@ private struct ModuleLink: Identifiable {
 
 struct CommunityLibraryView: View {
     @EnvironmentObject var moduleManager: ModuleManager
-    @EnvironmentObject var tabBarController: TabBarController
+
 
     @AppStorage("lastCommunityURL") private var inputURL: String = ""
     @State private var webURL: URL?
@@ -40,10 +40,6 @@ struct CommunityLibraryView: View {
         }
         .onAppear {
             loadURL()
-            tabBarController.hideTabBar()
-        }
-        .onDisappear {
-            tabBarController.showTabBar()
         }
         .sheet(item: $moduleLinkToAdd) { link in
             ModuleAdditionSettingsView(moduleUrl: link.url)

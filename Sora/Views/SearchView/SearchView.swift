@@ -23,7 +23,7 @@ struct SearchView: View {
     
     @StateObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
-    @EnvironmentObject var tabBarController: TabBarController
+
     @Environment(\.verticalSizeClass) var verticalSizeClass
     
     @Binding public var searchQuery: String
@@ -38,6 +38,7 @@ struct SearchView: View {
     @State private var isSearchFieldFocused = false
     @State private var saveDebounceTimer: Timer?
     @State private var searchDebounceTimer: Timer?
+    @State private var isActive: Bool = false
     
     init(searchQuery: Binding<String>) {
         self._searchQuery = searchQuery
@@ -138,12 +139,44 @@ struct SearchView: View {
             }
         }
         .onAppear {
+            isActive = true
             loadSearchHistory()
             if !searchQuery.isEmpty {
                 performSearch()
             }
-            DispatchQueue.main.async {
-                tabBarController.showTabBar()
+            let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+            let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+            if !isMediaInfoActive && !isReaderActive {
+                NotificationCenter.default.post(name: .showTabBar, object: nil)
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+                let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+                if !isMediaInfoActive && !isReaderActive {
+                    NotificationCenter.default.post(name: .showTabBar, object: nil)
+                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+                let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+                if !isMediaInfoActive && !isReaderActive {
+                    NotificationCenter.default.post(name: .showTabBar, object: nil)
+                }
+            }
+        }
+        .onReceive(Timer.publish(every: 0.2, on: .main, in: .common).autoconnect()) { _ in
+            let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+            let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+            if isActive && !isMediaInfoActive && !isReaderActive {
+                NotificationCenter.default.post(name: .showTabBar, object: nil)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            isActive = true
+            let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+            let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+            if !isMediaInfoActive && !isReaderActive {
+                NotificationCenter.default.post(name: .showTabBar, object: nil)
             }
         }
         .onChange(of: selectedModuleId) { _ in
@@ -303,6 +336,7 @@ struct SearchView: View {
         return getModulesByLanguage()[language] ?? []
     }
 }
+
 
 struct SearchBar: View {
     @State private var debounceTimer: Timer?

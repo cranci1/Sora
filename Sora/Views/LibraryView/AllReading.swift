@@ -10,6 +10,8 @@ import NukeUI
 
 struct AllReadingView: View {
     @Environment(\.dismiss) private var dismiss
+
+
     @State private var continueReadingItems: [ContinueReadingItem] = []
     @State private var isRefreshing: Bool = false
     @State private var sortOption: SortOption = .dateAdded
@@ -113,7 +115,6 @@ struct AllReadingView: View {
                     }
                     Button(action: {
                         if isSelecting {
-                            // If trash icon tapped
                             if !selectedItems.isEmpty {
                                 for id in selectedItems {
                                     if let item = continueReadingItems.first(where: { $0.id == id }) {
@@ -225,6 +226,8 @@ struct AllReadingView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             fetchContinueReading()
+            
+            NotificationCenter.default.post(name: .showTabBar, object: nil)
         }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
@@ -341,6 +344,9 @@ struct FullWidthContinueReadingCell: View {
                 )) {
                     cellContent
                 }
+                .simultaneousGesture(TapGesture().onEnded {
+                    UserDefaults.standard.set(true, forKey: "navigatingToReaderView")
+                })
             }
         }
         .contextMenu {
@@ -357,7 +363,6 @@ struct FullWidthContinueReadingCell: View {
     private var cellContent: some View {
         GeometryReader { geometry in
             ZStack {
-                // Background image now covers the entire cell
                 LazyImage(url: imageURL) { state in
                     if let image = state.imageContainer?.image {
                         Image(uiImage: image)
@@ -376,7 +381,6 @@ struct FullWidthContinueReadingCell: View {
                     print("Background image loading: \(imageURL)")
                 }
                 
-                // Gradient overlay for better text readability
                 Rectangle()
                     .fill(LinearGradient(
                         gradient: Gradient(colors: [Color.black.opacity(0.7), Color.black.opacity(0.4)]),
@@ -386,7 +390,6 @@ struct FullWidthContinueReadingCell: View {
                     .frame(width: geometry.size.width, height: 157.03)
                 
                 HStack(spacing: 0) {
-                    // Left content area
                     VStack(alignment: .leading, spacing: 4) {
                         Text("\(Int(item.progress * 100))%")
                             .font(.caption)
@@ -414,7 +417,6 @@ struct FullWidthContinueReadingCell: View {
                     .padding(12)
                     .frame(width: geometry.size.width * 0.6, alignment: .leading)
                     
-                    // Right image area
                     LazyImage(url: imageURL) { state in
                         if let image = state.imageContainer?.image {
                             Image(uiImage: image)

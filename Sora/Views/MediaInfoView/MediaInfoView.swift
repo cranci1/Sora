@@ -82,7 +82,7 @@ struct MediaInfoView: View {
     @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
     @EnvironmentObject private var libraryManager: LibraryManager
-    @EnvironmentObject var tabBarController: TabBarController
+    @ObservedObject private var navigator = ChapterNavigator.shared
     
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
@@ -185,6 +185,16 @@ struct MediaInfoView: View {
             .ignoresSafeArea(.container, edges: .top)
             .onAppear {
                 setupViewOnAppear()
+                NotificationCenter.default.post(name: .hideTabBar, object: nil)
+                UserDefaults.standard.set(true, forKey: "isMediaInfoActive")
+                //  swipe back
+                /*
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let window = windowScene.windows.first,
+                   let navigationController = window.rootViewController?.children.first as? UINavigationController {
+                    navigationController.interactivePopGestureRecognizer?.isEnabled = false
+                }
+                */
             }
             .onChange(of: selectedRange) { newValue in
                 UserDefaults.standard.set(newValue.lowerBound, forKey: selectedRangeKey)
@@ -198,6 +208,7 @@ struct MediaInfoView: View {
             .onDisappear {
                 currentFetchTask?.cancel()
                 activeFetchID = nil
+                UserDefaults.standard.set(false, forKey: "isMediaInfoActive")
             }
             .task {
                 await setupInitialData()
@@ -228,7 +239,6 @@ struct MediaInfoView: View {
         VStack {
             HStack {
                 Button(action: { 
-                    tabBarController.showTabBar()
                     dismiss()
                 }) {
                     Image(systemName: "chevron.left")
@@ -718,7 +728,7 @@ struct MediaInfoView: View {
                 LazyVStack(spacing: 15) {
                     ForEach(chapters.indices.filter { selectedChapterRange.contains($0) }, id: \..self) { i in
                         let chapter = chapters[i]
-                        let _ = refreshTrigger // Force refresh when trigger changes
+                        let _ = refreshTrigger 
                     if let href = chapter["href"] as? String,
                        let number = chapter["number"] as? Int,
                        let title = chapter["title"] as? String {
@@ -731,15 +741,31 @@ struct MediaInfoView: View {
                                 mediaTitle: self.title,
                                 chapterNumber: number
                             )
+                            .onAppear {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    ChapterNavigator.shared.currentChapter = nil
+                                }
+                            }
                         ) {
                             ChapterCell(
                                 chapterNumber: String(number),
                                 chapterTitle: title,
-                                isCurrentChapter: false, // Disabled current chapter indicator
+                                isCurrentChapter: false, 
                                 progress: UserDefaults.standard.double(forKey: "readingProgress_\(href)"),
                                 href: href
                             )
                         }
+                        .simultaneousGesture(TapGesture().onEnded {
+                            UserDefaults.standard.set(true, forKey: "navigatingToReaderView")
+                            ChapterNavigator.shared.currentChapter = (
+                                moduleId: module.id.uuidString,
+                                href: href,
+                                title: title,
+                                chapters: chapters,
+                                mediaTitle: self.title,
+                                chapterNumber: number
+                            )
+                        })
                         .contextMenu {
                             Button(action: {
                                 markChapterAsRead(href: href, number: number)
@@ -909,7 +935,6 @@ struct MediaInfoView: View {
     
     private func setupViewOnAppear() {
         buttonRefreshTrigger.toggle()
-        tabBarController.hideTabBar()
         
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first,
@@ -925,6 +950,8 @@ struct MediaInfoView: View {
             
             UserDefaults.standard.set(imageUrl, forKey: "mediaInfoImageUrl_\(module.id.uuidString)")
             Logger.shared.log("Saved MediaInfoView image URL: \(imageUrl) for module \(module.id.uuidString)", type: "Debug")
+            
+
             
             if module.metadata.novel == true {
                 if !hasFetched {
@@ -2298,13 +2325,10 @@ struct MediaInfoView: View {
             if let number = chapter["number"] as? Int,
                let href = chapter["href"] as? String {
                 if number < currentNumber {
-                    // Set reading progress to 100%
                     userDefaults.set(1.0, forKey: "readingProgress_\(href)")
                     
-                    // Set scroll position to end of chapter
                     userDefaults.set(1.0, forKey: "scrollPosition_\(href)")
                     
-                    // Update continue reading manager
                     ContinueReadingManager.shared.updateProgress(for: href, progress: 1.0)
                     markedCount += 1
                 }
@@ -2322,4 +2346,12 @@ struct MediaInfoView: View {
         
         refreshTrigger.toggle()
     }
+    
+    private func simultaneousGesture(for item: NavigationLink<some View, some View>) -> some View {
+        item.simultaneousGesture(TapGesture().onEnded {
+            UserDefaults.standard.set(true, forKey: "navigatingToReaderView")
+        })
+    }
 }
+
+

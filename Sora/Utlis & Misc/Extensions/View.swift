@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct ScrollViewBottomPadding: ViewModifier {
     func body(content: Content) -> some View {

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 
 extension Color {
@@ -36,15 +37,14 @@ extension Color {
 
 
 struct TabBar: View {
-    let tabs: [TabItem]
+    var tabs: [TabItem]
     @Binding var selectedTab: Int
-    @Binding var lastTab: Int
-    @State var showSearch: Bool = false
-    @State var searchLocked: Bool = false
-    @FocusState var keyboardFocus: Bool
-    @State var keyboardHidden: Bool = true
-    @Binding var searchQuery: String
-    @ObservedObject var controller: TabBarController
+    @State private var lastTab: Int = 0
+    @State private var showSearch: Bool = false
+    @State private var searchQuery: String = ""
+    @FocusState private var keyboardFocus: Bool
+    @State private var keyboardHidden: Bool = true
+    @State private var searchLocked: Bool = false
     
     @State private var keyboardHeight: CGFloat = 0
     
@@ -56,15 +56,6 @@ struct TabBar: View {
     }
     
     @Namespace private var animation
-    
-    
-    func slideDown() {
-        controller.hideTabBar()
-    }
-    
-    func slideUp() {
-        controller.showTabBar()
-    }
     
     var body: some View {
         HStack {
@@ -180,12 +171,8 @@ struct TabBar: View {
                 .padding(.horizontal, -20)
                 .padding(.bottom, -100)
                 .padding(.top, -10)
-                .opacity(controller.isHidden ? 0 : 1)  // Animate opacity
-                .animation(.easeInOut(duration: 0.15), value: controller.isHidden)
         }
-        .offset(y: controller.isHidden ? 120 : (keyboardFocus ? -keyboardHeight + 36 : 0))
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: keyboardHeight)
-        .animation(.easeInOut(duration: 0.15), value: controller.isHidden)
         .onChange(of: keyboardHeight) { newValue in
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
             }
@@ -200,6 +187,10 @@ struct TabBar: View {
             NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
                 keyboardHeight = 0
             }
+        }
+        .onDisappear {
+            NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+            NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
         }
     }
     

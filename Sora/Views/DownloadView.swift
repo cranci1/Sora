@@ -11,7 +11,6 @@ import SwiftUI
 
 struct DownloadView: View {
     @EnvironmentObject var jsController: JSController
-    @EnvironmentObject var tabBarController: TabBarController
     @State private var searchText = ""
     @State private var selectedTab = 0
     @State private var sortOption: SortOption = .newest
@@ -71,12 +70,13 @@ struct DownloadView: View {
                     Text(String(format: NSLocalizedString("Are you sure you want to delete '%@'?", comment: ""), asset.episodeDisplayName))
                 }
             }
-            .onAppear {
-                tabBarController.showTabBar()
-            }
         }
         .deviceScaled()
         .navigationViewStyle(StackNavigationViewStyle())
+        .onAppear {
+            // 立即隐藏标签栏
+            NotificationCenter.default.post(name: .hideTabBar, object: nil)
+        }
     }
     
     private var activeDownloadsView: some View {
@@ -989,7 +989,6 @@ struct EnhancedShowEpisodesView: View {
     @State private var showDeleteAllAlert = false
     @State private var assetToDelete: DownloadedAsset?
     @EnvironmentObject var jsController: JSController
-    @EnvironmentObject var tabBarController: TabBarController
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
     
@@ -1029,16 +1028,15 @@ struct EnhancedShowEpisodesView: View {
             navigationOverlay
         }
         .onAppear {
-            tabBarController.hideTabBar()
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first,
                let navigationController = window.rootViewController?.children.first as? UINavigationController {
                 navigationController.interactivePopGestureRecognizer?.isEnabled = true
                 navigationController.interactivePopGestureRecognizer?.delegate = nil
             }
-        }
-        .onDisappear {
-            tabBarController.showTabBar()
+            
+            // 立即隐藏标签栏
+            NotificationCenter.default.post(name: .hideTabBar, object: nil)
         }
         .navigationBarBackButtonHidden(true)
     }
@@ -1048,7 +1046,6 @@ struct EnhancedShowEpisodesView: View {
         VStack {
             HStack {
                 Button(action: {
-                    tabBarController.showTabBar()
                     dismiss()
                 }) {
                     Image(systemName: "chevron.left")

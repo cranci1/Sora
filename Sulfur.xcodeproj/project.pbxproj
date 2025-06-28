@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0402DA0E2DE7AA01003BB42C /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402DA0D2DE7A9FC003BB42C /* TabBarController.swift */; };
 		0402DA132DE7B5EC003BB42C /* SearchStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402DA112DE7B5EC003BB42C /* SearchStateView.swift */; };
 		0402DA142DE7B5EC003BB42C /* SearchResultsGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402DA102DE7B5EC003BB42C /* SearchResultsGrid.swift */; };
 		0402DA152DE7B5EC003BB42C /* SearchComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402DA0F2DE7B5EC003BB42C /* SearchComponents.swift */; };
@@ -125,7 +124,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0402DA0D2DE7A9FC003BB42C /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		0402DA0F2DE7B5EC003BB42C /* SearchComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchComponents.swift; sourceTree = "<group>"; };
 		0402DA102DE7B5EC003BB42C /* SearchResultsGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsGrid.swift; sourceTree = "<group>"; };
 		0402DA112DE7B5EC003BB42C /* SearchStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchStateView.swift; sourceTree = "<group>"; };
@@ -431,7 +429,6 @@
 		04F08EDD2DE10C05006B29D9 /* TabBar */ = {
 			isa = PBXGroup;
 			children = (
-				0402DA0D2DE7A9FC003BB42C /* TabBarController.swift */,
 				04F08EDE2DE10C1A006B29D9 /* TabBar.swift */,
 			);
 			path = TabBar;
@@ -986,7 +983,6 @@
 				130C6BFA2D53AB1F00DC1432 /* SettingsViewData.swift in Sources */,
 				0402DA172DE7B7B8003BB42C /* SearchViewComponents.swift in Sources */,
 				1E9FF1D32D403E49008AC100 /* SettingsViewLoggerFilter.swift in Sources */,
-				0402DA0E2DE7AA01003BB42C /* TabBarController.swift in Sources */,
 				1E47859B2DEBC5960095BF2F /* AnilistMatchPopupView.swift in Sources */,
 				13EA2BD92D32D98400C1EBD7 /* NormalPlayer.swift in Sources */,
 				133D7C932D2BE2640075467E /* Modules.swift in Sources */,

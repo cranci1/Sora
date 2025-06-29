@@ -502,3 +502,10 @@ Metadata epizody se týkají náhledu a názvu epizody, které mohou někdy obsa
 /* New localizations */
 "Collections" = "Kolekce";
 "Continue Reading" = "Pokračovat ve čtení";
+
+/* Backup & Restore */
+"Backup & Restore" = "Zálohování a obnovení";
+"Export Backup" = "Exportovat zálohu";
+"Import Backup" = "Importovat zálohu";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Upozornění: Tato funkce je stále experimentální. Po exportu/importu si prosím zkontrolujte svá data.";
+"Backup" = "Záloha";

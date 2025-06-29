@@ -479,3 +479,10 @@
 /* Added missing localizations */
 "Collections" = "Samlingar";
 "Continue Reading" = "Hald fram med å lese";
+
+/* Backup & Restore */
+"Backup & Restore" = "Sikkerhetskopi og gjenoppretting";
+"Export Backup" = "Eksporter sikkerhetskopi";
+"Import Backup" = "Importer sikkerhetskopi";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Merk: Denne funksjonen er fortsatt eksperimentell. Vennligst dobbeltsjekk dataene dine etter eksport/import.";
+"Backup" = "Sikkerhetskopi";

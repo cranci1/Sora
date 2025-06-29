@@ -501,3 +501,10 @@ Za metapodatke epizode, odnosi se na sličicu i naslov epizode, jer ponekad mogu
 /* New additions */
 "Collections" = "Kolekcije";
 "Continue Reading" = "Nastavi čitanje";
+
+/* Backup & Restore */
+"Backup & Restore" = "Sigurnosna kopija i vraćanje";
+"Export Backup" = "Izvezi sigurnosnu kopiju";
+"Import Backup" = "Uvezi sigurnosnu kopiju";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Napomena: Ova funkcija je još uvijek eksperimentalna. Molimo provjerite svoje podatke nakon izvoza/uvoza.";
+"Backup" = "Sigurnosna kopija";

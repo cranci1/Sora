@@ -497,3 +497,10 @@ For episode metadata, it refers to the episode thumbnail and title, since someti
 /* Added missing localizations */
 "Collections" = "Жинақтар";
 "Continue Reading" = "Оқуды жалғастыру";
+
+/* Backup & Restore */
+"Backup & Restore" = "Сақтық көшірме және қалпына келтіру";
+"Export Backup" = "Сақтық көшірмені экспорттау";
+"Import Backup" = "Сақтық көшірмені импорттау";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Ескерту: Бұл мүмкіндік әлі де тәжірибелік. Экспорт/импорттан кейін деректеріңізді тексеріңіз.";
+"Backup" = "Сақтық көшірме";

@@ -18,6 +18,7 @@
 		0410697F2E00ABE900A157BB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0410697C2E00ABE900A157BB /* Localizable.strings */; };
 		041069832E00C71000A157BB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 041069812E00C71000A157BB /* Localizable.strings */; };
 		041261042E00D14F00D05B47 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 041261022E00D14F00D05B47 /* Localizable.strings */; };
+		041E9D722E11D71F0025F150 /* SettingsViewBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 041E9D712E11D71F0025F150 /* SettingsViewBackup.swift */; };
 		04536F712E04BA3B00A11248 /* JSController-Novel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04536F702E04BA3B00A11248 /* JSController-Novel.swift */; };
 		04536F742E04BA5600A11248 /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04536F722E04BA5600A11248 /* ReaderView.swift */; };
 		04536F772E04BA6900A11248 /* ChapterCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04536F752E04BA6900A11248 /* ChapterCell.swift */; };
@@ -135,6 +136,7 @@
 		0410697B2E00ABE900A157BB /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = Localizable.strings; sourceTree = "<group>"; };
 		041069802E00C71000A157BB /* kk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = kk; path = Localizable.strings; sourceTree = "<group>"; };
 		041261012E00D14F00D05B47 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = Localizable.strings; sourceTree = "<group>"; };
+		041E9D712E11D71F0025F150 /* SettingsViewBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewBackup.swift; sourceTree = "<group>"; };
 		0452339E2E02149C002EA23C /* bos */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bos; path = Localizable.strings; sourceTree = "<group>"; };
 		04536F702E04BA3B00A11248 /* JSController-Novel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Novel.swift"; sourceTree = "<group>"; };
 		04536F722E04BA5600A11248 /* ReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderView.swift; sourceTree = "<group>"; };
@@ -567,6 +569,7 @@
 		133D7C832D2BE2630075467E /* SettingsSubViews */ = {
 			isa = PBXGroup;
 			children = (
+				041E9D712E11D71F0025F150 /* SettingsViewBackup.swift */,
 				1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */,
 				1399FAD32D3AB38C00E97C31 /* SettingsViewLogger.swift */,
 				133D7C842D2BE2630075467E /* SettingsViewModule.swift */,
@@ -956,6 +959,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				041E9D722E11D71F0025F150 /* SettingsViewBackup.swift in Sources */,
 				135CCBE22D4D1138008B9C0E /* SettingsViewPlayer.swift in Sources */,
 				04536F742E04BA5600A11248 /* ReaderView.swift in Sources */,
 				131270172DC13A010093AA9C /* DownloadManager.swift in Sources */,

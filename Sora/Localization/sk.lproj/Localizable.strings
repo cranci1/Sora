@@ -499,3 +499,10 @@ For episode metadata, it refers to the episode thumbnail and title, since someti
 /* New additions */
 "Collections" = "Kolekcie";
 "Continue Reading" = "Pokračovať v čítaní";
+
+/* Backup & Restore */
+"Backup & Restore" = "Záloha a obnovenie";
+"Export Backup" = "Exportovať zálohu";
+"Import Backup" = "Importovať zálohu";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Upozornenie: Táto funkcia je stále experimentálna. Po exporte/importe si prosím skontrolujte svoje údaje.";
+"Backup" = "Záloha";

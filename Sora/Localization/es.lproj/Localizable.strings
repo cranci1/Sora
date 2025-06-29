@@ -498,3 +498,9 @@ Para los metadatos del episodio, se refiere a la miniatura y el título del epis
 "Collections" = "Colecciones";
 "Continue Reading" = "Continuar leyendo";
 
+"Backup & Restore" = "Copia de seguridad y restaurar";
+"Export Backup" = "Exportar copia de seguridad";
+"Import Backup" = "Importar copia de seguridad";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Aviso: Esta función aún es experimental. Por favor, verifica tus datos después de exportar/importar.";
+"Backup" = "Copia de seguridad";
+

@@ -177,11 +177,6 @@ struct SettingsView: View {
                             NavigationLink(destination: SettingsViewDownloads().navigationBarBackButtonHidden(false)) {
                                 SettingsNavigationRow(icon: "arrow.down.circle", titleKey: "Downloads")
                             }
-                            Divider().padding(.horizontal, 16)
-                            
-                            NavigationLink(destination: SettingsViewTrackers().navigationBarBackButtonHidden(false)) {
-                                SettingsNavigationRow(icon: "square.stack.3d.up", titleKey: "Trackers")
-                            }
                         }
                         .background(.ultraThinMaterial)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -216,6 +211,11 @@ struct SettingsView: View {
                             
                             NavigationLink(destination: SettingsViewLogger().navigationBarBackButtonHidden(false)) {
                                 SettingsNavigationRow(icon: "doc.text", titleKey: "Logs")
+                            }
+                            Divider().padding(.horizontal, 16)
+                            
+                            NavigationLink(destination: SettingsViewBackup().navigationBarBackButtonHidden(false)) {
+                                SettingsNavigationRow(icon: "arrow.triangle.2.circlepath", titleKey: NSLocalizedString("Backup & Restore", comment: "Settings navigation row for backup and restore"))
                             }
                         }
                         .background(.ultraThinMaterial)

@@ -491,3 +491,9 @@
 "Paste URL" = "URL einfügen";
 
 "Continue Reading" = "Weiterlesen";
+
+"Backup & Restore" = "Sichern & Wiederherstellen";
+"Export Backup" = "Backup exportieren";
+"Import Backup" = "Backup importieren";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Hinweis: Diese Funktion ist noch experimentell. Bitte überprüfe deine Daten nach dem Export/Import.";
+"Backup" = "Backup";

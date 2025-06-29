@@ -418,3 +418,8 @@
 "Paste URL" = "Incolla URL";
 "Collections" = "Raccolte";
 "Continue Reading" = "Continua a leggere";
+"Backup & Restore" = "Backup e ripristino";
+"Export Backup" = "Esporta backup";
+"Import Backup" = "Importa backup";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Nota: Questa funzione è ancora sperimentale. Si prega di ricontrollare i dati dopo esportazione/importazione.";
+"Backup" = "Backup";

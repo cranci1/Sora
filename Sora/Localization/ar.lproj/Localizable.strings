@@ -483,3 +483,10 @@
 /* New additions */
 "Collections" = "المجموعات";
 "Continue Reading" = "متابعة القراءة";
+
+/* New additions */
+"Backup & Restore" = "النسخ الاحتياطي والاستعادة";
+"Export Backup" = "تصدير النسخة الاحتياطية";
+"Import Backup" = "استيراد النسخة الاحتياطية";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "تنبيه: هذه الميزة لا تزال تجريبية. يرجى التحقق من بياناتك بعد التصدير/الاستيراد.";
+"Backup" = "نسخة احتياطية";

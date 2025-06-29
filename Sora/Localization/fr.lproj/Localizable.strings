@@ -485,3 +485,10 @@
 /* New additions */
 "Collections" = "Collections";
 "Continue Reading" = "Continuer la lecture";
+
+/* Backup & Restore */
+"Backup & Restore" = "Sauvegarde & Restauration";
+"Export Backup" = "Exporter la sauvegarde";
+"Import Backup" = "Importer la sauvegarde";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Remarque : Cette fonctionnalité est encore expérimentale. Veuillez vérifier vos données après l'export/import.";
+"Backup" = "Sauvegarde";

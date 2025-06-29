@@ -478,3 +478,10 @@
 /* Added missing localizations */
 "Collections" = "Samlingar";
 "Continue Reading" = "Fortsätt läsa";
+
+/* Backup & Restore */
+"Backup & Restore" = "Säkerhetskopiera & Återställ";
+"Export Backup" = "Exportera säkerhetskopia";
+"Import Backup" = "Importera säkerhetskopia";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Observera: Denna funktion är fortfarande experimentell. Kontrollera dina data efter export/import.";
+"Backup" = "Säkerhetskopia";

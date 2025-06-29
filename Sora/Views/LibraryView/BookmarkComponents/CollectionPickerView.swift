@@ -20,8 +20,8 @@ struct CollectionPickerView: View {
                 if isShowingNewCollectionField {
                     Section {
                         HStack {
-                            TextField("Collection name", text: $newCollectionName)
-                            Button("Create") {
+                            TextField(LocalizedStringKey("Collection name"), text: $newCollectionName)
+                            Button(LocalizedStringKey("Create")) {
                                 if !newCollectionName.isEmpty {
                                     libraryManager.createCollection(name: newCollectionName)
                                     if let newCollection = libraryManager.collections.first(where: { $0.name == newCollectionName }) {
@@ -52,11 +52,11 @@ struct CollectionPickerView: View {
                     }
                 }
             }
-            .navigationTitle("Add to Collection")
+            .navigationTitle(LocalizedStringKey("Add to Collection"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button(LocalizedStringKey("Cancel")) {
                         dismiss()
                     }
                 }

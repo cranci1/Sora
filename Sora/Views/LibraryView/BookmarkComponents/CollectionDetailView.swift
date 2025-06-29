@@ -98,7 +98,7 @@ struct CollectionDetailView: View {
                                 sortOption = option
                             } label: {
                                 HStack {
-                                    Text(option.rawValue)
+                                    Text(NSLocalizedString(option.rawValue, comment: ""))
                                     if option == sortOption {
                                         Image(systemName: "checkmark")
                                             .foregroundColor(.accentColor)
@@ -162,7 +162,7 @@ struct CollectionDetailView: View {
                             .scaledToFit()
                             .frame(width: 18, height: 18)
                             .foregroundColor(.secondary)
-                        TextField("Search bookmarks...", text: $searchText)
+                        TextField(LocalizedStringKey("Search bookmarks..."), text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
                             .foregroundColor(.primary)
                         if !searchText.isEmpty {

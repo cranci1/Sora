@@ -55,7 +55,7 @@ struct AllReadingView: View {
                 Button(action: {
                     dismiss()
                 }) {
-                    Text("All Reading")
+                    Text(LocalizedStringKey("All Reading"))
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
@@ -91,7 +91,7 @@ struct AllReadingView: View {
                                 sortOption = option
                             } label: {
                                 HStack {
-                                    Text(option.rawValue)
+                                    Text(NSLocalizedString(option.rawValue, comment: ""))
                                     if option == sortOption {
                                         Image(systemName: "checkmark")
                                             .foregroundColor(.accentColor)
@@ -155,7 +155,7 @@ struct AllReadingView: View {
                             .scaledToFit()
                             .frame(width: 18, height: 18)
                             .foregroundColor(.secondary)
-                        TextField("Search reading...", text: $searchText)
+                        TextField(LocalizedStringKey("Search reading..."), text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
                             .foregroundColor(.primary)
                         if !searchText.isEmpty {

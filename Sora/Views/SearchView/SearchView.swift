@@ -76,7 +76,7 @@ struct SearchView: View {
     private var mainContent: some View {
         VStack(alignment: .leading) {
             HStack {
-                Text("Search")
+                Text(LocalizedStringKey("Search"))
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 
@@ -352,7 +352,7 @@ struct SearchBar: View {
     
     var body: some View {
         HStack {
-            TextField("Search...", text: $text, onEditingChanged: { isEditing in
+            TextField(LocalizedStringKey("Search..."), text: $text, onEditingChanged: { isEditing in
                 isFocused = isEditing
             }, onCommit: onSearchButtonClicked)
                 .padding(7)

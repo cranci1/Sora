@@ -78,10 +78,10 @@ struct SettingsViewAbout: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Sora")
+                            Text(LocalizedStringKey("Sora"))
                                 .font(.title)
                                 .bold()
-                            Text("Also known as Sulfur")
+                            Text(LocalizedStringKey("Also known as Sulfur"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -111,10 +111,10 @@ struct SettingsViewAbout: View {
                             }
                             
                             VStack(alignment: .leading) {
-                                Text("cranci1")
+                                Text(LocalizedStringKey("cranci1"))
                                     .font(.headline)
                                     .foregroundColor(.indigo)
-                                Text("me frfr")
+                                Text(LocalizedStringKey("me frfr"))
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                             }
@@ -137,7 +137,7 @@ struct SettingsViewAbout: View {
             }
             .padding(.vertical, 20)
         }
-        .navigationTitle("About")
+        .navigationTitle(LocalizedStringKey("About"))
         .scrollViewBottomPadding()
     }
 }
@@ -157,7 +157,7 @@ struct ContributorsView: View {
                 }
                 .padding(.vertical, 12)
             } else if error != nil {
-                Text("Failed to load contributors")
+                Text(LocalizedStringKey("Failed to load contributors"))
                     .foregroundColor(.secondary)
                     .padding(.vertical, 12)
             } else {

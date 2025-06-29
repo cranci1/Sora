@@ -113,7 +113,7 @@ struct AllWatchingView: View {
                                 sortOption = option
                             } label: {
                                 HStack {
-                                    Text(option.rawValue)
+                                    Text(NSLocalizedString(option.rawValue, comment: ""))
                                     if option == sortOption {
                                         Image(systemName: "checkmark")
                                             .foregroundColor(.accentColor)

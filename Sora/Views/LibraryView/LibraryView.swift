@@ -71,7 +71,7 @@ struct LibraryView: View {
             ZStack {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 20) {
-                        Text("Library")
+                        Text(LocalizedStringKey("Library"))
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .padding(.horizontal, 20)
@@ -124,7 +124,7 @@ struct LibraryView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "play.fill")
                         .font(.subheadline)
-                    Text("Continue Watching")
+                    Text(LocalizedStringKey("Continue Watching"))
                         .font(.title3)
                         .fontWeight(.semibold)
                 }
@@ -132,7 +132,7 @@ struct LibraryView: View {
                 Spacer()
                 
                 NavigationLink(destination: AllWatchingView()) {
-                    Text("View All")
+                    Text(LocalizedStringKey("View All"))
                         .font(.subheadline)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
@@ -149,9 +149,9 @@ struct LibraryView: View {
                     Image(systemName: "play.circle")
                         .font(.largeTitle)
                         .foregroundColor(.secondary)
-                    Text("Nothing to Continue Watching")
+                    Text(LocalizedStringKey("Nothing to Continue Watching"))
                         .font(.headline)
-                    Text("Your recently watched content will appear here")
+                    Text(LocalizedStringKey("Your recently watched content will appear here"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -177,7 +177,7 @@ struct LibraryView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "book.fill")
                         .font(.subheadline)
-                    Text("Continue Reading")
+                    Text(LocalizedStringKey("Continue Reading"))
                         .font(.title3)
                         .fontWeight(.semibold)
                 }
@@ -185,7 +185,7 @@ struct LibraryView: View {
                 Spacer()
                 
                 NavigationLink(destination: AllReadingView()) {
-                    Text("View All")
+                    Text(LocalizedStringKey("View All"))
                         .font(.subheadline)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
@@ -202,9 +202,9 @@ struct LibraryView: View {
                     Image(systemName: "book.closed")
                         .font(.largeTitle)
                         .foregroundColor(.secondary)
-                    Text("Nothing to Continue Reading")
+                    Text(LocalizedStringKey("Nothing to Continue Reading"))
                         .font(.headline)
-                    Text("Your recently read novels will appear here")
+                    Text(LocalizedStringKey("Your recently read novels will appear here"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -230,7 +230,7 @@ struct LibraryView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "folder.fill")
                         .font(.subheadline)
-                    Text("Collections")
+                    Text(LocalizedStringKey("Collections"))
                         .font(.title3)
                         .fontWeight(.semibold)
                 }
@@ -238,7 +238,7 @@ struct LibraryView: View {
                 Spacer()
                 
                 NavigationLink(destination: BookmarksDetailView()) {
-                    Text("View All")
+                    Text(LocalizedStringKey("View All"))
                         .font(.subheadline)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)

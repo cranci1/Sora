@@ -53,7 +53,7 @@ struct BookmarksDetailView: View {
                         .foregroundColor(.primary)
                 }
                 Button(action: { dismiss() }) {
-                    Text("Collections")
+                    Text(LocalizedStringKey("Collections"))
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
@@ -90,7 +90,7 @@ struct BookmarksDetailView: View {
                                 sortOption = option
                             } label: {
                                 HStack {
-                                    Text(option.rawValue)
+                                    Text(NSLocalizedString(option.rawValue, comment: ""))
                                     if option == sortOption {
                                         Image(systemName: "checkmark")
                                             .foregroundColor(.accentColor)
@@ -168,7 +168,7 @@ struct BookmarksDetailView: View {
                             .scaledToFit()
                             .frame(width: 18, height: 18)
                             .foregroundColor(.secondary)
-                        TextField("Search collections...", text: $searchText)
+                        TextField(LocalizedStringKey("Search collections..."), text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
                             .foregroundColor(.primary)
                         if !searchText.isEmpty {
@@ -215,9 +215,9 @@ struct BookmarksDetailView: View {
                     Image(systemName: "folder")
                         .font(.largeTitle)
                         .foregroundColor(.secondary)
-                    Text("No Collections")
+                    Text(LocalizedStringKey("No Collections"))
                         .font(.headline)
-                    Text("Create a collection to organize your bookmarks")
+                    Text(LocalizedStringKey("Create a collection to organize your bookmarks"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -254,7 +254,7 @@ struct BookmarksDetailView: View {
                                         )
                                 }
                                 .contextMenu {
-                                    Button("Rename") {
+                                    Button(LocalizedStringKey("Rename")) {
                                         collectionToRename = collection
                                         renameCollectionName = collection.name
                                         isShowingRenamePrompt = true
@@ -262,7 +262,7 @@ struct BookmarksDetailView: View {
                                     Button(role: .destructive) {
                                         libraryManager.deleteCollection(id: collection.id)
                                     } label: {
-                                        Label("Delete", systemImage: "trash")
+                                        Label(LocalizedStringKey("Delete"), systemImage: "trash")
                                     }
                                 }
                             } else {
@@ -270,7 +270,7 @@ struct BookmarksDetailView: View {
                                     BookmarkCollectionGridCell(collection: collection, width: 162, height: 162)
                                 }
                                 .contextMenu {
-                                    Button("Rename") {
+                                    Button(LocalizedStringKey("Rename")) {
                                         collectionToRename = collection
                                         renameCollectionName = collection.name
                                         isShowingRenamePrompt = true
@@ -278,7 +278,7 @@ struct BookmarksDetailView: View {
                                     Button(role: .destructive) {
                                         libraryManager.deleteCollection(id: collection.id)
                                     } label: {
-                                        Label("Delete", systemImage: "trash")
+                                        Label(LocalizedStringKey("Delete"), systemImage: "trash")
                                     }
                                 }
                             }
@@ -292,30 +292,30 @@ struct BookmarksDetailView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
-        .alert("Create Collection", isPresented: $isShowingCreateCollection) {
-            TextField("Collection Name", text: $newCollectionName)
-            Button("Cancel", role: .cancel) {
+        .alert(LocalizedStringKey("Create Collection"), isPresented: $isShowingCreateCollection) {
+            TextField(LocalizedStringKey("Collection Name"), text: $newCollectionName)
+            Button(LocalizedStringKey("Cancel"), role: .cancel) {
                 newCollectionName = ""
             }
-            Button("Create") {
+            Button(LocalizedStringKey("Create")) {
                 if !newCollectionName.isEmpty {
                     libraryManager.createCollection(name: newCollectionName)
                     newCollectionName = ""
                 }
             }
         }
-        .alert("Rename Collection", isPresented: $isShowingRenamePrompt, presenting: collectionToRename) { collection in
-            TextField("Collection Name", text: $renameCollectionName)
-            Button("Cancel", role: .cancel) {
+        .alert(LocalizedStringKey("Rename Collection"), isPresented: $isShowingRenamePrompt, presenting: collectionToRename) { collection in
+            TextField(LocalizedStringKey("Collection Name"), text: $renameCollectionName)
+            Button(LocalizedStringKey("Cancel"), role: .cancel) {
                 collectionToRename = nil
                 renameCollectionName = ""
             }
-            Button("Rename") {
-                if !renameCollectionName.isEmpty {
+            Button(LocalizedStringKey("Rename")) {
+                if let collection = collectionToRename, !renameCollectionName.isEmpty {
                     libraryManager.renameCollection(id: collection.id, newName: renameCollectionName)
+                    collectionToRename = nil
+                    renameCollectionName = ""
                 }
-                collectionToRename = nil
-                renameCollectionName = ""
             }
         } message: { _ in EmptyView() }
         .onAppear {
@@ -338,7 +338,7 @@ private struct SortMenu: View {
                     sortOption = option
                 } label: {
                     HStack {
-                        Text(option.rawValue)
+                        Text(NSLocalizedString(option.rawValue, comment: ""))
                         if option == sortOption {
                             Image(systemName: "checkmark")
                                 .foregroundColor(.accentColor)

@@ -149,14 +149,7 @@ struct SearchView: View {
             if !isMediaInfoActive && !isReaderActive {
                 NotificationCenter.default.post(name: .showTabBar, object: nil)
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
-                let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
-                if !isMediaInfoActive && !isReaderActive {
-                    NotificationCenter.default.post(name: .showTabBar, object: nil)
-                }
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
                 let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
                 let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
                 if !isMediaInfoActive && !isReaderActive {
@@ -164,7 +157,7 @@ struct SearchView: View {
                 }
             }
         }
-        .onReceive(Timer.publish(every: 0.2, on: .main, in: .common).autoconnect()) { _ in
+        .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()) { _ in
             let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
             let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
             if isActive && !isMediaInfoActive && !isReaderActive {

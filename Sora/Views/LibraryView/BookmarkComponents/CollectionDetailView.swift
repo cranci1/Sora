@@ -20,6 +20,7 @@ struct CollectionDetailView: View {
     @State private var isSearchActive: Bool = false
     @State private var isSelecting: Bool = false
     @State private var selectedBookmarks: Set<LibraryItem.ID> = []
+    @State private var isActive: Bool = false
     
     enum SortOption: String, CaseIterable {
         case dateAdded = "Date Added"
@@ -283,6 +284,7 @@ struct CollectionDetailView: View {
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
+            isActive = true
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first,
                let navigationController = window.rootViewController?.children.first as? UINavigationController {
@@ -290,7 +292,33 @@ struct CollectionDetailView: View {
                 navigationController.interactivePopGestureRecognizer?.delegate = nil
             }
             
-            NotificationCenter.default.post(name: .showTabBar, object: nil)
+            let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+            let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+            if !isMediaInfoActive && !isReaderActive {
+                NotificationCenter.default.post(name: .showTabBar, object: nil)
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
+                let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+                let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+                if !isMediaInfoActive && !isReaderActive {
+                    NotificationCenter.default.post(name: .showTabBar, object: nil)
+                }
+            }
+        }
+        .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()) { _ in
+            let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+            let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+            if isActive && !isMediaInfoActive && !isReaderActive {
+                NotificationCenter.default.post(name: .showTabBar, object: nil)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            isActive = true
+            let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+            let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+            if !isMediaInfoActive && !isReaderActive {
+                NotificationCenter.default.post(name: .showTabBar, object: nil)
+            }
         }
     }
 } 

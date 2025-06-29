@@ -184,7 +184,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         volumeSliderHostingView,
         pipButton,
         airplayButton,
-        timeBatteryContainer
+        timeBatteryContainer,
+        endTimeIcon,
+        endTimeLabel,
+        endTimeSeparator
     ].compactMap { $0 }
     
     private var originalHiddenStates: [UIView: Bool] = [:]
@@ -207,6 +210,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var timeLabel: UILabel?
     private var batteryLabel: UILabel?
     private var timeUpdateTimer: Timer?
+    private var endTimeLabel: UILabel?
+    private var endTimeIcon: UIImageView?
+    private var endTimeSeparator: UIView?
+    private var isEndTimeVisible: Bool = false
     
     init(module: ScrapingModule,
          urlString: String,
@@ -461,6 +468,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         NotificationCenter.default.removeObserver(self)
         UIDevice.current.isBatteryMonitoringEnabled = false
+        
+        // Clean up end time related resources
+        endTimeIcon?.removeFromSuperview()
+        endTimeLabel?.removeFromSuperview()
+        endTimeSeparator?.removeFromSuperview()
         
         inactivityTimer?.invalidate()
         inactivityTimer = nil
@@ -1588,6 +1600,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             if !self.isSliderEditing {
                 self.sliderViewModel.sliderValue = max(0, min(self.currentTimeVal, self.duration))
             }
+            
+            // Update end time when current time changes
+            self.updateEndTime()
             
             self.updateSkipButtonsVisibility()
             
@@ -2811,6 +2826,36 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         controlsContainerView.addSubview(container)
         self.timeBatteryContainer = container
         
+        // Add tap gesture to toggle end time visibility
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(toggleEndTimeVisibility))
+        container.addGestureRecognizer(tapGesture)
+        container.isUserInteractionEnabled = true
+        
+        // Add end time components (initially hidden)
+        let endTimeIcon = UIImageView(image: UIImage(systemName: "timer"))
+        endTimeIcon.translatesAutoresizingMaskIntoConstraints = false
+        endTimeIcon.tintColor = .white
+        endTimeIcon.contentMode = .scaleAspectFit
+        endTimeIcon.alpha = 0
+        container.addSubview(endTimeIcon)
+        self.endTimeIcon = endTimeIcon
+        
+        let endTimeLabel = UILabel()
+        endTimeLabel.translatesAutoresizingMaskIntoConstraints = false
+        endTimeLabel.textColor = .white
+        endTimeLabel.font = .systemFont(ofSize: 12, weight: .medium)
+        endTimeLabel.textAlignment = .center
+        endTimeLabel.alpha = 0
+        container.addSubview(endTimeLabel)
+        self.endTimeLabel = endTimeLabel
+        
+        let endTimeSeparator = UIView()
+        endTimeSeparator.translatesAutoresizingMaskIntoConstraints = false
+        endTimeSeparator.backgroundColor = .white.withAlphaComponent(0.5)
+        endTimeSeparator.alpha = 0
+        container.addSubview(endTimeSeparator)
+        self.endTimeSeparator = endTimeSeparator
+        
         let timeLabel = UILabel()
         timeLabel.translatesAutoresizingMaskIntoConstraints = false
         timeLabel.textColor = .white
@@ -2832,12 +2877,28 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         container.addSubview(batteryLabel)
         self.batteryLabel = batteryLabel
         
+        let centerXConstraint = container.centerXAnchor.constraint(equalTo: controlsContainerView.centerXAnchor)
+        centerXConstraint.isActive = true
+        
         NSLayoutConstraint.activate([
-            container.centerXAnchor.constraint(equalTo: controlsContainerView.centerXAnchor),
             container.topAnchor.constraint(equalTo: sliderHostingController?.view.bottomAnchor ?? controlsContainerView.bottomAnchor, constant: 2),
             container.heightAnchor.constraint(equalToConstant: 20),
             
-            timeLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 12),
+            endTimeIcon.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 12),
+            endTimeIcon.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            endTimeIcon.widthAnchor.constraint(equalToConstant: 12),
+            endTimeIcon.heightAnchor.constraint(equalToConstant: 12),
+            
+            endTimeLabel.leadingAnchor.constraint(equalTo: endTimeIcon.trailingAnchor, constant: 4),
+            endTimeLabel.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            endTimeLabel.widthAnchor.constraint(equalToConstant: 50),
+            
+            endTimeSeparator.leadingAnchor.constraint(equalTo: endTimeLabel.trailingAnchor, constant: 8),
+            endTimeSeparator.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            endTimeSeparator.widthAnchor.constraint(equalToConstant: 1),
+            endTimeSeparator.heightAnchor.constraint(equalToConstant: 12),
+            
+            timeLabel.leadingAnchor.constraint(equalTo: endTimeSeparator.trailingAnchor, constant: 8),
             timeLabel.centerYAnchor.constraint(equalTo: container.centerYAnchor),
             timeLabel.widthAnchor.constraint(equalToConstant: 50),
             
@@ -2852,9 +2913,14 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             batteryLabel.widthAnchor.constraint(equalToConstant: 50)
         ])
         
+        isEndTimeVisible = UserDefaults.standard.bool(forKey: "showEndTime")
+        updateEndTimeVisibility(animated: false)
+        
         updateTime()
+        updateEndTime()
         timeUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.updateTime()
+            self?.updateEndTime()
         }
         
         UIDevice.current.isBatteryMonitoringEnabled = true
@@ -2862,10 +2928,60 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         NotificationCenter.default.addObserver(self, selector: #selector(batteryLevelDidChange), name: UIDevice.batteryLevelDidChangeNotification, object: nil)
     }
     
+    @objc private func toggleEndTimeVisibility() {
+        isEndTimeVisible.toggle()
+        UserDefaults.standard.set(isEndTimeVisible, forKey: "showEndTime")
+        updateEndTimeVisibility(animated: true)
+    }
+    
+    private func updateEndTimeVisibility(animated: Bool) {
+        let alpha: CGFloat = isEndTimeVisible ? 1.0 : 0.0
+        let offset: CGFloat = isEndTimeVisible ? 0 : -37 
+        
+        if animated {
+            UIView.animate(withDuration: 0.3) {
+                self.endTimeIcon?.alpha = alpha
+                self.endTimeSeparator?.alpha = alpha
+                self.endTimeLabel?.alpha = alpha
+                
+                if let container = self.timeBatteryContainer {
+                    container.transform = CGAffineTransform(translationX: offset, y: 0)
+                }
+            }
+        } else {
+            self.endTimeIcon?.alpha = alpha
+            self.endTimeSeparator?.alpha = alpha
+            self.endTimeLabel?.alpha = alpha
+            
+            // 调整容器位置以保持居中
+            if let container = self.timeBatteryContainer {
+                container.transform = CGAffineTransform(translationX: offset, y: 0)
+            }
+        }
+    }
+    
     private func updateTime() {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         timeLabel?.text = formatter.string(from: Date())
+    }
+    
+    private func updateEndTime() {
+        guard let player = player, duration > 0 else { return }
+        
+        let currentSeconds = CMTimeGetSeconds(player.currentTime())
+        let remainingSeconds = duration - currentSeconds
+        
+        if remainingSeconds <= 0 {
+            endTimeLabel?.text = "--:--"
+            return
+        }
+        
+        // Calculate end time by adding remaining seconds to current time
+        let endTime = Date().addingTimeInterval(remainingSeconds)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        endTimeLabel?.text = formatter.string(from: endTime)
     }
     
     @objc private func batteryLevelDidChange() {

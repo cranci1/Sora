@@ -474,7 +474,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             player?.removeTimeObserver(token)
         }
         
-        // Remove observer from player item if it exists
         if let currentItem = player?.currentItem {
             currentItem.removeObserver(self, forKeyPath: "status", context: &playerItemKVOContext)
         }
@@ -549,7 +548,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 }
             }
         } else if keyPath == "loadedTimeRanges" {
-            // Handle loaded time ranges if needed
         }
     }
     
@@ -594,13 +592,14 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(toggleControls))
         view.addGestureRecognizer(tapGesture)
-    }
-    
-    func setupControls() {
-        controlsContainerView = UIView()
+        
+        controlsContainerView = PassthroughView()
         controlsContainerView.backgroundColor = UIColor.black.withAlphaComponent(0.0)
         view.addSubview(controlsContainerView)
         controlsContainerView.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
+    func setupControls() {
         NSLayoutConstraint.activate([
             controlsContainerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             controlsContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
@@ -611,6 +610,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         blackCoverView = UIView()
         blackCoverView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
         blackCoverView.translatesAutoresizingMaskIntoConstraints = false
+        blackCoverView.isUserInteractionEnabled = false
         controlsContainerView.insertSubview(blackCoverView, at: 0)
         NSLayoutConstraint.activate([
             blackCoverView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -1746,6 +1746,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             return
         }
         
+        isControlsVisible.toggle()
+        
         if isDimmed {
             dimButton.isHidden = false
             dimButton.alpha = 1.0
@@ -1755,12 +1757,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     self?.dimButton.alpha = 0
                 }
             }
-            
-            updateSkipButtonsVisibility()
-            return
         }
         
-        isControlsVisible.toggle()
         UIView.animate(withDuration: 0.2) {
             let alpha: CGFloat = self.isControlsVisible ? 1.0 : 0.0
             self.controlsContainerView.alpha = alpha
@@ -2112,7 +2110,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     
     private func parseM3U8(url: URL, completion: @escaping () -> Void) {
-        // For local file URLs, use a simple data task without custom headers
         if url.scheme == "file" {
             URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
                 self?.processM3U8Data(data: data, url: url, completion: completion)
@@ -2120,7 +2117,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             return
         }
         
-        // For remote URLs, add HTTP headers
         var request = URLRequest(url: url)
         if let mydict = headers, !mydict.isEmpty {
             for (key,value) in mydict {
@@ -2224,12 +2220,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         let asset: AVURLAsset
         
-        // Check if this is a local file URL
         if url.scheme == "file" {
-            // For local files, don't add HTTP headers
             Logger.shared.log("Switching to local file: \(url.absoluteString)", type: "Debug")
             
-            // Check if file exists
+
             if FileManager.default.fileExists(atPath: url.path) {
                 Logger.shared.log("Local file exists for quality switch: \(url.path)", type: "Debug")
             } else {
@@ -2238,7 +2232,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             
             asset = AVURLAsset(url: url)
         } else {
-            // For remote URLs, add HTTP headers
             Logger.shared.log("Switching to remote URL: \(url.absoluteString)", type: "Debug")
             var request = URLRequest(url: url)
             if let mydict = headers, !mydict.isEmpty {
@@ -2256,10 +2249,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         let playerItem = AVPlayerItem(asset: asset)
         
-        // Add observer for the new player item
         playerItem.addObserver(self, forKeyPath: "status", options: [.new], context: &playerItemKVOContext)
         
-        // Remove observer from old item if it exists
         if let currentItem = player.currentItem {
             currentItem.removeObserver(self, forKeyPath: "status", context: &playerItemKVOContext)
         }
@@ -2955,3 +2946,16 @@ extension CustomMediaPlayerViewController {
 // guys watch Clannad already - ibro
 // May the Divine Providence bestow its infinite mercy upon your soul, and may eternal grace find you beyond the shadows of this mortal realm. - paul, 15/11/2005 - 13/05/2023
 // this dumbass ↑ defo used gpt, ong he did bro
+// A view that passes through touches to views behind it unless the touch hits a subview
+// fuck yall stories, continue below this code
+
+class PassthroughView: UIView {
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        for subview in subviews {
+            if !subview.isHidden && subview.alpha > 0 && subview.isUserInteractionEnabled && subview.point(inside: convert(point, to: subview), with: event) {
+                return true
+            }
+        }
+        return false
+    }
+}

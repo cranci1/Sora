@@ -155,18 +155,35 @@ struct SettingsViewGeneral: View {
     @AppStorage("analyticsEnabled") private var analyticsEnabled: Bool = false
     @AppStorage("hideSplashScreen") private var hideSplashScreenEnable: Bool = false
     @AppStorage("useNativeTabBar") private var useNativeTabBar: Bool = false
-    @AppStorage("metadataProvidersOrder") private var metadataProvidersOrderData: Data = {
+    @AppStorage("metadataProvidersOrderData") private var metadataProvidersOrderData: Data = {
         try! JSONEncoder().encode(["TMDB","AniList"])
     }()
     @AppStorage("tmdbImageWidth") private var TMDBimageWidht: String = "original"
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 2
     @AppStorage("mediaColumnsLandscape") private var mediaColumnsLandscape: Int = 4
     @AppStorage("metadataProviders") private var metadataProviders: String = "TMDB"
+    @AppStorage("librarySectionsOrderData") private var librarySectionsOrderData: Data = {
+        try! JSONEncoder().encode(["continueWatching", "continueReading", "collections"])
+    }()
+    @AppStorage("disabledLibrarySectionsData") private var disabledLibrarySectionsData: Data = {
+        try! JSONEncoder().encode([String]())
+    }()
     
     private var metadataProvidersOrder: [String] {
         get { (try? JSONDecoder().decode([String].self, from: metadataProvidersOrderData)) ?? ["AniList","TMDB"] }
         set { metadataProvidersOrderData = try! JSONEncoder().encode(newValue) }
     }
+
+    private var librarySectionsOrder: [String] {
+        get { (try? JSONDecoder().decode([String].self, from: librarySectionsOrderData)) ?? ["continueWatching", "continueReading", "collections"] }
+        set { librarySectionsOrderData = try! JSONEncoder().encode(newValue) }
+    }
+
+    private var disabledLibrarySections: [String] {
+        get { (try? JSONDecoder().decode([String].self, from: disabledLibrarySectionsData)) ?? [] }
+        set { disabledLibrarySectionsData = try! JSONEncoder().encode(newValue) }
+    }
+
     private let TMDBimageWidhtList = ["300", "500", "780", "1280", "original"]
     private let sortOrderOptions = ["Ascending", "Descending"]
     private let metadataProvidersList = ["TMDB", "AniList"]
@@ -317,9 +334,15 @@ struct SettingsViewGeneral: View {
                             }
                         }
                         .listStyle(.plain)
-                        .frame(height: CGFloat(metadataProvidersOrder.count * 48))
+                        .frame(height: CGFloat(metadataProvidersOrder.count * 65))
                         .background(Color.clear)
                         .padding(.bottom, 8)
+                        
+                        Text(NSLocalizedString("Drag to reorder", comment: ""))
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.bottom, 8)
                     }
                     .environment(\.editMode, .constant(.active))
                 }
@@ -369,6 +392,70 @@ struct SettingsViewGeneral: View {
                         showDivider: false
                     )
                 }
+                
+                SettingsSection(
+                    title: NSLocalizedString("Library View", comment: ""),
+                    footer: NSLocalizedString("Customize the sections shown in your library. You can reorder sections or disable them completely.", comment: "")
+                ) {
+                    VStack(spacing: 0) {
+                        HStack {
+                            Image(systemName: "arrow.up.arrow.down")
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(.primary)
+                            
+                            Text(NSLocalizedString("Library Sections Order", comment: ""))
+                                .foregroundStyle(.primary)
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        
+                        List {
+                            ForEach(Array(librarySectionsOrder.enumerated()), id: \.element) { index, section in
+                                HStack {
+                                    Text("\(index + 1)")
+                                        .frame(width: 24, height: 24)
+                                        .foregroundStyle(.gray)
+                                    
+                                    Image(systemName: sectionIcon(for: section))
+                                        .frame(width: 24, height: 24)
+                                    
+                                    Text(sectionName(for: section))
+                                        .foregroundStyle(.primary)
+                                    
+                                    Spacer()
+                                    
+                                    Toggle("", isOn: toggleBinding(for: section))
+                                    .labelsHidden()
+                                    .tint(.accentColor.opacity(0.7))
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.visible)
+                                .listRowSeparatorTint(.gray.opacity(0.3))
+                                .listRowInsets(EdgeInsets())
+                            }
+                            .onMove { from, to in
+                                var arr = librarySectionsOrder
+                                arr.move(fromOffsets: from, toOffset: to)
+                                librarySectionsOrderData = try! JSONEncoder().encode(arr)
+                            }
+                        }
+                        .listStyle(.plain)
+                        .frame(height: CGFloat(librarySectionsOrder.count * 70))
+                        .background(Color.clear)
+                        .padding(.bottom, 8)
+                        
+                        Text(NSLocalizedString("Drag to reorder sections", comment: ""))
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.bottom, 8)
+                    }
+                    .environment(\.editMode, .constant(.active))
+                }
             }
             .padding(.vertical, 20)
         }
@@ -381,5 +468,48 @@ struct SettingsViewGeneral: View {
                 dismissButton: .default(Text(verbatim: "OK"))
             )
         }
+    }
+    
+    private func sectionName(for section: String) -> String {
+        switch section {
+        case "continueWatching":
+            return NSLocalizedString("Continue Watching", comment: "")
+        case "continueReading":
+            return NSLocalizedString("Continue Reading", comment: "")
+        case "collections":
+            return NSLocalizedString("Collections", comment: "")
+        default:
+            return section
+        }
+    }
+    
+    private func sectionIcon(for section: String) -> String {
+        switch section {
+        case "continueWatching":
+            return "play.fill"
+        case "continueReading":
+            return "book.fill"
+        case "collections":
+            return "folder.fill"
+        default:
+            return "questionmark"
+        }
+    }
+    
+    private func toggleBinding(for section: String) -> Binding<Bool> {
+        return Binding(
+            get: { !self.disabledLibrarySections.contains(section) },
+            set: { isEnabled in
+                var sections = self.disabledLibrarySections
+                if isEnabled {
+                    sections.removeAll { $0 == section }
+                } else {
+                    if !sections.contains(section) {
+                        sections.append(section)
+                    }
+                }
+                self.disabledLibrarySectionsData = try! JSONEncoder().encode(sections)
+            }
+        )
     }
 }

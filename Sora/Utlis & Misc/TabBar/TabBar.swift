@@ -115,6 +115,14 @@ struct TabBar: View {
                                     keyboardHidden = !newValue
                                 }
                             }
+                            .onChange(of: searchQuery) { newValue in
+                                // 发送通知，传递搜索查询
+                                NotificationCenter.default.post(
+                                    name: .searchQueryChanged,
+                                    object: nil,
+                                    userInfo: ["searchQuery": newValue]
+                                )
+                            }
                             .onDisappear {
                                 keyboardFocus = false
                             }
@@ -172,7 +180,9 @@ struct TabBar: View {
                 .padding(.bottom, -100)
                 .padding(.top, -10)
         }
+        .offset(y: keyboardFocus ? -keyboardHeight + 40 : 0) 
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: keyboardHeight)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: keyboardFocus)
         .onChange(of: keyboardHeight) { newValue in
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
             }

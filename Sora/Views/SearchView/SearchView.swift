@@ -156,6 +156,19 @@ struct SearchView: View {
                     NotificationCenter.default.post(name: .showTabBar, object: nil)
                 }
             }
+            
+            NotificationCenter.default.addObserver(
+                forName: .searchQueryChanged,
+                object: nil,
+                queue: .main
+            ) { notification in
+                if let query = notification.userInfo?["searchQuery"] as? String {
+                    searchQuery = query
+                }
+            }
+        }
+        .onDisappear {
+            NotificationCenter.default.removeObserver(self, name: .searchQueryChanged, object: nil)
         }
         .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()) { _ in
             let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")

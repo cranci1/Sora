@@ -21,4 +21,5 @@ extension Notification.Name {
     static let didUpdateBookmarks = Notification.Name("didUpdateBookmarks")
     static let hideTabBar = Notification.Name("hideTabBar")
     static let showTabBar = Notification.Name("showTabBar")
+    static let searchQueryChanged = Notification.Name("searchQueryChanged")
 }

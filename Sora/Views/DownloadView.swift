@@ -73,10 +73,6 @@ struct DownloadView: View {
         }
         .deviceScaled()
         .navigationViewStyle(StackNavigationViewStyle())
-        .onAppear {
-            // 立即隐藏标签栏
-            NotificationCenter.default.post(name: .hideTabBar, object: nil)
-        }
     }
     
     private var activeDownloadsView: some View {
@@ -1035,8 +1031,10 @@ struct EnhancedShowEpisodesView: View {
                 navigationController.interactivePopGestureRecognizer?.delegate = nil
             }
             
-            // 立即隐藏标签栏
             NotificationCenter.default.post(name: .hideTabBar, object: nil)
+        }
+        .onDisappear {
+            NotificationCenter.default.post(name: .showTabBar, object: nil)
         }
         .navigationBarBackButtonHidden(true)
     }

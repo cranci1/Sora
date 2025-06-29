@@ -176,6 +176,7 @@ struct SettingsViewBackup: View {
         }
     }
     
+    @MainActor
     private func generateBackupData() -> Data? {
         let continueWatching = ContinueWatchingManager.shared.fetchItems()
         let continueReading = ContinueReadingManager.shared.fetchItems()

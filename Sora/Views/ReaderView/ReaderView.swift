@@ -291,15 +291,19 @@ struct ReaderView: View {
         .task {
             do {
                 ensureModuleLoaded()
-                
+                let isOffline = !(NetworkMonitor.shared.isConnected)
                 if let cachedContent = ContinueReadingManager.shared.getCachedHtml(for: chapterHref), 
                    !cachedContent.isEmpty && 
                    !cachedContent.contains("undefined") && 
                    cachedContent.count > 50 {
-                    
                     Logger.shared.log("Using cached HTML content for \(chapterHref)", type: "Debug")
                     htmlContent = cachedContent
                     isLoading = false
+                } else if isOffline {
+                    let offlineError = NSError(domain: "Sora", code: -1009, userInfo: [NSLocalizedDescriptionKey: "No network connection."])
+                    self.error = offlineError
+                    isLoading = false
+                    return
                 } else {
                     Logger.shared.log("Fetching HTML content from network for \(chapterHref)", type: "Debug")
                     

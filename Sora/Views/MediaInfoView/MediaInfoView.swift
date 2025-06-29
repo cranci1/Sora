@@ -209,6 +209,7 @@ struct MediaInfoView: View {
                 currentFetchTask?.cancel()
                 activeFetchID = nil
                 UserDefaults.standard.set(false, forKey: "isMediaInfoActive")
+                UIScrollView.appearance().bounces = true 
             }
             .task {
                 await setupInitialData()

@@ -1035,6 +1035,7 @@ struct EnhancedShowEpisodesView: View {
         }
         .onDisappear {
             NotificationCenter.default.post(name: .showTabBar, object: nil)
+            UIScrollView.appearance().bounces = true
         }
         .navigationBarBackButtonHidden(true)
     }

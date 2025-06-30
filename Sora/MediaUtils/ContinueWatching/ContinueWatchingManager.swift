@@ -48,9 +48,7 @@ class ContinueWatchingManager {
                 let currentEpisode = sortedEpisodes[i]
                 let nextEpisode = sortedEpisodes[i + 1]
                 
-                let remainingTimePercentage = UserDefaults.standard.object(forKey: "remainingTimePercentage") != nil ? UserDefaults.standard.double(forKey: "remainingTimePercentage") : 90.0
-                let threshold = (100.0 - remainingTimePercentage) / 100.0
-                if currentEpisode.progress >= threshold && nextEpisode.episodeNumber > currentEpisode.episodeNumber {
+                if currentEpisode.progress >= 0.8 && nextEpisode.episodeNumber > currentEpisode.episodeNumber {
                     itemsToRemove.insert(currentEpisode.id)
                 }
             }
@@ -65,54 +63,54 @@ class ContinueWatchingManager {
     }
     
     func save(item: ContinueWatchingItem) {
+        // Use real playback times
         let lastKey = "lastPlayedTime_\(item.fullUrl)"
         let totalKey = "totalTime_\(item.fullUrl)"
         let lastPlayed = UserDefaults.standard.double(forKey: lastKey)
         let totalTime = UserDefaults.standard.double(forKey: totalKey)
         
+        // Compute up-to-date progress
         let actualProgress: Double
         if totalTime > 0 {
             actualProgress = min(max(lastPlayed / totalTime, 0), 1)
         } else {
             actualProgress = item.progress
-            
-            let remainingTimePercentage = UserDefaults.standard.object(forKey: "remainingTimePercentage") != nil ? UserDefaults.standard.double(forKey: "remainingTimePercentage") : 90.0
-            let threshold = (100.0 - remainingTimePercentage) / 100.0
-            if actualProgress >= threshold {
-                remove(item: item)
-                return
-            }
-            
-            var updatedItem = item
-            updatedItem.progress = actualProgress
-            
-            var items = fetchItems()
-            
-            let showTitle = item.mediaTitle.replacingOccurrences(of: "Episode \\d+.*$", with: "", options: .regularExpression)
+        }
+        
+        // If watched ≥ 90%, remove it
+        if actualProgress >= 0.9 {
+            remove(item: item)
+            return
+        }
+        
+        // Otherwise update progress and remove old episodes from the same show
+        var updatedItem = item
+        updatedItem.progress = actualProgress
+        
+        var items = fetchItems()
+        
+        let showTitle = item.mediaTitle.replacingOccurrences(of: "Episode \\d+.*$", with: "", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        items.removeAll { existingItem in
+            let existingShowTitle = existingItem.mediaTitle.replacingOccurrences(of: "Episode \\d+.*$", with: "", options: .regularExpression)
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             
-            items.removeAll { existingItem in
-                let existingShowTitle = existingItem.mediaTitle.replacingOccurrences(of: "Episode \\d+.*$", with: "", options: .regularExpression)
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                
-                let remainingTimePercentage = UserDefaults.standard.object(forKey: "remainingTimePercentage") != nil ? UserDefaults.standard.double(forKey: "remainingTimePercentage") : 90.0
-                let threshold = (100.0 - remainingTimePercentage) / 100.0
-                return showTitle == existingShowTitle &&
-                existingItem.episodeNumber < item.episodeNumber &&
-                existingItem.progress >= threshold
-            }
-            
-            items.removeAll { existing in
-                existing.fullUrl == item.fullUrl &&
-                existing.episodeNumber == item.episodeNumber &&
-                existing.module.metadata.sourceName == item.module.metadata.sourceName
-            }
-            
-            items.append(updatedItem)
-            
-            if let data = try? JSONEncoder().encode(items) {
-                UserDefaults.standard.set(data, forKey: storageKey)
-            }
+            return showTitle == existingShowTitle &&
+            existingItem.episodeNumber < item.episodeNumber &&
+            existingItem.progress >= 0.8
+        }
+        
+        items.removeAll { existing in
+            existing.fullUrl == item.fullUrl &&
+            existing.episodeNumber == item.episodeNumber &&
+            existing.module.metadata.sourceName == item.module.metadata.sourceName
+        }
+        
+        items.append(updatedItem)
+        
+        if let data = try? JSONEncoder().encode(items) {
+            UserDefaults.standard.set(data, forKey: storageKey)
         }
     }
     

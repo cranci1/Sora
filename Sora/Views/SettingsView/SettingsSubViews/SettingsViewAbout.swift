@@ -191,11 +191,6 @@ struct ContributorsView: View {
                 id: 71751652,
                 login: "qooode",
                 avatarUrl: "https://avatars.githubusercontent.com/u/71751652?v=4"
-            ),
-            Contributor(
-                id: 8116188,
-                login: "undeaDD",
-                avatarUrl: "https://avatars.githubusercontent.com/u/8116188?v=4"
             )
         ]
     }

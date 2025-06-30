@@ -1,4 +1,5 @@
 {
+  "originHash" : "cbb092cac6bc81c02b4072dbc71410045f1cd4f17b7ad9abae2a4221e10e8cf5",
   "pins" : [
     {
       "identity" : "drops",
@@ -7,6 +8,15 @@
       "state" : {
         "branch" : "main",
         "revision" : "5824681795286c36bdc4a493081a63e64e2a064e"
+      }
+    },
+    {
+      "identity" : "epub-reader-light",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pichukov/epub-reader-light.git",
+      "state" : {
+        "revision" : "ca4b50e1f3685d46f0a13ec29a4e2af10805e742",
+        "version" : "0.1.1"
       }
     },
     {
@@ -37,5 +47,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }

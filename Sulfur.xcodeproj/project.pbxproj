@@ -14,6 +14,7 @@
 		0409FE872DFF0870000DB00C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0409FE852DFF0870000DB00C /* Localizable.strings */; };
 		0409FE882DFF0870000DB00C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0409FE822DFF0870000DB00C /* Localizable.strings */; };
 		0409FE8C2DFF2886000DB00C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0409FE8A2DFF2886000DB00C /* Localizable.strings */; };
+		040B89852E12CBF200C212D6 /* EpubReaderLight in Frameworks */ = {isa = PBXBuildFile; productRef = 040B89842E12CBF200C212D6 /* EpubReaderLight */; };
 		0410697E2E00ABE900A157BB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 041069792E00ABE900A157BB /* Localizable.strings */; };
 		0410697F2E00ABE900A157BB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0410697C2E00ABE900A157BB /* Localizable.strings */; };
 		041069832E00C71000A157BB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 041069812E00C71000A157BB /* Localizable.strings */; };
@@ -246,6 +247,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				040B89852E12CBF200C212D6 /* EpubReaderLight in Frameworks */,
 				13367ECC2DF70698009CB33F /* Nuke in Frameworks */,
 				13637B902DE0ECD200BDA2FC /* Drops in Frameworks */,
 				13530BDF2E0002790048B7DE /* SoraCore in Frameworks */,
@@ -871,6 +873,7 @@
 				13367ECB2DF70698009CB33F /* Nuke */,
 				13367ECD2DF70698009CB33F /* NukeUI */,
 				13530BDE2E0002790048B7DE /* SoraCore */,
+				040B89842E12CBF200C212D6 /* EpubReaderLight */,
 			);
 			productName = Sora;
 			productReference = 133D7C6A2D2BE2500075467E /* Sulfur.app */;
@@ -919,6 +922,7 @@
 				13637B912DE0ECDB00BDA2FC /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
 				13367ECA2DF70698009CB33F /* XCRemoteSwiftPackageReference "Nuke" */,
 				13530BDD2E0002790048B7DE /* XCRemoteSwiftPackageReference "SoraCore" */,
+				040B89832E12CBF200C212D6 /* XCRemoteSwiftPackageReference "epub-reader-light" */,
 			);
 			productRefGroup = 133D7C6B2D2BE2500075467E /* Products */;
 			projectDirPath = "";
@@ -1419,6 +1423,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		040B89832E12CBF200C212D6 /* XCRemoteSwiftPackageReference "epub-reader-light" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pichukov/epub-reader-light.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.1;
+			};
+		};
 		13367ECA2DF70698009CB33F /* XCRemoteSwiftPackageReference "Nuke" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kean/Nuke.git";
@@ -1454,6 +1466,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		040B89842E12CBF200C212D6 /* EpubReaderLight */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 040B89832E12CBF200C212D6 /* XCRemoteSwiftPackageReference "epub-reader-light" */;
+			productName = EpubReaderLight;
+		};
 		13367ECB2DF70698009CB33F /* Nuke */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 13367ECA2DF70698009CB33F /* XCRemoteSwiftPackageReference "Nuke" */;

@@ -1197,7 +1197,7 @@ extension JSController: AVAssetDownloadDelegate {
         let download = activeDownloads[downloadIndex]
 
         // Move the downloaded file to Application Support directory for persistence
-        guard let persistentURL = moveToApplicationSupportDirectory(from: location, filename: download.title ?? download.originalURL.lastPathComponent) else {
+        guard let persistentURL = moveToApplicationSupportDirectory(from: location, filename: download.title ?? download.originalURL.lastPathComponent, originalURL: download.originalURL) else {
             print("Failed to move downloaded file to persistent storage")
             return
         }
@@ -1245,8 +1245,9 @@ extension JSController: AVAssetDownloadDelegate {
     /// - Parameters:
     ///   - location: The original location from the download task
     ///   - filename: Name to use for the file
+    ///   - originalURL: The original download URL to determine proper file extension
     /// - Returns: URL to the new persistent location or nil if move failed
-    private func moveToApplicationSupportDirectory(from location: URL, filename: String) -> URL? {
+    private func moveToApplicationSupportDirectory(from location: URL, filename: String, originalURL: URL) -> URL? {
         let fileManager = FileManager.default
         
         // Get Application Support directory 
@@ -1269,23 +1270,31 @@ extension JSController: AVAssetDownloadDelegate {
             let safeFilename = filename.replacingOccurrences(of: "/", with: "-")
                                       .replacingOccurrences(of: ":", with: "-")
             
-            // Determine file extension based on the source location
+            // Determine file extension based on the original download URL, not the downloaded file
             let fileExtension: String
-            if location.pathExtension.isEmpty {
-                // If no extension from the source, check if it's likely an HLS download (which becomes .movpkg)
-                // or preserve original URL extension
-                if safeFilename.contains(".m3u8") || safeFilename.contains("hls") {
-                    fileExtension = "movpkg"
-                    print("Using .movpkg extension for HLS download: \(safeFilename)")
-                } else {
-                    fileExtension = "mp4" // Default for direct video downloads
-                    print("Using .mp4 extension for direct video download: \(safeFilename)")
-                }
+            
+            // Check the original URL to determine if this was an HLS stream or direct MP4
+            let originalURLString = originalURL.absoluteString.lowercased()
+            let originalPathExtension = originalURL.pathExtension.lowercased()
+            
+            if originalURLString.contains(".m3u8") || originalURLString.contains("/hls/") || originalURLString.contains("m3u8") {
+                // This was an HLS stream, keep as .movpkg
+                fileExtension = "movpkg"
+                print("Using .movpkg extension for HLS download: \(safeFilename)")
+            } else if originalPathExtension == "mp4" || originalURLString.contains(".mp4") || originalURLString.contains("download") {
+                // This was a direct MP4 download, use .mp4 extension regardless of what AVAssetDownloadTask created
+                fileExtension = "mp4"
+                print("Using .mp4 extension for direct MP4 download: \(safeFilename)")
             } else {
-                // Use the extension from the downloaded file
+                // Fallback: check the downloaded file extension
                 let sourceExtension = location.pathExtension.lowercased()
-                fileExtension = (sourceExtension == "movpkg") ? "movpkg" : "mp4"
-                print("Using extension from source file: \(sourceExtension) -> \(fileExtension)")
+                if sourceExtension == "movpkg" && originalURLString.contains("m3u8") {
+                    fileExtension = "movpkg"
+                    print("Using .movpkg extension for HLS stream: \(safeFilename)")
+                } else {
+                    fileExtension = "mp4"
+                    print("Using .mp4 extension as fallback: \(safeFilename)")
+                }
             }
             
             print("Final destination will be: \(safeFilename)-\(uniqueID).\(fileExtension)")

@@ -177,6 +177,11 @@ struct SettingsView: View {
                             NavigationLink(destination: SettingsViewDownloads().navigationBarBackButtonHidden(false)) {
                                 SettingsNavigationRow(icon: "arrow.down.circle", titleKey: "Downloads")
                             }
+                            Divider().padding(.horizontal, 16)
+                            
+                            NavigationLink(destination: SettingsViewTrackers().navigationBarBackButtonHidden(false)) {
+                                SettingsNavigationRow(icon: "square.3.stack.3d", titleKey: "Trackers")
+                            }
                         }
                         .background(.ultraThinMaterial)
                         .clipShape(RoundedRectangle(cornerRadius: 12))

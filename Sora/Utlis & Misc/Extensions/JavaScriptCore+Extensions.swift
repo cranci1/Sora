@@ -86,18 +86,48 @@ extension JSContext {
             }
             
             var headers: [String: String]? = nil
-            if let headersDict = headersAny as? [String: Any] {
-                var safeHeaders: [String: String] = [:]
-                for (key, value) in headersDict {
-                    if let valueStr = value as? String {
-                        safeHeaders[key] = valueStr
-                    } else {
-                        Logger.shared.log("Header value is not a String: \(key): \(value)", type: "Error")
+            
+            if let headersAny = headersAny {
+                if headersAny is NSNull {
+                    headers = nil
+                } else if let headersDict = headersAny as? [String: Any] {
+                    var safeHeaders: [String: String] = [:]
+                    for (key, value) in headersDict {
+                        let stringValue: String
+                        if let str = value as? String {
+                            stringValue = str
+                        } else if let num = value as? NSNumber {
+                            stringValue = num.stringValue
+                        } else if value is NSNull {
+                            continue
+                        } else {
+                            stringValue = String(describing: value)
+                        }
+                        safeHeaders[key] = stringValue
                     }
+                    headers = safeHeaders.isEmpty ? nil : safeHeaders
+                } else if let headersDict = headersAny as? [AnyHashable: Any] {
+                    var safeHeaders: [String: String] = [:]
+                    for (key, value) in headersDict {
+                        let stringKey = String(describing: key)
+                        
+                        let stringValue: String
+                        if let str = value as? String {
+                            stringValue = str
+                        } else if let num = value as? NSNumber {
+                            stringValue = num.stringValue
+                        } else if value is NSNull {
+                            continue
+                        } else {
+                            stringValue = String(describing: value)
+                        }
+                        safeHeaders[stringKey] = stringValue
+                    }
+                    headers = safeHeaders.isEmpty ? nil : safeHeaders
+                } else {
+                    Logger.shared.log("Headers argument is not a dictionary, type: \(type(of: headersAny))", type: "Warning")
+                    headers = nil
                 }
-                headers = safeHeaders
-            } else if headersAny != nil {
-                Logger.shared.log("Headers argument is not a dictionary", type: "Error")
             }
             
             let httpMethod = method ?? "GET"
@@ -132,7 +162,9 @@ extension JSContext {
             
             let textEncoding = getEncoding(from: encoding)
             
-            if httpMethod == "GET", let body = body, !body.isEmpty, body != "null", body != "undefined" {
+            let bodyIsEmpty = body == nil || (body)?.isEmpty == true || body == "null" || body == "undefined"
+            
+            if httpMethod == "GET" && !bodyIsEmpty {
                 Logger.shared.log("GET request must not have a body", type: "Error")
                 DispatchQueue.main.async {
                     reject.call(withArguments: ["GET request must not have a body"])
@@ -140,8 +172,13 @@ extension JSContext {
                 return
             }
             
-            if httpMethod != "GET", let body = body, !body.isEmpty, body != "null", body != "undefined" {
-                request.httpBody = body.data(using: .utf8)
+            if httpMethod != "GET" && !bodyIsEmpty {
+                if let bodyString = body {
+                    request.httpBody = bodyString.data(using: .utf8)
+                } else {
+                    let bodyString = String(describing: body!)
+                    request.httpBody = bodyString.data(using: .utf8)
+                }
             }
             
             if let headers = headers {
@@ -149,7 +186,8 @@ extension JSContext {
                     request.setValue(value, forHTTPHeaderField: key)
                 }
             }
-            Logger.shared.log("Redirect value is \(redirect.boolValue)", type: "Error")
+            
+            Logger.shared.log("Redirect value is \(redirect.boolValue)", type: "Debug")
             let session = URLSession.fetchData(allowRedirects: redirect.boolValue)
             
             let task = session.downloadTask(with: request) { tempFileURL, response, error in
@@ -181,8 +219,13 @@ extension JSContext {
                 var safeHeaders: [String: String] = [:]
                 if let httpResponse = response as? HTTPURLResponse {
                     for (key, value) in httpResponse.allHeaderFields {
-                        if let keyString = key as? String,
-                           let valueString = value as? String {
+                        if let keyString = key as? String {
+                            let valueString: String
+                            if let str = value as? String {
+                                valueString = str
+                            } else {
+                                valueString = String(describing: value)
+                            }
                             safeHeaders[keyString] = valueString
                         }
                     }
@@ -225,43 +268,45 @@ extension JSContext {
             task.resume()
         }
         
-        
         self.setObject(fetchV2NativeFunction, forKeyedSubscript: "fetchV2Native" as NSString)
         
         let fetchv2Definition = """
-                    function fetchv2(url, headers = {}, method = "GET", body = null, redirect = true, encoding ) {
-                    
-                    
-                    var processedBody = null;
-                    if(method != "GET")
-                    {
-                        processedBody = (body && (typeof body === 'object')) ? JSON.stringify(body) : (body || null)
-                    }
-                    
-                    var finalEncoding = encoding || "utf-8";
+            function fetchv2(url, headers = {}, method = "GET", body = null, redirect = true, encoding) {
+                
+                var processedBody = null;
+                if(method != "GET") {
+                    processedBody = (body && (typeof body === 'object')) ? JSON.stringify(body) : (body || null)
+                }
+                
+                var finalEncoding = encoding || "utf-8";
+                
+                // Ensure headers is an object and not null/undefined
+                var processedHeaders = {};
+                if (headers && typeof headers === 'object' && !Array.isArray(headers)) {
+                    processedHeaders = headers;
+                }
             
-                        return new Promise(function(resolve, reject) {
-                            fetchV2Native(url, headers, method, processedBody, redirect, finalEncoding, function(rawText) {
-                                const responseObj = {
-                                    headers: rawText.headers,
-                                    status: rawText.status,
-                                    _data: rawText.body,
-                                    text: function() {
-                                        return Promise.resolve(this._data);
-                                    },
-                                    json: function() {
-                                        try {
-                                            return Promise.resolve(JSON.parse(this._data));
-                                        } catch (e) {
-                                            return Promise.reject("JSON parse error: " + e.message);
-                                        }
-                                    }
-                                };
-                                resolve(responseObj);
-                            }, reject);
-                        });
-                    }
-            
+                return new Promise(function(resolve, reject) {
+                    fetchV2Native(url, processedHeaders, method, processedBody, redirect, finalEncoding, function(rawText) {
+                        const responseObj = {
+                            headers: rawText.headers,
+                            status: rawText.status,
+                            _data: rawText.body,
+                            text: function() {
+                                return Promise.resolve(this._data);
+                            },
+                            json: function() {
+                                try {
+                                    return Promise.resolve(JSON.parse(this._data));
+                                } catch (e) {
+                                    return Promise.reject("JSON parse error: " + e.message);
+                                }
+                            }
+                        };
+                        resolve(responseObj);
+                    }, reject);
+                });
+            }
             """
         self.evaluateScript(fetchv2Definition)
     }

@@ -633,8 +633,8 @@
 		133D7C8A2D2BE2640075467E /* JSLoader */ = {
 			isa = PBXGroup;
 			children = (
-				04536F702E04BA3B00A11248 /* JSController-Novel.swift */,
 				134A387B2DE4B5B90041B687 /* Downloads */,
+				04536F702E04BA3B00A11248 /* JSController-Novel.swift */,
 				133D7C8B2D2BE2640075467E /* JSController.swift */,
 				132AF1202D99951700A0140B /* JSController-Streams.swift */,
 				132AF1222D9995C300A0140B /* JSController-Details.swift */,

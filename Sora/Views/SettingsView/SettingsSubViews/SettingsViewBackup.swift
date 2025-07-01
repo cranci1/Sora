@@ -105,7 +105,7 @@ struct SettingsViewBackup: View {
             VStack(spacing: 24) {
                 SettingsSection(
                     title: NSLocalizedString("Backup & Restore", comment: "Settings section title for backup and restore"),
-                    footer: NSLocalizedString("Notice: This feature is still experimental. Please double-check your data after import/export.", comment: "Footer notice for experimental backup/restore feature")
+                    footer: NSLocalizedString("Notice: This feature is still experimental. Please double-check your data after import/export. \nAlso note that when importing a backup your current data will be overwritten, it is not possible to merge yet.", comment: "Footer notice for experimental backup/restore feature")
                 ) {
                     SettingsActionRow(
                         icon: "arrow.up.doc",

@@ -77,6 +77,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         }
         return UserDefaults.standard.bool(forKey: "pipButtonVisible")
     }
+    
+    private var isAutoplayEnabled: Bool {
+        if UserDefaults.standard.object(forKey: "autoplayNext") == nil {
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: "autoplayNext")
+    }
     private var pipController: AVPictureInPictureController?
     private var pipButton: UIButton!
     
@@ -402,6 +409,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         twoFingerTapGesture.numberOfTouchesRequired = 2
         twoFingerTapGesture.delegate = self
         view.addGestureRecognizer(twoFingerTapGesture)
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handlePlaybackEnded),
+            name: .AVPlayerItemDidPlayToEndTime,
+            object: player.currentItem
+        )
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -466,6 +480,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             timeUpdateTimer.invalidate()
         }
         
+        NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
         NotificationCenter.default.removeObserver(self)
         UIDevice.current.isBatteryMonitoringEnabled = false
         
@@ -2995,6 +3010,19 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             batteryLabel?.text = "\(percentage)%"
         } else {
             batteryLabel?.text = "N/A"
+        }
+    }
+    
+    @objc private func handlePlaybackEnded() {
+        guard isAutoplayEnabled else { return }
+        
+        Logger.shared.log("Playback ended, autoplay enabled - starting next episode", type: "Debug")
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            self?.player.pause()
+            self?.dismiss(animated: true) { [weak self] in
+                self?.onWatchNext()
+            }
         }
     }
 }

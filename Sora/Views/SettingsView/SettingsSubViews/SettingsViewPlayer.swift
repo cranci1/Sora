@@ -205,6 +205,7 @@ struct SettingsViewPlayer: View {
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
     @AppStorage("pipButtonVisible") private var pipButtonVisible: Bool = true
+    @AppStorage("autoplayNext") private var autoplayNext: Bool = true
     
     @AppStorage("videoQualityWiFi") private var wifiQuality: String = VideoQualityPreference.defaultWiFiPreference.rawValue
     @AppStorage("videoQualityCellular") private var cellularQuality: String = VideoQualityPreference.defaultCellularPreference.rawValue
@@ -244,6 +245,13 @@ struct SettingsViewPlayer: View {
                         icon: "pip",
                         title: NSLocalizedString("Show PiP Button", comment: ""),
                         isOn: $pipButtonVisible,
+                        showDivider: true
+                    )
+                    
+                    SettingsToggleRow(
+                        icon: "play.circle.fill",
+                        title: NSLocalizedString("Autoplay Next", comment: ""),
+                        isOn: $autoplayNext,
                         showDivider: true
                     )
                     

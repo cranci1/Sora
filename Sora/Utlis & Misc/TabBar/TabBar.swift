@@ -45,8 +45,16 @@ struct TabBar: View {
     @FocusState private var keyboardFocus: Bool
     @State private var keyboardHidden: Bool = true
     @State private var searchLocked: Bool = false
-    
     @State private var keyboardHeight: CGFloat = 0
+    
+    @GestureState private var isHolding: Bool = false
+    @State private var dragOffset: CGFloat = 0
+    @State private var isDragging: Bool = false
+    @State private var dragTargetIndex: Int? = nil
+    @State private var jellyScale: CGFloat = 1.0
+    @State private var lastDragTranslation: CGFloat = 0
+    @State private var previousDragOffset: CGFloat = 0
+    @State private var lastUpdateTime: Date = Date()
     
     private var gradientOpacity: CGFloat {
         let accentColor = UIColor(Color.accentColor)
@@ -56,6 +64,8 @@ struct TabBar: View {
     }
     
     @Namespace private var animation
+    
+    private let tabWidth: CGFloat = 70
     
     var body: some View {
         HStack {
@@ -116,7 +126,6 @@ struct TabBar: View {
                                 }
                             }
                             .onChange(of: searchQuery) { newValue in
-                                // 发送通知，传递搜索查询
                                 NotificationCenter.default.post(
                                     name: .searchQueryChanged,
                                     object: nil,
@@ -142,10 +151,112 @@ struct TabBar: View {
                     .frame(height: 24)
                     .padding(8)
                 } else {
-                    ForEach(0..<tabs.count, id: \.self) { index in
-                        let tab = tabs[index]
-                        
-                        tabButton(for: tab, index: index)
+                    ZStack(alignment: .leading) {
+                        if !isDragging {
+                            let selectorX = CGFloat(selectedTab) * tabWidth
+                            Capsule()
+                                .fill(.white)
+                                .shadow(color: .black.opacity(0.2), radius: 6)
+                                .frame(width: tabWidth, height: 44)
+                                .scaleEffect(isHolding ? 1.15 : 1.0)
+                                .offset(x: selectorX)
+                                .animation(.spring(response: 0.5, dampingFraction: 0.75), value: selectorX)
+                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHolding)
+                                .zIndex(1)
+                        } else {
+                            let isActuallyMoving = abs(jellyScale - 1.0) > 0.01
+                            Capsule()
+                                .fill(.white)
+                                .shadow(color: .black.opacity(0.2), radius: 6)
+                                .frame(width: tabWidth, height: 44)
+                                .scaleEffect(x: isActuallyMoving ? jellyScale : 1.0, y: isActuallyMoving ? (2.0 - jellyScale) : 1.0, anchor: .center)
+                                .scaleEffect(1.15)
+                                .offset(x: dragOffset)
+                                .animation(.interpolatingSpring(stiffness: 200, damping: 18), value: jellyScale)
+                                .zIndex(1)
+                        }
+                        let capsuleIndex: Int = isDragging ? Int(round(dragOffset / tabWidth)) : selectedTab
+                        HStack(spacing: 0) {
+                            ForEach(0..<tabs.count, id: \ .self) { index in
+                                let tab = tabs[index]
+                                let shouldEnlarge = isDragging && index == capsuleIndex
+                                if selectedTab == index {
+                                    tabButton(for: tab, index: index, scale: shouldEnlarge ? 1.35 : 1.0)
+                                        .frame(width: tabWidth, height: 44)
+                                        .contentShape(Rectangle())
+                                        .simultaneousGesture(
+                                            LongPressGesture(minimumDuration: 0.18)
+                                                .updating($isHolding) { value, state, _ in
+                                                    state = value
+                                                }
+                                                .onEnded { _ in
+                                                    dragOffset = CGFloat(selectedTab) * tabWidth
+                                                    isDragging = true
+                                                    dragTargetIndex = selectedTab
+                                                }
+                                        )
+                                        .simultaneousGesture(
+                                            DragGesture(minimumDistance: 0)
+                                                .onChanged { value in
+                                                    if isDragging && selectedTab == index {
+                                                        let now = Date()
+                                                        let dt = now.timeIntervalSince(lastUpdateTime)
+                                                        lastDragTranslation = value.translation.width
+                                                        let totalWidth = tabWidth * CGFloat(tabs.count)
+                                                        let startX = CGFloat(selectedTab) * tabWidth
+                                                        let newOffset = startX + value.translation.width
+                                                        dragOffset = min(max(newOffset, 0), totalWidth - tabWidth)
+                                                        dragTargetIndex = dragTargetIndex(selectedTab: selectedTab, dragOffset: dragOffset, tabCount: tabs.count, tabWidth: tabWidth)
+                                                        var velocity: CGFloat = 0
+                                                        if dt > 0 {
+                                                            velocity = (dragOffset - previousDragOffset) / CGFloat(dt)
+                                                        }
+                                                        let absVelocity = abs(velocity)
+                                                        let scaleX = min(1.0 + min(absVelocity / 1200, 0.18), 1.18)
+                                                        withAnimation(.interpolatingSpring(stiffness: 200, damping: 18)) {
+                                                            jellyScale = scaleX
+                                                        }
+                                                        previousDragOffset = dragOffset
+                                                        lastUpdateTime = now
+                                                    }
+                                                }
+                                                .onEnded { value in
+                                                    if isDragging && selectedTab == index {
+                                                        previousDragOffset = 0
+                                                        lastUpdateTime = Date()
+                                                        lastDragTranslation = 0
+                                                        let totalWidth = tabWidth * CGFloat(tabs.count)
+                                                        let startX = CGFloat(selectedTab) * tabWidth
+                                                        let newOffset = startX + value.translation.width
+                                                        let target = dragTargetIndex(selectedTab: selectedTab, dragOffset: newOffset, tabCount: tabs.count, tabWidth: tabWidth)
+                                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
+                                                            selectedTab = target
+                                                            jellyScale = 1.0
+                                                        }
+                                                        if target == tabs.count - 1 {
+                                                            searchLocked = true
+                                                            withAnimation(.bouncy(duration: 0.3)) {
+                                                                lastTab = index
+                                                                showSearch = true
+                                                            }
+                                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                                                searchLocked = false
+                                                            }
+                                                        }
+                                                        dragOffset = 0
+                                                        isDragging = false
+                                                        dragTargetIndex = nil
+                                                    }
+                                                }
+                                        )
+                                } else {
+                                    tabButton(for: tab, index: index, scale: shouldEnlarge ? 1.35 : 1.0)
+                                        .frame(width: tabWidth, height: 44)
+                                        .contentShape(Rectangle())
+                                }
+                            }
+                        }
+                        .zIndex(2)
                     }
                 }
             }
@@ -205,17 +316,30 @@ struct TabBar: View {
     }
     
     @ViewBuilder
-    private func tabButton(for tab: TabItem, index: Int) -> some View {
-        Button(action: {
+    private func tabButton(for tab: TabItem, index: Int, scale: CGFloat = 1.0) -> some View {
+        let icon = Image(systemName: tab.icon + (selectedTab == index ? ".fill" : ""))
+            .frame(width: 28, height: 28)
+            .matchedGeometryEffect(id: tab.icon, in: animation)
+            .foregroundStyle(selectedTab == index ? .black : .gray)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 10)
+            .frame(width: tabWidth)
+            .opacity(selectedTab == index ? 1 : 0.5)
+            .scaleEffect(scale)
+            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: scale)
+        return icon
+            .contentShape(Rectangle())
+            .simultaneousGesture(
+                TapGesture()
+                    .onEnded {
+                        if isDragging || isHolding { return }
             if index == tabs.count - 1 {
                 searchLocked = true
-                
                 withAnimation(.bouncy(duration: 0.3)) {
                     lastTab = selectedTab
                     selectedTab = index
                     showSearch = true
                 }
-                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     searchLocked = false
                 }
@@ -224,26 +348,20 @@ struct TabBar: View {
                     withAnimation(.bouncy(duration: 0.3)) {
                         lastTab = selectedTab
                         selectedTab = index
+                                }
+                            }
+                        }
                     }
-                }
-            }
-        }) {
-            Image(systemName: tab.icon + (selectedTab == index ? ".fill" : ""))
-                .frame(width: 28, height: 28)
-                .matchedGeometryEffect(id: tab.icon, in: animation)
-                .foregroundStyle(selectedTab == index ? .black : .gray)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 10)
-                .frame(width: 70)
-                .opacity(selectedTab == index ? 1 : 0.5)
-        }
-        .background(
-            selectedTab == index ?
-            Capsule()
-                .fill(.white)
-                .shadow(color: .black.opacity(0.2), radius: 6)
-                .matchedGeometryEffect(id: "background_capsule", in: animation)
-            : nil
-        )
+            )
+    }
+    
+    private func enlargedTabIndex(selectedTab: Int, dragOffset: CGFloat, tabCount: Int, tabWidth: CGFloat) -> Int {
+        let index = Int(round(dragOffset / tabWidth))
+        return min(max(index, 0), tabCount - 1)
+    }
+
+    private func dragTargetIndex(selectedTab: Int, dragOffset: CGFloat, tabCount: Int, tabWidth: CGFloat) -> Int {
+        let index = Int(round(dragOffset / tabWidth))
+        return min(max(index, 0), tabCount - 1)
     }
 }

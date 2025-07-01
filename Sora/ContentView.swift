@@ -55,8 +55,11 @@ struct ContentView: View {
             .searchable(text: $searchQuery)
         } else {
             ZStack(alignment: .bottom) {
-                Group {
+                ZStack {
                     tabView(for: selectedTab)
+                        .id(selectedTab)
+                        .transition(.opacity)
+                        .animation(.easeInOut(duration: 0.3), value: selectedTab)
                 }
                 .onPreferenceChange(TabBarVisibilityKey.self) { shouldShowTabBar = $0 }
                 

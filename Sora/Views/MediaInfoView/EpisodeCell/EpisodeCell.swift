@@ -234,7 +234,7 @@ private extension EpisodeCell {
     
     var downloadedIndicator: some View {
         Image(systemName: "folder.fill")
-            .foregroundColor(.green)
+            .foregroundColor(.accentColor)
             .font(.system(size: 18))
     }
     

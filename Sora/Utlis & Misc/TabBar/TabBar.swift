@@ -105,7 +105,6 @@ struct TabBar: View {
                 }
                 .disabled(!keyboardHidden || searchLocked)
             }
-            
             HStack {
                 if showSearch {
                     HStack {

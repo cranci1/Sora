@@ -107,7 +107,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         }
     }
     
-    var marqueeLabel: MarqueeLabel!
     var playerViewController: AVPlayerViewController!
     var controlsContainerView: UIView!
     var playPauseButton: UIImageView!
@@ -183,7 +182,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         forwardButton,
         sliderHostingController?.view,
         skip85Button,
-        marqueeLabel,
         menuButton,
         qualityButton,
         speedButton,
@@ -221,6 +219,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var endTimeIcon: UIImageView?
     private var endTimeSeparator: UIView?
     private var isEndTimeVisible: Bool = false
+    
+    private var titleStackAboveSkipButtonConstraints: [NSLayoutConstraint] = []
+    private var titleStackAboveSliderConstraints: [NSLayoutConstraint] = []
+    
+    var episodeNumberLabel: UILabel!
+    var titleLabel: MarqueeLabel!
+    var titleStackView: UIStackView!
     
     init(module: ScrapingModule,
          urlString: String,
@@ -428,19 +433,20 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
-        guard let marqueeLabel = marqueeLabel else {
+        guard let episodeNumberLabel = episodeNumberLabel else {
             return
         }
         
-        let availableWidth = marqueeLabel.frame.width
-        let textWidth = marqueeLabel.intrinsicContentSize.width
+        let availableWidth = episodeNumberLabel.frame.width
+        let textWidth = episodeNumberLabel.intrinsicContentSize.width
         
         if textWidth > availableWidth {
-            marqueeLabel.lineBreakMode = .byTruncatingTail
+            episodeNumberLabel.lineBreakMode = .byTruncatingTail
         } else {
-            marqueeLabel.lineBreakMode = .byClipping
+            episodeNumberLabel.lineBreakMode = .byClipping
         }
         updateMenuButtonConstraints()
+        updateMarqueeConstraintsForBottom()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -528,7 +534,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         volumeSliderHostingView?.removeFromSuperview()
         hiddenVolumeView.removeFromSuperview()
         subtitleStackView?.removeFromSuperview()
-        marqueeLabel?.removeFromSuperview()
+        episodeNumberLabel?.removeFromSuperview()
+        titleLabel?.removeFromSuperview()
+        titleStackView?.removeFromSuperview()
         controlsContainerView?.removeFromSuperview()
         blackCoverView?.removeFromSuperview()
         skipIntroButton?.removeFromSuperview()
@@ -638,7 +646,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         blackCoverView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
         blackCoverView.translatesAutoresizingMaskIntoConstraints = false
         blackCoverView.isUserInteractionEnabled = false
-        controlsContainerView.insertSubview(blackCoverView, at: 0)
+        blackCoverView.alpha = 0.0
+        view.insertSubview(blackCoverView, belowSubview: controlsContainerView)
         NSLayoutConstraint.activate([
             blackCoverView.topAnchor.constraint(equalTo: view.topAnchor),
             blackCoverView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -996,31 +1005,38 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     func setupMarqueeLabel() {
-        marqueeLabel = MarqueeLabel()
-        marqueeLabel.text = "\(titleText) • Ep \(episodeNumber)"
-        marqueeLabel.type = .continuous
-        marqueeLabel.textColor = .white
-        marqueeLabel.font = UIFont.systemFont(ofSize: 14, weight: .heavy)
+        episodeNumberLabel = UILabel()
+        episodeNumberLabel.text = "Episode \(episodeNumber)"
+        episodeNumberLabel.textColor = UIColor(white: 1.0, alpha: 0.6)
+        episodeNumberLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        episodeNumberLabel.textAlignment = .left
+        episodeNumberLabel.setContentHuggingPriority(.required, for: .vertical)
         
-        marqueeLabel.speed = .rate(35)
-        marqueeLabel.fadeLength = 10.0
-        marqueeLabel.leadingBuffer = 1.0
-        marqueeLabel.trailingBuffer = 16.0
-        marqueeLabel.animationDelay = 2.5
+        titleLabel = MarqueeLabel()
+        titleLabel.text = titleText
+        titleLabel.type = .continuous
+        titleLabel.textColor = .white
+        titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .heavy)
+        titleLabel.speed = .rate(35)
+        titleLabel.fadeLength = 10.0
+        titleLabel.leadingBuffer = 1.0
+        titleLabel.trailingBuffer = 16.0
+        titleLabel.animationDelay = 2.5
+        titleLabel.layer.shadowColor = UIColor.black.cgColor
+        titleLabel.layer.shadowOffset = CGSize(width: 0, height: 2)
+        titleLabel.layer.shadowOpacity = 0.6
+        titleLabel.layer.shadowRadius = 4
+        titleLabel.layer.masksToBounds = false
+        titleLabel.lineBreakMode = .byTruncatingTail
+        titleLabel.textAlignment = .left
+        titleLabel.setContentHuggingPriority(.defaultLow, for: .vertical)
         
-        marqueeLabel.layer.shadowColor = UIColor.black.cgColor
-        marqueeLabel.layer.shadowOffset = CGSize(width: 0, height: 2)
-        marqueeLabel.layer.shadowOpacity = 0.6
-        marqueeLabel.layer.shadowRadius = 4
-        marqueeLabel.layer.masksToBounds = false
-        
-        marqueeLabel.lineBreakMode = .byTruncatingTail
-        marqueeLabel.textAlignment = .left
-        
-        controlsContainerView.addSubview(marqueeLabel)
-        marqueeLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        updateMarqueeConstraints()
+        titleStackView = UIStackView(arrangedSubviews: [episodeNumberLabel, titleLabel])
+        titleStackView.axis = .vertical
+        titleStackView.alignment = .leading
+        titleStackView.spacing = 0
+        controlsContainerView.addSubview(titleStackView)
+        titleStackView.translatesAutoresizingMaskIntoConstraints = false
     }
     
     func volumeSlider() {
@@ -1089,47 +1105,39 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private func updateSkipButtonsVisibility() {
         let t = currentTimeVal
-        let controlsShowing = isControlsVisible
-        
-        func handle(_ button: UIButton, range: CMTimeRange?) {
-            guard let r = range else { button.isHidden = true; return }
-            
+        func handle(_ button: UIButton, range: CMTimeRange?) -> Bool {
+            guard let r = range else { button.isHidden = true; button.alpha = 0.0; return false }
             let inInterval = t >= r.start.seconds && t <= r.end.seconds
-            let target     = controlsShowing ? 0.0 : skipButtonBaseAlpha
-            
             if inInterval {
-                if button.isHidden {
-                    button.alpha = 0
-                }
                 button.isHidden = false
-                
-                UIView.animate(withDuration: 0.25) {
-                    button.alpha = target
-                }
-                return
+                UIView.animate(withDuration: 0.25) { button.alpha = 1.0 }
+                return true
             }
-            
-            guard !button.isHidden else { return }
-            UIView.animate(withDuration: 0.15, animations: {
-                button.alpha = 0
+            UIView.animate(withDuration: 0.25, animations: {
+                button.alpha = 0.0
             }) { _ in
                 button.isHidden = true
             }
+            return false
         }
-        
-        handle(skipIntroButton,  range: skipIntervals.op)
-        handle(skipOutroButton,  range: skipIntervals.ed)
-        
+        let skipIntroActive = handle(skipIntroButton, range: skipIntervals.op)
+        let skipOutroActive = handle(skipOutroButton, range: skipIntervals.ed)
         if skipIntroDismissedInSession {
             skipIntroButton.isHidden = true
-        } else {
-            handle(skipIntroButton, range: skipIntervals.op)
+            skipIntroButton.alpha = 0.0
         }
         if skipOutroDismissedInSession {
             skipOutroButton.isHidden = true
-        } else {
-            handle(skipOutroButton, range: skipIntervals.ed)
+            skipOutroButton.alpha = 0.0
         }
+        // Fade out skip85Button if skipIntro is active, fade in otherwise
+        if skipIntroActive {
+            UIView.animate(withDuration: 0.25) { self.skip85Button.alpha = 0.0 }
+        } else {
+            UIView.animate(withDuration: 0.25) { self.skip85Button.alpha = 1.0 }
+            self.skip85Button.isHidden = !isSkip85Visible
+        }
+        updateMarqueeConstraintsForBottom()
     }
     
     private func updateSegments() {
@@ -1230,61 +1238,50 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     func setupSkipButtons() {
         let introConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let introImage = UIImage(systemName: "forward.frame", withConfiguration: introConfig)
-        skipIntroButton = GradientOverlayButton(type: .system)
+        skipIntroButton = GradientBlurButton(type: .system)
         skipIntroButton.setTitle(" Skip Intro", for: .normal)
         skipIntroButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skipIntroButton.setImage(introImage, for: .normal)
-        
-        skipIntroButton.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
         skipIntroButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         skipIntroButton.tintColor = .white
         skipIntroButton.setTitleColor(.white, for: .normal)
         skipIntroButton.layer.cornerRadius = 21
-        skipIntroButton.alpha = skipButtonBaseAlpha
-        
+        skipIntroButton.clipsToBounds = true
+        skipIntroButton.alpha = 1.0
         skipIntroButton.layer.shadowColor = UIColor.black.cgColor
         skipIntroButton.layer.shadowOffset = CGSize(width: 0, height: 2)
         skipIntroButton.layer.shadowOpacity = 0.6
         skipIntroButton.layer.shadowRadius = 4
         skipIntroButton.layer.masksToBounds = false
-        
         skipIntroButton.addTarget(self, action: #selector(skipIntro), for: .touchUpInside)
-        
         view.addSubview(skipIntroButton)
         skipIntroButton.translatesAutoresizingMaskIntoConstraints = false
-        
         NSLayoutConstraint.activate([
-            skipIntroButton.trailingAnchor.constraint(equalTo: sliderHostingController!.view.trailingAnchor),
-            skipIntroButton.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -5),
+            skipIntroButton.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
+            skipIntroButton.bottomAnchor.constraint(equalTo: skip85Button.topAnchor, constant: -8),
             skipIntroButton.heightAnchor.constraint(equalToConstant: 40),
             skipIntroButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 104)
         ])
-        
         let outroConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let outroImage = UIImage(systemName: "forward.frame", withConfiguration: outroConfig)
-        skipOutroButton = GradientOverlayButton(type: .system)
+        skipOutroButton = GradientBlurButton(type: .system)
         skipOutroButton.setTitle(" Skip Outro", for: .normal)
         skipOutroButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skipOutroButton.setImage(outroImage, for: .normal)
-        
-        skipOutroButton.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
         skipOutroButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         skipOutroButton.tintColor = .white
         skipOutroButton.setTitleColor(.white, for: .normal)
         skipOutroButton.layer.cornerRadius = 21
-        skipOutroButton.alpha = skipButtonBaseAlpha
-        
+        skipOutroButton.clipsToBounds = true
+        skipOutroButton.alpha = 1.0
         skipOutroButton.layer.shadowColor = UIColor.black.cgColor
         skipOutroButton.layer.shadowOffset = CGSize(width: 0, height: 2)
         skipOutroButton.layer.shadowOpacity = 0.6
         skipOutroButton.layer.shadowRadius = 4
         skipOutroButton.layer.masksToBounds = false
-        
         skipOutroButton.addTarget(self, action: #selector(skipOutro), for: .touchUpInside)
-        
         view.addSubview(skipOutroButton)
         skipOutroButton.translatesAutoresizingMaskIntoConstraints = false
-        
         NSLayoutConstraint.activate([
             skipOutroButton.trailingAnchor.constraint(equalTo: sliderHostingController!.view.trailingAnchor),
             skipOutroButton.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -5),
@@ -1356,11 +1353,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             : view.safeAreaLayoutGuide.trailingAnchor
             
             currentMarqueeConstraints = [
-                marqueeLabel.leadingAnchor.constraint(
+                episodeNumberLabel.leadingAnchor.constraint(
                     equalTo: dismissButton.trailingAnchor, constant: leftSpacing),
-                marqueeLabel.trailingAnchor.constraint(
+                episodeNumberLabel.trailingAnchor.constraint(
                     equalTo: trailingAnchor, constant: -rightSpacing - 10),
-                marqueeLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
+                episodeNumberLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
             ]
             NSLayoutConstraint.activate(currentMarqueeConstraints)
             view.layoutIfNeeded()
@@ -1519,37 +1516,30 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     func setupSkip85Button() {
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let image = UIImage(systemName: "goforward", withConfiguration: config)
-        
-        skip85Button = GradientOverlayButton(type: .system)
+        skip85Button = GradientBlurButton(type: .system)
         skip85Button.setTitle(" Skip 85s", for: .normal)
         skip85Button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skip85Button.setImage(image, for: .normal)
-        
-        skip85Button.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
         skip85Button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         skip85Button.tintColor = .white
         skip85Button.setTitleColor(.white, for: .normal)
         skip85Button.layer.cornerRadius = 21
-        skip85Button.alpha = 0.7
-        
+        skip85Button.clipsToBounds = true
+        skip85Button.alpha = 1.0
         skip85Button.layer.shadowColor = UIColor.black.cgColor
         skip85Button.layer.shadowOffset = CGSize(width: 0, height: 2)
         skip85Button.layer.shadowOpacity = 0.6
         skip85Button.layer.shadowRadius = 4
         skip85Button.layer.masksToBounds = false
-        
         skip85Button.addTarget(self, action: #selector(skip85Tapped), for: .touchUpInside)
-        
         view.addSubview(skip85Button)
         skip85Button.translatesAutoresizingMaskIntoConstraints = false
-        
         NSLayoutConstraint.activate([
             skip85Button.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
             skip85Button.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -5),
             skip85Button.heightAnchor.constraint(equalToConstant: 40),
             skip85Button.widthAnchor.constraint(greaterThanOrEqualToConstant: 97)
         ])
-        
         skip85Button.isHidden = !isSkip85Visible
     }
     
@@ -1616,7 +1606,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self.sliderViewModel.sliderValue = max(0, min(self.currentTimeVal, self.duration))
             }
             
-            // Update end time when current time changes
             self.updateEndTime()
             
             self.updateSkipButtonsVisibility()
@@ -3025,6 +3014,38 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
         }
     }
+    
+    func updateMarqueeConstraintsForBottom() {
+        NSLayoutConstraint.deactivate(titleStackAboveSkipButtonConstraints)
+        NSLayoutConstraint.deactivate(titleStackAboveSliderConstraints)
+        let shouldUseSkipButton: Bool = {
+            if !isControlsVisible { return false }
+            if let skipIntroButton = skipIntroButton, !skipIntroButton.isHidden, skipIntroButton.alpha > 0.1 { return true }
+            if let skip85Button = skip85Button, !skip85Button.isHidden, skip85Button.alpha > 0.1 { return true }
+            return false
+        }()
+        let skipButton: UIButton? = {
+            if let skipIntroButton = skipIntroButton, !skipIntroButton.isHidden, skipIntroButton.alpha > 0.1 { return skipIntroButton }
+            if let skip85Button = skip85Button, !skip85Button.isHidden, skip85Button.alpha > 0.1 { return skip85Button }
+            return nil
+        }()
+        if shouldUseSkipButton, let skipButton = skipButton {
+            titleStackAboveSkipButtonConstraints = [
+                titleStackView.leadingAnchor.constraint(equalTo: skipButton.leadingAnchor),
+                titleStackView.bottomAnchor.constraint(equalTo: skipButton.topAnchor, constant: -4),
+                titleStackView.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: 0.7)
+            ]
+            NSLayoutConstraint.activate(titleStackAboveSkipButtonConstraints)
+        } else if let sliderView = sliderHostingController?.view {
+            titleStackAboveSliderConstraints = [
+                titleStackView.leadingAnchor.constraint(equalTo: sliderView.leadingAnchor),
+                titleStackView.bottomAnchor.constraint(equalTo: sliderView.topAnchor, constant: -4),
+                titleStackView.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: 0.7)
+            ]
+            NSLayoutConstraint.activate(titleStackAboveSliderConstraints)
+        }
+        view.layoutIfNeeded()
+    }
 }
 
 class GradientOverlayButton: UIButton {
@@ -3101,5 +3122,64 @@ class PassthroughView: UIView {
             }
         }
         return false
+    }
+}
+
+class GradientBlurButton: UIButton {
+    private var gradientLayer: CAGradientLayer?
+    private var borderMask: CAShapeLayer?
+    private var blurView: UIVisualEffectView?
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupBlurAndGradient()
+    }
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupBlurAndGradient()
+    }
+    private func setupBlurAndGradient() {
+        if #available(iOS 15.0, *) {
+            let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+            blur.isUserInteractionEnabled = false
+            blur.layer.cornerRadius = 21
+            blur.clipsToBounds = true
+            blur.translatesAutoresizingMaskIntoConstraints = false
+            insertSubview(blur, at: 0)
+            NSLayoutConstraint.activate([
+                blur.leadingAnchor.constraint(equalTo: leadingAnchor),
+                blur.trailingAnchor.constraint(equalTo: trailingAnchor),
+                blur.topAnchor.constraint(equalTo: topAnchor),
+                blur.bottomAnchor.constraint(equalTo: bottomAnchor)
+            ])
+            self.blurView = blur
+            let gradient = CAGradientLayer()
+            gradient.colors = [
+                UIColor.white.withAlphaComponent(0.25).cgColor,
+                UIColor.white.withAlphaComponent(0).cgColor
+            ]
+            gradient.startPoint = CGPoint(x: 0.5, y: 0)
+            gradient.endPoint = CGPoint(x: 0.5, y: 1)
+            gradient.cornerRadius = 21
+            let border = CAShapeLayer()
+            border.fillColor = nil
+            border.strokeColor = UIColor.white.cgColor
+            border.lineWidth = 0.5
+            gradient.mask = border
+            layer.addSublayer(gradient)
+            self.gradientLayer = gradient
+            self.borderMask = border
+        } else {
+            backgroundColor = UIColor.white.withAlphaComponent(0.15)
+        }
+    }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        gradientLayer?.frame = bounds.insetBy(dx: 0.25, dy: 0.25)
+        if let border = borderMask {
+            border.path = UIBezierPath(roundedRect: bounds.insetBy(dx: 0.25, dy: 0.25), cornerRadius: 21).cgPath
+        }
+        blurView?.layer.cornerRadius = 21
+        if let imageView = self.imageView { bringSubviewToFront(imageView) }
+        if let titleLabel = self.titleLabel { bringSubviewToFront(titleLabel) }
     }
 }

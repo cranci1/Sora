@@ -149,6 +149,10 @@ private extension EpisodeCell {
             episodeThumbnail
             episodeInfo
             Spacer()
+            if case .downloaded = downloadStatus {
+                downloadedIndicator
+                    .padding(.trailing, 8)
+            }
             CircularProgressBar(progress: currentProgress)
                 .frame(width: 40, height: 40)
                 .padding(.trailing, 4)
@@ -226,6 +230,12 @@ private extension EpisodeCell {
                     .foregroundColor(.secondary)
             }
         }
+    }
+    
+    var downloadedIndicator: some View {
+        Image(systemName: "externaldrive.fill.badge.checkmark")
+            .foregroundColor(.accentColor)
+            .font(.system(size: 18))
     }
     
     var contextMenuContent: some View {

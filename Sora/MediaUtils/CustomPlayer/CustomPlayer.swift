@@ -92,7 +92,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var landscapeButtonVisibleConstraints: [NSLayoutConstraint] = []
     var landscapeButtonHiddenConstraints: [NSLayoutConstraint] = []
     var currentMarqueeConstraints: [NSLayoutConstraint] = []
-    private var currentMenuButtonTrailing: NSLayoutConstraint!
     
     var subtitleForegroundColor: String = "white"
     var subtitleBackgroundEnabled: Bool = true
@@ -123,6 +122,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var qualityButton: UIButton!
     var holdSpeedIndicator: UIButton!
     private var lockButton: UIButton!
+    private var controlButtonsContainer: GradientBlurButton!
     
     var isHLSStream: Bool = false
     var qualities: [(String, String)] = []
@@ -175,25 +175,24 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var dimButtonToRight: NSLayoutConstraint!
     private var dimButtonTimer: Timer?
     
-    private lazy var controlsToHide: [UIView] = [
-        dismissButton,
-        playPauseButton,
-        backwardButton,
-        forwardButton,
-        sliderHostingController?.view,
-        skip85Button,
-        menuButton,
-        qualityButton,
-        speedButton,
-        watchNextButton,
-        volumeSliderHostingView,
-        pipButton,
-        airplayButton,
-        timeBatteryContainer,
-        endTimeIcon,
-        endTimeLabel,
-        endTimeSeparator
-    ].compactMap { $0 }
+    private var controlsToHide: [UIView] {
+        return [
+            dismissButton,
+            playPauseButton,
+            backwardButton,
+            forwardButton,
+            sliderHostingController?.view,
+            skip85Button,
+            controlButtonsContainer,
+            volumeSliderHostingView,
+            pipButton,
+            airplayButton,
+            timeBatteryContainer,
+            endTimeIcon,
+            endTimeLabel,
+            endTimeSeparator
+        ].compactMap { $0 }.filter { $0.superview != nil }
+    }
     
     private var originalHiddenStates: [UIView: Bool] = [:]
     
@@ -226,6 +225,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var episodeNumberLabel: UILabel!
     var titleLabel: MarqueeLabel!
     var titleStackView: UIStackView!
+    
+    private var controlButtonsContainerBottomConstraint: NSLayoutConstraint?
     
     init(module: ScrapingModule,
          urlString: String,
@@ -305,6 +306,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         super.viewDidLoad()
         view.backgroundColor = .black
         
+        skipOutroDismissedInSession = false
+        skipIntroDismissedInSession = false
+        
         setupHoldGesture()
         loadSubtitleSettings()
         setupPlayerViewController()
@@ -331,6 +335,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupPipIfSupported()
         setupTimeBatteryIndicator()
         
+        setupControlButtonsContainer()
+        
         view.bringSubviewToFront(subtitleStackView)
         subtitleStackView.isHidden = !SubtitleSettingsManager.shared.settings.enabled
         
@@ -345,7 +351,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
         }
         
-        controlsToHide.forEach { originalHiddenStates[$0] = $0.isHidden }
+        for control in controlsToHide {
+            originalHiddenStates[control] = control.isHidden
+        }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.checkForHLSStream()
@@ -445,7 +453,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         } else {
             episodeNumberLabel.lineBreakMode = .byClipping
         }
-        updateMenuButtonConstraints()
         updateMarqueeConstraintsForBottom()
     }
     
@@ -490,7 +497,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         NotificationCenter.default.removeObserver(self)
         UIDevice.current.isBatteryMonitoringEnabled = false
         
-        // Clean up end time related resources
         endTimeIcon?.removeFromSuperview()
         endTimeLabel?.removeFromSuperview()
         endTimeSeparator?.removeFromSuperview()
@@ -593,8 +599,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self.qualityButton.isHidden = false
                 self.qualityButton.menu = self.qualitySelectionMenu()
                 
-                self.updateMenuButtonConstraints()
-                
                 UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
                     self.view.layoutIfNeeded()
                 }
@@ -615,7 +619,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         playerViewController.player = player
         playerViewController.showsPlaybackControls = false
         addChild(playerViewController)
-        view.addSubview(playerViewController.view)
+        if playerViewController.view.superview == nil {
+            view.addSubview(playerViewController.view)
+        }
         playerViewController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             playerViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
@@ -655,16 +661,22 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             blackCoverView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
         
+        let backwardCircle = createCircularBlurBackground(size: 70)
+        controlsContainerView.addSubview(backwardCircle)
+        backwardCircle.translatesAutoresizingMaskIntoConstraints = false
+        
+        let playPauseCircle = createCircularBlurBackground(size: 80)
+        controlsContainerView.addSubview(playPauseCircle)
+        playPauseCircle.translatesAutoresizingMaskIntoConstraints = false
+        
+        let forwardCircle = createCircularBlurBackground(size: 70)
+        controlsContainerView.addSubview(forwardCircle)
+        forwardCircle.translatesAutoresizingMaskIntoConstraints = false
+        
         backwardButton = UIImageView(image: UIImage(systemName: "gobackward"))
         backwardButton.tintColor = .white
         backwardButton.contentMode = .scaleAspectFit
         backwardButton.isUserInteractionEnabled = true
-        
-        backwardButton.layer.shadowColor = UIColor.black.cgColor
-        backwardButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        backwardButton.layer.shadowOpacity = 0.6
-        backwardButton.layer.shadowRadius = 4
-        backwardButton.layer.masksToBounds = false
         
         let backwardTap = UITapGestureRecognizer(target: self, action: #selector(seekBackward))
         backwardTap.numberOfTapsRequired = 1
@@ -683,12 +695,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         playPauseButton.contentMode = .scaleAspectFit
         playPauseButton.isUserInteractionEnabled = true
         
-        playPauseButton.layer.shadowColor = UIColor.black.cgColor
-        playPauseButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        playPauseButton.layer.shadowOpacity = 0.6
-        playPauseButton.layer.shadowRadius = 4
-        playPauseButton.layer.masksToBounds = false
-        
         let playPauseTap = UITapGestureRecognizer(target: self, action: #selector(togglePlayPause))
         playPauseTap.delaysTouchesBegan = false
         playPauseTap.delegate = self
@@ -703,12 +709,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         forwardButton.tintColor = .white
         forwardButton.contentMode = .scaleAspectFit
         forwardButton.isUserInteractionEnabled = true
-        
-        forwardButton.layer.shadowColor = UIColor.black.cgColor
-        forwardButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        forwardButton.layer.shadowOpacity = 0.6
-        forwardButton.layer.shadowRadius = 4
-        forwardButton.layer.masksToBounds = false
         
         let forwardTap = UITapGestureRecognizer(target: self, action: #selector(seekForward))
         forwardTap.numberOfTapsRequired = 1
@@ -785,21 +785,53 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         ])
         
         NSLayoutConstraint.activate([
-            playPauseButton.centerXAnchor.constraint(equalTo: controlsContainerView.centerXAnchor),
-            playPauseButton.centerYAnchor.constraint(equalTo: controlsContainerView.centerYAnchor),
+            playPauseCircle.centerXAnchor.constraint(equalTo: controlsContainerView.centerXAnchor),
+            playPauseCircle.centerYAnchor.constraint(equalTo: controlsContainerView.centerYAnchor),
+            playPauseCircle.widthAnchor.constraint(equalToConstant: 80),
+            playPauseCircle.heightAnchor.constraint(equalToConstant: 80),
+            
+            backwardCircle.centerYAnchor.constraint(equalTo: playPauseCircle.centerYAnchor),
+            backwardCircle.trailingAnchor.constraint(equalTo: playPauseCircle.leadingAnchor, constant: -50),
+            backwardCircle.widthAnchor.constraint(equalToConstant: 70),
+            backwardCircle.heightAnchor.constraint(equalToConstant: 70),
+            
+            forwardCircle.centerYAnchor.constraint(equalTo: playPauseCircle.centerYAnchor),
+            forwardCircle.leadingAnchor.constraint(equalTo: playPauseCircle.trailingAnchor, constant: 50),
+            forwardCircle.widthAnchor.constraint(equalToConstant: 70),
+            forwardCircle.heightAnchor.constraint(equalToConstant: 70)
+        ])
+        
+        NSLayoutConstraint.activate([
+            playPauseButton.centerXAnchor.constraint(equalTo: playPauseCircle.centerXAnchor),
+            playPauseButton.centerYAnchor.constraint(equalTo: playPauseCircle.centerYAnchor),
             playPauseButton.widthAnchor.constraint(equalToConstant: 50),
             playPauseButton.heightAnchor.constraint(equalToConstant: 50),
             
-            backwardButton.centerYAnchor.constraint(equalTo: playPauseButton.centerYAnchor),
-            backwardButton.trailingAnchor.constraint(equalTo: playPauseButton.leadingAnchor, constant: -50),
+            backwardButton.centerXAnchor.constraint(equalTo: backwardCircle.centerXAnchor),
+            backwardButton.centerYAnchor.constraint(equalTo: backwardCircle.centerYAnchor),
             backwardButton.widthAnchor.constraint(equalToConstant: 40),
             backwardButton.heightAnchor.constraint(equalToConstant: 40),
             
-            forwardButton.centerYAnchor.constraint(equalTo: playPauseButton.centerYAnchor),
-            forwardButton.leadingAnchor.constraint(equalTo: playPauseButton.trailingAnchor, constant: 50),
+            forwardButton.centerXAnchor.constraint(equalTo: forwardCircle.centerXAnchor),
+            forwardButton.centerYAnchor.constraint(equalTo: forwardCircle.centerYAnchor),
             forwardButton.widthAnchor.constraint(equalToConstant: 40),
             forwardButton.heightAnchor.constraint(equalToConstant: 40)
         ])
+    }
+    
+    private func createCircularBlurBackground(size: CGFloat) -> UIView {
+        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterial)
+        let blurView = UIVisualEffectView(effect: blurEffect)
+        blurView.translatesAutoresizingMaskIntoConstraints = false
+        blurView.layer.cornerRadius = size / 2
+        blurView.clipsToBounds = true
+        
+        NSLayoutConstraint.activate([
+            blurView.widthAnchor.constraint(equalToConstant: size),
+            blurView.heightAnchor.constraint(equalToConstant: size)
+        ])
+        
+        return blurView
     }
     
     @objc private func handleTwoFingerTapPause(_ gesture: UITapGestureRecognizer) {
@@ -1104,40 +1136,104 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     private func updateSkipButtonsVisibility() {
+        if !isControlsVisible { return }
         let t = currentTimeVal
-        func handle(_ button: UIButton, range: CMTimeRange?) -> Bool {
-            guard let r = range else { button.isHidden = true; button.alpha = 0.0; return false }
-            let inInterval = t >= r.start.seconds && t <= r.end.seconds
-            if inInterval {
-                button.isHidden = false
-                UIView.animate(withDuration: 0.25) { button.alpha = 1.0 }
-                return true
+        
+        let skipIntroAvailable = skipIntervals.op != nil && 
+                                t >= skipIntervals.op!.start.seconds && 
+                                t <= skipIntervals.op!.end.seconds &&
+                                !skipIntroDismissedInSession
+        
+        let skipOutroAvailable = skipIntervals.ed != nil && 
+                                t >= skipIntervals.ed!.start.seconds && 
+                                t <= skipIntervals.ed!.end.seconds &&
+                                !skipOutroDismissedInSession
+        
+        let shouldShowSkip85 = isSkip85Visible && !skipIntroAvailable
+        
+        if skipIntroAvailable {
+            skipIntroButton.setTitle(" Skip Intro", for: .normal)
+            skipIntroButton.setImage(UIImage(systemName: "forward.frame"), for: .normal)
+            UIView.animate(withDuration: 0.2) {
+                self.skipIntroButton.alpha = 1.0
             }
-            UIView.animate(withDuration: 0.25, animations: {
-                button.alpha = 0.0
-            }) { _ in
-                button.isHidden = true
-            }
-            return false
-        }
-        let skipIntroActive = handle(skipIntroButton, range: skipIntervals.op)
-        let skipOutroActive = handle(skipOutroButton, range: skipIntervals.ed)
-        if skipIntroDismissedInSession {
-            skipIntroButton.isHidden = true
-            skipIntroButton.alpha = 0.0
-        }
-        if skipOutroDismissedInSession {
-            skipOutroButton.isHidden = true
-            skipOutroButton.alpha = 0.0
-        }
-        // Fade out skip85Button if skipIntro is active, fade in otherwise
-        if skipIntroActive {
-            UIView.animate(withDuration: 0.25) { self.skip85Button.alpha = 0.0 }
         } else {
-            UIView.animate(withDuration: 0.25) { self.skip85Button.alpha = 1.0 }
-            self.skip85Button.isHidden = !isSkip85Visible
+            UIView.animate(withDuration: 0.2) {
+                self.skipIntroButton.alpha = 0.0
+            }
         }
+        
+        if shouldShowSkip85 {
+            skip85Button.setTitle(" Skip 85s", for: .normal)
+            skip85Button.setImage(UIImage(systemName: "goforward"), for: .normal)
+            skip85Button.isHidden = false
+            UIView.animate(withDuration: 0.2) {
+                self.skip85Button.alpha = 1.0
+            }
+        } else {
+            UIView.animate(withDuration: 0.2) {
+                self.skip85Button.alpha = 0.0
+            } completion: { _ in
+                self.skip85Button.isHidden = true
+            }
+        }
+        
+        if skipOutroAvailable {
+            if skipOutroButton.superview == nil {
+                view.addSubview(skipOutroButton)
+                
+                NSLayoutConstraint.activate([
+                    skipOutroButton.trailingAnchor.constraint(equalTo: sliderHostingController!.view.trailingAnchor),
+                    skipOutroButton.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -5),
+                    skipOutroButton.heightAnchor.constraint(equalToConstant: 40),
+                    skipOutroButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 104)
+                ])
+                
+                view.setNeedsLayout()
+                view.layoutIfNeeded()
+            }
+
+            UIView.animate(withDuration: 0.2) {
+                self.skipOutroButton.alpha = 1.0
+            }
+        } else {
+            removeSkipOutroButton()
+        }
+        
+        updateControlButtonsContainerPosition()
+        
         updateMarqueeConstraintsForBottom()
+        
+        UIView.animate(withDuration: 0.25) {
+            self.view.layoutIfNeeded()
+        }
+        
+        let hasVisibleButtons = [watchNextButton, speedButton, qualityButton, menuButton].contains { button in
+            guard let button = button else { return false }
+            return !button.isHidden
+        }
+        
+        if hasVisibleButtons || controlButtonsContainer.superview != nil {
+            setupControlButtonsContainer()
+        }
+    }
+    
+    private func updateControlButtonsContainerPosition() {
+        guard controlButtonsContainer.superview != nil else { return }
+        
+        controlButtonsContainerBottomConstraint?.isActive = false
+        
+        let skipOutroActuallyVisible = skipOutroButton.superview != nil && skipOutroButton.alpha > 0.1
+        
+        if !skipOutroActuallyVisible {
+            controlButtonsContainerBottomConstraint = controlButtonsContainer.bottomAnchor.constraint(
+                equalTo: sliderHostingController!.view.topAnchor, constant: -20)
+        } else {
+            controlButtonsContainerBottomConstraint = controlButtonsContainer.bottomAnchor.constraint(
+                equalTo: skipOutroButton.topAnchor, constant: -5)
+        }
+        
+        controlButtonsContainerBottomConstraint?.isActive = true
     }
     
     private func updateSegments() {
@@ -1247,21 +1343,17 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skipIntroButton.setTitleColor(.white, for: .normal)
         skipIntroButton.layer.cornerRadius = 21
         skipIntroButton.clipsToBounds = true
-        skipIntroButton.alpha = 1.0
-        skipIntroButton.layer.shadowColor = UIColor.black.cgColor
-        skipIntroButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        skipIntroButton.layer.shadowOpacity = 0.6
-        skipIntroButton.layer.shadowRadius = 4
-        skipIntroButton.layer.masksToBounds = false
+        skipIntroButton.alpha = 0.0
         skipIntroButton.addTarget(self, action: #selector(skipIntro), for: .touchUpInside)
         view.addSubview(skipIntroButton)
         skipIntroButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             skipIntroButton.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
-            skipIntroButton.bottomAnchor.constraint(equalTo: skip85Button.topAnchor, constant: -8),
+            skipIntroButton.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -5),
             skipIntroButton.heightAnchor.constraint(equalToConstant: 40),
             skipIntroButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 104)
         ])
+        
         let outroConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let outroImage = UIImage(systemName: "forward.frame", withConfiguration: outroConfig)
         skipOutroButton = GradientBlurButton(type: .system)
@@ -1273,244 +1365,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skipOutroButton.setTitleColor(.white, for: .normal)
         skipOutroButton.layer.cornerRadius = 21
         skipOutroButton.clipsToBounds = true
-        skipOutroButton.alpha = 1.0
-        skipOutroButton.layer.shadowColor = UIColor.black.cgColor
-        skipOutroButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        skipOutroButton.layer.shadowOpacity = 0.6
-        skipOutroButton.layer.shadowRadius = 4
-        skipOutroButton.layer.masksToBounds = false
+        skipOutroButton.alpha = 0.0
         skipOutroButton.addTarget(self, action: #selector(skipOutro), for: .touchUpInside)
-        view.addSubview(skipOutroButton)
         skipOutroButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            skipOutroButton.trailingAnchor.constraint(equalTo: sliderHostingController!.view.trailingAnchor),
-            skipOutroButton.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -5),
-            skipOutroButton.heightAnchor.constraint(equalToConstant: 40),
-            skipOutroButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 104)
-        ])
-    }
-    
-    private func setupDimButton() {
-        let cfg = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
-        dimButton = UIButton(type: .system)
-        dimButton.setImage(UIImage(systemName: "moon.fill", withConfiguration: cfg), for: .normal)
-        dimButton.tintColor = .white
-        dimButton.addTarget(self, action: #selector(dimTapped), for: .touchUpInside)
-        controlsContainerView.addSubview(dimButton)
-        dimButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        dimButton.layer.shadowColor = UIColor.black.cgColor
-        dimButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        dimButton.layer.shadowOpacity = 0.6
-        dimButton.layer.shadowRadius = 4
-        dimButton.layer.masksToBounds = false
-        
-        NSLayoutConstraint.activate([
-            dimButton.topAnchor.constraint(equalTo: volumeSliderHostingView!.bottomAnchor, constant: 15),
-            dimButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor),
-            dimButton.widthAnchor.constraint(equalToConstant: 24),
-            dimButton.heightAnchor.constraint(equalToConstant: 24)
-        ])
-        
-        dimButtonToSlider = dimButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor)
-        dimButtonToRight = dimButton.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16)
-        dimButtonToSlider.isActive = true
-    }
-    private func setupLockButton() {
-        let cfg = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
-        lockButton = UIButton(type: .system)
-        lockButton.setImage(
-            UIImage(systemName: "lock.open.fill", withConfiguration: cfg),
-            for: .normal
-        )
-        lockButton.tintColor = .white
-        lockButton.layer.shadowColor   = UIColor.black.cgColor
-        lockButton.layer.shadowOffset  = CGSize(width: 0, height: 2)
-        lockButton.layer.shadowOpacity = 0.6
-        lockButton.layer.shadowRadius  = 4
-        lockButton.layer.masksToBounds = false
-        
-        lockButton.addTarget(self, action: #selector(lockTapped), for: .touchUpInside)
-        
-        view.addSubview(lockButton)
-        lockButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            lockButton.topAnchor.constraint(equalTo: volumeSliderHostingView!.bottomAnchor, constant: 60),
-            lockButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor),
-            lockButton.widthAnchor.constraint(equalToConstant: 24),
-            lockButton.heightAnchor.constraint(equalToConstant: 24),
-        ])
-    }
-    
-    func updateMarqueeConstraints() {
-        UIView.performWithoutAnimation {
-            NSLayoutConstraint.deactivate(currentMarqueeConstraints)
-            
-            let leftSpacing: CGFloat = 2
-            let rightSpacing: CGFloat = 6
-            let trailingAnchor: NSLayoutXAxisAnchor = (volumeSliderHostingView?.isHidden == false)
-            ? volumeSliderHostingView!.leadingAnchor
-            : view.safeAreaLayoutGuide.trailingAnchor
-            
-            currentMarqueeConstraints = [
-                episodeNumberLabel.leadingAnchor.constraint(
-                    equalTo: dismissButton.trailingAnchor, constant: leftSpacing),
-                episodeNumberLabel.trailingAnchor.constraint(
-                    equalTo: trailingAnchor, constant: -rightSpacing - 10),
-                episodeNumberLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
-            ]
-            NSLayoutConstraint.activate(currentMarqueeConstraints)
-            view.layoutIfNeeded()
-        }
-    }
-    
-    private func setupPipIfSupported() {
-        airplayButton = AVRoutePickerView(frame: .zero)
-        airplayButton.translatesAutoresizingMaskIntoConstraints = false
-        airplayButton.activeTintColor = .white
-        airplayButton.tintColor = .white
-        airplayButton.backgroundColor = .clear
-        airplayButton.prioritizesVideoDevices = true
-        airplayButton.setContentHuggingPriority(.required, for: .horizontal)
-        airplayButton.setContentCompressionResistancePriority(.required, for: .horizontal)
-        controlsContainerView.addSubview(airplayButton)
-        
-        airplayButton.layer.shadowColor = UIColor.black.cgColor
-        airplayButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        airplayButton.layer.shadowOpacity = 0.6
-        airplayButton.layer.shadowRadius = 4
-        airplayButton.layer.masksToBounds = false
-        
-        guard AVPictureInPictureController.isPictureInPictureSupported() else {
-            return
-        }
-        let pipPlayerLayer = AVPlayerLayer(player: playerViewController.player)
-        pipPlayerLayer.frame = playerViewController.view.layer.bounds
-        pipPlayerLayer.videoGravity = .resizeAspect
-        
-        playerViewController.view.layer.insertSublayer(pipPlayerLayer, at: 0)
-        pipController = AVPictureInPictureController(playerLayer: pipPlayerLayer)
-        pipController?.delegate = self
-        
-        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .medium)
-        let Image = UIImage(systemName: "pip", withConfiguration: config)
-        pipButton = UIButton(type: .system)
-        pipButton.setImage(Image, for: .normal)
-        pipButton.tintColor = .white
-        pipButton.addTarget(self, action: #selector(pipButtonTapped(_:)), for: .touchUpInside)
-        
-        pipButton.layer.shadowColor = UIColor.black.cgColor
-        pipButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        pipButton.layer.shadowOpacity = 0.6
-        pipButton.layer.shadowRadius = 4
-        pipButton.layer.masksToBounds = false
-        
-        controlsContainerView.addSubview(pipButton)
-        pipButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            pipButton.centerYAnchor.constraint(equalTo: dimButton.centerYAnchor),
-            pipButton.trailingAnchor.constraint(equalTo: dimButton.leadingAnchor, constant: -8),
-            pipButton.widthAnchor.constraint(equalToConstant: 44),
-            pipButton.heightAnchor.constraint(equalToConstant: 44),
-            airplayButton.centerYAnchor.constraint(equalTo: pipButton.centerYAnchor),
-            airplayButton.trailingAnchor.constraint(equalTo: pipButton.leadingAnchor, constant: -4),
-            airplayButton.widthAnchor.constraint(equalToConstant: 44),
-            airplayButton.heightAnchor.constraint(equalToConstant: 44)
-        ])
-        
-        pipButton.isHidden = !isPipButtonVisible
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(startPipIfNeeded), name: UIApplication.willResignActiveNotification, object: nil)
-    }
-    
-    func setupMenuButton() {
-        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
-        let image = UIImage(systemName: "text.bubble", withConfiguration: config)
-        
-        menuButton = UIButton(type: .system)
-        menuButton.setImage(image, for: .normal)
-        menuButton.tintColor = .white
-        
-        if let subtitlesURL = subtitlesURL, !subtitlesURL.isEmpty {
-            menuButton.showsMenuAsPrimaryAction = true
-            menuButton.menu = buildOptionsMenu()
-        } else {
-            menuButton.isHidden = true
-        }
-        
-        menuButton.layer.shadowColor = UIColor.black.cgColor
-        menuButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        menuButton.layer.shadowOpacity = 0.6
-        menuButton.layer.shadowRadius = 4
-        menuButton.layer.masksToBounds = false
-        
-        controlsContainerView.addSubview(menuButton)
-        menuButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            menuButton.topAnchor.constraint(equalTo: qualityButton.topAnchor),
-            menuButton.widthAnchor.constraint(equalToConstant: 40),
-            menuButton.heightAnchor.constraint(equalToConstant: 40),
-        ])
-        
-        currentMenuButtonTrailing = menuButton.trailingAnchor.constraint(equalTo: qualityButton.leadingAnchor, constant: -6)
-    }
-    
-    func setupSpeedButton() {
-        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
-        let image = UIImage(systemName: "speedometer", withConfiguration: config)
-        
-        speedButton = UIButton(type: .system)
-        speedButton.setImage(image, for: .normal)
-        speedButton.tintColor = .white
-        speedButton.showsMenuAsPrimaryAction = true
-        speedButton.menu = speedChangerMenu()
-        
-        speedButton.layer.shadowColor = UIColor.black.cgColor
-        speedButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        speedButton.layer.shadowOpacity = 0.6
-        speedButton.layer.shadowRadius = 4
-        speedButton.layer.masksToBounds = false
-        
-        controlsContainerView.addSubview(speedButton)
-        speedButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            speedButton.topAnchor.constraint(equalTo: watchNextButton.topAnchor),
-            speedButton.trailingAnchor.constraint(equalTo: watchNextButton.leadingAnchor, constant: 18),
-            speedButton.widthAnchor.constraint(equalToConstant: 40),
-            speedButton.heightAnchor.constraint(equalToConstant: 40)
-        ])
-    }
-    
-    func setupWatchNextButton() {
-        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
-        let image = UIImage(systemName: "forward.end", withConfiguration: config)
-        
-        watchNextButton = UIButton(type: .system)
-        watchNextButton.setImage(image, for: .normal)
-        watchNextButton.backgroundColor = .clear
-        watchNextButton.tintColor = .white
-        watchNextButton.setTitleColor(.white, for: .normal)
-        
-        watchNextButton.layer.shadowColor = UIColor.black.cgColor
-        watchNextButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        watchNextButton.layer.shadowOpacity = 0.6
-        watchNextButton.layer.shadowRadius = 4
-        watchNextButton.layer.masksToBounds = false
-        
-        watchNextButton.addTarget(self, action: #selector(watchNextTapped), for: .touchUpInside)
-        
-        controlsContainerView.addSubview(watchNextButton)
-        watchNextButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            watchNextButton.trailingAnchor.constraint(equalTo: sliderHostingController!.view.trailingAnchor, constant: 20),
-            watchNextButton.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -5),
-            watchNextButton.heightAnchor.constraint(equalToConstant: 40),
-            watchNextButton.widthAnchor.constraint(equalToConstant: 80)
-        ])
     }
     
     func setupSkip85Button() {
@@ -1525,22 +1382,21 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skip85Button.setTitleColor(.white, for: .normal)
         skip85Button.layer.cornerRadius = 21
         skip85Button.clipsToBounds = true
-        skip85Button.alpha = 1.0
-        skip85Button.layer.shadowColor = UIColor.black.cgColor
-        skip85Button.layer.shadowOffset = CGSize(width: 0, height: 2)
-        skip85Button.layer.shadowOpacity = 0.6
-        skip85Button.layer.shadowRadius = 4
-        skip85Button.layer.masksToBounds = false
+        skip85Button.alpha = 0.0
         skip85Button.addTarget(self, action: #selector(skip85Tapped), for: .touchUpInside)
         view.addSubview(skip85Button)
         skip85Button.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
+
+        let skip85Constraints = [
             skip85Button.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
             skip85Button.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -5),
             skip85Button.heightAnchor.constraint(equalToConstant: 40),
             skip85Button.widthAnchor.constraint(greaterThanOrEqualToConstant: 97)
-        ])
-        skip85Button.isHidden = !isSkip85Visible
+        ]
+        NSLayoutConstraint.activate(skip85Constraints)
+        
+        skip85Button.isHidden = true
+        skip85Button.alpha = 0.0
     }
     
     
@@ -1555,21 +1411,105 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         qualityButton.menu = qualitySelectionMenu()
         qualityButton.isHidden = true
         
-        qualityButton.layer.shadowColor = UIColor.black.cgColor
-        qualityButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        qualityButton.layer.shadowOpacity = 0.6
-        qualityButton.layer.shadowRadius = 4
-        qualityButton.layer.masksToBounds = false
-        
-        controlsContainerView.addSubview(qualityButton)
         qualityButton.translatesAutoresizingMaskIntoConstraints = false
+    }
+
+    private func setupControlButtonsContainer() {
+        controlButtonsContainer?.removeFromSuperview()
+        
+        controlButtonsContainer = GradientBlurButton(type: .custom)
+        controlButtonsContainer.isUserInteractionEnabled = true
+        controlButtonsContainer.translatesAutoresizingMaskIntoConstraints = false
+        controlButtonsContainer.backgroundColor = .clear
+        controlButtonsContainer.layer.cornerRadius = 21
+        controlButtonsContainer.clipsToBounds = true
+        controlsContainerView.addSubview(controlButtonsContainer)
+        
+        Logger.shared.log("Setting up control buttons container - isHLSStream: \(isHLSStream)", type: "Debug")
+        
+        if isHLSStream {
+            Logger.shared.log("HLS stream detected, showing quality button", type: "Debug")
+            qualityButton.isHidden = false
+            qualityButton.menu = qualitySelectionMenu()
+        } else {
+            Logger.shared.log("Not an HLS stream, quality button will be hidden", type: "Debug")
+            qualityButton.isHidden = true
+        }
+        
+        let visibleButtons = [watchNextButton, speedButton, qualityButton, menuButton].compactMap { button -> UIButton? in
+            guard let button = button else { 
+                Logger.shared.log("Button is nil", type: "Debug")
+                return nil 
+            }
+            
+            if button == qualityButton {
+                Logger.shared.log("Quality button state - isHidden: \(button.isHidden), isHLSStream: \(isHLSStream)", type: "Debug")
+            }
+            
+            if button.isHidden { 
+                if button == qualityButton {
+                    Logger.shared.log("Quality button is hidden, skipping", type: "Debug")
+                }
+                return nil 
+            }
+            
+            controlButtonsContainer.addSubview(button)
+            button.layer.shadowOpacity = 0
+            
+            if button == qualityButton {
+                Logger.shared.log("Quality button added to container", type: "Debug")
+            }
+            
+            return button
+        }
+        
+        Logger.shared.log("Visible buttons count: \(visibleButtons.count)", type: "Debug")
+        Logger.shared.log("Visible buttons: \(visibleButtons.map { $0 == watchNextButton ? "watchNext" : $0 == speedButton ? "speed" : $0 == qualityButton ? "quality" : "menu" })", type: "Debug")
+        
+        if visibleButtons.isEmpty {
+            Logger.shared.log("No visible buttons, removing container from view hierarchy", type: "Debug")
+            controlButtonsContainer.removeFromSuperview()
+            return
+        }
+        
+        controlButtonsContainer.alpha = 1.0
+        
+        for (index, button) in visibleButtons.enumerated() {
+            NSLayoutConstraint.activate([
+                button.centerYAnchor.constraint(equalTo: controlButtonsContainer.centerYAnchor),
+                button.heightAnchor.constraint(equalToConstant: 40),
+                button.widthAnchor.constraint(equalToConstant: 40)
+            ])
+            
+            if index == 0 {
+                button.trailingAnchor.constraint(equalTo: controlButtonsContainer.trailingAnchor, constant: -10).isActive = true
+            } else {
+                button.trailingAnchor.constraint(equalTo: visibleButtons[index - 1].leadingAnchor, constant: -6).isActive = true
+            }
+            
+            if index == visibleButtons.count - 1 {
+                controlButtonsContainer.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: -10).isActive = true
+            }
+        }
         
         NSLayoutConstraint.activate([
-            qualityButton.topAnchor.constraint(equalTo: speedButton.topAnchor),
-            qualityButton.trailingAnchor.constraint(equalTo: speedButton.leadingAnchor, constant: -6),
-            qualityButton.widthAnchor.constraint(equalToConstant: 40),
-            qualityButton.heightAnchor.constraint(equalToConstant: 40)
+            controlButtonsContainer.trailingAnchor.constraint(equalTo: sliderHostingController!.view.trailingAnchor),
+            controlButtonsContainer.heightAnchor.constraint(equalToConstant: 42)
         ])
+        
+        let skipOutroActuallyVisible = skipOutroButton.superview != nil && skipOutroButton.alpha > 0.1
+        
+        if skipOutroActuallyVisible {
+            controlButtonsContainerBottomConstraint = controlButtonsContainer.bottomAnchor.constraint(
+                equalTo: skipOutroButton.topAnchor, constant: -5)
+        } else {
+            controlButtonsContainerBottomConstraint = controlButtonsContainer.bottomAnchor.constraint(
+                equalTo: sliderHostingController!.view.topAnchor, constant: -5)
+        }
+        
+        controlButtonsContainerBottomConstraint?.isActive = true
+        
+        Logger.shared.log("Control buttons container setup complete", type: "Debug")
     }
     
     func updateSubtitleLabelAppearance() {
@@ -1733,21 +1673,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         }
     }
     
-    func updateMenuButtonConstraints() {
-        currentMenuButtonTrailing.isActive = false
-        
-        let anchor: NSLayoutXAxisAnchor
-        if (!qualityButton.isHidden) {
-            anchor = qualityButton.leadingAnchor
-        } else if (!speedButton.isHidden) {
-            anchor = speedButton.leadingAnchor
-        } else {
-            anchor = controlsContainerView.trailingAnchor
-        }
-        
-        currentMenuButtonTrailing = menuButton.trailingAnchor.constraint(equalTo: anchor, constant: -6)
-        currentMenuButtonTrailing.isActive = true
-    }
+
     
     @objc func toggleControls() {
         if controlsLocked {
@@ -1831,7 +1757,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let finalSkip = skipValue > 0 ? skipValue : 10
         currentTimeVal = min(currentTimeVal + finalSkip, duration)
         player.seek(to: CMTime(seconds: currentTimeVal, preferredTimescale: 600)) { [weak self] finished in
-            guard self != nil else { return }        }
+            guard self != nil else { return }
+        }
         animateButtonRotation(forwardButton)
     }
     
@@ -1844,6 +1771,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             seekForward()
             showSkipFeedback(direction: "forward")
         }
+        
+        skipOutroDismissedInSession = false
     }
     
     @objc func handleSwipeDown(_ gesture: UISwipeGestureRecognizer) {
@@ -1937,14 +1866,47 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     @objc private func skipIntro() {
         if let range = skipIntervals.op {
             player.seek(to: range.end)
-            skipIntroButton.isHidden = true
+            skipIntroDismissedInSession = true
+            hideSkipIntroButton()
+        }
+    }
+    
+    private func hideSkipIntroButton() {
+        UIView.animate(withDuration: 0.2) {
+            self.skipIntroButton.alpha = 0.0
+        } completion: { _ in
+            self.updateSkipButtonsVisibility()
+            self.view.setNeedsLayout()
+            self.view.layoutIfNeeded()
         }
     }
     
     @objc private func skipOutro() {
         if let range = skipIntervals.ed {
             player.seek(to: range.end)
-            skipOutroButton.isHidden = true
+            skipOutroDismissedInSession = true
+            removeSkipOutroButton()
+        }
+    }
+    
+    private func removeSkipOutroButton() {
+        if skipOutroButton.superview != nil {
+            UIView.animate(withDuration: 0.2, animations: {
+                self.skipOutroButton.alpha = 0.0
+            }, completion: { _ in
+                self.view.setNeedsLayout()
+                self.view.layoutIfNeeded()
+                
+                self.updateControlButtonsContainerPosition()
+                
+                let hasVisibleButtons = [self.watchNextButton, self.speedButton, self.qualityButton, self.menuButton].contains { button in
+                    guard let button = button else { return false }
+                    return !button.isHidden
+                }
+                if hasVisibleButtons || self.controlButtonsContainer.superview != nil {
+                    self.setupControlButtonsContainer()
+                }
+            })
         }
     }
     
@@ -2332,9 +2294,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private func checkForHLSStream() {
         guard let url = URL(string: streamURL) else { return }
-        let streamType = module.metadata.streamType.lowercased()
+        Logger.shared.log("Checking for HLS stream: \(url.absoluteString)", type: "Debug")
         
         if url.absoluteString.contains(".m3u8") || url.absoluteString.contains(".m3u") {
+            Logger.shared.log("HLS stream detected", type: "Debug")
             isHLSStream = true
             baseM3U8URL = url
             currentQualityURL = url
@@ -2369,17 +2332,22 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     }
                 }
                 
-                self.qualityButton.isHidden = false
-                self.qualityButton.menu = self.qualitySelectionMenu()
-                self.updateMenuButtonConstraints()
-                UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
-                    self.view.layoutIfNeeded()
+                DispatchQueue.main.async {
+                    Logger.shared.log("Showing quality button on main thread", type: "Debug")
+                    self.qualityButton.isHidden = false
+                    self.qualityButton.menu = self.qualitySelectionMenu()
+                    
+                    self.setupControlButtonsContainer()
+                    
+                    UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
+                        self.view.layoutIfNeeded()
+                    }
                 }
             }
         } else {
+            Logger.shared.log("Not an HLS stream", type: "Debug")
             isHLSStream = false
             qualityButton.isHidden = true
-            updateMenuButtonConstraints()
             Logger.shared.log("Quality Selection: Non-HLS stream detected, quality selection unavailable", type: "General")
         }
     }
@@ -2830,12 +2798,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         controlsContainerView.addSubview(container)
         self.timeBatteryContainer = container
         
-        // Add tap gesture to toggle end time visibility
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(toggleEndTimeVisibility))
         container.addGestureRecognizer(tapGesture)
         container.isUserInteractionEnabled = true
         
-        // Add end time components (initially hidden)
         let endTimeIcon = UIImageView(image: UIImage(systemName: "timer"))
         endTimeIcon.translatesAutoresizingMaskIntoConstraints = false
         endTimeIcon.tintColor = .white
@@ -2957,7 +2923,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             self.endTimeSeparator?.alpha = alpha
             self.endTimeLabel?.alpha = alpha
             
-            // 调整容器位置以保持居中
             if let container = self.timeBatteryContainer {
                 container.transform = CGAffineTransform(translationX: offset, y: 0)
             }
@@ -2981,7 +2946,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             return
         }
         
-        // Calculate end time by adding remaining seconds to current time
         let endTime = Date().addingTimeInterval(remainingSeconds)
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
@@ -3018,21 +2982,22 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     func updateMarqueeConstraintsForBottom() {
         NSLayoutConstraint.deactivate(titleStackAboveSkipButtonConstraints)
         NSLayoutConstraint.deactivate(titleStackAboveSliderConstraints)
-        let shouldUseSkipButton: Bool = {
-            if !isControlsVisible { return false }
-            if let skipIntroButton = skipIntroButton, !skipIntroButton.isHidden, skipIntroButton.alpha > 0.1 { return true }
-            if let skip85Button = skip85Button, !skip85Button.isHidden, skip85Button.alpha > 0.1 { return true }
-            return false
-        }()
-        let skipButton: UIButton? = {
-            if let skipIntroButton = skipIntroButton, !skipIntroButton.isHidden, skipIntroButton.alpha > 0.1 { return skipIntroButton }
-            if let skip85Button = skip85Button, !skip85Button.isHidden, skip85Button.alpha > 0.1 { return skip85Button }
-            return nil
-        }()
-        if shouldUseSkipButton, let skipButton = skipButton {
+        
+        let skipIntroVisible = !(skipIntroButton?.isHidden ?? true) && (skipIntroButton?.alpha ?? 0) > 0.1
+        let skip85Visible = !(skip85Button?.isHidden ?? true) && (skip85Button?.alpha ?? 0) > 0.1
+        let skipOutroVisible = skipOutroButton.superview != nil && !skipOutroButton.isHidden && skipOutroButton.alpha > 0.1
+        
+        if skipIntroVisible {
             titleStackAboveSkipButtonConstraints = [
-                titleStackView.leadingAnchor.constraint(equalTo: skipButton.leadingAnchor),
-                titleStackView.bottomAnchor.constraint(equalTo: skipButton.topAnchor, constant: -4),
+                titleStackView.leadingAnchor.constraint(equalTo: skipIntroButton.leadingAnchor),
+                titleStackView.bottomAnchor.constraint(equalTo: skipIntroButton.topAnchor, constant: -4),
+                titleStackView.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: 0.7)
+            ]
+            NSLayoutConstraint.activate(titleStackAboveSkipButtonConstraints)
+        } else if skip85Visible {
+            titleStackAboveSkipButtonConstraints = [
+                titleStackView.leadingAnchor.constraint(equalTo: skip85Button.leadingAnchor),
+                titleStackView.bottomAnchor.constraint(equalTo: skip85Button.topAnchor, constant: -4),
                 titleStackView.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: 0.7)
             ]
             NSLayoutConstraint.activate(titleStackAboveSkipButtonConstraints)
@@ -3044,7 +3009,180 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             ]
             NSLayoutConstraint.activate(titleStackAboveSliderConstraints)
         }
+        
         view.layoutIfNeeded()
+    }
+    
+    func setupWatchNextButton() {
+        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
+        let image = UIImage(systemName: "forward.end", withConfiguration: config)
+        
+        watchNextButton = UIButton(type: .system)
+        watchNextButton.setImage(image, for: .normal)
+        watchNextButton.backgroundColor = .clear
+        watchNextButton.tintColor = .white
+        watchNextButton.setTitleColor(.white, for: .normal)
+        watchNextButton.addTarget(self, action: #selector(watchNextTapped), for: .touchUpInside)
+        watchNextButton.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
+    private func setupDimButton() {
+        let cfg = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
+        dimButton = UIButton(type: .system)
+        dimButton.setImage(UIImage(systemName: "moon.fill", withConfiguration: cfg), for: .normal)
+        dimButton.tintColor = .white
+        dimButton.addTarget(self, action: #selector(dimTapped), for: .touchUpInside)
+        controlsContainerView.addSubview(dimButton)
+        dimButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        dimButton.layer.shadowColor = UIColor.black.cgColor
+        dimButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        dimButton.layer.shadowOpacity = 0.6
+        dimButton.layer.shadowRadius = 4
+        dimButton.layer.masksToBounds = false
+        
+        NSLayoutConstraint.activate([
+            dimButton.topAnchor.constraint(equalTo: volumeSliderHostingView!.bottomAnchor, constant: 15),
+            dimButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor),
+            dimButton.widthAnchor.constraint(equalToConstant: 24),
+            dimButton.heightAnchor.constraint(equalToConstant: 24)
+        ])
+        
+        dimButtonToSlider = dimButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor)
+        dimButtonToRight = dimButton.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16)
+        dimButtonToSlider.isActive = true
+    }
+    
+    func setupSpeedButton() {
+        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
+        let image = UIImage(systemName: "speedometer", withConfiguration: config)
+        
+        speedButton = UIButton(type: .system)
+        speedButton.setImage(image, for: .normal)
+        speedButton.tintColor = .white
+        speedButton.showsMenuAsPrimaryAction = true
+        speedButton.menu = speedChangerMenu()
+        speedButton.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
+    func setupMenuButton() {
+        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
+        let image = UIImage(systemName: "textformat.size", withConfiguration: config)
+        
+        menuButton = UIButton(type: .system)
+        menuButton.setImage(image, for: .normal)
+        menuButton.tintColor = .white
+        menuButton.showsMenuAsPrimaryAction = true
+        
+        if let subtitlesURL = subtitlesURL, !subtitlesURL.isEmpty {
+            menuButton.menu = buildOptionsMenu()
+        } else {
+            menuButton.isHidden = true
+        }
+        
+        menuButton.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
+    private func setupLockButton() {
+        let cfg = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
+        lockButton = UIButton(type: .system)
+        lockButton.setImage(
+            UIImage(systemName: "lock.open.fill", withConfiguration: cfg),
+            for: .normal
+        )
+        lockButton.tintColor = .white
+        lockButton.layer.shadowColor   = UIColor.black.cgColor
+        lockButton.layer.shadowOffset  = CGSize(width: 0, height: 2)
+        lockButton.layer.shadowOpacity = 0.6
+        lockButton.layer.shadowRadius  = 4
+        lockButton.layer.masksToBounds = false
+        
+        lockButton.addTarget(self, action: #selector(lockTapped), for: .touchUpInside)
+        
+        view.addSubview(lockButton)
+        lockButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            lockButton.topAnchor.constraint(equalTo: volumeSliderHostingView!.bottomAnchor, constant: 60),
+            lockButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor),
+            lockButton.widthAnchor.constraint(equalToConstant: 24),
+            lockButton.heightAnchor.constraint(equalToConstant: 24),
+        ])
+    }
+    
+    private func setupPipIfSupported() {
+        airplayButton = AVRoutePickerView(frame: .zero)
+        airplayButton.translatesAutoresizingMaskIntoConstraints = false
+        airplayButton.activeTintColor = .white
+        airplayButton.tintColor = .white
+        airplayButton.backgroundColor = .clear
+        airplayButton.prioritizesVideoDevices = true
+        airplayButton.setContentHuggingPriority(.required, for: .horizontal)
+        airplayButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+        controlsContainerView.addSubview(airplayButton)
+        
+        airplayButton.layer.shadowColor = UIColor.black.cgColor
+        airplayButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        airplayButton.layer.shadowOpacity = 0.6
+        airplayButton.layer.shadowRadius = 4
+        airplayButton.layer.masksToBounds = false
+        
+        guard AVPictureInPictureController.isPictureInPictureSupported() else {
+            return
+        }
+
+        playerViewController.allowsPictureInPicturePlayback = true
+        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .medium)
+        let Image = UIImage(systemName: "pip", withConfiguration: config)
+        pipButton = UIButton(type: .system)
+        pipButton.setImage(Image, for: .normal)
+        pipButton.tintColor = .white
+        pipButton.addTarget(self, action: #selector(pipButtonTapped(_:)), for: .touchUpInside)
+        
+        pipButton.layer.shadowColor = UIColor.black.cgColor
+        pipButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        pipButton.layer.shadowOpacity = 0.6
+        pipButton.layer.shadowRadius = 4
+        pipButton.layer.masksToBounds = false
+        
+        controlsContainerView.addSubview(pipButton)
+        pipButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            pipButton.centerYAnchor.constraint(equalTo: dimButton.centerYAnchor),
+            pipButton.trailingAnchor.constraint(equalTo: dimButton.leadingAnchor, constant: -8),
+            pipButton.widthAnchor.constraint(equalToConstant: 44),
+            pipButton.heightAnchor.constraint(equalToConstant: 44),
+            airplayButton.centerYAnchor.constraint(equalTo: pipButton.centerYAnchor),
+            airplayButton.trailingAnchor.constraint(equalTo: pipButton.leadingAnchor, constant: -4),
+            airplayButton.widthAnchor.constraint(equalToConstant: 44),
+            airplayButton.heightAnchor.constraint(equalToConstant: 44)
+        ])
+        
+        pipButton.isHidden = !isPipButtonVisible
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(startPipIfNeeded), name: UIApplication.willResignActiveNotification, object: nil)
+    }
+    
+    func updateMarqueeConstraints() {
+        UIView.performWithoutAnimation {
+            NSLayoutConstraint.deactivate(currentMarqueeConstraints)
+            
+            let leftSpacing: CGFloat = 2
+            let rightSpacing: CGFloat = 6
+            let trailingAnchor: NSLayoutXAxisAnchor = (volumeSliderHostingView?.isHidden == false)
+            ? volumeSliderHostingView!.leadingAnchor
+            : view.safeAreaLayoutGuide.trailingAnchor
+            
+            currentMarqueeConstraints = [
+                episodeNumberLabel.leadingAnchor.constraint(
+                    equalTo: dismissButton.trailingAnchor, constant: leftSpacing),
+                episodeNumberLabel.trailingAnchor.constraint(
+                    equalTo: trailingAnchor, constant: -rightSpacing - 10),
+                episodeNumberLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
+            ]
+            NSLayoutConstraint.activate(currentMarqueeConstraints)
+            view.layoutIfNeeded()
+        }
     }
 }
 
@@ -3129,57 +3267,140 @@ class GradientBlurButton: UIButton {
     private var gradientLayer: CAGradientLayer?
     private var borderMask: CAShapeLayer?
     private var blurView: UIVisualEffectView?
+    private var storedTitle: String?
+    private var storedImage: UIImage?
+    
+    override var isHidden: Bool {
+        didSet {
+            updateVisualState()
+        }
+    }
+    
+    override var alpha: CGFloat {
+        didSet {
+            updateVisualState()
+        }
+    }
+    
+    private func updateVisualState() {
+        let shouldBeVisible = !isHidden && alpha > 0.1
+        
+        storedTitle = self.title(for: .normal)
+        storedImage = self.image(for: .normal)
+        
+        cleanupVisualEffects()
+        
+        if shouldBeVisible {
+            setupBlurAndGradient()
+        } else {
+            backgroundColor = .clear
+        }
+        
+        if let title = storedTitle, !title.isEmpty {
+            setTitle(title, for: .normal)
+        }
+        if let image = storedImage {
+            setImage(image, for: .normal)
+        }
+    }
+    
+    private func cleanupVisualEffects() {
+        blurView?.removeFromSuperview()
+        blurView = nil
+        
+        gradientLayer?.removeFromSuperlayer()
+        gradientLayer = nil
+        borderMask?.removeFromSuperlayer()
+        borderMask = nil
+        
+        backgroundColor = .clear
+        layer.borderWidth = 0
+        layer.shadowOpacity = 0
+        layer.cornerRadius = 0
+        clipsToBounds = false
+    }
+    
+    override func willMove(toSuperview newSuperview: UIView?) {
+        super.willMove(toSuperview: newSuperview)
+        if newSuperview == nil {
+            cleanupVisualEffects()
+        } else if newSuperview != nil && !isHidden && alpha > 0.1 {
+            setupBlurAndGradient()
+        } else if newSuperview != nil {
+            cleanupVisualEffects()
+        }
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupBlurAndGradient()
+        if !isHidden && alpha > 0.1 {
+            setupBlurAndGradient()
+        }
     }
+    
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        setupBlurAndGradient()
-    }
-    private func setupBlurAndGradient() {
-        if #available(iOS 15.0, *) {
-            let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
-            blur.isUserInteractionEnabled = false
-            blur.layer.cornerRadius = 21
-            blur.clipsToBounds = true
-            blur.translatesAutoresizingMaskIntoConstraints = false
-            insertSubview(blur, at: 0)
-            NSLayoutConstraint.activate([
-                blur.leadingAnchor.constraint(equalTo: leadingAnchor),
-                blur.trailingAnchor.constraint(equalTo: trailingAnchor),
-                blur.topAnchor.constraint(equalTo: topAnchor),
-                blur.bottomAnchor.constraint(equalTo: bottomAnchor)
-            ])
-            self.blurView = blur
-            let gradient = CAGradientLayer()
-            gradient.colors = [
-                UIColor.white.withAlphaComponent(0.25).cgColor,
-                UIColor.white.withAlphaComponent(0).cgColor
-            ]
-            gradient.startPoint = CGPoint(x: 0.5, y: 0)
-            gradient.endPoint = CGPoint(x: 0.5, y: 1)
-            gradient.cornerRadius = 21
-            let border = CAShapeLayer()
-            border.fillColor = nil
-            border.strokeColor = UIColor.white.cgColor
-            border.lineWidth = 0.5
-            gradient.mask = border
-            layer.addSublayer(gradient)
-            self.gradientLayer = gradient
-            self.borderMask = border
-        } else {
-            backgroundColor = UIColor.white.withAlphaComponent(0.15)
+        if !isHidden && alpha > 0.1 {
+            setupBlurAndGradient()
         }
     }
+    
+    private func setupBlurAndGradient() {
+        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+        blur.isUserInteractionEnabled = false
+        blur.layer.cornerRadius = 21
+        blur.clipsToBounds = true
+        blur.translatesAutoresizingMaskIntoConstraints = false
+        insertSubview(blur, at: 0)
+        NSLayoutConstraint.activate([
+            blur.leadingAnchor.constraint(equalTo: leadingAnchor),
+            blur.trailingAnchor.constraint(equalTo: trailingAnchor),
+            blur.topAnchor.constraint(equalTo: topAnchor),
+            blur.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
+        self.blurView = blur
+        
+        let gradient = CAGradientLayer()
+        gradient.colors = [
+            UIColor.white.withAlphaComponent(0.25).cgColor,
+            UIColor.white.withAlphaComponent(0).cgColor
+        ]
+        gradient.startPoint = CGPoint(x: 0.5, y: 0)
+        gradient.endPoint = CGPoint(x: 0.5, y: 1)
+        gradient.cornerRadius = 21
+        
+        let border = CAShapeLayer()
+        border.fillColor = nil
+        border.strokeColor = UIColor.white.cgColor
+        border.lineWidth = 0.5
+        gradient.mask = border
+
+        layer.addSublayer(gradient)
+        self.gradientLayer = gradient
+        self.borderMask = border
+        
+        clipsToBounds = true
+        layer.cornerRadius = 21
+    }
+    
     override func layoutSubviews() {
         super.layoutSubviews()
-        gradientLayer?.frame = bounds.insetBy(dx: 0.25, dy: 0.25)
+        
+        gradientLayer?.frame = bounds
         if let border = borderMask {
-            border.path = UIBezierPath(roundedRect: bounds.insetBy(dx: 0.25, dy: 0.25), cornerRadius: 21).cgPath
+            border.path = UIBezierPath(roundedRect: bounds, cornerRadius: 21).cgPath
         }
-        blurView?.layer.cornerRadius = 21
-        if let imageView = self.imageView { bringSubviewToFront(imageView) }
-        if let titleLabel = self.titleLabel { bringSubviewToFront(titleLabel) }
+        
+        if let imageView = self.imageView {
+            bringSubviewToFront(imageView)
+        }
+        if let titleLabel = self.titleLabel {
+            bringSubviewToFront(titleLabel)
+        }
+    }
+    
+    override func removeFromSuperview() {
+        cleanupVisualEffects()
+        super.removeFromSuperview()
     }
 }

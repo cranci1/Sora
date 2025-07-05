@@ -89,11 +89,11 @@ struct MediaInfoView: View {
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     
     @AppStorage("metadataProvidersOrder") private var metadataProvidersOrderData: Data = {
-        try! JSONEncoder().encode(["AniList","TMDB"])
+        try! JSONEncoder().encode(["TMDB","AniList"])
     }()
     
     private var metadataProvidersOrder: [String] {
-        get { (try? JSONDecoder().decode([String].self, from: metadataProvidersOrderData)) ?? ["AniList","TMDB"] }
+        get { (try? JSONDecoder().decode([String].self, from: metadataProvidersOrderData)) ?? ["TMDB","AniList"] }
         set { metadataProvidersOrderData = try! JSONEncoder().encode(newValue) }
     }
     
@@ -1590,7 +1590,7 @@ struct MediaInfoView: View {
         func checkCompletion() {
             guard aniListCompleted && tmdbCompleted else { return }
             
-            let primaryProvider = order.first ?? "AniList"
+            let primaryProvider = order.first ?? "TMDB"
             
             if primaryProvider == "AniList" && aniListSuccess {
                 activeProvider = "AniList"

@@ -123,5 +123,3 @@ struct TabBarVisibilityKey: PreferenceKey {
         value = nextValue()
     }
 }
-
-

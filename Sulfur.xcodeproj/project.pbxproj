@@ -165,6 +165,7 @@
 		04F08EDB2DE10BEC006B29D9 /* ProgressiveBlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressiveBlurView.swift; sourceTree = "<group>"; };
 		04F08EDE2DE10C1A006B29D9 /* TabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBar.swift; sourceTree = "<group>"; };
 		04F08EE12DE10C27006B29D9 /* TabItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabItem.swift; sourceTree = "<group>"; };
+		04F8DF9C2E1B2822006248D8 /* mn */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = mn; path = Localizable.strings; sourceTree = "<group>"; };
 		130C6BF82D53A4C200DC1432 /* Sora.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sora.entitlements; sourceTree = "<group>"; };
 		130C6BF92D53AB1F00DC1432 /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
 		13103E8A2D58E028000F0673 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
@@ -444,6 +445,14 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		04F8DF9A2E1B2814006248D8 /* mn.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				04F8DF9B2E1B2822006248D8 /* Localizable.strings */,
+			);
+			path = mn.lproj;
+			sourceTree = "<group>";
+		};
 		13103E802D589D6C000F0673 /* Tracking & Metadata */ = {
 			isa = PBXGroup;
 			children = (
@@ -670,6 +679,7 @@
 		13530BE02E00028E0048B7DE /* Localization */ = {
 			isa = PBXGroup;
 			children = (
+				04F8DF9A2E1B2814006248D8 /* mn.lproj */,
 				04E00C9A2E09E96B0056124A /* it.lproj */,
 				0452339C2E021491002EA23C /* bos.lproj */,
 				041261032E00D14F00D05B47 /* sv.lproj */,
@@ -912,6 +922,7 @@
 				bs,
 				cs,
 				it,
+				mn,
 			);
 			mainGroup = 133D7C612D2BE2500075467E;
 			packageReferences = (
@@ -1168,6 +1179,14 @@
 			isa = PBXVariantGroup;
 			children = (
 				04E00C9E2E09F5920056124A /* it */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		04F8DF9B2E1B2822006248D8 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				04F8DF9C2E1B2822006248D8 /* mn */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";

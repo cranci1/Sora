@@ -1859,13 +1859,23 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             
             if self.isControlsVisible {
                 self.skip85Button.isHidden = false
+                self.skipIntroButton.alpha = 0.0
+                self.skipOutroButton.alpha = 0.0
             }
             
             self.subtitleBottomToSafeAreaConstraint?.isActive = !self.isControlsVisible
             self.subtitleBottomToSliderConstraint?.isActive = self.isControlsVisible
             self.view.layoutIfNeeded()
         }
-        updateSkipButtonsVisibility()
+        
+        if isControlsVisible {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.setupControlButtonsContainer()
+                self.updateSkipButtonsVisibility()
+            }
+        } else {
+            updateSkipButtonsVisibility()
+        }
     }
     
     @objc func seekBackwardLongPress(_ gesture: UILongPressGestureRecognizer) {
@@ -1937,17 +1947,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             player.pause()
             isPlaying = false
             playPauseButton.image = UIImage(systemName: "play.fill")
-            
-            DispatchQueue.main.async {
-                if !self.isControlsVisible {
-                    self.isControlsVisible = true
-                    UIView.animate(withDuration: 0.1, animations: {
-                        self.controlsContainerView.alpha = 1.0
-                        self.skip85Button.alpha = 0.8
-                    })
-                    self.updateSkipButtonsVisibility()
-                }
-            }
         } else {
             player.play()
             player.rate = currentPlaybackSpeed

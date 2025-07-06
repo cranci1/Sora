@@ -33,32 +33,8 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
                 VStack(spacing: 8) {
                     ZStack(alignment: .center) {
                         ZStack(alignment: .center) {
-                            // Intro Segments
-                            ForEach(introSegments, id: \.self) { segment in
-                                HStack(spacing: 0) {
-                                    Spacer()
-                                        .frame(width: bounds.size.width * CGFloat(segment.lowerBound))
-                                    Rectangle()
-                                        .fill(introColor.opacity(0.5))
-                                        .frame(width: bounds.size.width * CGFloat(segment.upperBound - segment.lowerBound))
-                                    Spacer()
-                                }
-                            }
-                            
-                            // Outro Segments
-                            ForEach(outroSegments, id: \.self) { segment in
-                                HStack(spacing: 0) {
-                                    Spacer()
-                                        .frame(width: bounds.size.width * CGFloat(segment.lowerBound))
-                                    Rectangle()
-                                        .fill(outroColor.opacity(0.5))
-                                        .frame(width: bounds.size.width * CGFloat(segment.upperBound - segment.lowerBound))
-                                    Spacer()
-                                }
-                            }
-                            
                             Capsule()
-                                .fill(emptyColor)
+                                .fill(.ultraThinMaterial)
                         }
                         .clipShape(Capsule())
 
@@ -77,6 +53,28 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
                                     Spacer(minLength: 0)
                                 }
                             })
+                        
+                        ForEach(introSegments, id: \.self) { segment in
+                            HStack(spacing: 0) {
+                                Spacer()
+                                    .frame(width: bounds.size.width * CGFloat(segment.lowerBound))
+                                Rectangle()
+                                    .fill(introColor.opacity(0.5))
+                                    .frame(width: bounds.size.width * CGFloat(segment.upperBound - segment.lowerBound))
+                                Spacer()
+                            }
+                        }
+                        
+                        ForEach(outroSegments, id: \.self) { segment in
+                            HStack(spacing: 0) {
+                                Spacer()
+                                    .frame(width: bounds.size.width * CGFloat(segment.lowerBound))
+                                Rectangle()
+                                    .fill(outroColor.opacity(0.5))
+                                    .frame(width: bounds.size.width * CGFloat(segment.upperBound - segment.lowerBound))
+                                Spacer()
+                            }
+                        }
                     }
                     
                     HStack {

@@ -124,6 +124,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var lockButton: UIButton!
     private var controlButtonsContainer: GradientBlurButton!
     
+    private var unlockButton: UIButton!
+    
     var isHLSStream: Bool = false
     var qualities: [(String, String)] = []
     var currentQualityURL: URL?
@@ -176,7 +178,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var dimButtonTimer: Timer?
     
     private var controlsToHide: [UIView] {
-        return [
+        var views = [
             dismissButton,
             playPauseButton,
             backwardButton,
@@ -190,8 +192,25 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             timeBatteryContainer,
             endTimeIcon,
             endTimeLabel,
-            endTimeSeparator
+            endTimeSeparator,
+            lockButton,
+            dimButton,
+            titleStackView,
+            titleLabel,
+            episodeNumberLabel,
+            controlsContainerView
         ].compactMap { $0 }.filter { $0.superview != nil }
+        
+        if let airplayParent = airplayButton?.superview {
+            views.append(airplayParent)
+        }
+        
+        views.append(contentsOf: view.subviews.filter {
+            $0 is UIVisualEffectView || 
+            ($0.layer.cornerRadius > 0 && $0 != dismissButton && $0 != lockButton && $0 != dimButton && $0 != pipButton && $0 != holdSpeedIndicator && $0 != volumeSliderHostingView)
+        })
+        
+        return views
     }
     
     private var originalHiddenStates: [UIView: Bool] = [:]
@@ -227,6 +246,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var titleStackView: UIStackView!
     
     private var controlButtonsContainerBottomConstraint: NSLayoutConstraint?
+    
+    private var isMenuOpen = false
+    private var menuProtectionTimer: Timer?
     
     init(module: ScrapingModule,
          urlString: String,
@@ -329,11 +351,25 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         addTimeObserver()
         startUpdateTimer()
         setupLockButton()
+        setupUnlockButton()
         setupAudioSession()
         updateSkipButtonsVisibility()
         setupHoldSpeedIndicator()
         setupPipIfSupported()
         setupTimeBatteryIndicator()
+        setupTopRowLayout()
+        updateSkipButtonsVisibility()
+        
+        isControlsVisible = true
+        for control in controlsToHide {
+            control.alpha = 1.0
+        }
+        
+        if let volumeSlider = volumeSliderHostingView {
+            volumeSlider.alpha = 1.0
+            volumeSlider.isHidden = false
+            view.bringSubviewToFront(volumeSlider)
+        }
         
         setupControlButtonsContainer()
         
@@ -429,6 +465,57 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             name: .AVPlayerItemDidPlayToEndTime,
             object: player.currentItem
         )
+        
+
+    }
+    
+    private func setupTopRowLayout() {
+        if let old = view.subviews.first(where: { $0 is GradientBlurButton && $0 != controlButtonsContainer && $0 != skip85Button }) {
+            old.removeFromSuperview()
+        }
+
+        let capsuleContainer = GradientBlurButton(type: .custom)
+        capsuleContainer.translatesAutoresizingMaskIntoConstraints = false
+        capsuleContainer.backgroundColor = .clear
+        capsuleContainer.layer.cornerRadius = 21
+        capsuleContainer.clipsToBounds = true
+        view.addSubview(capsuleContainer)
+        capsuleContainer.alpha = isControlsVisible ? 1.0 : 0.0
+
+        let buttons: [UIView] = [airplayButton, pipButton, lockButton, dimButton]
+        for btn in buttons {
+            btn.removeFromSuperview()
+            capsuleContainer.addSubview(btn)
+        }
+
+        NSLayoutConstraint.activate([
+            capsuleContainer.leadingAnchor.constraint(equalTo: dismissButton.superview!.trailingAnchor, constant: 12),
+            capsuleContainer.centerYAnchor.constraint(equalTo: dismissButton.superview!.centerYAnchor),
+            capsuleContainer.heightAnchor.constraint(equalToConstant: 42)
+        ])
+
+        for (index, btn) in buttons.enumerated() {
+            NSLayoutConstraint.activate([
+                btn.centerYAnchor.constraint(equalTo: capsuleContainer.centerYAnchor),
+                btn.widthAnchor.constraint(equalToConstant: 40),
+                btn.heightAnchor.constraint(equalToConstant: 40)
+            ])
+            if index == 0 {
+                btn.leadingAnchor.constraint(equalTo: capsuleContainer.leadingAnchor, constant: 20).isActive = true
+            } else {
+                btn.leadingAnchor.constraint(equalTo: buttons[index - 1].trailingAnchor, constant: 18).isActive = true
+            }
+            if index == buttons.count - 1 {
+                btn.trailingAnchor.constraint(equalTo: capsuleContainer.trailingAnchor, constant: -10).isActive = true
+            }
+        }
+
+
+        view.bringSubviewToFront(skip85Button)
+        
+        if let volumeSlider = volumeSliderHostingView {
+            view.bringSubviewToFront(volumeSlider)
+        }
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -492,6 +579,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         if let timeUpdateTimer = timeUpdateTimer {
             timeUpdateTimer.invalidate()
         }
+        
+        menuProtectionTimer?.invalidate()
+        menuProtectionTimer = nil
         
         NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
         NotificationCenter.default.removeObserver(self)
@@ -661,7 +751,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             blackCoverView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
         
-        let backwardCircle = createCircularBlurBackground(size: 70)
+        let backwardCircle = createCircularBlurBackground(size: 60)
         controlsContainerView.addSubview(backwardCircle)
         backwardCircle.translatesAutoresizingMaskIntoConstraints = false
         
@@ -669,7 +759,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         controlsContainerView.addSubview(playPauseCircle)
         playPauseCircle.translatesAutoresizingMaskIntoConstraints = false
         
-        let forwardCircle = createCircularBlurBackground(size: 70)
+        let forwardCircle = createCircularBlurBackground(size: 60)
         controlsContainerView.addSubview(forwardCircle)
         forwardCircle.translatesAutoresizingMaskIntoConstraints = false
         
@@ -732,7 +822,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             ),
             inRange: 0...(duration > 0 ? duration : 1.0),
             activeFillColor: .white,
-            fillColor: .white.opacity(0.6),
+            fillColor: .white,
             textColor: .white.opacity(0.7),
             emptyColor: .white.opacity(0.3),
             height: 33,
@@ -792,13 +882,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             
             backwardCircle.centerYAnchor.constraint(equalTo: playPauseCircle.centerYAnchor),
             backwardCircle.trailingAnchor.constraint(equalTo: playPauseCircle.leadingAnchor, constant: -50),
-            backwardCircle.widthAnchor.constraint(equalToConstant: 70),
-            backwardCircle.heightAnchor.constraint(equalToConstant: 70),
+            backwardCircle.widthAnchor.constraint(equalToConstant: 60),
+            backwardCircle.heightAnchor.constraint(equalToConstant: 60),
             
             forwardCircle.centerYAnchor.constraint(equalTo: playPauseCircle.centerYAnchor),
             forwardCircle.leadingAnchor.constraint(equalTo: playPauseCircle.trailingAnchor, constant: 50),
-            forwardCircle.widthAnchor.constraint(equalToConstant: 70),
-            forwardCircle.heightAnchor.constraint(equalToConstant: 70)
+            forwardCircle.widthAnchor.constraint(equalToConstant: 60),
+            forwardCircle.heightAnchor.constraint(equalToConstant: 60)
         ])
         
         NSLayoutConstraint.activate([
@@ -809,13 +899,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             
             backwardButton.centerXAnchor.constraint(equalTo: backwardCircle.centerXAnchor),
             backwardButton.centerYAnchor.constraint(equalTo: backwardCircle.centerYAnchor),
-            backwardButton.widthAnchor.constraint(equalToConstant: 40),
-            backwardButton.heightAnchor.constraint(equalToConstant: 40),
+            backwardButton.widthAnchor.constraint(equalToConstant: 35),
+            backwardButton.heightAnchor.constraint(equalToConstant: 35),
             
             forwardButton.centerXAnchor.constraint(equalTo: forwardCircle.centerXAnchor),
             forwardButton.centerYAnchor.constraint(equalTo: forwardCircle.centerYAnchor),
-            forwardButton.widthAnchor.constraint(equalToConstant: 40),
-            forwardButton.heightAnchor.constraint(equalToConstant: 40)
+            forwardButton.widthAnchor.constraint(equalToConstant: 35),
+            forwardButton.heightAnchor.constraint(equalToConstant: 35)
         ])
     }
     
@@ -1015,22 +1105,31 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
         let image = UIImage(systemName: "xmark", withConfiguration: config)
         
+        let dismissCircle = createCircularBlurBackground(size: 42)
+        view.addSubview(dismissCircle)
+        dismissCircle.translatesAutoresizingMaskIntoConstraints = false
+        
         dismissButton = UIButton(type: .system)
         dismissButton.setImage(image, for: .normal)
         dismissButton.tintColor = .white
         dismissButton.addTarget(self, action: #selector(dismissTapped), for: .touchUpInside)
-        controlsContainerView.addSubview(dismissButton)
+        
+        if let blurView = dismissCircle as? UIVisualEffectView {
+            blurView.contentView.addSubview(dismissButton)
+        } else {
+            dismissCircle.addSubview(dismissButton)
+        }
+        
         dismissButton.translatesAutoresizingMaskIntoConstraints = false
         
-        dismissButton.layer.shadowColor = UIColor.black.cgColor
-        dismissButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        dismissButton.layer.shadowOpacity = 0.6
-        dismissButton.layer.shadowRadius = 4
-        dismissButton.layer.masksToBounds = false
-        
         NSLayoutConstraint.activate([
-            dismissButton.leadingAnchor.constraint(equalTo: controlsContainerView.leadingAnchor, constant: 16),
-            dismissButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            dismissCircle.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            dismissCircle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            dismissCircle.widthAnchor.constraint(equalToConstant: 42),
+            dismissCircle.heightAnchor.constraint(equalToConstant: 42),
+            
+            dismissButton.centerXAnchor.constraint(equalTo: dismissCircle.centerXAnchor),
+            dismissButton.centerYAnchor.constraint(equalTo: dismissCircle.centerYAnchor),
             dismissButton.widthAnchor.constraint(equalToConstant: 40),
             dismissButton.heightAnchor.constraint(equalToConstant: 40)
         ])
@@ -1082,18 +1181,41 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         hostingController.view.backgroundColor = UIColor.clear
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         
-        controlsContainerView.addSubview(hostingController.view)
+        let volumeCapsule = GradientBlurButton(type: .custom)
+        volumeCapsule.translatesAutoresizingMaskIntoConstraints = false
+        volumeCapsule.backgroundColor = .white
+        volumeCapsule.layer.cornerRadius = 21
+        volumeCapsule.clipsToBounds = true
+        controlsContainerView.addSubview(volumeCapsule)
+        
+        if let blurView = volumeCapsule as? UIVisualEffectView {
+            blurView.contentView.addSubview(hostingController.view)
+        } else {
+            volumeCapsule.addSubview(hostingController.view)
+        }
         addChild(hostingController)
         hostingController.didMove(toParent: self)
         
         self.volumeSliderHostingView = hostingController.view
         
         NSLayoutConstraint.activate([
-            hostingController.view.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16),
-            hostingController.view.widthAnchor.constraint(equalToConstant: 160),
+            volumeCapsule.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
+            volumeCapsule.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16),
+            volumeCapsule.heightAnchor.constraint(equalToConstant: 42),
+            volumeCapsule.widthAnchor.constraint(equalToConstant: 200),
+            
+            hostingController.view.centerYAnchor.constraint(equalTo: volumeCapsule.centerYAnchor),
+            hostingController.view.leadingAnchor.constraint(equalTo: volumeCapsule.leadingAnchor, constant: 20),
+            hostingController.view.trailingAnchor.constraint(equalTo: volumeCapsule.trailingAnchor, constant: -20),
             hostingController.view.heightAnchor.constraint(equalToConstant: 30)
         ])
+        
+        self.volumeSliderHostingView = volumeCapsule
+        
+        volumeCapsule.alpha = 1.0
+        volumeCapsule.isHidden = false
+        hostingController.view.alpha = 1.0
+        hostingController.view.isHidden = false
     }
     
     private func setupHoldSpeedIndicator() {
@@ -1109,33 +1231,46 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         holdSpeedIndicator.setTitle(" \(speed)", for: .normal)
         holdSpeedIndicator.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         holdSpeedIndicator.setImage(image, for: .normal)
-        
-        holdSpeedIndicator.backgroundColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 0.8)
+        holdSpeedIndicator.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         holdSpeedIndicator.tintColor = .white
         holdSpeedIndicator.setTitleColor(.white, for: .normal)
-        holdSpeedIndicator.layer.cornerRadius = 21
-        holdSpeedIndicator.alpha = 0
+        holdSpeedIndicator.alpha = 0.0
         
-        holdSpeedIndicator.layer.shadowColor = UIColor.black.cgColor
-        holdSpeedIndicator.layer.shadowOffset = CGSize(width: 0, height: 2)
-        holdSpeedIndicator.layer.shadowOpacity = 0.6
-        holdSpeedIndicator.layer.shadowRadius = 4
-        holdSpeedIndicator.layer.masksToBounds = false
+        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterial)
+        let blurView = UIVisualEffectView(effect: blurEffect)
+        blurView.translatesAutoresizingMaskIntoConstraints = false
+        blurView.layer.cornerRadius = 21
+        blurView.clipsToBounds = true
         
         view.addSubview(holdSpeedIndicator)
         holdSpeedIndicator.translatesAutoresizingMaskIntoConstraints = false
+        
+        holdSpeedIndicator.insertSubview(blurView, at: 0)
         
         NSLayoutConstraint.activate([
             holdSpeedIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             holdSpeedIndicator.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             holdSpeedIndicator.heightAnchor.constraint(equalToConstant: 40),
-            holdSpeedIndicator.widthAnchor.constraint(greaterThanOrEqualToConstant: 85)
+            holdSpeedIndicator.widthAnchor.constraint(greaterThanOrEqualToConstant: 85),
+            
+            blurView.leadingAnchor.constraint(equalTo: holdSpeedIndicator.leadingAnchor),
+            blurView.trailingAnchor.constraint(equalTo: holdSpeedIndicator.trailingAnchor),
+            blurView.topAnchor.constraint(equalTo: holdSpeedIndicator.topAnchor),
+            blurView.bottomAnchor.constraint(equalTo: holdSpeedIndicator.bottomAnchor)
         ])
         
         holdSpeedIndicator.isUserInteractionEnabled = false
+        holdSpeedIndicator.layer.cornerRadius = 21
+        holdSpeedIndicator.clipsToBounds = true
+        
+        holdSpeedIndicator.bringSubviewToFront(holdSpeedIndicator.imageView!)
+        holdSpeedIndicator.bringSubviewToFront(holdSpeedIndicator.titleLabel!)
+        
+        holdSpeedIndicator.imageView?.contentMode = .scaleAspectFit
+        holdSpeedIndicator.titleLabel?.textAlignment = .center
     }
     
-    private func updateSkipButtonsVisibility() {
+    func updateSkipButtonsVisibility() {
         if !isControlsVisible { return }
         let t = currentTimeVal
         
@@ -1178,9 +1313,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
         }
         
+        view.bringSubviewToFront(skip85Button)
+        
         if skipOutroAvailable {
             if skipOutroButton.superview == nil {
-                view.addSubview(skipOutroButton)
+                controlsContainerView.addSubview(skipOutroButton)
                 
                 NSLayoutConstraint.activate([
                     skipOutroButton.trailingAnchor.constraint(equalTo: sliderHostingController!.view.trailingAnchor),
@@ -1200,12 +1337,13 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             removeSkipOutroButton()
         }
         
-        updateControlButtonsContainerPosition()
-        
-        updateMarqueeConstraintsForBottom()
-        
-        UIView.animate(withDuration: 0.25) {
-            self.view.layoutIfNeeded()
+        if !isMenuOpen {
+            updateControlButtonsContainerPosition()
+            updateMarqueeConstraintsForBottom()
+            
+            UIView.animate(withDuration: 0.25) {
+                self.view.layoutIfNeeded()
+            }
         }
         
         let hasVisibleButtons = [watchNextButton, speedButton, qualityButton, menuButton].contains { button in
@@ -1213,8 +1351,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             return !button.isHidden
         }
         
-        if hasVisibleButtons || controlButtonsContainer.superview != nil {
-            setupControlButtonsContainer()
+        if !isMenuOpen && (hasVisibleButtons || controlButtonsContainer.superview != nil) {
+            self.setupControlButtonsContainer()
         }
     }
     
@@ -1227,7 +1365,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         if !skipOutroActuallyVisible {
             controlButtonsContainerBottomConstraint = controlButtonsContainer.bottomAnchor.constraint(
-                equalTo: sliderHostingController!.view.topAnchor, constant: -20)
+                equalTo: sliderHostingController!.view.topAnchor, constant: -27)
         } else {
             controlButtonsContainerBottomConstraint = controlButtonsContainer.bottomAnchor.constraint(
                 equalTo: skipOutroButton.topAnchor, constant: -5)
@@ -1272,7 +1410,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 ),
                 inRange: 0...validDuration,
                 activeFillColor: .white,
-                fillColor: .white.opacity(0.6),
+                fillColor: .white,
                 textColor: .white.opacity(0.7),
                 emptyColor: .white.opacity(0.3),
                 height: 33,
@@ -1345,11 +1483,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skipIntroButton.clipsToBounds = true
         skipIntroButton.alpha = 0.0
         skipIntroButton.addTarget(self, action: #selector(skipIntro), for: .touchUpInside)
-        view.addSubview(skipIntroButton)
+        controlsContainerView.addSubview(skipIntroButton)
         skipIntroButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             skipIntroButton.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
-            skipIntroButton.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -5),
+            skipIntroButton.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -12),
             skipIntroButton.heightAnchor.constraint(equalToConstant: 40),
             skipIntroButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 104)
         ])
@@ -1384,17 +1522,16 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skip85Button.clipsToBounds = true
         skip85Button.alpha = 0.0
         skip85Button.addTarget(self, action: #selector(skip85Tapped), for: .touchUpInside)
-        view.addSubview(skip85Button)
+        controlsContainerView.addSubview(skip85Button)
         skip85Button.translatesAutoresizingMaskIntoConstraints = false
 
         let skip85Constraints = [
             skip85Button.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
-            skip85Button.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -5),
+            skip85Button.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -12),
             skip85Button.heightAnchor.constraint(equalToConstant: 40),
             skip85Button.widthAnchor.constraint(greaterThanOrEqualToConstant: 97)
         ]
         NSLayoutConstraint.activate(skip85Constraints)
-        
         skip85Button.isHidden = true
         skip85Button.alpha = 0.0
     }
@@ -1402,7 +1539,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private func setupQualityButton() {
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
-        let image = UIImage(systemName: "4k.tv", withConfiguration: config)
+        let image = UIImage(systemName: "tv", withConfiguration: config)
         
         qualityButton = UIButton(type: .system)
         qualityButton.setImage(image, for: .normal)
@@ -1410,6 +1547,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         qualityButton.showsMenuAsPrimaryAction = true
         qualityButton.menu = qualitySelectionMenu()
         qualityButton.isHidden = true
+        
+        qualityButton.addTarget(self, action: #selector(protectMenuFromRecreation), for: .touchDown)
         
         qualityButton.translatesAutoresizingMaskIntoConstraints = false
     }
@@ -1504,7 +1643,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 equalTo: skipOutroButton.topAnchor, constant: -5)
         } else {
             controlButtonsContainerBottomConstraint = controlButtonsContainer.bottomAnchor.constraint(
-                equalTo: sliderHostingController!.view.topAnchor, constant: -5)
+                equalTo: sliderHostingController!.view.topAnchor, constant: -12)
         }
         
         controlButtonsContainerBottomConstraint?.isActive = true
@@ -1624,7 +1763,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                     ),
                     inRange: 0...(self.duration > 0 ? self.duration : 1.0),
                     activeFillColor: .white,
-                    fillColor: .white.opacity(0.6),
+                    fillColor: .white,
                     textColor: .white.opacity(0.7),
                     emptyColor: .white.opacity(0.3),
                     height: 33,
@@ -1677,17 +1816,16 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     @objc func toggleControls() {
         if controlsLocked {
-            lockButton.alpha = 1.0
+            unlockButton.alpha = 1.0
             lockButtonTimer?.invalidate()
             lockButtonTimer = Timer.scheduledTimer(
                 withTimeInterval: 3.0,
                 repeats: false
             ) { [weak self] _ in
                 UIView.animate(withDuration: 0.3) {
-                    self?.lockButton.alpha = 0
+                    self?.unlockButton.alpha = 0
                 }
             }
-            updateSkipButtonsVisibility()
             return
         }
         
@@ -1704,11 +1842,25 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
         }
         
+        let holdSpeedAlpha = holdSpeedIndicator?.alpha ?? 0
+        
         UIView.animate(withDuration: 0.2) {
             let alpha: CGFloat = self.isControlsVisible ? 1.0 : 0.0
-            self.controlsContainerView.alpha = alpha
-            self.skip85Button.alpha = alpha
-            self.lockButton.alpha = alpha
+            
+            for control in self.controlsToHide {
+                control.alpha = alpha
+            }
+            
+            self.dismissButton.alpha = self.isControlsVisible ? 1.0 : 0.0
+            
+            if let holdSpeed = self.holdSpeedIndicator {
+                holdSpeed.alpha = holdSpeedAlpha
+            }
+            
+            if self.isControlsVisible {
+                self.skip85Button.isHidden = false
+            }
+            
             self.subtitleBottomToSafeAreaConstraint?.isActive = !self.isControlsVisible
             self.subtitleBottomToSliderConstraint?.isActive = self.isControlsVisible
             self.view.layoutIfNeeded()
@@ -1805,11 +1957,18 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     @objc private func pipButtonTapped(_ sender: UIButton) {
-        guard let pip = pipController else { return }
+        Logger.shared.log("PiP button tapped", type: "Debug")
+        guard let pip = pipController else { 
+            Logger.shared.log("PiP controller is nil", type: "Error")
+            return 
+        }
+        Logger.shared.log("PiP controller found, isActive: \(pip.isPictureInPictureActive)", type: "Debug")
         if pip.isPictureInPictureActive {
             pip.stopPictureInPicture()
+            Logger.shared.log("Stopping PiP", type: "Debug")
         } else {
             pip.startPictureInPicture()
+            Logger.shared.log("Starting PiP", type: "Debug")
         }
     }
     
@@ -1828,37 +1987,57 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         isControlsVisible = !controlsLocked
         lockButtonTimer?.invalidate()
         
+        let holdSpeedAlpha = holdSpeedIndicator?.alpha ?? 0
+        
         if controlsLocked {
             UIView.animate(withDuration: 0.25) {
                 self.controlsContainerView.alpha = 0
-                self.dimButton.alpha             = 0
+                self.dimButton.alpha = 0
                 for v in self.controlsToHide { v.alpha = 0 }
                 self.skipIntroButton.alpha = 0
                 self.skipOutroButton.alpha = 0
-                self.skip85Button.alpha    = 0
+                self.skip85Button.alpha = 0
                 self.lockButton.alpha = 0
+                self.unlockButton.alpha = 1
+                
+                if let holdSpeed = self.holdSpeedIndicator {
+                    holdSpeed.alpha = holdSpeedAlpha
+                }
                 
                 self.subtitleBottomToSafeAreaConstraint?.isActive = true
-                self.subtitleBottomToSliderConstraint?.isActive    = false
+                self.subtitleBottomToSliderConstraint?.isActive = false
                 
                 self.view.layoutIfNeeded()
             }
             
-            lockButton.setImage(UIImage(systemName: "lock.fill"), for: .normal)
+            lockButton.setImage(UIImage(systemName: "lock"), for: .normal)
             
+            lockButtonTimer = Timer.scheduledTimer(
+                withTimeInterval: 3.0,
+                repeats: false
+            ) { [weak self] _ in
+                UIView.animate(withDuration: 0.3) {
+                    self?.unlockButton.alpha = 0
+                }
+            }
         } else {
             UIView.animate(withDuration: 0.25) {
                 self.controlsContainerView.alpha = 1
-                self.dimButton.alpha             = 1
+                self.dimButton.alpha = 1
                 for v in self.controlsToHide { v.alpha = 1 }
+                self.unlockButton.alpha = 0
+                
+                if let holdSpeed = self.holdSpeedIndicator {
+                    holdSpeed.alpha = holdSpeedAlpha
+                }
                 
                 self.subtitleBottomToSafeAreaConstraint?.isActive = false
-                self.subtitleBottomToSliderConstraint?.isActive    = true
+                self.subtitleBottomToSliderConstraint?.isActive = true
                 
                 self.view.layoutIfNeeded()
             }
             
-            lockButton.setImage(UIImage(systemName: "lock.open.fill"), for: .normal)
+            lockButton.setImage(UIImage(systemName: "lock.open"), for: .normal)
             updateSkipButtonsVisibility()
         }
     }
@@ -1930,10 +2109,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         isDimmed.toggle()
         dimButtonTimer?.invalidate()
         UIView.animate(withDuration: 0.25) {
-            self.blackCoverView.alpha = self.isDimmed ? 1.0 : 0.4
+            self.blackCoverView.alpha = self.isDimmed ? 1.0 : 0.0
         }
-        dimButtonToSlider.isActive = !isDimmed
-        dimButtonToRight.isActive  =  isDimmed
     }
     
     func speedChangerMenu() -> UIMenu {
@@ -2671,7 +2848,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         player.rate = speed
         
         UIView.animate(withDuration: 0.1) {
-            self.holdSpeedIndicator.alpha = 0.8
+            self.holdSpeedIndicator.alpha = 1.0
         }
     }
     
@@ -2718,12 +2895,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 ),
                 inRange: 0...1,
                 activeFillColor: .white,
-                fillColor: .white.opacity(0.6),
+                fillColor: .white,
                 emptyColor: .white.opacity(0.3),
                 height: 10,
                 onEditingChanged: { _ in }
             )
-            .shadow(color: Color.black.opacity(0.6), radius: 4, x: 0, y: 2)
         }
     }
     
@@ -2940,13 +3116,23 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         let currentSeconds = CMTimeGetSeconds(player.currentTime())
         let remainingSeconds = duration - currentSeconds
+        let playbackSpeed = player.rate
         
         if remainingSeconds <= 0 {
             endTimeLabel?.text = "--:--"
             return
         }
         
-        let endTime = Date().addingTimeInterval(remainingSeconds)
+        if playbackSpeed == 0 {
+            let endTime = Date().addingTimeInterval(remainingSeconds)
+            let formatter = DateFormatter()
+            formatter.dateFormat = "HH:mm"
+            endTimeLabel?.text = formatter.string(from: endTime)
+            return
+        }
+        
+        let realTimeRemaining = remainingSeconds / Double(playbackSpeed)
+        let endTime = Date().addingTimeInterval(realTimeRemaining)
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         endTimeLabel?.text = formatter.string(from: endTime)
@@ -2979,6 +3165,16 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         }
     }
     
+
+    
+    @objc private func protectMenuFromRecreation() {
+        isMenuOpen = true
+        menuProtectionTimer?.invalidate()
+        menuProtectionTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
+            self?.isMenuOpen = false
+        }
+    }
+    
     func updateMarqueeConstraintsForBottom() {
         NSLayoutConstraint.deactivate(titleStackAboveSkipButtonConstraints)
         NSLayoutConstraint.deactivate(titleStackAboveSliderConstraints)
@@ -2987,21 +3183,21 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let skip85Visible = !(skip85Button?.isHidden ?? true) && (skip85Button?.alpha ?? 0) > 0.1
         let skipOutroVisible = skipOutroButton.superview != nil && !skipOutroButton.isHidden && skipOutroButton.alpha > 0.1
         
-        if skipIntroVisible {
+        if skipIntroVisible && skipIntroButton?.superview != nil && titleStackView.superview != nil {
             titleStackAboveSkipButtonConstraints = [
                 titleStackView.leadingAnchor.constraint(equalTo: skipIntroButton.leadingAnchor),
                 titleStackView.bottomAnchor.constraint(equalTo: skipIntroButton.topAnchor, constant: -4),
                 titleStackView.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: 0.7)
             ]
             NSLayoutConstraint.activate(titleStackAboveSkipButtonConstraints)
-        } else if skip85Visible {
+        } else if skip85Visible && skip85Button?.superview != nil && titleStackView.superview != nil {
             titleStackAboveSkipButtonConstraints = [
                 titleStackView.leadingAnchor.constraint(equalTo: skip85Button.leadingAnchor),
                 titleStackView.bottomAnchor.constraint(equalTo: skip85Button.topAnchor, constant: -4),
                 titleStackView.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: 0.7)
             ]
             NSLayoutConstraint.activate(titleStackAboveSkipButtonConstraints)
-        } else if let sliderView = sliderHostingController?.view {
+        } else if let sliderView = sliderHostingController?.view, titleStackView.superview != nil {
             titleStackAboveSliderConstraints = [
                 titleStackView.leadingAnchor.constraint(equalTo: sliderView.leadingAnchor),
                 titleStackView.bottomAnchor.constraint(equalTo: sliderView.topAnchor, constant: -4),
@@ -3027,30 +3223,22 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     private func setupDimButton() {
-        let cfg = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
+        let cfg = UIImage.SymbolConfiguration(pointSize: 15, weight: .medium)
         dimButton = UIButton(type: .system)
-        dimButton.setImage(UIImage(systemName: "moon.fill", withConfiguration: cfg), for: .normal)
+        dimButton.setImage(UIImage(systemName: "moon", withConfiguration: cfg), for: .normal)
         dimButton.tintColor = .white
         dimButton.addTarget(self, action: #selector(dimTapped), for: .touchUpInside)
-        controlsContainerView.addSubview(dimButton)
+        view.addSubview(dimButton)
         dimButton.translatesAutoresizingMaskIntoConstraints = false
         
-        dimButton.layer.shadowColor = UIColor.black.cgColor
-        dimButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        dimButton.layer.shadowOpacity = 0.6
-        dimButton.layer.shadowRadius = 4
-        dimButton.layer.masksToBounds = false
-        
         NSLayoutConstraint.activate([
-            dimButton.topAnchor.constraint(equalTo: volumeSliderHostingView!.bottomAnchor, constant: 15),
-            dimButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor),
+            dimButton.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
             dimButton.widthAnchor.constraint(equalToConstant: 24),
             dimButton.heightAnchor.constraint(equalToConstant: 24)
         ])
         
         dimButtonToSlider = dimButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor)
-        dimButtonToRight = dimButton.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16)
-        dimButtonToSlider.isActive = true
+        dimButtonToRight = dimButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
     }
     
     func setupSpeedButton() {
@@ -3062,12 +3250,15 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         speedButton.tintColor = .white
         speedButton.showsMenuAsPrimaryAction = true
         speedButton.menu = speedChangerMenu()
+        
+        speedButton.addTarget(self, action: #selector(protectMenuFromRecreation), for: .touchDown)
+        
         speedButton.translatesAutoresizingMaskIntoConstraints = false
     }
     
     func setupMenuButton() {
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
-        let image = UIImage(systemName: "textformat.size", withConfiguration: config)
+        let image = UIImage(systemName: "captions.bubble", withConfiguration: config)
         
         menuButton = UIButton(type: .system)
         menuButton.setImage(image, for: .normal)
@@ -3080,32 +3271,55 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             menuButton.isHidden = true
         }
         
+        menuButton.addTarget(self, action: #selector(protectMenuFromRecreation), for: .touchDown)
+        
         menuButton.translatesAutoresizingMaskIntoConstraints = false
     }
     
     private func setupLockButton() {
-        let cfg = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
+        let cfg = UIImage.SymbolConfiguration(pointSize: 15, weight: .medium)
         lockButton = UIButton(type: .system)
         lockButton.setImage(
-            UIImage(systemName: "lock.open.fill", withConfiguration: cfg),
+            UIImage(systemName: "lock.open", withConfiguration: cfg),
             for: .normal
         )
         lockButton.tintColor = .white
-        lockButton.layer.shadowColor   = UIColor.black.cgColor
-        lockButton.layer.shadowOffset  = CGSize(width: 0, height: 2)
-        lockButton.layer.shadowOpacity = 0.6
-        lockButton.layer.shadowRadius  = 4
-        lockButton.layer.masksToBounds = false
         
         lockButton.addTarget(self, action: #selector(lockTapped), for: .touchUpInside)
         
         view.addSubview(lockButton)
         lockButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            lockButton.topAnchor.constraint(equalTo: volumeSliderHostingView!.bottomAnchor, constant: 60),
-            lockButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor),
+            lockButton.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
             lockButton.widthAnchor.constraint(equalToConstant: 24),
             lockButton.heightAnchor.constraint(equalToConstant: 24),
+        ])
+    }
+    
+    private func setupUnlockButton() {
+        let cfg = UIImage.SymbolConfiguration(pointSize: 40, weight: .medium)
+        unlockButton = UIButton(type: .system)
+        unlockButton.setImage(
+            UIImage(systemName: "lock", withConfiguration: cfg),
+            for: .normal
+        )
+        unlockButton.tintColor = .white
+        unlockButton.alpha = 0
+        unlockButton.layer.shadowColor = UIColor.black.cgColor
+        unlockButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        unlockButton.layer.shadowOpacity = 0.6
+        unlockButton.layer.shadowRadius = 4
+        unlockButton.layer.masksToBounds = false
+        
+        unlockButton.addTarget(self, action: #selector(lockTapped), for: .touchUpInside)
+        
+        view.addSubview(unlockButton)
+        unlockButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            unlockButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            unlockButton.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            unlockButton.widthAnchor.constraint(equalToConstant: 80),
+            unlockButton.heightAnchor.constraint(equalToConstant: 80)
         ])
     }
     
@@ -3118,19 +3332,42 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         airplayButton.prioritizesVideoDevices = true
         airplayButton.setContentHuggingPriority(.required, for: .horizontal)
         airplayButton.setContentCompressionResistancePriority(.required, for: .horizontal)
-        controlsContainerView.addSubview(airplayButton)
         
-        airplayButton.layer.shadowColor = UIColor.black.cgColor
-        airplayButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        airplayButton.layer.shadowOpacity = 0.6
-        airplayButton.layer.shadowRadius = 4
-        airplayButton.layer.masksToBounds = false
+        let airplayContainer = UIView()
+        airplayContainer.translatesAutoresizingMaskIntoConstraints = false
+        airplayContainer.backgroundColor = .clear
+        view.addSubview(airplayContainer)
+        airplayContainer.addSubview(airplayButton)
+        
+        NSLayoutConstraint.activate([
+            airplayContainer.widthAnchor.constraint(equalToConstant: 24),
+            airplayContainer.heightAnchor.constraint(equalToConstant: 24),
+            airplayButton.centerXAnchor.constraint(equalTo: airplayContainer.centerXAnchor),
+            airplayButton.centerYAnchor.constraint(equalTo: airplayContainer.centerYAnchor),
+            airplayButton.widthAnchor.constraint(equalToConstant: 24),
+            airplayButton.heightAnchor.constraint(equalToConstant: 24)
+        ])
+        
+        for subview in airplayButton.subviews {
+            subview.contentMode = .scaleAspectFit
+            if let button = subview as? UIButton {
+                button.imageEdgeInsets = .zero
+                button.contentEdgeInsets = .zero
+            }
+        }
+        
+
         
         guard AVPictureInPictureController.isPictureInPictureSupported() else {
             return
         }
 
-        playerViewController.allowsPictureInPicturePlayback = true
+                playerViewController.allowsPictureInPicturePlayback = true
+        
+        let playerLayer = AVPlayerLayer(player: player)
+        pipController = AVPictureInPictureController(playerLayer: playerLayer)
+        pipController?.delegate = self
+        
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .medium)
         let Image = UIImage(systemName: "pip", withConfiguration: config)
         pipButton = UIButton(type: .system)
@@ -3138,11 +3375,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         pipButton.tintColor = .white
         pipButton.addTarget(self, action: #selector(pipButtonTapped(_:)), for: .touchUpInside)
         
-        pipButton.layer.shadowColor = UIColor.black.cgColor
-        pipButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        pipButton.layer.shadowOpacity = 0.6
-        pipButton.layer.shadowRadius = 4
-        pipButton.layer.masksToBounds = false
+
         
         controlsContainerView.addSubview(pipButton)
         pipButton.translatesAutoresizingMaskIntoConstraints = false
@@ -3150,12 +3383,12 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         NSLayoutConstraint.activate([
             pipButton.centerYAnchor.constraint(equalTo: dimButton.centerYAnchor),
             pipButton.trailingAnchor.constraint(equalTo: dimButton.leadingAnchor, constant: -8),
-            pipButton.widthAnchor.constraint(equalToConstant: 44),
-            pipButton.heightAnchor.constraint(equalToConstant: 44),
+            pipButton.widthAnchor.constraint(equalToConstant: 40),
+            pipButton.heightAnchor.constraint(equalToConstant: 40),
             airplayButton.centerYAnchor.constraint(equalTo: pipButton.centerYAnchor),
             airplayButton.trailingAnchor.constraint(equalTo: pipButton.leadingAnchor, constant: -4),
-            airplayButton.widthAnchor.constraint(equalToConstant: 44),
-            airplayButton.heightAnchor.constraint(equalToConstant: 44)
+            airplayButton.widthAnchor.constraint(equalToConstant: 24),
+            airplayButton.heightAnchor.constraint(equalToConstant: 24)
         ])
         
         pipButton.isHidden = !isPipButtonVisible
@@ -3308,11 +3541,6 @@ class GradientBlurButton: UIButton {
         blurView?.removeFromSuperview()
         blurView = nil
         
-        gradientLayer?.removeFromSuperlayer()
-        gradientLayer = nil
-        borderMask?.removeFromSuperlayer()
-        borderMask = nil
-        
         backgroundColor = .clear
         layer.borderWidth = 0
         layer.shadowOpacity = 0
@@ -3360,36 +3588,12 @@ class GradientBlurButton: UIButton {
         ])
         self.blurView = blur
         
-        let gradient = CAGradientLayer()
-        gradient.colors = [
-            UIColor.white.withAlphaComponent(0.25).cgColor,
-            UIColor.white.withAlphaComponent(0).cgColor
-        ]
-        gradient.startPoint = CGPoint(x: 0.5, y: 0)
-        gradient.endPoint = CGPoint(x: 0.5, y: 1)
-        gradient.cornerRadius = 21
-        
-        let border = CAShapeLayer()
-        border.fillColor = nil
-        border.strokeColor = UIColor.white.cgColor
-        border.lineWidth = 0.5
-        gradient.mask = border
-
-        layer.addSublayer(gradient)
-        self.gradientLayer = gradient
-        self.borderMask = border
-        
         clipsToBounds = true
         layer.cornerRadius = 21
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        
-        gradientLayer?.frame = bounds
-        if let border = borderMask {
-            border.path = UIBezierPath(roundedRect: bounds, cornerRadius: 21).cgPath
-        }
         
         if let imageView = self.imageView {
             bringSubviewToFront(imageView)

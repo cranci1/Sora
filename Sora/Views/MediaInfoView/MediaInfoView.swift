@@ -209,7 +209,7 @@ struct MediaInfoView: View {
                 currentFetchTask?.cancel()
                 activeFetchID = nil
                 UserDefaults.standard.set(false, forKey: "isMediaInfoActive")
-                UIScrollView.appearance().bounces = true 
+                UIScrollView.appearance().bounces = true
             }
             .task {
                 await setupInitialData()
@@ -239,7 +239,7 @@ struct MediaInfoView: View {
     private var navigationOverlay: some View {
         VStack {
             HStack {
-                Button(action: { 
+                Button(action: {
                     dismiss()
                 }) {
                     Image(systemName: "chevron.left")
@@ -729,7 +729,7 @@ struct MediaInfoView: View {
                 LazyVStack(spacing: 15) {
                     ForEach(chapters.indices.filter { selectedChapterRange.contains($0) }, id: \..self) { i in
                         let chapter = chapters[i]
-                        let _ = refreshTrigger 
+                        let _ = refreshTrigger
                     if let href = chapter["href"] as? String,
                        let number = chapter["number"] as? Int,
                        let title = chapter["title"] as? String {
@@ -751,7 +751,7 @@ struct MediaInfoView: View {
                             ChapterCell(
                                 chapterNumber: String(number),
                                 chapterTitle: title,
-                                isCurrentChapter: false, 
+                                isCurrentChapter: false,
                                 progress: UserDefaults.standard.double(forKey: "readingProgress_\(href)"),
                                 href: href
                             )
@@ -868,7 +868,7 @@ struct MediaInfoView: View {
         .sheet(isPresented: $isMatchingPresented) {
             AnilistMatchPopupView(seriesTitle: title) { id, matched in
                 handleAniListMatch(selectedID: id)
-                matchedTitle = matched          
+                matchedTitle = matched
                 fetchMetadataIDIfNeeded()
             }
         }
@@ -876,7 +876,7 @@ struct MediaInfoView: View {
             TMDBMatchPopupView(seriesTitle: title) { id, type, matched in
                 tmdbID   = id
                 tmdbType = type
-                matchedTitle = matched         
+                matchedTitle = matched
                 fetchMetadataIDIfNeeded()
             }
         }
@@ -973,8 +973,6 @@ struct MediaInfoView: View {
                 await withTaskGroup(of: Void.self) { group in
                     var chaptersLoaded = false
                     var detailsLoaded = false
-                    let timeout: TimeInterval = 8.0
-                    let start = Date()
 
                     group.addTask {
                         let fetchedChapters = try? await JSController.shared.extractChapters(moduleId: module.id.uuidString, href: href)
@@ -997,9 +995,6 @@ struct MediaInfoView: View {
                                     if !(self.synopsis.isEmpty && self.aliases.isEmpty && self.airdate.isEmpty) {
                                         detailsLoaded = true
                                         continuation.resume()
-                                    } else if Date().timeIntervalSince(start) > timeout {
-                                        detailsLoaded = true
-                                        continuation.resume()
                                     } else {
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                             checkDetails()
@@ -1008,13 +1003,6 @@ struct MediaInfoView: View {
                                 }
                             }
                             checkDetails()
-                        }
-                    }
-                    group.addTask {
-                        try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
-                        await MainActor.run {
-                            chaptersLoaded = true
-                            detailsLoaded = true
                         }
                     }
                     while true {

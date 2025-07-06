@@ -150,7 +150,6 @@ fileprivate struct SettingsPickerRow<T: Hashable>: View {
 
 struct SettingsViewGeneral: View {
     @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 100
-    @AppStorage("refreshModulesOnLaunch") private var refreshModulesOnLaunch: Bool = true
     @AppStorage("fetchEpisodeMetadata") private var fetchEpisodeMetadata: Bool = true
     @AppStorage("analyticsEnabled") private var analyticsEnabled: Bool = false
     @AppStorage("hideSplashScreen") private var hideSplashScreenEnable: Bool = false
@@ -371,17 +370,7 @@ struct SettingsViewGeneral: View {
                     )
                 }
                 
-                SettingsSection(
-                    title: NSLocalizedString("Modules", comment: ""),
-                    footer: NSLocalizedString("Note that the modules will be replaced only if there is a different version string inside the JSON file.", comment: "")
-                ) {
-                    SettingsToggleRow(
-                        icon: "arrow.clockwise",
-                        title: NSLocalizedString("Refresh Modules on Launch", comment: ""),
-                        isOn: $refreshModulesOnLaunch,
-                        showDivider: false
-                    )
-                }
+
                 
                 SettingsSection(
                     title: NSLocalizedString("Advanced", comment: ""),

@@ -322,6 +322,12 @@ struct TranslatorsView: View {
             login: "Cufiy",
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/y1wwm0ed_png.png?raw=true",
             language: "German"
+        ),
+        Translator(
+            id: 10,
+            login: "yoshi1780",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/262d7c1a61ff49355ddb74c76c7c5c7f_webp.png?raw=true",
+            language: "Mongolian"
         )
     ]
 

@@ -35,17 +35,7 @@
 
 ## Installation
 
-You can download Sora on the App Store for stable updates or on Testflight for more updates but maybe some instability. (Testflight is recommended):
-
-<a href="https://apps.apple.com/us/app/sulfur/id6742741043">
-  <img src="https://askyourself.app/assets/appstore.png" width="170" alt="Build and Release IPA">
-</a>
-
-<a href="https://testflight.apple.com/join/qMUCpNaS">
-  <img src="https://askyourself.app/assets/testflight.png" width="170" alt="Build and Release IPA">
-</a>
-
-Additionally, you can install the app using Xcode or using the .ipa file, which you can find in the [Releases](https://github.com/cranci1/Sora/releases) tab or the [nightly](https://nightly.link/cranci1/Sora/workflows/build/dev/Sulfur-IPA.zip) build page.
+You can download Sora using Xcode or using the .ipa file, which you can find in the [Releases](https://github.com/cranci1/Sora/releases) tab or the [Nightly](https://nightly.link/cranci1/Sora/workflows/build/dev/Sulfur-IPA.zip) build page.
 
 ## Frequently Asked Questions
 

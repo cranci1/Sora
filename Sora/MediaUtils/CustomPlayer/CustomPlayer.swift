@@ -474,9 +474,12 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             old.removeFromSuperview()
         }
 
-        let capsuleContainer = createCircularBlurBackground(size: 42)
-        view.addSubview(capsuleContainer)
+        let capsuleContainer = GradientBlurButton(type: .custom)
         capsuleContainer.translatesAutoresizingMaskIntoConstraints = false
+        capsuleContainer.backgroundColor = .clear
+        capsuleContainer.layer.cornerRadius = 21
+        capsuleContainer.clipsToBounds = true
+        view.addSubview(capsuleContainer)
         capsuleContainer.alpha = isControlsVisible ? 1.0 : 0.0
 
         let buttons: [UIView] = [airplayButton, pipButton, lockButton, dimButton]
@@ -1178,7 +1181,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         hostingController.view.backgroundColor = UIColor.clear
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         
-        let volumeCapsule = createCircularBlurBackground(size: 42)
+        let volumeCapsule = GradientBlurButton(type: .custom)
+        volumeCapsule.translatesAutoresizingMaskIntoConstraints = false
+        volumeCapsule.backgroundColor = .white
+        volumeCapsule.layer.cornerRadius = 21
+        volumeCapsule.clipsToBounds = true
         controlsContainerView.addSubview(volumeCapsule)
         
         if let blurView = volumeCapsule as? UIVisualEffectView {
@@ -1465,7 +1472,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     func setupSkipButtons() {
         let introConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let introImage = UIImage(systemName: "forward.frame", withConfiguration: introConfig)
-        skipIntroButton = createCircularBlurButton(size: 42)
+        skipIntroButton = GradientBlurButton(type: .system)
         skipIntroButton.setTitle(" Skip Intro", for: .normal)
         skipIntroButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skipIntroButton.setImage(introImage, for: .normal)
@@ -1487,7 +1494,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         let outroConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let outroImage = UIImage(systemName: "forward.frame", withConfiguration: outroConfig)
-        skipOutroButton = createCircularBlurButton(size: 42)
+        skipOutroButton = GradientBlurButton(type: .system)
         skipOutroButton.setTitle(" Skip Outro", for: .normal)
         skipOutroButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skipOutroButton.setImage(outroImage, for: .normal)
@@ -1504,7 +1511,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     func setupSkip85Button() {
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
         let image = UIImage(systemName: "goforward", withConfiguration: config)
-        skip85Button = createCircularBlurButton(size: 42)
+        skip85Button = GradientBlurButton(type: .system)
         skip85Button.setTitle(" Skip 85s", for: .normal)
         skip85Button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skip85Button.setImage(image, for: .normal)
@@ -1534,7 +1541,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
         let image = UIImage(systemName: "tv", withConfiguration: config)
         
-        qualityButton = createCircularBlurButton(size: 42)
+        qualityButton = UIButton(type: .system)
         qualityButton.setImage(image, for: .normal)
         qualityButton.tintColor = .white
         qualityButton.showsMenuAsPrimaryAction = true
@@ -1549,7 +1556,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private func setupControlButtonsContainer() {
         controlButtonsContainer?.removeFromSuperview()
         
-        controlButtonsContainer = createCircularGradientBlurButton(size: 42)
+        controlButtonsContainer = GradientBlurButton(type: .custom)
         controlButtonsContainer.isUserInteractionEnabled = true
         controlButtonsContainer.translatesAutoresizingMaskIntoConstraints = false
         controlButtonsContainer.backgroundColor = .clear
@@ -3205,7 +3212,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
         let image = UIImage(systemName: "forward.end", withConfiguration: config)
         
-        watchNextButton = createCircularBlurButton(size: 42)
+        watchNextButton = UIButton(type: .system)
         watchNextButton.setImage(image, for: .normal)
         watchNextButton.backgroundColor = .clear
         watchNextButton.tintColor = .white
@@ -3216,7 +3223,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private func setupDimButton() {
         let cfg = UIImage.SymbolConfiguration(pointSize: 15, weight: .medium)
-        dimButton = createCircularBlurButton(size: 42)
+        dimButton = UIButton(type: .system)
         dimButton.setImage(UIImage(systemName: "moon", withConfiguration: cfg), for: .normal)
         dimButton.tintColor = .white
         dimButton.addTarget(self, action: #selector(dimTapped), for: .touchUpInside)
@@ -3237,7 +3244,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
         let image = UIImage(systemName: "speedometer", withConfiguration: config)
         
-        speedButton = createCircularBlurButton(size: 42)
+        speedButton = UIButton(type: .system)
         speedButton.setImage(image, for: .normal)
         speedButton.tintColor = .white
         speedButton.showsMenuAsPrimaryAction = true
@@ -3252,7 +3259,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
         let image = UIImage(systemName: "captions.bubble", withConfiguration: config)
         
-        menuButton = createCircularBlurButton(size: 42)
+        menuButton = UIButton(type: .system)
         menuButton.setImage(image, for: .normal)
         menuButton.tintColor = .white
         menuButton.showsMenuAsPrimaryAction = true
@@ -3270,7 +3277,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private func setupLockButton() {
         let cfg = UIImage.SymbolConfiguration(pointSize: 15, weight: .medium)
-        lockButton = createCircularBlurButton(size: 42)
+        lockButton = UIButton(type: .system)
         lockButton.setImage(
             UIImage(systemName: "lock.open", withConfiguration: cfg),
             for: .normal
@@ -3290,7 +3297,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private func setupUnlockButton() {
         let cfg = UIImage.SymbolConfiguration(pointSize: 40, weight: .medium)
-        unlockButton = createCircularBlurButton(size: 80)
+        unlockButton = UIButton(type: .system)
         unlockButton.setImage(
             UIImage(systemName: "lock", withConfiguration: cfg),
             for: .normal
@@ -3362,7 +3369,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .medium)
         let Image = UIImage(systemName: "pip", withConfiguration: config)
-        pipButton = createCircularBlurButton(size: 42)
+        pipButton = UIButton(type: .system)
         pipButton.setImage(Image, for: .normal)
         pipButton.tintColor = .white
         pipButton.addTarget(self, action: #selector(pipButtonTapped(_:)), for: .touchUpInside)
@@ -3599,33 +3606,4 @@ class GradientBlurButton: UIButton {
         cleanupVisualEffects()
         super.removeFromSuperview()
     }
-}
-
-// --- Add these helper functions near the top (after createCircularBlurBackground) ---
-private func createCircularBlurButton(size: CGFloat) -> UIButton {
-    let button = UIButton(type: .system)
-    let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
-    blur.isUserInteractionEnabled = false
-    blur.layer.cornerRadius = size / 2
-    blur.clipsToBounds = true
-    blur.translatesAutoresizingMaskIntoConstraints = false
-    button.insertSubview(blur, at: 0)
-    NSLayoutConstraint.activate([
-        blur.leadingAnchor.constraint(equalTo: button.leadingAnchor),
-        blur.trailingAnchor.constraint(equalTo: button.trailingAnchor),
-        blur.topAnchor.constraint(equalTo: button.topAnchor),
-        blur.bottomAnchor.constraint(equalTo: button.bottomAnchor)
-    ])
-    button.clipsToBounds = true
-    button.layer.cornerRadius = size / 2
-    button.translatesAutoresizingMaskIntoConstraints = false
-    return button
-}
-
-private func createCircularGradientBlurButton(size: CGFloat) -> GradientBlurButton {
-    let button = GradientBlurButton(type: .system)
-    button.clipsToBounds = true
-    button.layer.cornerRadius = size / 2
-    button.translatesAutoresizingMaskIntoConstraints = false
-    return button
 }

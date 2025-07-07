@@ -1488,7 +1488,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         controlsContainerView.addSubview(skipIntroButton)
         skipIntroButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            skipIntroButton.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
+            skipIntroButton.leadingAnchor.constraint(equalTo: controlsContainerView.leadingAnchor, constant: 18),
             skipIntroButton.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -12),
             skipIntroButton.heightAnchor.constraint(equalToConstant: 40),
             skipIntroButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 104)
@@ -1528,14 +1528,12 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skip85Button.translatesAutoresizingMaskIntoConstraints = false
 
         let skip85Constraints = [
-            skip85Button.leadingAnchor.constraint(equalTo: sliderHostingController!.view.leadingAnchor),
+            skip85Button.leadingAnchor.constraint(equalTo: controlsContainerView.leadingAnchor, constant: 18),
             skip85Button.bottomAnchor.constraint(equalTo: sliderHostingController!.view.topAnchor, constant: -12),
             skip85Button.heightAnchor.constraint(equalToConstant: 40),
             skip85Button.widthAnchor.constraint(greaterThanOrEqualToConstant: 97)
         ]
         NSLayoutConstraint.activate(skip85Constraints)
-        skip85Button.isHidden = true
-        skip85Button.alpha = 0.0
     }
     
     
@@ -3182,21 +3180,21 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         if skipIntroVisible && skipIntroButton?.superview != nil && titleStackView.superview != nil {
             titleStackAboveSkipButtonConstraints = [
-                titleStackView.leadingAnchor.constraint(equalTo: skipIntroButton.leadingAnchor),
+                titleStackView.leadingAnchor.constraint(equalTo: controlsContainerView.leadingAnchor, constant: 18),
                 titleStackView.bottomAnchor.constraint(equalTo: skipIntroButton.topAnchor, constant: -4),
                 titleStackView.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: 0.7)
             ]
             NSLayoutConstraint.activate(titleStackAboveSkipButtonConstraints)
         } else if skip85Visible && skip85Button?.superview != nil && titleStackView.superview != nil {
             titleStackAboveSkipButtonConstraints = [
-                titleStackView.leadingAnchor.constraint(equalTo: skip85Button.leadingAnchor),
+                titleStackView.leadingAnchor.constraint(equalTo: controlsContainerView.leadingAnchor, constant: 18),
                 titleStackView.bottomAnchor.constraint(equalTo: skip85Button.topAnchor, constant: -4),
                 titleStackView.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: 0.7)
             ]
             NSLayoutConstraint.activate(titleStackAboveSkipButtonConstraints)
         } else if let sliderView = sliderHostingController?.view, titleStackView.superview != nil {
             titleStackAboveSliderConstraints = [
-                titleStackView.leadingAnchor.constraint(equalTo: sliderView.leadingAnchor),
+                titleStackView.leadingAnchor.constraint(equalTo: controlsContainerView.leadingAnchor, constant: 18),
                 titleStackView.bottomAnchor.constraint(equalTo: sliderView.topAnchor, constant: -4),
                 titleStackView.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: 0.7)
             ]

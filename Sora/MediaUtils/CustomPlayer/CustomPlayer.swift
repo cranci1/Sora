@@ -1166,6 +1166,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         titleStackView.axis = .vertical
         titleStackView.alignment = .leading
         titleStackView.spacing = 0
+        titleStackView.clipsToBounds = false
+        titleStackView.isLayoutMarginsRelativeArrangement = true
         controlsContainerView.addSubview(titleStackView)
         titleStackView.translatesAutoresizingMaskIntoConstraints = false
     }

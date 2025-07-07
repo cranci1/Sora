@@ -3168,10 +3168,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     @objc private func protectMenuFromRecreation() {
         isMenuOpen = true
-        menuProtectionTimer?.invalidate()
-        menuProtectionTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
-            self?.isMenuOpen = false
-        }
     }
     
     func updateMarqueeConstraintsForBottom() {

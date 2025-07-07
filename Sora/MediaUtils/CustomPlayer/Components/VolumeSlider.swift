@@ -65,7 +65,7 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
                         localTempProgress = T(delta)
                         
                         let totalProgress = localRealProgress + localTempProgress
-                        if totalProgress > 1.0 {
+                        if totalProgress <= 0.0 || totalProgress >= 1.0 {
                             isAtEnd = true
                         } else {
                             isAtEnd = false
@@ -145,9 +145,12 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
     }
 
     private var animation: Animation {
-        isActive
-            ? .spring()
-            : .spring(response: 0.5, dampingFraction: 0.5, blendDuration: 0.6)
+        .interpolatingSpring(
+            mass: 1.0,
+            stiffness: 100,
+            damping: 15,
+            initialVelocity: 0.0
+        )
     }
 
     private func progress(for val: T) -> T {

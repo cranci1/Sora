@@ -527,6 +527,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        if let pipController = pipController {
+            pipController.playerLayer.frame = view.bounds
+        }
         
         guard let episodeNumberLabel = episodeNumberLabel else {
             return
@@ -3350,16 +3353,29 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 button.contentEdgeInsets = .zero
             }
         }
-        
 
-        
         guard AVPictureInPictureController.isPictureInPictureSupported() else {
             return
         }
 
-                playerViewController.allowsPictureInPicturePlayback = true
+        playerViewController.allowsPictureInPicturePlayback = true
+        
+        let playerLayerContainer = UIView()
+        playerLayerContainer.translatesAutoresizingMaskIntoConstraints = false
+        view.insertSubview(playerLayerContainer, at: 0)
+        
+        NSLayoutConstraint.activate([
+            playerLayerContainer.topAnchor.constraint(equalTo: view.topAnchor),
+            playerLayerContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            playerLayerContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            playerLayerContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
         
         let playerLayer = AVPlayerLayer(player: player)
+        playerLayer.frame = playerLayerContainer.bounds
+        playerLayer.videoGravity = .resizeAspect
+        playerLayerContainer.layer.addSublayer(playerLayer)
+        
         pipController = AVPictureInPictureController(playerLayer: playerLayer)
         pipController?.delegate = self
         
@@ -3369,8 +3385,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         pipButton.setImage(Image, for: .normal)
         pipButton.tintColor = .white
         pipButton.addTarget(self, action: #selector(pipButtonTapped(_:)), for: .touchUpInside)
-        
-
         
         controlsContainerView.addSubview(pipButton)
         pipButton.translatesAutoresizingMaskIntoConstraints = false

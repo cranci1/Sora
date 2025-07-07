@@ -47,7 +47,7 @@ struct MediaInfoView: View {
     @State private var selectedSeason: Int = 0
     @State private var selectedRange: Range<Int> = {
         let size = UserDefaults.standard.integer(forKey: "episodeChunkSize")
-        let chunk = size == 0 ? 100 : size
+        let chunk = size == 0 ? 50 : size
         return 0..<chunk
     }()
     
@@ -76,7 +76,7 @@ struct MediaInfoView: View {
     private var selectedSeasonKey: String { "selectedSeason_\(href)" }
     
     @AppStorage("externalPlayer") private var externalPlayer: String = "Default"
-    @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 100
+    @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 50
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     
     @ObservedObject private var jsController = JSController.shared
@@ -164,11 +164,11 @@ struct MediaInfoView: View {
     }
     
     @State private var selectedChapterRange: Range<Int> = {
-        let size = UserDefaults.standard.integer(forKey: "chapterChunkSize")
-        let chunk = size == 0 ? 100 : size
+        let size = UserDefaults.standard.integer(forKey: "episodeChunkSize")
+        let chunk = size == 0 ? 50 : size
         return 0..<chunk
     }()
-    @AppStorage("chapterChunkSize") private var chapterChunkSize: Int = 100
+    @AppStorage("chapterChunkSize") private var chapterChunkSize: Int = 50
     private var selectedChapterRangeKey: String { "selectedChapterRangeStart_\(href)" }
     
     var body: some View {
@@ -189,12 +189,12 @@ struct MediaInfoView: View {
                 UserDefaults.standard.set(true, forKey: "isMediaInfoActive")
                 //  swipe back
                 /*
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let window = windowScene.windows.first,
-                   let navigationController = window.rootViewController?.children.first as? UINavigationController {
-                    navigationController.interactivePopGestureRecognizer?.isEnabled = false
-                }
-                */
+                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                 let window = windowScene.windows.first,
+                 let navigationController = window.rootViewController?.children.first as? UINavigationController {
+                 navigationController.interactivePopGestureRecognizer?.isEnabled = false
+                 }
+                 */
             }
             .onChange(of: selectedRange) { newValue in
                 UserDefaults.standard.set(newValue.lowerBound, forKey: selectedRangeKey)
@@ -404,7 +404,7 @@ struct MediaInfoView: View {
                 .foregroundColor(.secondary)
                 .lineLimit(showFullSynopsis ? nil : 3)
                 .animation(nil, value: showFullSynopsis)
-
+            
             HStack {
                 Spacer()
                 Text(showFullSynopsis ? NSLocalizedString("LESS", comment: "") : NSLocalizedString("MORE", comment: ""))
@@ -487,7 +487,7 @@ struct MediaInfoView: View {
                     .cornerRadius(15)
                     .gradientOutline()
                 }
-
+                
                 Button(action: { openSafariViewController(with: href) }) {
                     Image(systemName: "safari")
                         .resizable()
@@ -540,24 +540,11 @@ struct MediaInfoView: View {
         if episodeLinks.count != 1 {
             VStack(alignment: .leading, spacing: 16) {
                 episodesSectionHeader
-                if isGroupedBySeasons || episodeLinks.count > episodeChunkSize {
-                    HStack(spacing: 8) {
-                        if isGroupedBySeasons {
-                            seasonSelectorStyled
-                        }
-                        Spacer()
-                        if episodeLinks.count > episodeChunkSize {
-                            rangeSelectorStyled
-                                .padding(.trailing, 4)
-                        }
-                    }
-                    .padding(.top, -8)
-                }
                 episodeListSection
             }
         }
     }
-
+    
     @ViewBuilder
     private var seasonSelectorStyled: some View {
         let seasons = groupedEpisodes()
@@ -581,7 +568,7 @@ struct MediaInfoView: View {
             }
         }
     }
-
+    
     @ViewBuilder
     private var rangeSelectorStyled: some View {
         Menu {
@@ -614,6 +601,20 @@ struct MediaInfoView: View {
             Spacer()
             
             HStack(spacing: 4) {
+                if isGroupedBySeasons || episodeLinks.count > episodeChunkSize {
+                    HStack(spacing: 8) {
+                        if isGroupedBySeasons {
+                            seasonSelectorStyled
+                        }
+                        Spacer()
+                        if episodeLinks.count > episodeChunkSize {
+                            rangeSelectorStyled
+                                .padding(.trailing, 4)
+                        }
+                    }
+                    .padding(.top, -8)
+                }
+                
                 sourceButton
                 menuButton
             }
@@ -715,21 +716,23 @@ struct MediaInfoView: View {
                     .foregroundColor(.primary)
                 Spacer()
                 HStack(spacing: 4) {
+                    if chapters.count > chapterChunkSize {
+                        HStack {
+                            Spacer()
+                            chapterRangeSelectorStyled
+                        }
+                        .padding(.bottom, 0)
+                    }
+                    
                     sourceButton
                     menuButton
                 }
             }
-                            if chapters.count > chapterChunkSize {
-                    HStack {
-                        Spacer()
-                        chapterRangeSelectorStyled
-                    }
-                    .padding(.bottom, 0)
-                }
-                LazyVStack(spacing: 15) {
-                    ForEach(chapters.indices.filter { selectedChapterRange.contains($0) }, id: \..self) { i in
-                        let chapter = chapters[i]
-                        let _ = refreshTrigger
+            
+            LazyVStack(spacing: 15) {
+                ForEach(chapters.indices.filter { selectedChapterRange.contains($0) }, id: \..self) { i in
+                    let chapter = chapters[i]
+                    let _ = refreshTrigger
                     if let href = chapter["href"] as? String,
                        let number = chapter["number"] as? Int,
                        let title = chapter["title"] as? String {
@@ -792,7 +795,7 @@ struct MediaInfoView: View {
             }
         }
     }
-
+    
     @ViewBuilder
     private var chapterRangeSelectorStyled: some View {
         Menu {
@@ -952,7 +955,7 @@ struct MediaInfoView: View {
             UserDefaults.standard.set(imageUrl, forKey: "mediaInfoImageUrl_\(module.id.uuidString)")
             Logger.shared.log("Saved MediaInfoView image URL: \(imageUrl) for module \(module.id.uuidString)", type: "Debug")
             
-
+            
             
             if module.metadata.novel == true {
                 if !hasFetched {
@@ -969,11 +972,11 @@ struct MediaInfoView: View {
                 if let jsContent = jsContent {
                     jsController.loadScript(jsContent)
                 }
-
+                
                 await withTaskGroup(of: Void.self) { group in
                     var chaptersLoaded = false
                     var detailsLoaded = false
-
+                    
                     group.addTask {
                         let fetchedChapters = try? await JSController.shared.extractChapters(moduleId: module.id.uuidString, href: href)
                         await MainActor.run {
@@ -1429,7 +1432,6 @@ struct MediaInfoView: View {
         }
     }
     
-    
     func fetchDetails() {
         Logger.shared.log("fetchDetails: called", type: "Debug")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -1437,88 +1439,15 @@ struct MediaInfoView: View {
                 do {
                     let jsContent = try moduleManager.getModuleContent(module)
                     jsController.loadScript(jsContent)
+                    
+                    let completion: (Any?, [EpisodeLink]) -> Void = { items, episodes in
+                        self.handleFetchDetailsResponse(items: items, episodes: episodes)
+                    }
+                    
                     if module.metadata.asyncJS == true {
-                        jsController.fetchDetailsJS(url: href) { items, episodes in
-                            Logger.shared.log("fetchDetails: items = \(items)", type: "Debug")
-                            Logger.shared.log("fetchDetails: episodes = \(episodes)", type: "Debug")
-                            
-                            if let mediaItems = items as? [MediaItem], let item = mediaItems.first {
-                                self.synopsis = item.description
-                                self.aliases = item.aliases
-                                self.airdate = item.airdate
-                            } else if let str = items as? String {
-                                if let data = str.data(using: .utf8),
-                                   let arr = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
-                                   let dict = arr.first {
-                                    self.synopsis = dict["description"] as? String ?? ""
-                                    self.aliases = dict["aliases"] as? String ?? ""
-                                    self.airdate = dict["airdate"] as? String ?? ""
-                                }
-                            } else if let dict = items as? [String: Any] {
-                                self.synopsis = dict["description"] as? String ?? ""
-                                self.aliases = dict["aliases"] as? String ?? ""
-                                self.airdate = dict["airdate"] as? String ?? ""
-                            } else if let arr = items as? [[String: Any]], let dict = arr.first {
-                                self.synopsis = dict["description"] as? String ?? ""
-                                self.aliases = dict["aliases"] as? String ?? ""
-                                self.airdate = dict["airdate"] as? String ?? ""
-                            } else {
-                                Logger.shared.log("Failed to process items of type: \(type(of: items))", type: "Error")
-                            }
-                            
-                            if self.module.metadata.novel ?? false {
-                                Logger.shared.log("fetchDetails: (novel) chapters count = \(self.chapters.count)", type: "Debug")
-                                self.isLoading = false
-                                self.isRefetching = false
-                            } else {
-                                Logger.shared.log("fetchDetails: (episodes) episodes count = \(episodes.count)", type: "Debug")
-                                self.episodeLinks = episodes
-                                self.restoreSelectionState()
-                                self.isLoading = false
-                                self.isRefetching = false
-                            }
-                        }
+                        jsController.fetchDetailsJS(url: href, completion: completion)
                     } else {
-                        jsController.fetchDetails(url: href) { items, episodes in
-                            Logger.shared.log("fetchDetails: items = \(items)", type: "Debug")
-                            Logger.shared.log("fetchDetails: episodes = \(episodes)", type: "Debug")
-                            
-                            if let mediaItems = items as? [MediaItem], let item = mediaItems.first {
-                                self.synopsis = item.description
-                                self.aliases = item.aliases
-                                self.airdate = item.airdate
-                            } else if let str = items as? String {
-                                if let data = str.data(using: .utf8),
-                                   let arr = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
-                                   let dict = arr.first {
-                                    self.synopsis = dict["description"] as? String ?? ""
-                                    self.aliases = dict["aliases"] as? String ?? ""
-                                    self.airdate = dict["airdate"] as? String ?? ""
-                                }
-                            } else if let dict = items as? [String: Any] {
-                                self.synopsis = dict["description"] as? String ?? ""
-                                self.aliases = dict["aliases"] as? String ?? ""
-                                self.airdate = dict["airdate"] as? String ?? ""
-                            } else if let arr = items as? [[String: Any]], let dict = arr.first {
-                                self.synopsis = dict["description"] as? String ?? ""
-                                self.aliases = dict["aliases"] as? String ?? ""
-                                self.airdate = dict["airdate"] as? String ?? ""
-                            } else {
-                                Logger.shared.log("Failed to process items of type: \(type(of: items))", type: "Error")
-                            }
-                            
-                            if self.module.metadata.novel ?? false {
-                                Logger.shared.log("fetchDetails: (novel) chapters count = \(self.chapters.count)", type: "Debug")
-                                self.isLoading = false
-                                self.isRefetching = false
-                            } else {
-                                Logger.shared.log("fetchDetails: (episodes) episodes count = \(episodes.count)", type: "Debug")
-                                self.episodeLinks = episodes
-                                self.restoreSelectionState()
-                                self.isLoading = false
-                                self.isRefetching = false
-                            }
-                        }
+                        jsController.fetchDetails(url: href, completion: completion)
                     }
                 } catch {
                     Logger.shared.log("Error loading module: \(error)", type: "Error")
@@ -1527,6 +1456,53 @@ struct MediaInfoView: View {
                 }
             }
         }
+    }
+    
+    private func handleFetchDetailsResponse(items: Any?, episodes: [EpisodeLink]) {
+        Logger.shared.log("fetchDetails: items = \(items)", type: "Debug")
+        Logger.shared.log("fetchDetails: episodes = \(episodes)", type: "Debug")
+        
+        processItemsResponse(items)
+        
+        if module.metadata.novel ?? false {
+            Logger.shared.log("fetchDetails: (novel) chapters count = \(chapters.count)", type: "Debug")
+        } else {
+            Logger.shared.log("fetchDetails: (episodes) episodes count = \(episodes.count)", type: "Debug")
+            episodeLinks = episodes
+            restoreSelectionState()
+        }
+        
+        isLoading = false
+        isRefetching = false
+    }
+    
+    private func processItemsResponse(_ items: Any?) {
+        if let mediaItems = items as? [MediaItem], let item = mediaItems.first {
+            synopsis = item.description
+            aliases = item.aliases
+            airdate = item.airdate
+        } else if let str = items as? String {
+            parseStringResponse(str)
+        } else if let dict = items as? [String: Any] {
+            extractMetadataFromDict(dict)
+        } else if let arr = items as? [[String: Any]], let dict = arr.first {
+            extractMetadataFromDict(dict)
+        } else {
+            Logger.shared.log("Failed to process items of type: \(type(of: items))", type: "Error")
+        }
+    }
+    
+    private func parseStringResponse(_ str: String) {
+        guard let data = str.data(using: .utf8),
+              let arr = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let dict = arr.first else { return }
+        extractMetadataFromDict(dict)
+    }
+    
+    private func extractMetadataFromDict(_ dict: [String: Any]) {
+        synopsis = dict["description"] as? String ?? ""
+        aliases = dict["aliases"] as? String ?? ""
+        airdate = dict["airdate"] as? String ?? ""
     }
     
     private func fetchAniListPosterImageAndSet() {
@@ -1708,7 +1684,6 @@ struct MediaInfoView: View {
             }
         }.resume()
     }
-    
     
     func fetchStream(href: String) {
         let fetchID = UUID()
@@ -1953,7 +1928,6 @@ struct MediaInfoView: View {
             DropManager.shared.showDrop(title: "Error", subtitle: "Failed to present player", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
         }
     }
-    
     
     private func downloadSingleEpisodeDirectly(episode: EpisodeLink) {
         if isSingleEpisodeDownloading { return }
@@ -2240,7 +2214,6 @@ struct MediaInfoView: View {
         }.resume()
     }
     
-    
     private func presentAlert(_ alert: UIAlertController) {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first,
@@ -2342,5 +2315,3 @@ struct MediaInfoView: View {
         })
     }
 }
-
-

@@ -23,9 +23,9 @@ struct SoraApp: App {
         
         TraktToken.checkAuthenticationStatus { isAuthenticated in
             if isAuthenticated {
-                Logger.shared.log("Trakt authentication is valid")
+                Logger.shared.log("Trakt authentication is valid", type: "Debug")
             } else {
-                Logger.shared.log("Trakt authentication required", type: "Error")
+                Logger.shared.log("Trakt authentication required", type: "Debug")
             }
         }
     }

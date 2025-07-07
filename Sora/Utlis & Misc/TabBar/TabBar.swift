@@ -24,7 +24,7 @@ extension Color {
         default:
             (r, g, b, a) = (1, 1, 1, 1)
         }
-
+        
         self.init(
             .sRGB,
             red: Double(r) / 255,
@@ -280,7 +280,7 @@ struct TabBar: View {
                 .padding(.bottom, -100)
                 .padding(.top, -10)
         }
-        .offset(y: keyboardFocus ? -keyboardHeight + 40 : 0) 
+        .offset(y: keyboardFocus ? -keyboardHeight + 40 : 0)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: keyboardHeight)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: keyboardFocus)
         .onChange(of: keyboardHeight) { newValue in
@@ -298,10 +298,17 @@ struct TabBar: View {
             NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
                 keyboardHeight = 0
             }
+            
+            NotificationCenter.default.addObserver(forName: .tabBarSearchQueryUpdated, object: nil, queue: .main) { notification in
+                if let query = notification.userInfo?["searchQuery"] as? String {
+                    searchQuery = query
+                }
+            }
         }
         .onDisappear {
             NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
             NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+            NotificationCenter.default.removeObserver(self, name: .tabBarSearchQueryUpdated, object: nil)
         }
         .onChange(of: selectedTab) { newValue in
             if !isDragging {

@@ -22,4 +22,5 @@ extension Notification.Name {
     static let hideTabBar = Notification.Name("hideTabBar")
     static let showTabBar = Notification.Name("showTabBar")
     static let searchQueryChanged = Notification.Name("searchQueryChanged")
+    static let tabBarSearchQueryUpdated = Notification.Name("tabBarSearchQueryUpdated")
 }

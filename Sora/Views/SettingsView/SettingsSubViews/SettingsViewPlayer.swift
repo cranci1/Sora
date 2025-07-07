@@ -304,29 +304,6 @@ struct SettingsViewPlayer: View {
                     )
                 }
                 
-                SettingsSection(title: NSLocalizedString("Progress bar Marker Color", comment: "")) {
-                    ColorPicker(NSLocalizedString("Segments Color", comment: ""), selection: Binding(
-                        get: {
-                            if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
-                               let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
-                                return Color(uiColor)
-                            }
-                            return .yellow
-                        },
-                        set: { newColor in
-                            let uiColor = UIColor(newColor)
-                            if let data = try? NSKeyedArchiver.archivedData(
-                                withRootObject: uiColor,
-                                requiringSecureCoding: false
-                            ) {
-                                UserDefaults.standard.set(data, forKey: "segmentsColorData")
-                            }
-                        }
-                    ))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                }
-                
                 SettingsSection(
                     title: NSLocalizedString("Skip Settings", comment: ""),
                     footer: NSLocalizedString("Double tapping the screen on it's sides will skip with the short tap setting.", comment: "")

@@ -108,6 +108,12 @@ struct SearchView: View {
                     cellWidth: cellWidth,
                     onHistoryItemSelected: { query in
                         searchQuery = query
+                        searchDebounceTimer?.invalidate()
+                        
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        NotificationCenter.default.post(name: .tabBarSearchQueryUpdated, object: nil, userInfo: ["searchQuery": query])
+                        
+                        performSearch()
                     },
                     onHistoryItemDeleted: { index in
                         removeFromHistory(at: index)

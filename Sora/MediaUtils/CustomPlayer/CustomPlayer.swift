@@ -1533,11 +1533,12 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     func setupSkip85Button() {
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
-        let image = UIImage(systemName: "goforward", withConfiguration: config)
+        let image = UIImage(systemName: "goforward", withConfiguration: config)?.withRenderingMode(.alwaysTemplate)
         skip85Button = GradientBlurButton(type: .system)
         skip85Button.setTitle(" Skip 85s", for: .normal)
         skip85Button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         skip85Button.setImage(image, for: .normal)
+        skip85Button.imageView?.contentMode = .scaleAspectFit
         skip85Button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         skip85Button.tintColor = .white
         skip85Button.setTitleColor(.white, for: .normal)

@@ -363,6 +363,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupTopRowLayout()
         updateSkipButtonsVisibility()
         
+        // Check initial orientation and update title visibility
+        updateTitleVisibilityForCurrentOrientation()
+        
         isControlsVisible = true
         for control in controlsToHide {
             control.alpha = 1.0
@@ -528,21 +531,29 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         coordinator.animate(alongsideTransition: { _ in
         }, completion: { _ in
-            
-            self.episodeNumberLabel.isHidden = false
-            self.titleLabel.isHidden = false
-            self.titleStackView.isHidden = false
-            self.titleLabel.alpha = 1.0
-            self.episodeNumberLabel.alpha = 1.0
-            self.titleStackView.alpha = 1.0
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.titleLabel.restartLabel()
-            }
+            self.updateTitleVisibilityForCurrentOrientation()
             
             self.view.setNeedsLayout()
             self.view.layoutIfNeeded()
         })
+    }
+    
+    private func updateTitleVisibilityForCurrentOrientation() {
+        let isLandscape = UIDevice.current.orientation.isLandscape || view.bounds.width > view.bounds.height
+        
+        episodeNumberLabel.isHidden = !isLandscape
+        titleLabel.isHidden = !isLandscape
+        titleStackView.isHidden = !isLandscape
+        
+        episodeNumberLabel.alpha = isLandscape ? 1.0 : 0.0
+        titleLabel.alpha = isLandscape ? 1.0 : 0.0
+        titleStackView.alpha = isLandscape ? 1.0 : 0.0
+        
+        if isLandscape {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.titleLabel.restartLabel()
+            }
+        }
     }
     
     override func viewDidLayoutSubviews() {
@@ -573,6 +584,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         } else {
             updateMarqueeConstraintsForBottom()
         }
+        
+        updateTitleVisibilityForCurrentOrientation()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -1352,10 +1365,20 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         NSLayoutConstraint.deactivate(titleStackAboveSkipButtonConstraints)
         NSLayoutConstraint.deactivate(titleStackAboveSliderConstraints)
         
-        titleStackView.isHidden = false
-        titleStackView.alpha = 1.0
-        episodeNumberLabel.isHidden = false
-        titleLabel.isHidden = false
+        let isLandscape = view.bounds.width > view.bounds.height
+        titleStackView.isHidden = !isLandscape
+        titleStackView.alpha = isLandscape ? 1.0 : 0.0
+        episodeNumberLabel.isHidden = !isLandscape
+        titleLabel.isHidden = !isLandscape
+        episodeNumberLabel.alpha = isLandscape ? 1.0 : 0.0
+        titleLabel.alpha = isLandscape ? 1.0 : 0.0
+        
+        if !isLandscape {
+            return
+        }
+        
+        titleLabel.textAlignment = .left
+        episodeNumberLabel.textAlignment = .left
         
         let skipIntroVisible = !(skipIntroButton?.isHidden ?? true) && (skipIntroButton?.alpha ?? 0) > 0.1
         let skip85Visible = !(skip85Button?.isHidden ?? true) && (skip85Button?.alpha ?? 0) > 0.1
@@ -1377,7 +1400,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             NSLayoutConstraint.activate(titleStackAboveSliderConstraints)
         }
         
-        titleLabel.restartLabel()
+        if isLandscape {
+            titleLabel.restartLabel()
+        }
         
         view.layoutIfNeeded()
     }
@@ -3494,13 +3519,19 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     private func resetMarqueeAfterOrientationChange() {
-        episodeNumberLabel.isHidden = false
-        titleLabel.isHidden = false
-        titleStackView.isHidden = false
+        let isLandscape = view.bounds.width > view.bounds.height
         
-        episodeNumberLabel.alpha = 1.0
-        titleLabel.alpha = 1.0
-        titleStackView.alpha = 1.0
+        episodeNumberLabel.isHidden = !isLandscape
+        titleLabel.isHidden = !isLandscape
+        titleStackView.isHidden = !isLandscape
+        
+        episodeNumberLabel.alpha = isLandscape ? 1.0 : 0.0
+        titleLabel.alpha = isLandscape ? 1.0 : 0.0
+        titleStackView.alpha = isLandscape ? 1.0 : 0.0
+        
+        if !isLandscape {
+            return
+        }
         
         titleLabel.textAlignment = .left
         episodeNumberLabel.textAlignment = .left
@@ -3509,8 +3540,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         view.layoutIfNeeded()
         
         titleLabel.shutdownLabel()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            self.titleLabel.restartLabel()
+        if isLandscape {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.titleLabel.restartLabel()
+            }
         }
     }
 }

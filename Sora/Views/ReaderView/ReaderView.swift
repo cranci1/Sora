@@ -55,6 +55,9 @@ struct ReaderView: View {
 
     @StateObject private var navigator = ChapterNavigator.shared
     
+    // Status bar control
+    @State private var statusBarHidden = false
+    
     private let fontOptions = [
         ("-apple-system", "System"),
         ("Georgia", "Georgia"),
@@ -150,6 +153,8 @@ struct ReaderView: View {
                         .onTapGesture {
                             withAnimation(.easeInOut(duration: 0.6)) {
                                 isHeaderVisible.toggle()
+                                statusBarHidden = !isHeaderVisible
+                                setStatusBarHidden(!isHeaderVisible)
                                 if !isHeaderVisible {
                                     isSettingsExpanded = false
                                 }
@@ -157,33 +162,35 @@ struct ReaderView: View {
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                                    HTMLView(
-                    htmlContent: htmlContent,
-                    fontSize: fontSize,
-                    fontFamily: selectedFont,
-                    fontWeight: fontWeight,
-                    textAlignment: textAlignment,
-                    lineSpacing: lineSpacing,
-                    margin: margin,
-                    isAutoScrolling: $isAutoScrolling,
-                    autoScrollSpeed: autoScrollSpeed,
-                    colorPreset: colorPresets[selectedColorPreset],
-                    chapterHref: chapterHref,
-                    onProgressChanged: { progress in
-                        self.readingProgress = progress
-                        
-                        if Date().timeIntervalSince(self.lastProgressUpdate) > 2.0 {
-                            self.updateReadingProgress(progress: progress)
-                            self.lastProgressUpdate = Date()
-                            Logger.shared.log("Progress updated to \(progress)", type: "Debug")
+                    HTMLView(
+                        htmlContent: htmlContent,
+                        fontSize: fontSize,
+                        fontFamily: selectedFont,
+                        fontWeight: fontWeight,
+                        textAlignment: textAlignment,
+                        lineSpacing: lineSpacing,
+                        margin: margin,
+                        isAutoScrolling: $isAutoScrolling,
+                        autoScrollSpeed: autoScrollSpeed,
+                        colorPreset: colorPresets[selectedColorPreset],
+                        chapterHref: chapterHref,
+                        onProgressChanged: { progress in
+                            self.readingProgress = progress
+                            
+                            if Date().timeIntervalSince(self.lastProgressUpdate) > 2.0 {
+                                self.updateReadingProgress(progress: progress)
+                                self.lastProgressUpdate = Date()
+                                Logger.shared.log("Progress updated to \(progress)", type: "Debug")
+                            }
                         }
-                    }
-                )
+                    )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.horizontal)
                     .simultaneousGesture(TapGesture().onEnded {
                         withAnimation(.easeInOut(duration: 0.6)) {
                             isHeaderVisible.toggle()
+                            statusBarHidden = !isHeaderVisible
+                            setStatusBarHidden(!isHeaderVisible)
                             if !isHeaderVisible {
                                 isSettingsExpanded = false
                             }
@@ -222,6 +229,14 @@ struct ReaderView: View {
             
             NotificationCenter.default.post(name: .hideTabBar, object: nil)
             UserDefaults.standard.set(true, forKey: "isReaderActive")
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                withAnimation(.easeInOut(duration: 0.6)) {
+                    isHeaderVisible = false
+                    statusBarHidden = true
+                    setStatusBarHidden(true)
+                }
+            }
         }
         .onDisappear {
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -287,6 +302,7 @@ struct ReaderView: View {
                 }
             }
             UserDefaults.standard.set(false, forKey: "isReaderActive")
+            setStatusBarHidden(false)
         }
         
         .task {
@@ -307,6 +323,8 @@ struct ReaderView: View {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             isHeaderVisible = false
+                            statusBarHidden = true
+                            setStatusBarHidden(true)
                         }
                     }
                 } else if isOffline {
@@ -344,6 +362,8 @@ struct ReaderView: View {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 isHeaderVisible = false
+                                statusBarHidden = true
+                                setStatusBarHidden(true)
                             }
                         }
                         
@@ -383,6 +403,7 @@ struct ReaderView: View {
                 }
             }
         }
+        .statusBar(hidden: statusBarHidden)
     }
     
     private func stopAutoScroll() {
@@ -970,6 +991,16 @@ struct ReaderView: View {
             )
             
             ContinueReadingManager.shared.save(item: item, htmlContent: validHtmlContent)
+        }
+    }
+    
+    private func setStatusBarHidden(_ hidden: Bool) {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            let windows = windowScene.windows
+            windows.forEach { window in
+                let viewController = window.rootViewController
+                viewController?.setNeedsStatusBarAppearanceUpdate()
+            }
         }
     }
 }

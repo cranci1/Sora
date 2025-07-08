@@ -715,7 +715,7 @@ struct ReaderView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
                 
-                // Progress bar
+                
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
                         Rectangle()
@@ -725,12 +725,26 @@ struct ReaderView: View {
                         Rectangle()
                             .fill(Color.accentColor)
                             .frame(width: max(0, min(CGFloat(readingProgress) * geometry.size.width, geometry.size.width)), height: 4)
+                        
+                        Circle()
+                            .fill(Color.accentColor)
+                            .frame(width: 16, height: 16)
+                            .shadow(color: Color.black.opacity(0.3), radius: 2, x: 0, y: 1)
+                            .offset(x: max(0, min(CGFloat(readingProgress) * geometry.size.width, geometry.size.width)) - 8)
                     }
                     .cornerRadius(2)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                let percentage = min(max(value.location.x / geometry.size.width, 0), 1)
+                                scrollToPosition(percentage)
+                            }
+                    )
                 }
-                .frame(height: 4)
+                .frame(height: 24)  
                 .padding(.horizontal, 20)
-                .padding(.top, 12)
+                .padding(.top, 8)
                 .padding(.bottom, (UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.safeAreaInsets.bottom ?? 0) + 16)
                 
                 .frame(maxWidth: .infinity)
@@ -1022,6 +1036,46 @@ struct ReaderView: View {
                 viewController?.setNeedsStatusBarAppearanceUpdate()
             }
         }
+    }
+    
+    private func scrollToPosition(_ percentage: CGFloat) {
+        readingProgress = Double(percentage)
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first,
+           let rootVC = window.rootViewController {
+            let script = """
+            (function() {
+                const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrollPosition = scrollHeight * \(percentage);
+                window.scrollTo({
+                    top: scrollPosition,
+                    behavior: 'auto'
+                });
+                return scrollPosition;
+            })();
+            """
+            
+            findWebView(in: rootVC.view)?.evaluateJavaScript(script, completionHandler: { _, error in
+                if let error = error {
+                    Logger.shared.log("Error scrolling to position: \(error)", type: "Error")
+                }
+            })
+        }
+    }
+    
+    private func findWebView(in view: UIView) -> WKWebView? {
+        if let webView = view as? WKWebView {
+            return webView
+        }
+        
+        for subview in view.subviews {
+            if let webView = findWebView(in: subview) {
+                return webView
+            }
+        }
+        
+        return nil
     }
 }
 

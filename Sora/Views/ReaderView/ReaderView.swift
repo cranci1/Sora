@@ -190,7 +190,7 @@ struct ReaderView: View {
                         }
                     })
                 }
-                .padding(.top, isHeaderVisible ? 0 : (UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.safeAreaInsets.top ?? 0))
+                .padding(.top, UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.safeAreaInsets.top ?? 0)
             }
             
             headerView
@@ -1230,6 +1230,7 @@ struct HTMLView: UIViewRepresentable {
                         line-height: \(lineSpacing);
                         text-align: \(textAlignment);
                         padding: \(margin)px;
+                        padding-top: calc(\(margin)px + 20px); /* Add extra padding at the top */
                         margin: 0;
                         color: \(colorPreset.text);
                         background-color: \(colorPreset.background);

@@ -1710,10 +1710,10 @@ struct MediaInfoView: View {
                         self.handleStreamFailure(error: nil)
                     }
                 } else if let streams = result.streams, !streams.isEmpty {
-                    if streams.count > 1 {
+                    if streams.count > 2 {
                         self.showStreamSelectionAlert(sources: streams, fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
                     } else {
-                        self.playStream(url: streams[0], fullURL: href, subtitles: result.subtitles?.first, fetchID: fetchID)
+                        self.playStream(url: streams[1], fullURL: href, subtitles: result.subtitles?.first, headers: nil, fetchID: fetchID)
                     }
                 } else {
                     self.handleStreamFailure(error: nil)

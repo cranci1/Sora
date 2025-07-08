@@ -494,28 +494,53 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             capsuleContainer.addSubview(btn)
         }
         
-        NSLayoutConstraint.activate([
-            capsuleContainer.leadingAnchor.constraint(equalTo: dismissButton.superview!.trailingAnchor, constant: 12),
-            capsuleContainer.centerYAnchor.constraint(equalTo: dismissButton.superview!.centerYAnchor),
-            capsuleContainer.heightAnchor.constraint(equalToConstant: 42)
-        ])
+        let isLandscape = UIDevice.current.orientation.isLandscape || view.bounds.width > view.bounds.height
         
-        for (index, btn) in buttons.enumerated() {
+        if isLandscape {
             NSLayoutConstraint.activate([
-                btn.centerYAnchor.constraint(equalTo: capsuleContainer.centerYAnchor),
-                btn.widthAnchor.constraint(equalToConstant: 40),
-                btn.heightAnchor.constraint(equalToConstant: 40)
+                capsuleContainer.leadingAnchor.constraint(equalTo: dismissButton.superview!.trailingAnchor, constant: 12),
+                capsuleContainer.centerYAnchor.constraint(equalTo: dismissButton.superview!.centerYAnchor),
+                capsuleContainer.heightAnchor.constraint(equalToConstant: 42)
             ])
-            if index == 0 {
-                btn.leadingAnchor.constraint(equalTo: capsuleContainer.leadingAnchor, constant: 20).isActive = true
-            } else {
-                btn.leadingAnchor.constraint(equalTo: buttons[index - 1].trailingAnchor, constant: 18).isActive = true
+            
+            for (index, btn) in buttons.enumerated() {
+                NSLayoutConstraint.activate([
+                    btn.centerYAnchor.constraint(equalTo: capsuleContainer.centerYAnchor),
+                    btn.widthAnchor.constraint(equalToConstant: 40),
+                    btn.heightAnchor.constraint(equalToConstant: 40)
+                ])
+                if index == 0 {
+                    btn.leadingAnchor.constraint(equalTo: capsuleContainer.leadingAnchor, constant: 20).isActive = true
+                } else {
+                    btn.leadingAnchor.constraint(equalTo: buttons[index - 1].trailingAnchor, constant: 18).isActive = true
+                }
+                if index == buttons.count - 1 {
+                    btn.trailingAnchor.constraint(equalTo: capsuleContainer.trailingAnchor, constant: -10).isActive = true
+                }
             }
-            if index == buttons.count - 1 {
-                btn.trailingAnchor.constraint(equalTo: capsuleContainer.trailingAnchor, constant: -10).isActive = true
+        } else {
+            NSLayoutConstraint.activate([
+                capsuleContainer.topAnchor.constraint(equalTo: dismissButton.superview!.bottomAnchor, constant: 12),
+                capsuleContainer.leadingAnchor.constraint(equalTo: dismissButton.superview!.leadingAnchor),
+                capsuleContainer.widthAnchor.constraint(equalToConstant: 42)
+            ])
+            
+            for (index, btn) in buttons.enumerated() {
+                NSLayoutConstraint.activate([
+                    btn.centerXAnchor.constraint(equalTo: capsuleContainer.centerXAnchor),
+                    btn.widthAnchor.constraint(equalToConstant: 40),
+                    btn.heightAnchor.constraint(equalToConstant: 40)
+                ])
+                if index == 0 {
+                    btn.topAnchor.constraint(equalTo: capsuleContainer.topAnchor, constant: 20).isActive = true
+                } else {
+                    btn.topAnchor.constraint(equalTo: buttons[index - 1].bottomAnchor, constant: 18).isActive = true
+                }
+                if index == buttons.count - 1 {
+                    btn.bottomAnchor.constraint(equalTo: capsuleContainer.bottomAnchor, constant: -10).isActive = true
+                }
             }
         }
-        
         
         view.bringSubviewToFront(skip85Button)
         
@@ -530,6 +555,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         titleLabel.shutdownLabel()
         
         coordinator.animate(alongsideTransition: { _ in
+            self.setupTopRowLayout()
         }, completion: { _ in
             self.updateTitleVisibilityForCurrentOrientation()
             
@@ -581,6 +607,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         if isLandscape != wasLandscape {
             UserDefaults.standard.set(isLandscape, forKey: "wasLandscapeOrientation")
             resetMarqueeAfterOrientationChange()
+            setupTopRowLayout()
         } else {
             updateMarqueeConstraintsForBottom()
         }
@@ -1289,17 +1316,33 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         self.volumeSliderHostingView = hostingController.view
         
-        NSLayoutConstraint.activate([
-            volumeCapsule.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
-            volumeCapsule.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16),
-            volumeCapsule.heightAnchor.constraint(equalToConstant: 42),
-            volumeCapsule.widthAnchor.constraint(equalToConstant: 200),
-            
-            hostingController.view.centerYAnchor.constraint(equalTo: volumeCapsule.centerYAnchor),
-            hostingController.view.leadingAnchor.constraint(equalTo: volumeCapsule.leadingAnchor, constant: 20),
-            hostingController.view.trailingAnchor.constraint(equalTo: volumeCapsule.trailingAnchor, constant: -20),
-            hostingController.view.heightAnchor.constraint(equalToConstant: 30)
-        ])
+        let isLandscape = UIDevice.current.orientation.isLandscape || view.bounds.width > view.bounds.height
+        
+        if isLandscape {
+            NSLayoutConstraint.activate([
+                volumeCapsule.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
+                volumeCapsule.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16),
+                volumeCapsule.heightAnchor.constraint(equalToConstant: 42),
+                volumeCapsule.widthAnchor.constraint(equalToConstant: 200),
+                
+                hostingController.view.centerYAnchor.constraint(equalTo: volumeCapsule.centerYAnchor),
+                hostingController.view.leadingAnchor.constraint(equalTo: volumeCapsule.leadingAnchor, constant: 20),
+                hostingController.view.trailingAnchor.constraint(equalTo: volumeCapsule.trailingAnchor, constant: -20),
+                hostingController.view.heightAnchor.constraint(equalToConstant: 30)
+            ])
+        } else {
+            NSLayoutConstraint.activate([
+                volumeCapsule.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+                volumeCapsule.trailingAnchor.constraint(equalTo: controlsContainerView.trailingAnchor, constant: -16),
+                volumeCapsule.heightAnchor.constraint(equalToConstant: 42),
+                volumeCapsule.widthAnchor.constraint(equalToConstant: 200),
+                
+                hostingController.view.centerYAnchor.constraint(equalTo: volumeCapsule.centerYAnchor),
+                hostingController.view.leadingAnchor.constraint(equalTo: volumeCapsule.leadingAnchor, constant: 20),
+                hostingController.view.trailingAnchor.constraint(equalTo: volumeCapsule.trailingAnchor, constant: -20),
+                hostingController.view.heightAnchor.constraint(equalToConstant: 30)
+            ])
+        }
         
         self.volumeSliderHostingView = volumeCapsule
         

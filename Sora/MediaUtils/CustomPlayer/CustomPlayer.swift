@@ -523,9 +523,24 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
+        
+        titleLabel.shutdownLabel()
+        
         coordinator.animate(alongsideTransition: { _ in
-            self.updateMarqueeConstraints()
         }, completion: { _ in
+            
+            self.episodeNumberLabel.isHidden = false
+            self.titleLabel.isHidden = false
+            self.titleStackView.isHidden = false
+            self.titleLabel.alpha = 1.0
+            self.episodeNumberLabel.alpha = 1.0
+            self.titleStackView.alpha = 1.0
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.titleLabel.restartLabel()
+            }
+            
+            self.view.setNeedsLayout()
             self.view.layoutIfNeeded()
         })
     }
@@ -548,7 +563,16 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         } else {
             episodeNumberLabel.lineBreakMode = .byClipping
         }
-        updateMarqueeConstraintsForBottom()
+        
+        let isLandscape = view.bounds.width > view.bounds.height
+        let wasLandscape = UserDefaults.standard.bool(forKey: "wasLandscapeOrientation")
+        
+        if isLandscape != wasLandscape {
+            UserDefaults.standard.set(isLandscape, forKey: "wasLandscapeOrientation")
+            resetMarqueeAfterOrientationChange()
+        } else {
+            updateMarqueeConstraintsForBottom()
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -1162,14 +1186,20 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     func setupMarqueeLabel() {
+        let titleContainer = UIView()
+        titleContainer.translatesAutoresizingMaskIntoConstraints = false
+        titleContainer.backgroundColor = .clear
+        controlsContainerView.addSubview(titleContainer) 
+        
         episodeNumberLabel = UILabel()
         episodeNumberLabel.text = "Episode \(episodeNumber)"
         episodeNumberLabel.textColor = UIColor(white: 1.0, alpha: 0.6)
         episodeNumberLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
         episodeNumberLabel.textAlignment = .left
         episodeNumberLabel.setContentHuggingPriority(.required, for: .vertical)
+        episodeNumberLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        titleLabel = MarqueeLabel()
+        titleLabel = MarqueeLabel(frame: .zero, duration: 8.0, fadeLength: 10.0)
         titleLabel.text = titleText
         titleLabel.type = .continuous
         titleLabel.textColor = .white
@@ -1182,6 +1212,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         titleLabel.lineBreakMode = .byTruncatingTail
         titleLabel.textAlignment = .left
         titleLabel.setContentHuggingPriority(.defaultLow, for: .vertical)
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
         
         titleStackView = UIStackView(arrangedSubviews: [episodeNumberLabel, titleLabel])
         titleStackView.axis = .vertical
@@ -1189,8 +1220,32 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         titleStackView.spacing = 0
         titleStackView.clipsToBounds = false
         titleStackView.isLayoutMarginsRelativeArrangement = true
-        controlsContainerView.addSubview(titleStackView)
         titleStackView.translatesAutoresizingMaskIntoConstraints = false
+        titleContainer.addSubview(titleStackView)
+        
+        NSLayoutConstraint.activate([
+            titleContainer.leadingAnchor.constraint(equalTo: controlsContainerView.leadingAnchor, constant: 18),
+            titleContainer.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: 0.7),
+            titleContainer.heightAnchor.constraint(equalToConstant: 50)
+        ])
+        
+
+        NSLayoutConstraint.activate([
+            titleStackView.leadingAnchor.constraint(equalTo: titleContainer.leadingAnchor),
+            titleStackView.trailingAnchor.constraint(equalTo: titleContainer.trailingAnchor),
+            titleStackView.topAnchor.constraint(equalTo: titleContainer.topAnchor),
+            titleStackView.bottomAnchor.constraint(equalTo: titleContainer.bottomAnchor)
+        ])
+        
+        NSLayoutConstraint.activate([
+            episodeNumberLabel.leadingAnchor.constraint(equalTo: titleStackView.leadingAnchor),
+            episodeNumberLabel.trailingAnchor.constraint(lessThanOrEqualTo: titleStackView.trailingAnchor),
+            titleLabel.leadingAnchor.constraint(equalTo: titleStackView.leadingAnchor),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: titleStackView.trailingAnchor)
+        ])
+        
+        titleStackAboveSkipButtonConstraints = []
+        titleStackAboveSliderConstraints = []
     }
     
     func volumeSlider() {
@@ -1293,6 +1348,40 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         holdSpeedIndicator.titleLabel?.textAlignment = .center
     }
     
+    func updateMarqueeConstraintsForBottom() {
+        NSLayoutConstraint.deactivate(titleStackAboveSkipButtonConstraints)
+        NSLayoutConstraint.deactivate(titleStackAboveSliderConstraints)
+        
+        titleStackView.isHidden = false
+        titleStackView.alpha = 1.0
+        episodeNumberLabel.isHidden = false
+        titleLabel.isHidden = false
+        
+        let skipIntroVisible = !(skipIntroButton?.isHidden ?? true) && (skipIntroButton?.alpha ?? 0) > 0.1
+        let skip85Visible = !(skip85Button?.isHidden ?? true) && (skip85Button?.alpha ?? 0) > 0.1
+        
+        if skipIntroVisible && skipIntroButton?.superview != nil {
+            titleStackAboveSkipButtonConstraints = [
+                titleStackView.superview!.bottomAnchor.constraint(equalTo: skipIntroButton.topAnchor, constant: -4)
+            ]
+            NSLayoutConstraint.activate(titleStackAboveSkipButtonConstraints)
+        } else if skip85Visible && skip85Button?.superview != nil {
+            titleStackAboveSkipButtonConstraints = [
+                titleStackView.superview!.bottomAnchor.constraint(equalTo: skip85Button.topAnchor, constant: -4)
+            ]
+            NSLayoutConstraint.activate(titleStackAboveSkipButtonConstraints)
+        } else if let sliderView = sliderHostingController?.view {
+            titleStackAboveSliderConstraints = [
+                titleStackView.superview!.bottomAnchor.constraint(equalTo: sliderView.topAnchor, constant: -4)
+            ]
+            NSLayoutConstraint.activate(titleStackAboveSliderConstraints)
+        }
+        
+        titleLabel.restartLabel()
+        
+        view.layoutIfNeeded()
+    }
+    
     func updateSkipButtonsVisibility() {
         if !isControlsVisible { return }
         let t = currentTimeVal
@@ -1321,18 +1410,20 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
         }
         
-        if shouldShowSkip85 {
+        if shouldShowSkip85 && (skip85Button.isHidden || skip85Button.alpha < 0.1) {
             skip85Button.setTitle(" Skip 85s", for: .normal)
             skip85Button.setImage(UIImage(systemName: "goforward"), for: .normal)
             skip85Button.isHidden = false
             UIView.animate(withDuration: 0.2) {
                 self.skip85Button.alpha = 1.0
             }
-        } else {
+        } else if !shouldShowSkip85 && (!skip85Button.isHidden || skip85Button.alpha > 0) {
             UIView.animate(withDuration: 0.2) {
                 self.skip85Button.alpha = 0.0
             } completion: { _ in
-                self.skip85Button.isHidden = true
+                if !shouldShowSkip85 {
+                    self.skip85Button.isHidden = true
+                }
             }
         }
         
@@ -1545,6 +1636,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skip85Button.layer.cornerRadius = 21
         skip85Button.clipsToBounds = false
         skip85Button.alpha = 0.0
+        skip85Button.isHidden = !isSkip85Visible 
         skip85Button.addTarget(self, action: #selector(skip85Tapped), for: .touchUpInside)
         controlsContainerView.addSubview(skip85Button)
         skip85Button.translatesAutoresizingMaskIntoConstraints = false
@@ -3190,43 +3282,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         isMenuOpen = true
     }
     
-    func updateMarqueeConstraintsForBottom() {
-        NSLayoutConstraint.deactivate(titleStackAboveSkipButtonConstraints)
-        NSLayoutConstraint.deactivate(titleStackAboveSliderConstraints)
-        
-        let skipIntroVisible = !(skipIntroButton?.isHidden ?? true) && (skipIntroButton?.alpha ?? 0) > 0.1
-        let skip85Visible = !(skip85Button?.isHidden ?? true) && (skip85Button?.alpha ?? 0) > 0.1
-        let skipOutroVisible = skipOutroButton.superview != nil && !skipOutroButton.isHidden && skipOutroButton.alpha > 0.1
-        
-        let isLandscape = view.bounds.width > view.bounds.height
-        let widthMultiplier: CGFloat = isLandscape ? 0.5 : 0.7
-        
-        if skipIntroVisible && skipIntroButton?.superview != nil && titleStackView.superview != nil {
-            titleStackAboveSkipButtonConstraints = [
-                titleStackView.leadingAnchor.constraint(equalTo: controlsContainerView.leadingAnchor, constant: 18),
-                titleStackView.bottomAnchor.constraint(equalTo: skipIntroButton.topAnchor, constant: -4),
-                titleStackView.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: widthMultiplier)
-            ]
-            NSLayoutConstraint.activate(titleStackAboveSkipButtonConstraints)
-        } else if skip85Visible && skip85Button?.superview != nil && titleStackView.superview != nil {
-            titleStackAboveSkipButtonConstraints = [
-                titleStackView.leadingAnchor.constraint(equalTo: controlsContainerView.leadingAnchor, constant: 18),
-                titleStackView.bottomAnchor.constraint(equalTo: skip85Button.topAnchor, constant: -4),
-                titleStackView.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: widthMultiplier)
-            ]
-            NSLayoutConstraint.activate(titleStackAboveSkipButtonConstraints)
-        } else if let sliderView = sliderHostingController?.view, titleStackView.superview != nil {
-            titleStackAboveSliderConstraints = [
-                titleStackView.leadingAnchor.constraint(equalTo: controlsContainerView.leadingAnchor, constant: 18),
-                titleStackView.bottomAnchor.constraint(equalTo: sliderView.topAnchor, constant: -4),
-                titleStackView.widthAnchor.constraint(lessThanOrEqualTo: controlsContainerView.widthAnchor, multiplier: widthMultiplier)
-            ]
-            NSLayoutConstraint.activate(titleStackAboveSliderConstraints)
-        }
-        
-        view.layoutIfNeeded()
-    }
-    
     func setupWatchNextButton() {
         let image = UIImage(systemName: "forward.end", withConfiguration: cfg)
         
@@ -3250,7 +3305,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         NSLayoutConstraint.activate([
             dimButton.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor),
             dimButton.widthAnchor.constraint(equalToConstant: 24),
-            dimButton.heightAnchor.constraint(equalToConstant: 24)
+            dimButton.heightAnchor.constraint(equalToConstant: 24)  
         ])
         
         dimButtonToSlider = dimButton.trailingAnchor.constraint(equalTo: volumeSliderHostingView!.trailingAnchor)
@@ -3406,8 +3461,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         NSLayoutConstraint.activate([
             pipButton.centerYAnchor.constraint(equalTo: dimButton.centerYAnchor),
             pipButton.trailingAnchor.constraint(equalTo: dimButton.leadingAnchor, constant: -8),
-            pipButton.widthAnchor.constraint(equalToConstant: 40),
-            pipButton.heightAnchor.constraint(equalToConstant: 40),
+            pipButton.widthAnchor.constraint(equalToConstant: 24),  
+            pipButton.heightAnchor.constraint(equalToConstant: 24), 
             airplayButton.centerYAnchor.constraint(equalTo: pipButton.centerYAnchor),
             airplayButton.trailingAnchor.constraint(equalTo: pipButton.leadingAnchor, constant: -4),
             airplayButton.widthAnchor.constraint(equalToConstant: 24),
@@ -3420,30 +3475,42 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     func updateMarqueeConstraints() {
-        UIView.performWithoutAnimation {
-            NSLayoutConstraint.deactivate(currentMarqueeConstraints)
-            
-            let leftSpacing: CGFloat = 2
-            let rightSpacing: CGFloat = 6
-            let trailingAnchor: NSLayoutXAxisAnchor = (volumeSliderHostingView?.isHidden == false)
-            ? volumeSliderHostingView!.leadingAnchor
-            : view.safeAreaLayoutGuide.trailingAnchor
-            
-            currentMarqueeConstraints = [
-                episodeNumberLabel.leadingAnchor.constraint(
-                    equalTo: dismissButton.trailingAnchor, constant: leftSpacing),
-                episodeNumberLabel.trailingAnchor.constraint(
-                    equalTo: trailingAnchor, constant: -rightSpacing - 10),
-                episodeNumberLabel.centerYAnchor.constraint(equalTo: dismissButton.centerYAnchor)
-            ]
-            NSLayoutConstraint.activate(currentMarqueeConstraints)
-            updateMarqueeConstraintsForBottom()
-            
-            view.layoutIfNeeded()
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                self.titleLabel?.restartLabel()
-            }
+        titleStackView.isHidden = false
+        episodeNumberLabel.isHidden = false
+        titleLabel.isHidden = false
+        
+        titleStackView.alpha = 1.0
+        episodeNumberLabel.alpha = 1.0
+        titleLabel.alpha = 1.0
+        
+        titleLabel.textAlignment = .left
+        episodeNumberLabel.textAlignment = .left
+        
+        view.layoutIfNeeded()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.titleLabel.restartLabel()
+        }
+    }
+    
+    private func resetMarqueeAfterOrientationChange() {
+        episodeNumberLabel.isHidden = false
+        titleLabel.isHidden = false
+        titleStackView.isHidden = false
+        
+        episodeNumberLabel.alpha = 1.0
+        titleLabel.alpha = 1.0
+        titleStackView.alpha = 1.0
+        
+        titleLabel.textAlignment = .left
+        episodeNumberLabel.textAlignment = .left
+        
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+        
+        titleLabel.shutdownLabel()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.titleLabel.restartLabel()
         }
     }
 }

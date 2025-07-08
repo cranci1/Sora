@@ -1178,11 +1178,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         titleLabel.leadingBuffer = 1.0
         titleLabel.trailingBuffer = 16.0
         titleLabel.animationDelay = 2.5
-        titleLabel.layer.shadowColor = UIColor.black.cgColor
-        titleLabel.layer.shadowOffset = CGSize(width: 0, height: 2)
-        titleLabel.layer.shadowOpacity = 0.6
-        titleLabel.layer.shadowRadius = 4
-        titleLabel.layer.masksToBounds = false
         titleLabel.lineBreakMode = .byTruncatingTail
         titleLabel.textAlignment = .left
         titleLabel.setContentHuggingPriority(.defaultLow, for: .vertical)
@@ -1507,7 +1502,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skipIntroButton.tintColor = .white
         skipIntroButton.setTitleColor(.white, for: .normal)
         skipIntroButton.layer.cornerRadius = 21
-        skipIntroButton.clipsToBounds = true
+        skipIntroButton.clipsToBounds = false
         skipIntroButton.alpha = 0.0
         skipIntroButton.addTarget(self, action: #selector(skipIntro), for: .touchUpInside)
         controlsContainerView.addSubview(skipIntroButton)
@@ -1529,7 +1524,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skipOutroButton.tintColor = .white
         skipOutroButton.setTitleColor(.white, for: .normal)
         skipOutroButton.layer.cornerRadius = 21
-        skipOutroButton.clipsToBounds = true
+        skipOutroButton.clipsToBounds = false
         skipOutroButton.alpha = 0.0
         skipOutroButton.addTarget(self, action: #selector(skipOutro), for: .touchUpInside)
         skipOutroButton.translatesAutoresizingMaskIntoConstraints = false
@@ -1546,7 +1541,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         skip85Button.tintColor = .white
         skip85Button.setTitleColor(.white, for: .normal)
         skip85Button.layer.cornerRadius = 21
-        skip85Button.clipsToBounds = true
+        skip85Button.clipsToBounds = false
         skip85Button.alpha = 0.0
         skip85Button.addTarget(self, action: #selector(skip85Tapped), for: .touchUpInside)
         controlsContainerView.addSubview(skip85Button)

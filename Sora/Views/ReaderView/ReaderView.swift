@@ -679,43 +679,63 @@ struct ReaderView: View {
         VStack {
             Spacer()
             
-            HStack(spacing: 20) {
-                Spacer()
-                Button(action: {
-                    isAutoScrolling.toggle()
-                }) {
-                    Image(systemName: isAutoScrolling ? "pause.fill" : "play.fill")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(isAutoScrolling ? .red : currentTheme.text)
-                        .padding(12)
-                        .background(currentTheme.background.opacity(0.8))
-                        .clipShape(Circle())
-                        .circularGradientOutline()
-                }
-                .contextMenu {
-                    VStack {
-                        Text("Auto Scroll Speed")
-                            .font(.headline)
-                            .padding(.bottom, 8)
-                        
-                        Slider(value: $autoScrollSpeed, in: 0.2...3.0, step: 0.1) {
-                            Text("Speed")
-                        }
-                        .padding(.horizontal)
-                        
-                        Text("Speed: \(String(format: "%.1f", autoScrollSpeed))x")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 4)
+            VStack(spacing: 0) {
+                HStack(spacing: 20) {
+                    Spacer()
+                    Button(action: {
+                        isAutoScrolling.toggle()
+                    }) {
+                        Image(systemName: isAutoScrolling ? "pause.fill" : "play.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(isAutoScrolling ? .red : currentTheme.text)
+                            .padding(12)
+                            .background(currentTheme.background.opacity(0.8))
+                            .clipShape(Circle())
+                            .circularGradientOutline()
                     }
-                    .padding()
+                    .contextMenu {
+                        VStack {
+                            Text("Auto Scroll Speed")
+                                .font(.headline)
+                                .padding(.bottom, 8)
+                            
+                            Slider(value: $autoScrollSpeed, in: 0.2...3.0, step: 0.1) {
+                                Text("Speed")
+                            }
+                            .padding(.horizontal)
+                            
+                            Text("Speed: \(String(format: "%.1f", autoScrollSpeed))x")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 4)
+                        }
+                        .padding()
+                    }
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                
+                // Progress bar
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        Rectangle()
+                            .fill(currentTheme.text.opacity(0.2))
+                            .frame(height: 4)
+                        
+                        Rectangle()
+                            .fill(Color.accentColor)
+                            .frame(width: max(0, min(CGFloat(readingProgress) * geometry.size.width, geometry.size.width)), height: 4)
+                    }
+                    .cornerRadius(2)
+                }
+                .frame(height: 4)
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, (UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.safeAreaInsets.bottom ?? 0) + 16)
+                
+                .frame(maxWidth: .infinity)
+                .background(ProgressiveBlurView())
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
-            .padding(.bottom, (UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.safeAreaInsets.bottom ?? 0) + 20)
-            .frame(maxWidth: .infinity)
-            .background(ProgressiveBlurView())
             .opacity(isHeaderVisible ? 1 : 0)
             .offset(y: isHeaderVisible ? 0 : 100)
             .animation(.easeInOut(duration: 0.6), value: isHeaderVisible)

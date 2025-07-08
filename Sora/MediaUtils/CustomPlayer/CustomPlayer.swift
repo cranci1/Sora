@@ -178,6 +178,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var dimButtonTimer: Timer?
     
     let cfg = UIImage.SymbolConfiguration(pointSize: 15, weight: .medium)
+    let bottomControlsCfg = UIImage.SymbolConfiguration(pointSize: 15, weight: .regular)
     
     private var controlsToHide: [UIView] {
         var views = [
@@ -1557,7 +1558,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     private func setupQualityButton() {
-        let image = UIImage(systemName: "tv", withConfiguration: cfg)
+        let image = UIImage(systemName: "tv", withConfiguration: bottomControlsCfg)
         
         qualityButton = UIButton(type: .system)
         qualityButton.setImage(image, for: .normal)
@@ -3256,7 +3257,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     func setupSpeedButton() {
-        let image = UIImage(systemName: "speedometer", withConfiguration: cfg)
+        let image = UIImage(systemName: "speedometer", withConfiguration: bottomControlsCfg)
         
         speedButton = UIButton(type: .system)
         speedButton.setImage(image, for: .normal)
@@ -3270,7 +3271,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     func setupMenuButton() {
-        let image = UIImage(systemName: "captions.bubble", withConfiguration: cfg)
+        let image = UIImage(systemName: "captions.bubble", withConfiguration: bottomControlsCfg)
         
         menuButton = UIButton(type: .system)
         menuButton.setImage(image, for: .normal)

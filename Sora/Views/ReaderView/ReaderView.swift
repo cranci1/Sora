@@ -291,7 +291,10 @@ struct ReaderView: View {
         .task {
             do {
                 ensureModuleLoaded()
-                let isOffline = !(NetworkMonitor.shared.isConnected)
+                
+                let isConnected = await NetworkMonitor.shared.ensureNetworkStatusInitialized()
+                let isOffline = !isConnected
+                
                 if let cachedContent = ContinueReadingManager.shared.getCachedHtml(for: chapterHref), 
                    !cachedContent.isEmpty && 
                    !cachedContent.contains("undefined") && 

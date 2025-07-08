@@ -86,6 +86,7 @@ class NetworkMonitor: ObservableObject {
     
     @Published var currentNetworkType: NetworkType = .unknown
     @Published var isConnected: Bool = false
+    private var isInitialized: Bool = false
     
     private init() {
         startMonitoring()
@@ -96,6 +97,7 @@ class NetworkMonitor: ObservableObject {
             DispatchQueue.main.async {
                 self?.isConnected = path.status == .satisfied
                 self?.currentNetworkType = self?.getNetworkType(from: path) ?? .unknown
+                self?.isInitialized = true
             }
         }
         monitor.start(queue: queue)
@@ -113,6 +115,21 @@ class NetworkMonitor: ObservableObject {
     
     static func getCurrentNetworkType() -> NetworkType {
         return shared.currentNetworkType
+    }
+    
+    func ensureNetworkStatusInitialized() async -> Bool {
+        if isInitialized {
+            return isConnected
+        }
+        
+        for _ in 0..<10 {
+            if isInitialized {
+                return isConnected
+            }
+            try? await Task.sleep(nanoseconds: 100_000_000) 
+        }
+        
+        return isConnected
     }
     
     deinit {

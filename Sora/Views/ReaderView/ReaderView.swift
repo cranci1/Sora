@@ -299,6 +299,12 @@ struct ReaderView: View {
                     Logger.shared.log("Using cached HTML content for \(chapterHref)", type: "Debug")
                     htmlContent = cachedContent
                     isLoading = false
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isHeaderVisible = false
+                        }
+                    }
                 } else if isOffline {
                     let offlineError = NSError(domain: "Sora", code: -1009, userInfo: [NSLocalizedDescriptionKey: "No network connection."])
                     self.error = offlineError
@@ -330,6 +336,12 @@ struct ReaderView: View {
                     if !content.isEmpty && !content.contains("undefined") && content.count >= 50 {
                         htmlContent = content
                         isLoading = false
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                isHeaderVisible = false
+                            }
+                        }
                         
                         if let cachedContent = ContinueReadingManager.shared.getCachedHtml(for: chapterHref),
                            cachedContent.isEmpty || cachedContent.contains("undefined") || cachedContent.count < 50 {

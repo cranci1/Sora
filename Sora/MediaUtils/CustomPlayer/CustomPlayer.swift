@@ -498,7 +498,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             capsuleContainer.addSubview(btn)
         }
         
-        let isLandscape = UIDevice.current.orientation.isLandscape || view.bounds.width > view.bounds.height
+        let forcedLandscape = UserDefaults.standard.bool(forKey: "alwaysLandscape")
+        let isLandscape = forcedLandscape || UIDevice.current.orientation.isLandscape || view.bounds.width > view.bounds.height
         
         if isLandscape {
             NSLayoutConstraint.activate([
@@ -569,7 +570,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     private func updateTitleVisibilityForCurrentOrientation() {
-        let isLandscape = UIDevice.current.orientation.isLandscape || view.bounds.width > view.bounds.height
+        let forcedLandscape = UserDefaults.standard.bool(forKey: "alwaysLandscape")
+        let isLandscape = forcedLandscape || UIDevice.current.orientation.isLandscape || view.bounds.width > view.bounds.height
         
         episodeNumberLabel.isHidden = !isLandscape
         titleLabel.isHidden = !isLandscape
@@ -605,7 +607,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             episodeNumberLabel.lineBreakMode = .byClipping
         }
         
-        let isLandscape = view.bounds.width > view.bounds.height
+        let forcedLandscape = UserDefaults.standard.bool(forKey: "alwaysLandscape")
+        let isLandscape = forcedLandscape || view.bounds.width > view.bounds.height
         let wasLandscape = UserDefaults.standard.bool(forKey: "wasLandscapeOrientation")
         
         if isLandscape != wasLandscape {
@@ -1323,7 +1326,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         
         self.volumeSliderHostingView = hostingController.view
         
-        let isLandscape = UIDevice.current.orientation.isLandscape || view.bounds.width > view.bounds.height
+        let forcedLandscape = UserDefaults.standard.bool(forKey: "alwaysLandscape")
+        let isLandscape = forcedLandscape || UIDevice.current.orientation.isLandscape || view.bounds.width > view.bounds.height
         
         if isLandscape {
             NSLayoutConstraint.activate([
@@ -1415,7 +1419,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         NSLayoutConstraint.deactivate(titleStackAboveSkipButtonConstraints)
         NSLayoutConstraint.deactivate(titleStackAboveSliderConstraints)
         
-        let isLandscape = view.bounds.width > view.bounds.height
+        let forcedLandscape = UserDefaults.standard.bool(forKey: "alwaysLandscape")
+        let isLandscape = forcedLandscape || view.bounds.width > view.bounds.height
         titleStackView.isHidden = !isLandscape
         titleStackView.alpha = isLandscape ? 1.0 : 0.0
         episodeNumberLabel.isHidden = !isLandscape
@@ -3571,7 +3576,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     }
     
     private func resetMarqueeAfterOrientationChange() {
-        let isLandscape = view.bounds.width > view.bounds.height
+        let forcedLandscape = UserDefaults.standard.bool(forKey: "alwaysLandscape")
+        let isLandscape = forcedLandscape || view.bounds.width > view.bounds.height
         
         episodeNumberLabel.isHidden = !isLandscape
         titleLabel.isHidden = !isLandscape

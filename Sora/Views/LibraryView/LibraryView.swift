@@ -31,6 +31,7 @@ struct LibraryView: View {
     @State private var continueReadingItems: [ContinueReadingItem] = []
     @State private var isLandscape: Bool = UIDevice.current.orientation.isLandscape
     @State private var selectedTab: Int = 0
+    @State private var isActive: Bool = false
     
     private var librarySectionsOrder: [String] {
         (try? JSONDecoder().decode([String].self, from: librarySectionsOrderData)) ?? ["continueWatching", "continueReading", "collections"]
@@ -99,15 +100,51 @@ struct LibraryView: View {
                 .scrollViewBottomPadding()
                 .deviceScaled()
                 .onAppear {
+                    isActive = true
                     fetchContinueWatching()
                     fetchContinueReading()
                     
-                    NotificationCenter.default.post(name: .showTabBar, object: nil)
+                    let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+                    let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+                    if !isMediaInfoActive && !isReaderActive {
+                        NotificationCenter.default.post(name: .showTabBar, object: nil)
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
+                        let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+                        let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+                        if !isMediaInfoActive && !isReaderActive {
+                            NotificationCenter.default.post(name: .showTabBar, object: nil)
+                        }
+                    }
+                }
+                .onDisappear {
+                    isActive = false
                 }
                 .onChange(of: scenePhase) { newPhase in
                     if newPhase == .active {
                         fetchContinueWatching()
                         fetchContinueReading()
+                        
+                        let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+                        let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+                        if !isMediaInfoActive && !isReaderActive {
+                            NotificationCenter.default.post(name: .showTabBar, object: nil)
+                        }
+                    }
+                }
+                .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()) { _ in
+                    let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+                    let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+                    if isActive && !isMediaInfoActive && !isReaderActive {
+                        NotificationCenter.default.post(name: .showTabBar, object: nil)
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                    isActive = true
+                    let isMediaInfoActive = UserDefaults.standard.bool(forKey: "isMediaInfoActive")
+                    let isReaderActive = UserDefaults.standard.bool(forKey: "isReaderActive")
+                    if !isMediaInfoActive && !isReaderActive {
+                        NotificationCenter.default.post(name: .showTabBar, object: nil)
                     }
                 }
             }

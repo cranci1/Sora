@@ -363,7 +363,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupTopRowLayout()
         updateSkipButtonsVisibility()
         
-        // Check initial orientation and update title visibility
+        if !isSkip85Visible {
+            skip85Button.isHidden = true
+            skip85Button.alpha = 0.0
+        }
+        
         updateTitleVisibilityForCurrentOrientation()
         
         isControlsVisible = true
@@ -625,6 +629,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         super.viewWillAppear(animated)
         NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidChange), name: .AVPlayerItemNewAccessLogEntry, object: nil)
         skip85Button?.isHidden = !isSkip85Visible
+        if !isSkip85Visible {
+            skip85Button?.alpha = 0.0
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -2036,7 +2043,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
             
             if self.isControlsVisible {
-                self.skip85Button.isHidden = false
+                if self.isSkip85Visible {
+                    self.skip85Button.isHidden = false
+                }
                 self.skipIntroButton.alpha = 0.0
                 self.skipOutroButton.alpha = 0.0
             }

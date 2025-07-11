@@ -21,6 +21,7 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
     @State private var localTempProgress: T = 0
     @State private var lastVolumeValue: T = 0
     @GestureState private var isActive: Bool = false
+    @State private var isAtEnd: Bool = false
 
     var body: some View {
         GeometryReader { bounds in
@@ -51,8 +52,9 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
                             handleIconTap()
                         }
                 }
-                .frame(width: isActive ? bounds.size.width * 1.02 : bounds.size.width, alignment: .center)
+                .frame(width: getStretchWidth(bounds: bounds), alignment: .center)
                 .animation(animation, value: isActive)
+                .animation(animation, value: isAtEnd)
             }
             .frame(width: bounds.size.width, height: bounds.size.height)
             .gesture(
@@ -61,16 +63,26 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
                     .onChanged { gesture in
                         let delta = gesture.translation.width / bounds.size.width
                         localTempProgress = T(delta)
+                        
+                        let totalProgress = localRealProgress + localTempProgress
+                        if totalProgress <= 0.0 || totalProgress >= 1.0 {
+                            isAtEnd = true
+                        } else {
+                            isAtEnd = false
+                        }
+                        
                         value = sliderValueInRange()
                     }
                     .onEnded { _ in
                         localRealProgress = max(min(localRealProgress + localTempProgress, 1), 0)
                         localTempProgress = 0
+                        isAtEnd = false
                     }
             )
             .onChange(of: isActive) { newValue in
                 if !newValue {
                     value = sliderValueInRange()
+                    isAtEnd = false
                 }
                 onEditingChanged(newValue)
             }
@@ -91,7 +103,7 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
                 }
             }
         }
-        .frame(height: isActive ? height * 1.25 : height)
+        .frame(height: getStretchHeight())
     }
 
     private var getIconName: String {
@@ -133,9 +145,12 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
     }
 
     private var animation: Animation {
-        isActive
-            ? .spring()
-            : .spring(response: 0.5, dampingFraction: 0.5, blendDuration: 0.6)
+        .interpolatingSpring(
+            mass: 1.0,
+            stiffness: 100,
+            damping: 15,
+            initialVelocity: 0.0
+        )
     }
 
     private func progress(for val: T) -> T {
@@ -149,5 +164,26 @@ struct VolumeSlider<T: BinaryFloatingPoint>: View {
         let rawVal = totalProgress * (inRange.upperBound - inRange.lowerBound)
                     + inRange.lowerBound
         return max(min(rawVal, inRange.upperBound), inRange.lowerBound)
+    }
+    
+    private func getStretchWidth(bounds: GeometryProxy) -> CGFloat {
+        let baseWidth = bounds.size.width
+        if isAtEnd {
+            return baseWidth * 1.08 
+        } else if isActive {
+            return baseWidth * 1.04
+        } else {
+            return baseWidth
+        }
+    }
+    
+    private func getStretchHeight() -> CGFloat {
+        if isAtEnd {
+            return height * 1.35 
+        } else if isActive {
+            return height * 1.25 
+        } else {
+            return height
+        }
     }
 }

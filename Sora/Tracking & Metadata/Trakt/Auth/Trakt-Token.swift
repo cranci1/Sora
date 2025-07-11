@@ -159,8 +159,8 @@ class TraktToken {
         guard status == errSecSuccess,
               let tokenData = result as? Data,
               let token = String(data: tokenData, encoding: .utf8) else {
-                  return nil
-              }
+            return nil
+        }
         
         return token
     }
@@ -179,8 +179,8 @@ class TraktToken {
         guard status == errSecSuccess,
               let tokenData = result as? Data,
               let token = String(data: tokenData, encoding: .utf8) else {
-                  return nil
-              }
+            return nil
+        }
         
         return token
     }

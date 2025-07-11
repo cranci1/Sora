@@ -28,6 +28,7 @@ struct MediaInfoView: View {
     @State private var synopsis: String = ""
     @State private var airdate: String = ""
     @State private var episodeLinks: [EpisodeLink] = []
+    @State private var chapters: [[String: Any]] = []
     @State private var itemID: Int?
     @State private var tmdbID: Int?
     @State private var tmdbType: TMDBFetcher.MediaType? = nil
@@ -46,7 +47,7 @@ struct MediaInfoView: View {
     @State private var selectedSeason: Int = 0
     @State private var selectedRange: Range<Int> = {
         let size = UserDefaults.standard.integer(forKey: "episodeChunkSize")
-        let chunk = size == 0 ? 100 : size
+        let chunk = size == 0 ? 50 : size
         return 0..<chunk
     }()
     
@@ -75,24 +76,24 @@ struct MediaInfoView: View {
     private var selectedSeasonKey: String { "selectedSeason_\(href)" }
     
     @AppStorage("externalPlayer") private var externalPlayer: String = "Default"
-    @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 100
+    @AppStorage("episodeChunkSize") private var episodeChunkSize: Int = 50
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     
     @ObservedObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
     @EnvironmentObject private var libraryManager: LibraryManager
-    @EnvironmentObject var tabBarController: TabBarController
+    @ObservedObject private var navigator = ChapterNavigator.shared
     
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     
     @AppStorage("metadataProvidersOrder") private var metadataProvidersOrderData: Data = {
-        try! JSONEncoder().encode(["AniList","TMDB"])
+        try! JSONEncoder().encode(["TMDB","AniList"])
     }()
     
     private var metadataProvidersOrder: [String] {
-        get { (try? JSONDecoder().decode([String].self, from: metadataProvidersOrderData)) ?? ["AniList","TMDB"] }
+        get { (try? JSONDecoder().decode([String].self, from: metadataProvidersOrderData)) ?? ["TMDB","AniList"] }
         set { metadataProvidersOrderData = try! JSONEncoder().encode(newValue) }
     }
     
@@ -119,29 +120,37 @@ struct MediaInfoView: View {
         return isCompactLayout ? 20 : 16
     }
     
-    private var startWatchingText: String {
-        let indices = finishedAndUnfinishedIndices()
-        let finished = indices.finished
-        let unfinished = indices.unfinished
-        
-        if episodeLinks.count == 1 {
-            if let _ = unfinished {
-                return NSLocalizedString("Continue Watching", comment: "")
+    private var startActionText: String {
+        if module.metadata.novel == true {
+            let lastReadChapter = UserDefaults.standard.string(forKey: "lastReadChapter")
+            if let lastRead = lastReadChapter, chapters.contains(where: { $0["href"] as! String == lastRead }) {
+                return NSLocalizedString("Continue Reading", comment: "")
             }
+            return NSLocalizedString("Start Reading", comment: "")
+        } else {
+            let indices = finishedAndUnfinishedIndices()
+            let finished = indices.finished
+            let unfinished = indices.unfinished
+            
+            if episodeLinks.count == 1 {
+                if let _ = unfinished {
+                    return NSLocalizedString("Continue Watching", comment: "")
+                }
+                return NSLocalizedString("Start Watching", comment: "")
+            }
+            
+            if let finishedIndex = finished, finishedIndex < episodeLinks.count - 1 {
+                let nextEp = episodeLinks[finishedIndex + 1]
+                return String(format: NSLocalizedString("Start Watching Episode %d", comment: ""), nextEp.number)
+            }
+            
+            if let unfinishedIndex = unfinished {
+                let currentEp = episodeLinks[unfinishedIndex]
+                return String(format: NSLocalizedString("Continue Watching Episode %d", comment: ""), currentEp.number)
+            }
+            
             return NSLocalizedString("Start Watching", comment: "")
         }
-        
-        if let finishedIndex = finished, finishedIndex < episodeLinks.count - 1 {
-            let nextEp = episodeLinks[finishedIndex + 1]
-            return String(format: NSLocalizedString("Start Watching Episode %d", comment: ""), nextEp.number)
-        }
-        
-        if let unfinishedIndex = unfinished {
-            let currentEp = episodeLinks[unfinishedIndex]
-            return String(format: NSLocalizedString("Continue Watching Episode %d", comment: ""), currentEp.number)
-        }
-        
-        return NSLocalizedString("Start Watching", comment: "")
     }
     
     private var singleEpisodeWatchText: String {
@@ -153,6 +162,14 @@ struct MediaInfoView: View {
         }
         return NSLocalizedString("Mark watched", comment: "")
     }
+    
+    @State private var selectedChapterRange: Range<Int> = {
+        let size = UserDefaults.standard.integer(forKey: "episodeChunkSize")
+        let chunk = size == 0 ? 50 : size
+        return 0..<chunk
+    }()
+    @AppStorage("chapterChunkSize") private var chapterChunkSize: Int = 50
+    private var selectedChapterRangeKey: String { "selectedChapterRangeStart_\(href)" }
     
     var body: some View {
         ZStack {
@@ -168,6 +185,16 @@ struct MediaInfoView: View {
             .ignoresSafeArea(.container, edges: .top)
             .onAppear {
                 setupViewOnAppear()
+                NotificationCenter.default.post(name: .hideTabBar, object: nil)
+                UserDefaults.standard.set(true, forKey: "isMediaInfoActive")
+                //  swipe back
+                /*
+                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                 let window = windowScene.windows.first,
+                 let navigationController = window.rootViewController?.children.first as? UINavigationController {
+                 navigationController.interactivePopGestureRecognizer?.isEnabled = false
+                 }
+                 */
             }
             .onChange(of: selectedRange) { newValue in
                 UserDefaults.standard.set(newValue.lowerBound, forKey: selectedRangeKey)
@@ -175,10 +202,14 @@ struct MediaInfoView: View {
             .onChange(of: selectedSeason) { newValue in
                 UserDefaults.standard.set(newValue, forKey: selectedSeasonKey)
             }
+            .onChange(of: selectedChapterRange) { newValue in
+                UserDefaults.standard.set(newValue.lowerBound, forKey: selectedChapterRangeKey)
+            }
             .onDisappear {
-                tabBarController.showTabBar()
                 currentFetchTask?.cancel()
                 activeFetchID = nil
+                UserDefaults.standard.set(false, forKey: "isMediaInfoActive")
+                UIScrollView.appearance().bounces = true
             }
             .task {
                 await setupInitialData()
@@ -197,21 +228,25 @@ struct MediaInfoView: View {
             
             navigationOverlay
         }
+        .sheet(isPresented: $libraryManager.isShowingCollectionPicker) {
+            if let bookmark = libraryManager.bookmarkToAdd {
+                CollectionPickerView(bookmark: bookmark)
+            }
+        }
     }
     
     @ViewBuilder
     private var navigationOverlay: some View {
         VStack {
             HStack {
-                Button(action: { 
-                    tabBarController.showTabBar()
+                Button(action: {
                     dismiss()
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 24))
                         .foregroundColor(.primary)
                         .padding(12)
-                        .background(Color.gray.opacity(0.2))
+                        .background(Color(.systemBackground).opacity(0.8))
                         .clipShape(Circle())
                         .circularGradientOutline()
                 }
@@ -277,10 +312,26 @@ struct MediaInfoView: View {
                 
                 VStack(alignment: .leading, spacing: 16) {
                     headerSection
-                    if !episodeLinks.isEmpty {
-                        episodesSection
+                    
+                    if !aliases.isEmpty && !(module.metadata.novel ?? false) {
+                        Text(aliases)
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.secondary)
+                            .padding(.top, 4)
+                    }
+                    
+                    if module.metadata.novel ?? false {
+                        if !chapters.isEmpty {
+                            chaptersSection
+                        } else {
+                            noContentSection
+                        }
                     } else {
-                        noEpisodesSection
+                        if !episodeLinks.isEmpty {
+                            episodesSection
+                        } else {
+                            noContentSection
+                        }
                     }
                 }
                 .padding()
@@ -313,7 +364,7 @@ struct MediaInfoView: View {
                     Image(systemName: "calendar")
                         .foregroundColor(.accentColor)
                     Text(airdate)
-                        .font(.system(size: 14))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.accentColor)
                     Spacer()
                 }
@@ -322,12 +373,18 @@ struct MediaInfoView: View {
             Text(title)
                 .font(.system(size: 28, weight: .bold))
                 .foregroundColor(.primary)
-                .lineLimit(3)
+                .fixedSize(horizontal: false, vertical: true)
+                .multilineTextAlignment(.leading)
+                .lineLimit(nil)
                 .onLongPressGesture {
                     copyTitleToClipboard()
                 }
             
-            if !synopsis.isEmpty {
+            if !synopsis.isEmpty && !(module.metadata.novel ?? false) {
+                synopsisSection
+            }
+            
+            if module.metadata.novel ?? false && !synopsis.isEmpty {
                 synopsisSection
             }
             
@@ -341,17 +398,20 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var synopsisSection: some View {
-        HStack(alignment: .bottom) {
+        VStack(alignment: .leading, spacing: 2) {
             Text(synopsis)
-                .font(.system(size: 16))
+                .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.secondary)
                 .lineLimit(showFullSynopsis ? nil : 3)
                 .animation(nil, value: showFullSynopsis)
             
-            Text(showFullSynopsis ? NSLocalizedString("LESS", comment: "") : NSLocalizedString("MORE", comment: ""))
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(.accentColor)
-                .animation(.easeInOut(duration: 0.3), value: showFullSynopsis)
+            HStack {
+                Spacer()
+                Text(showFullSynopsis ? NSLocalizedString("LESS", comment: "") : NSLocalizedString("MORE", comment: ""))
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.accentColor)
+                    .animation(.easeInOut(duration: 0.3), value: showFullSynopsis)
+            }
         }
         .onTapGesture {
             withAnimation(.easeInOut(duration: 0.3)) {
@@ -367,8 +427,8 @@ struct MediaInfoView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "play.fill")
                         .foregroundColor(colorScheme == .dark ? .black : .white)
-                    Text(startWatchingText)
-                        .font(.system(size: 16, weight: .medium))
+                    Text(startActionText)
+                        .font(.system(size: 16, weight: .bold))
                         .foregroundColor(colorScheme == .dark ? .black : .white)
                 }
                 .frame(maxWidth: .infinity)
@@ -427,7 +487,7 @@ struct MediaInfoView: View {
                     .cornerRadius(15)
                     .gradientOutline()
                 }
-
+                
                 Button(action: { openSafariViewController(with: href) }) {
                     Image(systemName: "safari")
                         .resizable()
@@ -476,11 +536,58 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var episodesSection: some View {
+        let _ = Logger.shared.log("episodesSection: episodeLinks count = \(episodeLinks.count)", type: "Debug")
         if episodeLinks.count != 1 {
             VStack(alignment: .leading, spacing: 16) {
                 episodesSectionHeader
                 episodeListSection
             }
+        }
+    }
+    
+    @ViewBuilder
+    private var seasonSelectorStyled: some View {
+        let seasons = groupedEpisodes()
+        if seasons.count > 1 {
+            Menu {
+                ForEach(0..<seasons.count, id: \..self) { index in
+                    Button(action: { selectedSeason = index }) {
+                        Text(String(format: NSLocalizedString("Season %d", comment: ""), index + 1))
+                    }
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Text("Season \(selectedSeason + 1)")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(.accentColor)
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.accentColor)
+                }
+                .padding(.vertical, 2)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var rangeSelectorStyled: some View {
+        Menu {
+            ForEach(generateRanges(), id: \..self) { range in
+                Button(action: { selectedRange = range }) {
+                    Text("\(range.lowerBound + 1)-\(range.upperBound)")
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text("\(selectedRange.lowerBound + 1)-\(selectedRange.upperBound)")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.accentColor)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(.accentColor)
+            }
+            .padding(.vertical, 2)
+            .padding(.horizontal, 4)
         }
     }
     
@@ -493,57 +600,23 @@ struct MediaInfoView: View {
             
             Spacer()
             
-            episodeNavigationSection
-            
             HStack(spacing: 4) {
+                if isGroupedBySeasons || episodeLinks.count > episodeChunkSize {
+                    HStack(spacing: 8) {
+                        if isGroupedBySeasons {
+                            seasonSelectorStyled
+                        }
+                        Spacer()
+                        if episodeLinks.count > episodeChunkSize {
+                            rangeSelectorStyled
+                                .padding(.trailing, 4)
+                        }
+                    }
+                    .padding(.top, -8)
+                }
+                
                 sourceButton
                 menuButton
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private var episodeNavigationSection: some View {
-        Group {
-            if !isGroupedBySeasons && episodeLinks.count <= episodeChunkSize {
-                EmptyView()
-            } else if !isGroupedBySeasons && episodeLinks.count > episodeChunkSize {
-                rangeSelectionMenu
-            } else if isGroupedBySeasons {
-                seasonSelectionMenu
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private var rangeSelectionMenu: some View {
-        Menu {
-            ForEach(generateRanges(), id: \.self) { range in
-                Button(action: { selectedRange = range }) {
-                    Text("\(range.lowerBound + 1)-\(range.upperBound)")
-                }
-            }
-        } label: {
-            Text("\(selectedRange.lowerBound + 1)-\(selectedRange.upperBound)")
-                .font(.system(size: 14))
-                .foregroundColor(.accentColor)
-        }
-    }
-    
-    @ViewBuilder
-    private var seasonSelectionMenu: some View {
-        let seasons = groupedEpisodes()
-        if seasons.count > 1 {
-            Menu {
-                ForEach(0..<seasons.count, id: \.self) { index in
-                    Button(action: { selectedSeason = index }) {
-                        Text(String(format: NSLocalizedString("Season %d", comment: ""), index + 1))
-                    }
-                }
-            } label: {
-                Text("Season \(selectedSeason + 1)")
-                    .font(.system(size: 14))
-                    .foregroundColor(.accentColor)
             }
         }
     }
@@ -619,22 +692,149 @@ struct MediaInfoView: View {
     }
     
     @ViewBuilder
-    private var noEpisodesSection: some View {
+    private var chaptersSection: some View {
+        let _ = Logger.shared.log("chaptersSection: chapters count = \(chapters.count)", type: "Debug")
+        VStack(alignment: .leading, spacing: 16) {
+            if !airdate.isEmpty && airdate != "N/A" && airdate != "No Data" {
+                HStack(spacing: 4) {
+                    Image(systemName: "calendar")
+                        .foregroundColor(.accentColor)
+                    Text(airdate)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.accentColor)
+                    Spacer()
+                }
+            }
+            if !aliases.isEmpty {
+                Text(aliases)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.secondary)
+            }
+            HStack {
+                Text(NSLocalizedString("Chapters", comment: ""))
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(.primary)
+                Spacer()
+                HStack(spacing: 4) {
+                    if chapters.count > chapterChunkSize {
+                        HStack {
+                            Spacer()
+                            chapterRangeSelectorStyled
+                        }
+                        .padding(.bottom, 0)
+                    }
+                    
+                    sourceButton
+                    menuButton
+                }
+            }
+            
+            LazyVStack(spacing: 15) {
+                ForEach(chapters.indices.filter { selectedChapterRange.contains($0) }, id: \..self) { i in
+                    let chapter = chapters[i]
+                    let _ = refreshTrigger
+                    if let href = chapter["href"] as? String,
+                       let number = chapter["number"] as? Int,
+                       let title = chapter["title"] as? String {
+                        NavigationLink(
+                            destination: ReaderView(
+                                moduleId: module.id.uuidString,
+                                chapterHref: href,
+                                chapterTitle: title,
+                                chapters: chapters,
+                                mediaTitle: self.title,
+                                chapterNumber: number
+                            )
+                            .onAppear {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    ChapterNavigator.shared.currentChapter = nil
+                                }
+                            }
+                        ) {
+                            ChapterCell(
+                                chapterNumber: String(number),
+                                chapterTitle: title,
+                                isCurrentChapter: false,
+                                progress: UserDefaults.standard.double(forKey: "readingProgress_\(href)"),
+                                href: href
+                            )
+                        }
+                        .simultaneousGesture(TapGesture().onEnded {
+                            UserDefaults.standard.set(true, forKey: "navigatingToReaderView")
+                            ChapterNavigator.shared.currentChapter = (
+                                moduleId: module.id.uuidString,
+                                href: href,
+                                title: title,
+                                chapters: chapters,
+                                mediaTitle: self.title,
+                                chapterNumber: number
+                            )
+                        })
+                        .contextMenu {
+                            Button(action: {
+                                markChapterAsRead(href: href, number: number)
+                            }) {
+                                Label("Mark as Read", systemImage: "checkmark.circle")
+                            }
+                            
+                            Button(action: {
+                                resetChapterProgress(href: href)
+                            }) {
+                                Label("Reset Progress", systemImage: "arrow.counterclockwise")
+                            }
+                            
+                            Button(action: {
+                                markAllPreviousChaptersAsRead(currentNumber: number)
+                            }) {
+                                Label("Mark Previous as Read", systemImage: "checkmark.circle.badge.plus")
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var chapterRangeSelectorStyled: some View {
+        Menu {
+            ForEach(generateChapterRanges(), id: \..self) { range in
+                Button(action: { selectedChapterRange = range }) {
+                    Text("\(range.lowerBound + 1)-\(range.upperBound)")
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text("\(selectedChapterRange.lowerBound + 1)-\(selectedChapterRange.upperBound)")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.accentColor)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(.accentColor)
+            }
+            .padding(.vertical, 2)
+            .padding(.horizontal, 4)
+        }
+    }
+    
+    @ViewBuilder
+    private var noContentSection: some View {
         VStack(spacing: 8) {
-            Image(systemName: "tv.slash")
+            Image(systemName: module.metadata.novel == true ? "book.slash" : "tv.slash")
                 .font(.system(size: 48))
                 .foregroundColor(.secondary)
             
-            Text(NSLocalizedString("No Episodes Available", comment: ""))
+            Text(module.metadata.novel == true ? NSLocalizedString("No Chapters Available", comment: "") : NSLocalizedString("No Episodes Available", comment: ""))
                 .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundColor(.primary)
             
-            Text(NSLocalizedString("Episodes might not be available yet or there could be an issue with the source.", comment: ""))
+            Text(module.metadata.novel == true ? NSLocalizedString("Chapters might not be available yet or there could be an issue with the source.", comment: "") : NSLocalizedString("Episodes might not be available yet or there could be an issue with the source.", comment: ""))
                 .font(.body)
-                .lineLimit(0)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal)
         }
         .padding(.vertical, 50)
@@ -671,7 +871,7 @@ struct MediaInfoView: View {
         .sheet(isPresented: $isMatchingPresented) {
             AnilistMatchPopupView(seriesTitle: title) { id, matched in
                 handleAniListMatch(selectedID: id)
-                matchedTitle = matched            // ← now in scope
+                matchedTitle = matched
                 fetchMetadataIDIfNeeded()
             }
         }
@@ -679,7 +879,7 @@ struct MediaInfoView: View {
             TMDBMatchPopupView(seriesTitle: title) { id, type, matched in
                 tmdbID   = id
                 tmdbType = type
-                matchedTitle = matched            // ← now in scope
+                matchedTitle = matched
                 fetchMetadataIDIfNeeded()
             }
         }
@@ -739,7 +939,6 @@ struct MediaInfoView: View {
     
     private func setupViewOnAppear() {
         buttonRefreshTrigger.toggle()
-        tabBarController.hideTabBar()
         
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first,
@@ -750,37 +949,108 @@ struct MediaInfoView: View {
     }
     
     private func setupInitialData() async {
-        guard !hasFetched else { return }
-        
-        let savedCustomID = UserDefaults.standard.integer(forKey: "custom_anilist_id_\(href)")
-        if savedCustomID != 0 { customAniListID = savedCustomID }
-        
-        if let savedPoster = UserDefaults.standard.string(forKey: "tmdbPosterURL_\(href)") {
-            imageUrl = savedPoster
+        do {
+            Logger.shared.log("setupInitialData: module.metadata.novel = \(String(describing: module.metadata.novel))", type: "Debug")
+            
+            UserDefaults.standard.set(imageUrl, forKey: "mediaInfoImageUrl_\(module.id.uuidString)")
+            Logger.shared.log("Saved MediaInfoView image URL: \(imageUrl) for module \(module.id.uuidString)", type: "Debug")
+            
+            
+            
+            if module.metadata.novel == true {
+                if !hasFetched {
+                    DispatchQueue.main.async {
+                        DropManager.shared.showDrop(
+                            title: "Fetching Data",
+                            subtitle: "Please wait while fetching.",
+                            duration: 0.5,
+                            icon: UIImage(systemName: "arrow.triangle.2.circlepath")
+                        )
+                    }
+                }
+                let jsContent = try? moduleManager.getModuleContent(module)
+                if let jsContent = jsContent {
+                    jsController.loadScript(jsContent)
+                }
+                
+                await withTaskGroup(of: Void.self) { group in
+                    var chaptersLoaded = false
+                    var detailsLoaded = false
+                    
+                    group.addTask {
+                        let fetchedChapters = try? await JSController.shared.extractChapters(moduleId: module.id.uuidString, href: href)
+                        await MainActor.run {
+                            if let fetchedChapters = fetchedChapters {
+                                Logger.shared.log("setupInitialData: fetchedChapters count = \(fetchedChapters.count)", type: "Debug")
+                                Logger.shared.log("setupInitialData: fetchedChapters = \(fetchedChapters)", type: "Debug")
+                                self.chapters = fetchedChapters
+                            }
+                            chaptersLoaded = true
+                        }
+                    }
+                    group.addTask {
+                        await MainActor.run {
+                            self.fetchDetails()
+                        }
+                        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                            func checkDetails() {
+                                Task { @MainActor in
+                                    if !(self.synopsis.isEmpty && self.aliases.isEmpty && self.airdate.isEmpty) {
+                                        detailsLoaded = true
+                                        continuation.resume()
+                                    } else {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                            checkDetails()
+                                        }
+                                    }
+                                }
+                            }
+                            checkDetails()
+                        }
+                    }
+                    while true {
+                        let loaded = await MainActor.run { chaptersLoaded && detailsLoaded }
+                        if loaded { break }
+                        try? await Task.sleep(nanoseconds: 100_000_000)
+                    }
+                }
+                DispatchQueue.main.async {
+                    self.hasFetched = true
+                    self.isLoading = false
+                }
+            } else {
+                let savedCustomID = UserDefaults.standard.integer(forKey: "custom_anilist_id_\(href)")
+                if savedCustomID != 0 { customAniListID = savedCustomID }
+                if let savedPoster = UserDefaults.standard.string(forKey: "tmdbPosterURL_\(href)") {
+                    imageUrl = savedPoster
+                }
+                if !hasFetched {
+                    DropManager.shared.showDrop(
+                        title: "Fetching Data",
+                        subtitle: "Please wait while fetching.",
+                        duration: 0.5,
+                        icon: UIImage(systemName: "arrow.triangle.2.circlepath")
+                    )
+                }
+                fetchDetails()
+                if savedCustomID != 0 {
+                    itemID = savedCustomID
+                    activeProvider = "AniList"
+                    UserDefaults.standard.set("AniList", forKey: "metadataProviders")
+                } else {
+                    fetchMetadataIDIfNeeded()
+                }
+                hasFetched = true
+                AnalyticsManager.shared.sendEvent(
+                    event: "MediaInfoView",
+                    additionalData: ["title": title]
+                )
+            }
+        } catch let loadError {
+            isError = true
+            isLoading = false
+            Logger.shared.log("Error loading media info: \(loadError)", type: "Error")
         }
-        
-        DropManager.shared.showDrop(
-            title: "Fetching Data",
-            subtitle: "Please wait while fetching.",
-            duration: 0.5,
-            icon: UIImage(systemName: "arrow.triangle.2.circlepath")
-        )
-        
-        fetchDetails()
-        
-        if savedCustomID != 0 {
-            itemID = savedCustomID
-            activeProvider = "AniList"
-            UserDefaults.standard.set("AniList", forKey: "metadataProviders")
-        } else {
-            fetchMetadataIDIfNeeded()
-        }
-        
-        hasFetched = true
-        AnalyticsManager.shared.sendEvent(
-            event: "MediaInfoView",
-            additionalData: ["title": title]
-        )
     }
     
     private func cancelCurrentFetch() {
@@ -1162,37 +1432,22 @@ struct MediaInfoView: View {
         }
     }
     
-    
     func fetchDetails() {
+        Logger.shared.log("fetchDetails: called", type: "Debug")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             Task {
                 do {
                     let jsContent = try moduleManager.getModuleContent(module)
                     jsController.loadScript(jsContent)
+                    
+                    let completion: (Any?, [EpisodeLink]) -> Void = { items, episodes in
+                        self.handleFetchDetailsResponse(items: items, episodes: episodes)
+                    }
+                    
                     if module.metadata.asyncJS == true {
-                        jsController.fetchDetailsJS(url: href) { items, episodes in
-                            if let item = items.first {
-                                self.synopsis = item.description
-                                self.aliases = item.aliases
-                                self.airdate = item.airdate
-                            }
-                            self.episodeLinks = episodes
-                            self.restoreSelectionState()
-                            self.isLoading = false
-                            self.isRefetching = false
-                        }
+                        jsController.fetchDetailsJS(url: href, completion: completion)
                     } else {
-                        jsController.fetchDetails(url: href) { items, episodes in
-                            if let item = items.first {
-                                self.synopsis = item.description
-                                self.aliases = item.aliases
-                                self.airdate = item.airdate
-                            }
-                            self.episodeLinks = episodes
-                            self.restoreSelectionState()
-                            self.isLoading = false
-                            self.isRefetching = false
-                        }
+                        jsController.fetchDetails(url: href, completion: completion)
                     }
                 } catch {
                     Logger.shared.log("Error loading module: \(error)", type: "Error")
@@ -1201,6 +1456,53 @@ struct MediaInfoView: View {
                 }
             }
         }
+    }
+    
+    private func handleFetchDetailsResponse(items: Any?, episodes: [EpisodeLink]) {
+        Logger.shared.log("fetchDetails: items = \(items)", type: "Debug")
+        Logger.shared.log("fetchDetails: episodes = \(episodes)", type: "Debug")
+        
+        processItemsResponse(items)
+        
+        if module.metadata.novel ?? false {
+            Logger.shared.log("fetchDetails: (novel) chapters count = \(chapters.count)", type: "Debug")
+        } else {
+            Logger.shared.log("fetchDetails: (episodes) episodes count = \(episodes.count)", type: "Debug")
+            episodeLinks = episodes
+            restoreSelectionState()
+        }
+        
+        isLoading = false
+        isRefetching = false
+    }
+    
+    private func processItemsResponse(_ items: Any?) {
+        if let mediaItems = items as? [MediaItem], let item = mediaItems.first {
+            synopsis = item.description
+            aliases = item.aliases
+            airdate = item.airdate
+        } else if let str = items as? String {
+            parseStringResponse(str)
+        } else if let dict = items as? [String: Any] {
+            extractMetadataFromDict(dict)
+        } else if let arr = items as? [[String: Any]], let dict = arr.first {
+            extractMetadataFromDict(dict)
+        } else {
+            Logger.shared.log("Failed to process items of type: \(type(of: items))", type: "Error")
+        }
+    }
+    
+    private func parseStringResponse(_ str: String) {
+        guard let data = str.data(using: .utf8),
+              let arr = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let dict = arr.first else { return }
+        extractMetadataFromDict(dict)
+    }
+    
+    private func extractMetadataFromDict(_ dict: [String: Any]) {
+        synopsis = dict["description"] as? String ?? ""
+        aliases = dict["aliases"] as? String ?? ""
+        airdate = dict["airdate"] as? String ?? ""
     }
     
     private func fetchAniListPosterImageAndSet() {
@@ -1252,7 +1554,7 @@ struct MediaInfoView: View {
         func checkCompletion() {
             guard aniListCompleted && tmdbCompleted else { return }
             
-            let primaryProvider = order.first ?? "AniList"
+            let primaryProvider = order.first ?? "TMDB"
             
             if primaryProvider == "AniList" && aniListSuccess {
                 activeProvider = "AniList"
@@ -1382,7 +1684,6 @@ struct MediaInfoView: View {
             }
         }.resume()
     }
-    
     
     func fetchStream(href: String) {
         let fetchID = UUID()
@@ -1627,7 +1928,6 @@ struct MediaInfoView: View {
             DropManager.shared.showDrop(title: "Error", subtitle: "Failed to present player", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
         }
     }
-    
     
     private func downloadSingleEpisodeDirectly(episode: EpisodeLink) {
         if isSingleEpisodeDownloading { return }
@@ -1914,7 +2214,6 @@ struct MediaInfoView: View {
         }.resume()
     }
     
-    
     private func presentAlert(_ alert: UIAlertController) {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first,
@@ -1935,5 +2234,84 @@ struct MediaInfoView: View {
             
             findTopViewController.findViewController(rootVC).present(alert, animated: true)
         }
+    }
+    
+    private func generateChapterRanges() -> [Range<Int>] {
+        let chunkSize = chapterChunkSize
+        let totalChapters = chapters.count
+        var ranges: [Range<Int>] = []
+        for i in stride(from: 0, to: totalChapters, by: chunkSize) {
+            let end = min(i + chunkSize, totalChapters)
+            ranges.append(i..<end)
+        }
+        return ranges
+    }
+    
+    private func markChapterAsRead(href: String, number: Int) {
+        UserDefaults.standard.set(1.0, forKey: "readingProgress_\(href)")
+        
+        UserDefaults.standard.set(1.0, forKey: "scrollPosition_\(href)")
+        
+        ContinueReadingManager.shared.updateProgress(for: href, progress: 1.0)
+        
+        DropManager.shared.showDrop(
+            title: "Chapter \(number) Marked as Read",
+            subtitle: "",
+            duration: 1.0,
+            icon: UIImage(systemName: "checkmark.circle.fill")
+        )
+        refreshTrigger.toggle()
+    }
+    
+    private func resetChapterProgress(href: String) {
+        UserDefaults.standard.set(0.0, forKey: "readingProgress_\(href)")
+        
+        UserDefaults.standard.removeObject(forKey: "scrollPosition_\(href)")
+        
+        ContinueReadingManager.shared.updateProgress(for: href, progress: 0.0)
+        
+        DropManager.shared.showDrop(
+            title: "Progress Reset",
+            subtitle: "",
+            duration: 1.0,
+            icon: UIImage(systemName: "arrow.counterclockwise")
+        )
+        refreshTrigger.toggle()
+    }
+    
+    private func markAllPreviousChaptersAsRead(currentNumber: Int) {
+        let userDefaults = UserDefaults.standard
+        var markedCount = 0
+        
+        for chapter in chapters {
+            if let number = chapter["number"] as? Int,
+               let href = chapter["href"] as? String {
+                if number < currentNumber {
+                    userDefaults.set(1.0, forKey: "readingProgress_\(href)")
+                    
+                    userDefaults.set(1.0, forKey: "scrollPosition_\(href)")
+                    
+                    ContinueReadingManager.shared.updateProgress(for: href, progress: 1.0)
+                    markedCount += 1
+                }
+            }
+        }
+        
+        userDefaults.synchronize()
+        
+        DropManager.shared.showDrop(
+            title: "Marked \(markedCount) Chapters as Read",
+            subtitle: "",
+            duration: 1.0,
+            icon: UIImage(systemName: "checkmark.circle.fill")
+        )
+        
+        refreshTrigger.toggle()
+    }
+    
+    private func simultaneousGesture(for item: NavigationLink<some View, some View>) -> some View {
+        item.simultaneousGesture(TapGesture().onEnded {
+            UserDefaults.standard.set(true, forKey: "navigatingToReaderView")
+        })
     }
 }

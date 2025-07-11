@@ -406,3 +406,107 @@ For episode metadata, it refers to the episode thumbnail and title, since someti
 
 /* New string */
 "Maximum Quality Available" = "Максимальное доступное качество";
+
+/* Additional translations */
+"DownloadCountFormat" = "%d из %d";
+"Error loading chapter" = "Ошибка загрузки главы";
+"Font Size: %dpt" = "Размер шрифта: %dpt";
+"Line Spacing: %.1f" = "Межстрочный интервал: %.1f";
+"Line Spacing" = "Межстрочный интервал";
+"Margin: %dpx" = "Поле: %dpx";
+"Margin" = "Поле";
+"Auto Scroll Speed" = "Скорость автопрокрутки";
+"Speed" = "Скорость";
+"Speed: %.1fx" = "Скорость: %.1fx";
+"Matched %@: %@" = "Совпадение %@: %@";
+"Enter the AniList ID for this series" = "Введите AniList ID для этой серии";
+
+/* Added missing localizations */
+"Create Collection" = "Создать коллекцию";
+"Collection Name" = "Название коллекции";
+"Rename Collection" = "Переименовать коллекцию";
+"Rename" = "Переименовать";
+"All Reading" = "Все чтения";
+"Recently Added" = "Недавно добавленные";
+"Novel Title" = "Название романа";
+"Read Progress" = "Прогресс чтения";
+"Date Created" = "Дата создания";
+"Name" = "Имя";
+"Item Count" = "Количество элементов";
+"Date Added" = "Дата добавления";
+"Title" = "Заголовок";
+"Source" = "Источник";
+"Search reading..." = "Поиск по чтению...";
+"Search collections..." = "Поиск по коллекциям...";
+"Search bookmarks..." = "Поиск по закладкам...";
+"%d items" = "%d элементов";
+"Fetching Data" = "Получение данных";
+"Please wait while fetching." = "Пожалуйста, подождите, идет получение данных.";
+"Start Reading" = "Начать чтение";
+"Chapters" = "Главы";
+"Completed" = "Завершено";
+"Drag to reorder" = "Перетащите для изменения порядка";
+"Drag to reorder sections" = "Перетащите для изменения порядка разделов";
+"Library View" = "Вид библиотеки";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Настройте разделы, отображаемые в вашей библиотеке. Вы можете изменить порядок разделов или полностью их отключить.";
+"Library Sections Order" = "Порядок разделов библиотеки";
+"Completion Percentage" = "Процент завершения";
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.\n\nThe completion percentage setting determines at what point before the end of a video the app will mark it as completed on AniList and Trakt." = "Некоторые функции доступны только в Sora и стандартном плеере, такие как принудительный ландшафт, удержание скорости и пользовательские интервалы пропуска.\n\nНастройка процента завершения определяет, в какой момент до конца видео приложение отметит его как завершенное на AniList и Trakt.";
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nErasing the App Data will clears all your settings and data of the app." = "Кэш приложения помогает быстрее загружать изображения.\n\nОчистка папки Documents удалит все загруженные модули.\n\nСтирание данных приложения удалит все ваши настройки и данные.";
+"Translators" = "Переводчики";
+"Paste URL" = "Вставить URL";
+
+/* Added missing localizations */
+"Series Title" = "Название серии";
+"Content Source" = "Источник контента";
+"Watch Progress" = "Прогресс просмотра";
+"Recent searches" = "Недавние поиски";
+"All Reading" = "Всё для чтения";
+"Nothing to Continue Reading" = "Нечего продолжать читать";
+"Your recently read novels will appear here" = "Ваши недавно прочитанные романы появятся здесь";
+"No Bookmarks" = "Нет закладок";
+"Add bookmarks to this collection" = "Добавьте закладки в эту коллекцию";
+"items" = "элементы";
+"All Watching" = "Всё для просмотра";
+"No Reading History" = "Нет истории чтения";
+"Books you're reading will appear here" = "Книги, которые вы читаете, появятся здесь";
+"Create Collection" = "Создать коллекцию";
+"Collection Name" = "Название коллекции";
+"Rename Collection" = "Переименовать коллекцию";
+"Rename" = "Переименовать";
+"Novel Title" = "Название романа";
+"Read Progress" = "Прогресс чтения";
+"Date Created" = "Дата создания";
+"Name" = "Имя";
+"Item Count" = "Количество элементов";
+"Date Added" = "Дата добавления";
+"Title" = "Заголовок";
+"Source" = "Источник";
+"Search reading..." = "Поиск по чтению...";
+"Search collections..." = "Поиск по коллекциям...";
+"Search bookmarks..." = "Поиск по закладкам...";
+"%d items" = "%d элементов";
+"Fetching Data" = "Получение данных";
+"Please wait while fetching." = "Пожалуйста, подождите, идет получение данных.";
+"Start Reading" = "Начать чтение";
+"Chapters" = "Главы";
+"Completed" = "Завершено";
+"Drag to reorder" = "Перетащите для изменения порядка";
+"Drag to reorder sections" = "Перетащите для изменения порядка разделов";
+"Library View" = "Вид библиотеки";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Настройте разделы, отображаемые в вашей библиотеке. Вы можете изменить порядок разделов или полностью их отключить.";
+"Library Sections Order" = "Порядок разделов библиотеки";
+"Completion Percentage" = "Процент завершения";
+"Translators" = "Переводчики";
+"Paste URL" = "Вставить URL";
+
+/* Added missing localizations */
+"Collections" = "Коллекции";
+"Continue Reading" = "Продолжить чтение";
+
+/* Backup & Restore */
+"Backup & Restore" = "Резервное копирование и восстановление";
+"Export Backup" = "Экспорт резервной копии";
+"Import Backup" = "Импорт резервной копии";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Внимание: Эта функция все еще экспериментальная. Пожалуйста, проверьте свои данные после экспорта/импорта.";
+"Backup" = "Резервная копия";

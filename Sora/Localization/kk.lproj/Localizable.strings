@@ -397,10 +397,110 @@ For episode metadata, it refers to the episode thumbnail and title, since someti
 "Storage Management" = "Қойма басқаруы";
 "Storage Used" = "Пайдаланылған қойма";
 "Library cleared successfully" = "Кітапхана сәтті тазартылды";
-"All downloads deleted successfully" = "Барлық жүктеулер сәтті жойылды"; 
+"All downloads deleted successfully" = "Барлық жүктеулер сәтті жойылды";
 
 /* New additions */
 "Recent searches" = "Соңғы іздеулер";
 "me frfr" = "мен шынында";
 "Data" = "Деректер";
 "Maximum Quality Available" = "Қолжетімді максималды сапа";
+"DownloadCountFormat" = "%d / %d";
+"Error loading chapter" = "Тарауды жүктеу қатесі";
+"Font Size: %dpt" = "Қаріп өлшемі: %dpt";
+"Line Spacing: %.1f" = "Жоларалық қашықтық: %.1f";
+"Line Spacing" = "Жоларалық қашықтық";
+"Margin: %dpx" = "Шеткі өріс: %dpx";
+"Margin" = "Шеткі өріс";
+"Auto Scroll Speed" = "Автоматты айналдыру жылдамдығы";
+"Speed" = "Жылдамдық";
+"Speed: %.1fx" = "Жылдамдық: %.1fx";
+"Matched %@: %@" = "Сәйкестік %@: %@";
+"Enter the AniList ID for this series" = "Осы серия үшін AniList ID енгізіңіз";
+
+/* Added missing localizations */
+"Create Collection" = "Жинақ құру";
+"Collection Name" = "Жинақ атауы";
+"Rename Collection" = "Жинақты қайта атау";
+"Rename" = "Қайта атау";
+"All Reading" = "Барлық оқу";
+"Recently Added" = "Жуырда қосылған";
+"Novel Title" = "Роман атауы";
+"Read Progress" = "Оқу барысы";
+"Date Created" = "Құрылған күні";
+"Name" = "Атауы";
+"Item Count" = "Элементтер саны";
+"Date Added" = "Қосылған күні";
+"Title" = "Тақырып";
+"Source" = "Дереккөз";
+"Search reading..." = "Оқуды іздеу...";
+"Search collections..." = "Жинақтарды іздеу...";
+"Search bookmarks..." = "Бетбелгілерді іздеу...";
+"%d items" = "%d элемент";
+"Fetching Data" = "Деректерді алу";
+"Please wait while fetching." = "Алу барысында күтіңіз.";
+"Start Reading" = "Оқуды бастау";
+"Chapters" = "Тараулар";
+"Completed" = "Аяқталды";
+"Drag to reorder" = "Ретін өзгерту үшін сүйреңіз";
+"Drag to reorder sections" = "Бөлімдердің ретін өзгерту үшін сүйреңіз";
+"Library View" = "Кітапхана көрінісі";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Кітапханаңызда көрсетілетін бөлімдерді баптаңыз. Бөлімдерді қайта реттеуге немесе толықтай өшіруге болады.";
+"Library Sections Order" = "Кітапхана бөлімдерінің реті";
+"Completion Percentage" = "Аяқталу пайызы";
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.\n\nThe completion percentage setting determines at what point before the end of a video the app will mark it as completed on AniList and Trakt." = "Кейбір функциялар тек Sora және әдепкі ойнатқышта ғана қолжетімді, мысалы, ландшафтты мәжбүрлеу, жылдамдықты ұстау және уақытты өткізіп жіберу.\n\nАяқталу пайызы параметрі бейне соңына дейін қай жерде аяқталған деп белгіленетінін анықтайды (AniList және Trakt).";
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nErasing the App Data will clears all your settings and data of the app." = "Қолданба кэші суреттерді жылдам жүктеуге көмектеседі.\n\nDocuments қалтасын тазалау барлық жүктелген модульдерді өшіреді.\n\nҚолданба деректерін өшіру барлық баптауларыңызды және деректеріңізді өшіреді.";
+"Translators" = "Аудармашылар";
+"Paste URL" = "URL қою";
+
+/* Added missing localizations */
+"Series Title" = "Серия атауы";
+"Content Source" = "Мазмұн көзі";
+"Watch Progress" = "Көру барысы";
+"Nothing to Continue Reading" = "Оқуды жалғастыруға ештеңе жоқ";
+"Your recently read novels will appear here" = "Соңғы оқылған романдар осында көрсетіледі";
+"No Bookmarks" = "Бетбелгілер жоқ";
+"Add bookmarks to this collection" = "Бұл жинаққа бетбелгілерді қосыңыз";
+"items" = "элементтер";
+"All Watching" = "Барлық көру";
+"No Reading History" = "Оқу тарихы жоқ";
+"Books you're reading will appear here" = "Сіз оқып жатқан кітаптар осында көрсетіледі";
+"Create Collection" = "Жинақ құру";
+"Collection Name" = "Жинақ атауы";
+"Rename Collection" = "Жинақты қайта атау";
+"Rename" = "Қайта атау";
+"Novel Title" = "Роман атауы";
+"Read Progress" = "Оқу барысы";
+"Date Created" = "Жасалған күні";
+"Name" = "Аты";
+"Item Count" = "Элементтер саны";
+"Date Added" = "Қосылған күні";
+"Title" = "Атауы";
+"Source" = "Дереккөз";
+"Search reading..." = "Оқуды іздеу...";
+"Search collections..." = "Жинақтарды іздеу...";
+"Search bookmarks..." = "Бетбелгілерді іздеу...";
+"%d items" = "%d элемент";
+"Fetching Data" = "Деректерді алу";
+"Please wait while fetching." = "Алу кезінде күтіңіз.";
+"Start Reading" = "Оқуды бастау";
+"Chapters" = "Тараулар";
+"Completed" = "Аяқталды";
+"Drag to reorder" = "Қайта реттеу үшін сүйреңіз";
+"Drag to reorder sections" = "Бөлімдерді қайта реттеу үшін сүйреңіз";
+"Library View" = "Кітапхана көрінісі";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Кітапханаңызда көрсетілетін бөлімдерді реттеңіз. Бөлімдерді қайта реттеуге немесе толықтай өшіруге болады.";
+"Library Sections Order" = "Кітапхана бөлімдерінің реті";
+"Completion Percentage" = "Аяқталу пайызы";
+"Translators" = "Аудармашылар";
+"Paste URL" = "URL қою";
+
+/* Added missing localizations */
+"Collections" = "Жинақтар";
+"Continue Reading" = "Оқуды жалғастыру";
+
+/* Backup & Restore */
+"Backup & Restore" = "Сақтық көшірме және қалпына келтіру";
+"Export Backup" = "Сақтық көшірмені экспорттау";
+"Import Backup" = "Сақтық көшірмені импорттау";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Ескерту: Бұл мүмкіндік әлі де тәжірибелік. Экспорт/импорттан кейін деректеріңізді тексеріңіз.";
+"Backup" = "Сақтық көшірме";

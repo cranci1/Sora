@@ -58,6 +58,46 @@ fileprivate struct SettingsSection<Content: View>: View {
     }
 }
 
+fileprivate struct SettingsToggleRow: View {
+    let icon: String
+    let title: String
+    @Binding var isOn: Bool
+    var showDivider: Bool = true
+    
+    init(icon: String, title: String, isOn: Binding<Bool>, showDivider: Bool = true) {
+        self.icon = icon
+        self.title = title
+        self._isOn = isOn
+        self.showDivider = showDivider
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Image(systemName: icon)
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(.primary)
+                
+                Text(title)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
+                Toggle("", isOn: $isOn)
+                    .labelsHidden()
+                    .tint(.accentColor.opacity(0.7))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            
+            if showDivider {
+                Divider()
+                    .padding(.horizontal, 16)
+            }
+        }
+    }
+}
+
 fileprivate struct ModuleListItemView: View {
     let module: Module
     let selectedModuleId: String?
@@ -151,6 +191,7 @@ struct SettingsViewModule: View {
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @EnvironmentObject var moduleManager: ModuleManager
     @AppStorage("didReceiveDefaultPageLink") private var didReceiveDefaultPageLink: Bool = false
+    @AppStorage("refreshModulesOnLaunch") private var refreshModulesOnLaunch: Bool = true
     
     @State private var errorMessage: String?
     @State private var isLoading = false
@@ -211,6 +252,18 @@ struct SettingsViewModule: View {
                             }
                         }
                     }
+                }
+                
+                SettingsSection(
+                    title: NSLocalizedString("Module Settings", comment: ""),
+                    footer: NSLocalizedString("Note that the modules will be replaced only if there is a different version string inside the JSON file.", comment: "")
+                ) {
+                    SettingsToggleRow(
+                        icon: "arrow.clockwise",
+                        title: NSLocalizedString("Refresh Modules on Launch", comment: ""),
+                        isOn: $refreshModulesOnLaunch,
+                        showDivider: false
+                    )
                 }
             }
             .padding(.vertical, 20)

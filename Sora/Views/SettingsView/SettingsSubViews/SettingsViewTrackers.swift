@@ -213,7 +213,7 @@ struct SettingsViewTrackers: View {
                 SettingsSection(title: NSLocalizedString("Trakt", comment: "")) {
                     VStack(spacing: 0) {
                         HStack(alignment: .center, spacing: 10) {
-                            LazyImage(url: URL(string: "https://static-00.iconduck.com/assets.00/trakt-icon-2048x2048-2633ksxg.png")) { state in
+                            LazyImage(url: URL(string: "https://cdn.iconscout.com/icon/free/png-512/free-trakt-logo-icon-download-in-svg-png-gif-file-formats--technology-social-media-company-vol-7-pack-logos-icons-2945267.png?f=webp&w=512")) { state in
                                 if let uiImage = state.imageContainer?.image {
                                     Image(uiImage: uiImage)
                                         .resizable()
@@ -304,7 +304,7 @@ struct SettingsViewTrackers: View {
                 }
                 
                 SettingsSection(
-                    title: NSLocalizedString("Info", comment: ""),
+                    title: "",
                     footer: NSLocalizedString("Sora and cranci1 are not affiliated with AniList or Trakt in any way.\n\nAlso note that progress updates may not be 100% accurate.", comment: "")
                 ) {}
             }

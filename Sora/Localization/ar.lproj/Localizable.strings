@@ -388,3 +388,105 @@
 "me frfr" = "me frfr";
 "Data" = "البيانات";
 "Maximum Quality Available" = "أعلى جودة متاحة";
+
+/* New additions */
+"DownloadCountFormat" = "%d من %d";
+"Error loading chapter" = "حدث خطأ أثناء تحميل الفصل";
+"Font Size: %dpt" = "حجم الخط: %d نقطة";
+"Line Spacing: %.1f" = "تباعد الأسطر: %.1f";
+"Line Spacing" = "تباعد الأسطر";
+"Margin: %dpx" = "الهامش: %d بكسل";
+"Margin" = "الهامش";
+"Auto Scroll Speed" = "سرعة التمرير التلقائي";
+"Speed" = "السرعة";
+"Speed: %.1fx" = "السرعة: %.1fx";
+"Matched %@: %@" = "%@: %@ متطابق";
+"Enter the AniList ID for this series" = "أدخل معرف AniList لهذه السلسلة";
+
+/* New additions */
+"Create Collection" = "إنشاء مجموعة";
+"Collection Name" = "اسم المجموعة";
+"Rename Collection" = "إعادة تسمية المجموعة";
+"Rename" = "إعادة تسمية";
+"All Reading" = "كل القراءة";
+"Recently Added" = "أضيفت مؤخراً";
+"Novel Title" = "عنوان الرواية";
+"Read Progress" = "تقدم القراءة";
+"Date Created" = "تاريخ الإنشاء";
+"Name" = "الاسم";
+"Item Count" = "عدد العناصر";
+"Date Added" = "تاريخ الإضافة";
+"Title" = "العنوان";
+"Source" = "المصدر";
+"Search reading..." = "ابحث في القراءة...";
+"Search collections..." = "ابحث في المجموعات...";
+"Search bookmarks..." = "ابحث في الإشارات المرجعية...";
+"%d items" = "%d عناصر";
+"Fetching Data" = "جاري جلب البيانات";
+"Please wait while fetching." = "يرجى الانتظار أثناء الجلب.";
+"Start Reading" = "ابدأ القراءة";
+"Chapters" = "الفصول";
+"Completed" = "مكتمل";
+"Drag to reorder" = "اسحب لإعادة الترتيب";
+"Drag to reorder sections" = "اسحب لإعادة ترتيب الأقسام";
+"Library View" = "عرض المكتبة";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "خصص الأقسام المعروضة في مكتبتك. يمكنك إعادة ترتيب الأقسام أو تعطيلها بالكامل.";
+"Library Sections Order" = "ترتيب أقسام المكتبة";
+"Completion Percentage" = "نسبة الإكمال";
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.\n\nThe completion percentage setting determines at what point before the end of a video the app will mark it as completed on AniList and Trakt." = "بعض الميزات محدودة في مشغل Sora والمشغل الافتراضي فقط، مثل الوضع الأفقي الإجباري، سرعة التثبيت، وزيادات تخطي الوقت المخصصة.\n\nإعداد نسبة الإكمال يحدد عند أي نقطة قبل نهاية الفيديو سيتم اعتبار العمل مكتمل في AniList وTrakt.";
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nErasing the App Data will clears all your settings and data of the app." = "ذاكرة التخزين المؤقت تساعد التطبيق على تحميل الصور بشكل أسرع.\n\nمسح مجلد المستندات سيحذف جميع الوحدات التي تم تنزيلها.\n\nمسح بيانات التطبيق سيحذف جميع إعداداتك وبياناتك.";
+"Translators" = "المترجمون";
+"Paste URL" = "الصق الرابط";
+
+/* New additions */
+"Series Title" = "عنوان السلسلة";
+"Content Source" = "مصدر المحتوى";
+"Watch Progress" = "تقدم المشاهدة";
+"Nothing to Continue Reading" = "لا شيء لمتابعة القراءة";
+"Your recently read novels will appear here" = "ستظهر الروايات التي قرأتها مؤخرًا هنا";
+"No Bookmarks" = "لا توجد إشارات مرجعية";
+"Add bookmarks to this collection" = "أضف إشارات مرجعية إلى هذه المجموعة";
+"items" = "عناصر";
+"All Watching" = "كل المشاهدة";
+"No Reading History" = "لا يوجد سجل قراءة";
+"Books you're reading will appear here" = "ستظهر الكتب التي تقرأها هنا";
+"Create Collection" = "إنشاء مجموعة";
+"Collection Name" = "اسم المجموعة";
+"Rename Collection" = "إعادة تسمية المجموعة";
+"Rename" = "إعادة تسمية";
+"Novel Title" = "عنوان الرواية";
+"Read Progress" = "تقدم القراءة";
+"Date Created" = "تاريخ الإنشاء";
+"Name" = "الاسم";
+"Item Count" = "عدد العناصر";
+"Date Added" = "تاريخ الإضافة";
+"Title" = "العنوان";
+"Source" = "المصدر";
+"Search reading..." = "ابحث في القراءة...";
+"Search collections..." = "ابحث في المجموعات...";
+"Search bookmarks..." = "ابحث في الإشارات المرجعية...";
+"%d items" = "%d عناصر";
+"Fetching Data" = "جاري جلب البيانات";
+"Please wait while fetching." = "يرجى الانتظار أثناء الجلب.";
+"Start Reading" = "ابدأ القراءة";
+"Chapters" = "الفصول";
+"Completed" = "مكتمل";
+"Drag to reorder" = "اسحب لإعادة الترتيب";
+"Drag to reorder sections" = "اسحب لإعادة ترتيب الأقسام";
+"Library View" = "عرض المكتبة";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "خصص الأقسام المعروضة في مكتبتك. يمكنك إعادة ترتيب الأقسام أو تعطيلها بالكامل.";
+"Library Sections Order" = "ترتيب أقسام المكتبة";
+"Completion Percentage" = "نسبة الإكمال";
+"Translators" = "المترجمون";
+"Paste URL" = "الصق الرابط";
+
+/* New additions */
+"Collections" = "المجموعات";
+"Continue Reading" = "متابعة القراءة";
+
+/* New additions */
+"Backup & Restore" = "النسخ الاحتياطي والاستعادة";
+"Export Backup" = "تصدير النسخة الاحتياطية";
+"Import Backup" = "استيراد النسخة الاحتياطية";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "تنبيه: هذه الميزة لا تزال تجريبية. يرجى التحقق من بياناتك بعد التصدير/الاستيراد.";
+"Backup" = "نسخة احتياطية";

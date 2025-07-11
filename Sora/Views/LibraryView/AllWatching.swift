@@ -113,7 +113,7 @@ struct AllWatchingView: View {
                                 sortOption = option
                             } label: {
                                 HStack {
-                                    Text(option.rawValue)
+                                    Text(NSLocalizedString(option.rawValue, comment: ""))
                                     if option == sortOption {
                                         Image(systemName: "checkmark")
                                             .foregroundColor(.accentColor)
@@ -246,7 +246,6 @@ struct AllWatchingView: View {
         .onAppear {
             loadContinueWatchingItems()
             
-            // Enable swipe back gesture
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first,
                let navigationController = window.rootViewController?.children.first as? UINavigationController {

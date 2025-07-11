@@ -78,10 +78,10 @@ struct SettingsViewAbout: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Sora")
+                            Text(LocalizedStringKey("Sora"))
                                 .font(.title)
                                 .bold()
-                            Text("Also known as Sulfur")
+                            Text(LocalizedStringKey("Also known as Sulfur"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -111,10 +111,10 @@ struct SettingsViewAbout: View {
                             }
                             
                             VStack(alignment: .leading) {
-                                Text("cranci1")
+                                Text(LocalizedStringKey("cranci1"))
                                     .font(.headline)
                                     .foregroundColor(.indigo)
-                                Text("me frfr")
+                                Text(LocalizedStringKey("me frfr"))
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                             }
@@ -137,7 +137,7 @@ struct SettingsViewAbout: View {
             }
             .padding(.vertical, 20)
         }
-        .navigationTitle("About")
+        .navigationTitle(LocalizedStringKey("About"))
         .scrollViewBottomPadding()
     }
 }
@@ -157,7 +157,7 @@ struct ContributorsView: View {
                 }
                 .padding(.vertical, 12)
             } else if error != nil {
-                Text("Failed to load contributors")
+                Text(LocalizedStringKey("Failed to load contributors"))
                     .foregroundColor(.secondary)
                     .padding(.vertical, 12)
             } else {
@@ -191,11 +191,6 @@ struct ContributorsView: View {
                 id: 71751652,
                 login: "qooode",
                 avatarUrl: "https://avatars.githubusercontent.com/u/71751652?v=4"
-            ),
-            Contributor(
-                id: 8116188,
-                login: "undeaDD",
-                avatarUrl: "https://avatars.githubusercontent.com/u/8116188?v=4"
             )
         ]
     }
@@ -288,8 +283,8 @@ struct TranslatorsView: View {
         ),
         Translator(
             id: 3,
-            login: "cranci",
-            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/28ac8bfaa250788579af747d8fb7f827_webp.png?raw=true",
+            login: "simplymox",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/9131174855bd67fc445206e888505a6a_webp.png?raw=true",
             language: "Italian"
         ),
         Translator(
@@ -327,6 +322,12 @@ struct TranslatorsView: View {
             login: "Cufiy",
             avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/y1wwm0ed_png.png?raw=true",
             language: "German"
+        ),
+        Translator(
+            id: 10,
+            login: "yoshi1780",
+            avatarUrl: "https://github.com/50n50/assets/blob/main/pfps/262d7c1a61ff49355ddb74c76c7c5c7f_webp.png?raw=true",
+            language: "Mongolian"
         )
     ]
 

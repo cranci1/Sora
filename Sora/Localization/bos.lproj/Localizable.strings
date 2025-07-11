@@ -41,7 +41,7 @@
 "Clear All Downloads" = "Obriši sva preuzimanja";
 "Clear Cache" = "Obriši keš";
 "Clear Library Only" = "Obriši samo biblioteku";
-"Clear Logs" = "Obriši logове";
+"Clear Logs" = "Obriši logove";
 "Click the plus button to add a module!" = "Kliknite plus dugme da dodate modul!";
 "Continue Watching" = "Nastavi gledanje";
 "Continue Watching Episode %d" = "Nastavi gledanje epizode %d";
@@ -404,3 +404,107 @@ Za metapodatke epizode, odnosi se na sličicu i naslov epizode, jer ponekad mogu
 "me frfr" = "ja stvarno";
 "Data" = "Podaci";
 "Maximum Quality Available" = "Maksimalna dostupna kvaliteta";
+
+/* Additional translations */
+"DownloadCountFormat" = "%d od %d";
+"Error loading chapter" = "Greška pri učitavanju poglavlja";
+"Font Size: %dpt" = "Veličina fonta: %dpt";
+"Line Spacing: %.1f" = "Razmak između redova: %.1f";
+"Line Spacing" = "Razmak između redova";
+"Margin: %dpx" = "Margina: %dpx";
+"Margin" = "Margina";
+"Auto Scroll Speed" = "Brzina automatskog pomicanja";
+"Speed" = "Brzina";
+"Speed: %.1fx" = "Brzina: %.1fx";
+"Matched %@: %@" = "Poklapanje %@: %@";
+"Enter the AniList ID for this series" = "Unesite AniList ID za ovu seriju";
+
+/* Added missing localizations */
+"Create Collection" = "Kreiraj kolekciju";
+"Collection Name" = "Naziv kolekcije";
+"Rename Collection" = "Preimenuj kolekciju";
+"Rename" = "Preimenuj";
+"All Reading" = "Sva čitanja";
+"Recently Added" = "Nedavno dodano";
+"Novel Title" = "Naslov romana";
+"Read Progress" = "Napredak čitanja";
+"Date Created" = "Datum kreiranja";
+"Name" = "Naziv";
+"Item Count" = "Broj stavki";
+"Date Added" = "Datum dodavanja";
+"Title" = "Naslov";
+"Source" = "Izvor";
+"Search reading..." = "Pretraži čitanje...";
+"Search collections..." = "Pretraži kolekcije...";
+"Search bookmarks..." = "Pretraži oznake...";
+"%d items" = "%d stavki";
+"Fetching Data" = "Preuzimanje podataka";
+"Please wait while fetching." = "Molimo sačekajte dok se preuzima.";
+"Start Reading" = "Započni čitanje";
+"Chapters" = "Poglavlja";
+"Completed" = "Završeno";
+"Drag to reorder" = "Povuci za promjenu redoslijeda";
+"Drag to reorder sections" = "Povuci za promjenu redoslijeda sekcija";
+"Library View" = "Prikaz biblioteke";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Prilagodite sekcije prikazane u vašoj biblioteci. Možete ih preurediti ili potpuno onemogućiti.";
+"Library Sections Order" = "Redoslijed sekcija biblioteke";
+"Completion Percentage" = "Procenat završetka";
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.\n\nThe completion percentage setting determines at what point before the end of a video the app will mark it as completed on AniList and Trakt." = "Neke funkcije su ograničene na Sora i zadani player, kao što su prisilni pejzaž, držanje brzine i prilagođeni intervali preskakanja.\n\nPostavka procenta završetka određuje u kojoj tački prije kraja videa će aplikacija označiti kao završeno na AniList i Trakt.";
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nErasing the App Data will clears all your settings and data of the app." = "Keš aplikacije pomaže bržem učitavanju slika.\n\nBrisanje Documents foldera će ukloniti sve preuzete module.\n\nBrisanje podataka aplikacije briše sve vaše postavke i podatke.";
+"Translators" = "Prevoditelji";
+"Paste URL" = "Zalijepi URL";
+
+/* New additions */
+"Series Title" = "Naslov serije";
+"Content Source" = "Izvor sadržaja";
+"Watch Progress" = "Napredak gledanja";
+"Recent searches" = "Nedavne pretrage";
+"All Reading" = "Sve što čitam";
+"Nothing to Continue Reading" = "Nema ništa za nastaviti čitanje";
+"Your recently read novels will appear here" = "Vaši nedavno pročitani romani će se pojaviti ovdje";
+"No Bookmarks" = "Nema zabilješki";
+"Add bookmarks to this collection" = "Dodajte zabilješke u ovu kolekciju";
+"items" = "stavke";
+"All Watching" = "Sve što gledam";
+"No Reading History" = "Nema historije čitanja";
+"Books you're reading will appear here" = "Knjige koje čitate će se pojaviti ovdje";
+"Create Collection" = "Kreiraj kolekciju";
+"Collection Name" = "Naziv kolekcije";
+"Rename Collection" = "Preimenuj kolekciju";
+"Rename" = "Preimenuj";
+"Novel Title" = "Naslov romana";
+"Read Progress" = "Napredak čitanja";
+"Date Created" = "Datum kreiranja";
+"Name" = "Ime";
+"Item Count" = "Broj stavki";
+"Date Added" = "Datum dodavanja";
+"Title" = "Naslov";
+"Source" = "Izvor";
+"Search reading..." = "Pretraži čitanje...";
+"Search collections..." = "Pretraži kolekcije...";
+"Search bookmarks..." = "Pretraži zabilješke...";
+"%d items" = "%d stavki";
+"Fetching Data" = "Dohvatanje podataka";
+"Please wait while fetching." = "Molimo sačekajte dok se podaci dohvaćaju.";
+"Start Reading" = "Započni čitanje";
+"Chapters" = "Poglavlja";
+"Completed" = "Završeno";
+"Drag to reorder" = "Povucite za promjenu redoslijeda";
+"Drag to reorder sections" = "Povucite za promjenu redoslijeda sekcija";
+"Library View" = "Prikaz biblioteke";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Prilagodite sekcije prikazane u vašoj biblioteci. Možete promijeniti redoslijed ili ih potpuno onemogućiti.";
+"Library Sections Order" = "Redoslijed sekcija biblioteke";
+"Completion Percentage" = "Procenat završetka";
+"Translators" = "Prevodioci";
+"Paste URL" = "Zalijepi URL";
+
+/* New additions */
+"Collections" = "Kolekcije";
+"Continue Reading" = "Nastavi čitanje";
+
+/* Backup & Restore */
+"Backup & Restore" = "Sigurnosna kopija i vraćanje";
+"Export Backup" = "Izvezi sigurnosnu kopiju";
+"Import Backup" = "Uvezi sigurnosnu kopiju";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Napomena: Ova funkcija je još uvijek eksperimentalna. Molimo provjerite svoje podatke nakon izvoza/uvoza.";
+"Backup" = "Sigurnosna kopija";

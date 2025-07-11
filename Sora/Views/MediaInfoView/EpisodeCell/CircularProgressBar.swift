@@ -24,7 +24,10 @@ struct CircularProgressBar: View {
                 .rotationEffect(Angle(degrees: 270.0))
                 .animation(.linear, value: progress)
             
-            if progress >= 0.9 {
+            let remainingTimePercentage = UserDefaults.standard.object(forKey: "remainingTimePercentage") != nil ? UserDefaults.standard.double(forKey: "remainingTimePercentage") : 90.0
+            let threshold = (100.0 - remainingTimePercentage) / 100.0
+            
+            if progress >= threshold {
                 Image(systemName: "checkmark")
                     .font(.system(size: 12))
             } else {

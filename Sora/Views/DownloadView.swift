@@ -137,8 +137,8 @@ struct DownloadView: View {
     private var emptyActiveDownloadsView: some View {
         VStack(spacing: 20) {
             Image(systemName: "arrow.down.circle")
-                .font(.system(size: 64, weight: .ultraLight))
-                .foregroundStyle(.tertiary)
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
             
             VStack(spacing: 8) {
                 Text(NSLocalizedString("No Active Downloads", comment: ""))
@@ -158,9 +158,9 @@ struct DownloadView: View {
     
     private var emptyDownloadsView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "arrow.down.circle")
-                .font(.system(size: 64, weight: .ultraLight))
-                .foregroundStyle(.tertiary)
+            Image(systemName: "arrow.down.circle")                                    
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
             
             VStack(spacing: 8) {
                 Text(NSLocalizedString("No Downloads", comment: ""))
@@ -232,7 +232,8 @@ struct DownloadView: View {
             softsub: nil,
             multiStream: nil,
             multiSubs: nil,
-            type: nil
+            type: nil,
+            novel: false
         )
         
         let dummyModule = ScrapingModule(
@@ -241,7 +242,6 @@ struct DownloadView: View {
             metadataUrl: ""
         )
         
-        // Always use CustomMediaPlayerViewController for consistency
         let customPlayer = CustomMediaPlayerViewController(
             module: dummyModule,
             urlString: asset.localURL.absoluteString,
@@ -985,7 +985,6 @@ struct EnhancedShowEpisodesView: View {
     @State private var showDeleteAllAlert = false
     @State private var assetToDelete: DownloadedAsset?
     @EnvironmentObject var jsController: JSController
-    @EnvironmentObject var tabBarController: TabBarController
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
     
@@ -1025,17 +1024,18 @@ struct EnhancedShowEpisodesView: View {
             navigationOverlay
         }
         .onAppear {
-            tabBarController.hideTabBar()
-            // Enable swipe-to-go-back gesture
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first,
                let navigationController = window.rootViewController?.children.first as? UINavigationController {
                 navigationController.interactivePopGestureRecognizer?.isEnabled = true
                 navigationController.interactivePopGestureRecognizer?.delegate = nil
             }
+            
+            NotificationCenter.default.post(name: .hideTabBar, object: nil)
         }
         .onDisappear {
-            tabBarController.showTabBar()
+            NotificationCenter.default.post(name: .showTabBar, object: nil)
+            UIScrollView.appearance().bounces = true
         }
         .navigationBarBackButtonHidden(true)
     }
@@ -1045,7 +1045,6 @@ struct EnhancedShowEpisodesView: View {
         VStack {
             HStack {
                 Button(action: {
-                    tabBarController.showTabBar()
                     dismiss()
                 }) {
                     Image(systemName: "chevron.left")

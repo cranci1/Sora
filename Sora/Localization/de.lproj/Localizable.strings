@@ -49,6 +49,9 @@
 "Copied to Clipboard" = "In die Zwischenablage kopiert";
 "Copy to Clipboard" = "In die Zwischenablage kopieren";
 "Copy URL" = "URL kopieren";
+"Collections" = "Sammlungen";
+"No Collections" = "Keine Sammlungen vorhanden";
+"Create a collection to organize your bookmarks" = "Erstelle eine Sammlung für mehr Organisation";
 
 /* Episodes */
 "%lld Episodes" = "%lld Folgen";
@@ -84,7 +87,7 @@
 "Download Episode" = "Folge herunterladen";
 "Download Summary" = "Download-Übersicht";
 "Download This Episode" = "Diese Folge herunterladen";
-"Downloaded" = "Heruntergeladen";
+"Downloaded" = "Geladen";
 "Downloaded Shows" = "Heruntergeladene Serien";
 "Downloading" = "Lädt herunter";
 "Downloads" = "Downloads";
@@ -115,6 +118,7 @@
 "General events and activities." = "Allgemeine Aktivitäten.";
 "General Preferences" = "Allgemeine Einstellungen";
 "Hide Splash Screen" = "Startbildschirm ausblenden";
+"Use Native Tab Bar" = "System Bar verwenden";
 "HLS video downloading." = "HLS Video-Downloads.";
 "Hold Speed" = "Geschwindigkeit halten";
 
@@ -383,8 +387,113 @@
 "Library cleared successfully" = "Bibliothek erfolgreich geleert";
 "All downloads deleted successfully" = "Alle Downloads erfolgreich gelöscht";
 
+/* TabView */
+"LibraryTab" = "Bibliothek";
+"DownloadsTab" = "Downloads";
+"SettingsTab" = "Einstellungen";
+"SearchTab" = "Suchen";
+
 /* New additions */
 "Recent searches" = "Letzte Suchanfragen";
 "me frfr" = "Ich, ohne Witz";
 "Data" = "Daten";
 "Maximum Quality Available" = "Maximal verfügbare Qualität";
+
+"DownloadCountFormat" = "%d von %d";
+"Error loading chapter" = "Fehler beim Laden des Kapitels";
+"Font Size: %dpt" = "Schriftgröße: %dpt";
+"Line Spacing: %.1f" = "Zeilenabstand: %.1f";
+"Line Spacing" = "Zeilenabstand";
+"Margin: %dpx" = "Rand: %dpx";
+"Margin" = "Rand";
+"Auto Scroll Speed" = "Automatische Scroll-Geschwindigkeit";
+"Speed" = "Geschwindigkeit";
+"Speed: %.1fx" = "Geschwindigkeit: %.1fx";
+"Matched %@: %@" = "Abgeglichen %@: %@";
+"Enter the AniList ID for this series" = "Geben Sie die AniList-ID für diese Serie ein";
+
+/* Added missing localizations */
+"Create Collection" = "Sammlung erstellen";
+"Collection Name" = "Sammlungsname";
+"Rename Collection" = "Sammlung umbenennen";
+"Rename" = "Umbenennen";
+"All Reading" = "Alles Lesen";
+"Recently Added" = "Kürzlich hinzugefügt";
+"Novel Title" = "Roman Titel";
+"Read Progress" = "Lesefortschritt";
+"Date Created" = "Erstellungsdatum";
+"Name" = "Name";
+"Item Count" = "Anzahl der Elemente";
+"Date Added" = "Hinzugefügt am";
+"Title" = "Titel";
+"Source" = "Quelle";
+"Search reading..." = "Lesen durchsuchen...";
+"Search collections..." = "Sammlungen durchsuchen...";
+"Search bookmarks..." = "Lesezeichen durchsuchen...";
+"%d items" = "%d Elemente";
+"Fetching Data" = "Daten werden abgerufen";
+"Please wait while fetching." = "Bitte warten Sie während des Abrufs.";
+"Start Reading" = "Lesen starten";
+"Chapters" = "Kapitel";
+"Completed" = "Abgeschlossen";
+"Drag to reorder" = "Ziehen zum Neuordnen";
+"Drag to reorder sections" = "Ziehen zum Neuordnen der Abschnitte";
+"Library View" = "Bibliotheksansicht";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Passen Sie die in Ihrer Bibliothek angezeigten Abschnitte an. Sie können Abschnitte neu anordnen oder vollständig deaktivieren.";
+"Library Sections Order" = "Reihenfolge der Bibliotheksabschnitte";
+"Completion Percentage" = "Abschlussprozentsatz";
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.\n\nThe completion percentage setting determines at what point before the end of a video the app will mark it as completed on AniList and Trakt." = "Einige Funktionen sind nur im Sora- und Standard-Player verfügbar, wie z.B. erzwungene Querformatansicht, Haltegeschwindigkeit und benutzerdefinierte Zeitsprünge.\n\nDie Einstellung des Abschlussprozentsatzes bestimmt, ab welchem Punkt vor dem Ende eines Videos die App es als abgeschlossen auf AniList und Trakt markiert.";
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nErasing the App Data will clears all your settings and data of the app." = "Der App-Cache hilft, Bilder schneller zu laden.\n\nDas Löschen des Dokumente-Ordners entfernt alle heruntergeladenen Module.\n\nDas Löschen der App-Daten entfernt alle Ihre Einstellungen und Daten.";
+"Translators" = "Übersetzer";
+"Paste URL" = "URL einfügen";
+
+/* Added missing localizations */
+"Series Title" = "Serientitel";
+"Content Source" = "Inhaltsquelle";
+"Watch Progress" = "Fortschritt ansehen";
+"All Reading" = "Alles Lesen";
+"Nothing to Continue Reading" = "Nichts zum Weiterlesen";
+"Your recently read novels will appear here" = "Ihre zuletzt gelesenen Romane erscheinen hier";
+"No Bookmarks" = "Keine Lesezeichen";
+"Add bookmarks to this collection" = "Fügen Sie dieser Sammlung Lesezeichen hinzu";
+"items" = "Elemente";
+"All Watching" = "Alles Ansehen";
+"No Reading History" = "Kein Leseverlauf";
+"Books you're reading will appear here" = "Bücher, die Sie lesen, erscheinen hier";
+"Create Collection" = "Sammlung erstellen";
+"Collection Name" = "Sammlungsname";
+"Rename Collection" = "Sammlung umbenennen";
+"Rename" = "Umbenennen";
+"Novel Title" = "Roman Titel";
+"Read Progress" = "Lesefortschritt";
+"Date Created" = "Erstellungsdatum";
+"Name" = "Name";
+"Item Count" = "Anzahl der Elemente";
+"Date Added" = "Hinzugefügt am";
+"Title" = "Titel";
+"Source" = "Quelle";
+"Search reading..." = "Lesen durchsuchen...";
+"Search collections..." = "Sammlungen durchsuchen...";
+"Search bookmarks..." = "Lesezeichen durchsuchen...";
+"%d items" = "%d Elemente";
+"Fetching Data" = "Daten werden abgerufen";
+"Please wait while fetching." = "Bitte warten Sie während des Abrufs.";
+"Start Reading" = "Lesen starten";
+"Chapters" = "Kapitel";
+"Completed" = "Abgeschlossen";
+"Drag to reorder" = "Ziehen zum Neuordnen";
+"Drag to reorder sections" = "Ziehen zum Neuordnen der Abschnitte";
+"Library View" = "Bibliotheksansicht";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Passen Sie die in Ihrer Bibliothek angezeigten Abschnitte an. Sie können Abschnitte neu anordnen oder vollständig deaktivieren.";
+"Library Sections Order" = "Reihenfolge der Bibliotheksabschnitte";
+"Completion Percentage" = "Abschlussprozentsatz";
+"Translators" = "Übersetzer";
+"Paste URL" = "URL einfügen";
+
+"Continue Reading" = "Weiterlesen";
+
+"Backup & Restore" = "Sichern & Wiederherstellen";
+"Export Backup" = "Backup exportieren";
+"Import Backup" = "Backup importieren";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Hinweis: Diese Funktion ist noch experimentell. Bitte überprüfe deine Daten nach dem Export/Import.";
+"Backup" = "Backup";

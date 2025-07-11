@@ -404,3 +404,105 @@ For episode metadata, it refers to the episode thumbnail and title, since someti
 "me frfr" = "me frfr";
 "Data" = "Dáta";
 "Maximum Quality Available" = "Maximálna dostupná kvalita";
+
+/* New additions */
+"DownloadCountFormat" = "%d z %d";
+"Error loading chapter" = "Chyba pri načítaní kapitoly";
+"Font Size: %dpt" = "Veľkosť písma: %dpt";
+"Line Spacing: %.1f" = "Riadkovanie: %.1f";
+"Line Spacing" = "Riadkovanie";
+"Margin: %dpx" = "Okraj: %dpx";
+"Margin" = "Okraj";
+"Auto Scroll Speed" = "Rýchlosť automatického posúvania";
+"Speed" = "Rýchlosť";
+"Speed: %.1fx" = "Rýchlosť: %.1fx";
+"Matched %@: %@" = "Zhoda %@: %@";
+"Enter the AniList ID for this series" = "Zadajte AniList ID pre túto sériu";
+
+/* Added missing localizations */
+"Create Collection" = "Vytvoriť kolekciu";
+"Collection Name" = "Názov kolekcie";
+"Rename Collection" = "Premenovať kolekciu";
+"Rename" = "Premenovať";
+"All Reading" = "Všetko na čítanie";
+"Recently Added" = "Nedávno pridané";
+"Novel Title" = "Názov románu";
+"Read Progress" = "Priebeh čítania";
+"Date Created" = "Dátum vytvorenia";
+"Name" = "Meno";
+"Item Count" = "Počet položiek";
+"Date Added" = "Dátum pridania";
+"Title" = "Názov";
+"Source" = "Zdroj";
+"Search reading..." = "Hľadať v čítaní...";
+"Search collections..." = "Hľadať v kolekciách...";
+"Search bookmarks..." = "Hľadať v záložkách...";
+"%d items" = "%d položiek";
+"Fetching Data" = "Načítavanie údajov";
+"Please wait while fetching." = "Počkajte, kým sa údaje načítajú.";
+"Start Reading" = "Začať čítať";
+"Chapters" = "Kapitoly";
+"Completed" = "Dokončené";
+"Drag to reorder" = "Potiahnite na zmenu poradia";
+"Drag to reorder sections" = "Potiahnite na zmenu poradia sekcií";
+"Library View" = "Zobrazenie knižnice";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Prispôsobte sekcie zobrazené vo vašej knižnici. Môžete zmeniť ich poradie alebo ich úplne vypnúť.";
+"Library Sections Order" = "Poradie sekcií knižnice";
+"Completion Percentage" = "Percento dokončenia";
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.\n\nThe completion percentage setting determines at what point before the end of a video the app will mark it as completed on AniList and Trakt." = "Niektoré funkcie sú obmedzené na Sora a predvolený prehrávač, ako je vynútená krajina, podržanie rýchlosti a vlastné intervaly preskočenia.\n\nNastavenie percenta dokončenia určuje, v ktorom bode pred koncom videa aplikácia označí ako dokončené na AniList a Trakt.";
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nErasing the App Data will clears all your settings and data of the app." = "Vyrovnávacia pamäť aplikácie pomáha rýchlejšiemu načítaniu obrázkov.\n\nVymazanie priečinka Documents odstráni všetky stiahnuté moduly.\n\nVymazanie údajov aplikácie odstráni všetky vaše nastavenia a údaje.";
+"Translators" = "Prekladatelia";
+"Paste URL" = "Vložiť URL";
+
+/* New additions */
+"Series Title" = "Názov série";
+"Content Source" = "Zdroj obsahu";
+"Watch Progress" = "Priebeh sledovania";
+"Nothing to Continue Reading" = "Nič na pokračovanie v čítaní";
+"Your recently read novels will appear here" = "Vaše nedávno čítané romány sa zobrazia tu";
+"No Bookmarks" = "Žiadne záložky";
+"Add bookmarks to this collection" = "Pridajte záložky do tejto kolekcie";
+"items" = "položky";
+"All Watching" = "Všetko na sledovanie";
+"No Reading History" = "Žiadna história čítania";
+"Books you're reading will appear here" = "Knihy, ktoré čítate, sa zobrazia tu";
+"Create Collection" = "Vytvoriť kolekciu";
+"Collection Name" = "Názov kolekcie";
+"Rename Collection" = "Premenovať kolekciu";
+"Rename" = "Premenovať";
+"Novel Title" = "Názov románu";
+"Read Progress" = "Priebeh čítania";
+"Date Created" = "Dátum vytvorenia";
+"Name" = "Meno";
+"Item Count" = "Počet položiek";
+"Date Added" = "Dátum pridania";
+"Title" = "Názov";
+"Source" = "Zdroj";
+"Search reading..." = "Hľadať v čítaní...";
+"Search collections..." = "Hľadať v kolekciách...";
+"Search bookmarks..." = "Hľadať v záložkách...";
+"%d items" = "%d položiek";
+"Fetching Data" = "Načítavanie údajov";
+"Please wait while fetching." = "Počkajte, kým sa údaje načítajú.";
+"Start Reading" = "Začať čítať";
+"Chapters" = "Kapitoly";
+"Completed" = "Dokončené";
+"Drag to reorder" = "Potiahnite na zmenu poradia";
+"Drag to reorder sections" = "Potiahnite na zmenu poradia sekcií";
+"Library View" = "Zobrazenie knižnice";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Prispôsobte sekcie zobrazené vo vašej knižnici. Môžete zmeniť ich poradie alebo ich úplne vypnúť.";
+"Library Sections Order" = "Poradie sekcií knižnice";
+"Completion Percentage" = "Percento dokončenia";
+"Translators" = "Prekladatelia";
+"Paste URL" = "Vložiť URL";
+
+/* New additions */
+"Collections" = "Kolekcie";
+"Continue Reading" = "Pokračovať v čítaní";
+
+/* Backup & Restore */
+"Backup & Restore" = "Záloha a obnovenie";
+"Export Backup" = "Exportovať zálohu";
+"Import Backup" = "Importovať zálohu";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Upozornenie: Táto funkcia je stále experimentálna. Po exporte/importe si prosím skontrolujte svoje údaje.";
+"Backup" = "Záloha";

@@ -199,11 +199,13 @@ struct SettingsViewPlayer: View {
     @AppStorage("holdSpeedPlayer") private var holdSpeedPlayer: Double = 2.0
     @AppStorage("skipIncrement") private var skipIncrement: Double = 10.0
     @AppStorage("skipIncrementHold") private var skipIncrementHold: Double = 30.0
+    @AppStorage("remainingTimePercentage") private var remainingTimePercentage: Double = 90.0
     @AppStorage("holdForPauseEnabled") private var holdForPauseEnabled = false
     @AppStorage("skip85Visible") private var skip85Visible: Bool = true
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
     @AppStorage("pipButtonVisible") private var pipButtonVisible: Bool = true
+    @AppStorage("autoplayNext") private var autoplayNext: Bool = true
     
     @AppStorage("videoQualityWiFi") private var wifiQuality: String = VideoQualityPreference.defaultWiFiPreference.rawValue
     @AppStorage("videoQualityCellular") private var cellularQuality: String = VideoQualityPreference.defaultCellularPreference.rawValue
@@ -216,7 +218,7 @@ struct SettingsViewPlayer: View {
             VStack(spacing: 24) {
                 SettingsSection(
                     title: NSLocalizedString("Media Player", comment: ""),
-                    footer: NSLocalizedString("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.", comment: "")
+                    footer: NSLocalizedString("Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.\n\nThe completion percentage setting determines at what point before the end of a video the app will mark it as completed on AniList and Trakt.", comment: "")
                 ) {
                     SettingsPickerRow(
                         icon: "play.circle",
@@ -243,6 +245,22 @@ struct SettingsViewPlayer: View {
                         icon: "pip",
                         title: NSLocalizedString("Show PiP Button", comment: ""),
                         isOn: $pipButtonVisible,
+                        showDivider: true
+                    )
+                    
+                    SettingsToggleRow(
+                        icon: "play.circle.fill",
+                        title: NSLocalizedString("Autoplay Next", comment: ""),
+                        isOn: $autoplayNext,
+                        showDivider: true
+                    )
+                    
+                    SettingsPickerRow(
+                        icon: "timer",
+                        title: NSLocalizedString("Completion Percentage", comment: ""),
+                        options: [60.0, 70.0, 80.0, 90.0, 95.0, 100.0],
+                        optionToString: { "\(Int($0))%" },
+                        selection: $remainingTimePercentage,
                         showDivider: false
                     )
                 }
@@ -284,29 +302,6 @@ struct SettingsViewPlayer: View {
                         selection: $cellularQuality,
                         showDivider: false
                     )
-                }
-                
-                SettingsSection(title: NSLocalizedString("Progress bar Marker Color", comment: "")) {
-                    ColorPicker(NSLocalizedString("Segments Color", comment: ""), selection: Binding(
-                        get: {
-                            if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
-                               let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
-                                return Color(uiColor)
-                            }
-                            return .yellow
-                        },
-                        set: { newColor in
-                            let uiColor = UIColor(newColor)
-                            if let data = try? NSKeyedArchiver.archivedData(
-                                withRootObject: uiColor,
-                                requiringSecureCoding: false
-                            ) {
-                                UserDefaults.standard.set(data, forKey: "segmentsColorData")
-                            }
-                        }
-                    ))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
                 }
                 
                 SettingsSection(

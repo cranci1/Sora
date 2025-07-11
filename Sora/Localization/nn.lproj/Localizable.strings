@@ -382,3 +382,107 @@
 "Storage Used" = "Brukt Lagring";
 "Library cleared successfully" = "Bibliotek tømt";
 "All downloads deleted successfully" = "Alle nedlastinger slettet";
+
+/* New keys from English localization */
+"DownloadCountFormat" = "%d av %d";
+"Error loading chapter" = "Feil ved lasting av kapittel";
+"Font Size: %dpt" = "Skriftstorleik: %dpt";
+"Line Spacing: %.1f" = "Linjeavstand: %.1f";
+"Line Spacing" = "Linjeavstand";
+"Margin: %dpx" = "Marg: %dpx";
+"Margin" = "Marg";
+"Auto Scroll Speed" = "Fart på automatisk rulling";
+"Speed" = "Fart";
+"Speed: %.1fx" = "Fart: %.1fx";
+"Matched %@: %@" = "Treff %@: %@";
+"Enter the AniList ID for this series" = "Skriv inn AniList-ID for denne serien";
+
+/* Added missing localizations */
+"Create Collection" = "Opprett samling";
+"Collection Name" = "Samlingens navn";
+"Rename Collection" = "Gi nytt navn til samling";
+"Rename" = "Gi nytt navn";
+"All Reading" = "All lesing";
+"Recently Added" = "Nylig lagt til";
+"Novel Title" = "Roman tittel";
+"Read Progress" = "Lesefremgang";
+"Date Created" = "Opprettelsesdato";
+"Name" = "Navn";
+"Item Count" = "Antall elementer";
+"Date Added" = "Dato lagt til";
+"Title" = "Tittel";
+"Source" = "Kilde";
+"Search reading..." = "Søk i lesing...";
+"Search collections..." = "Søk i samlinger...";
+"Search bookmarks..." = "Søk i bokmerker...";
+"%d items" = "%d elementer";
+"Fetching Data" = "Henter data";
+"Please wait while fetching." = "Vennligst vent mens det hentes.";
+"Start Reading" = "Start lesing";
+"Chapters" = "Kapitler";
+"Completed" = "Fullført";
+"Drag to reorder" = "Dra for å endre rekkefølge";
+"Drag to reorder sections" = "Dra for å endre rekkefølge på seksjoner";
+"Library View" = "Bibliotekvisning";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Tilpass seksjonene som vises i biblioteket ditt. Du kan endre rekkefølge eller deaktivere seksjoner helt.";
+"Library Sections Order" = "Rekkefølge på bibliotekseksjoner";
+"Completion Percentage" = "Fullføringsprosent";
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.\n\nThe completion percentage setting determines at what point before the end of a video the app will mark it as completed on AniList and Trakt." = "Noen funksjoner er begrenset til Sora- og standardspilleren, som tvunget landskap, holdhastighet og tilpassede tidshopp.\n\nFullføringsprosenten bestemmer når før slutten av en video appen markerer den som fullført på AniList og Trakt.";
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nErasing the App Data will clears all your settings and data of the app." = "Appens cache hjelper med å laste inn bilder raskere.\n\nÅ tømme Dokumenter-mappen sletter alle nedlastede moduler.\n\nÅ slette appdata sletter alle innstillinger og data.";
+"Translators" = "Oversettere";
+"Paste URL" = "Lim inn URL";
+
+/* Added missing localizations */
+"Series Title" = "Serietittel";
+"Content Source" = "Innhaldskjelde";
+"Watch Progress" = "Framdrift for vising";
+"Recent searches" = "Nylege søk";
+"All Reading" = "Alt du les";
+"Nothing to Continue Reading" = "Ingenting å fortsetje å lese";
+"Your recently read novels will appear here" = "Dine nyleg lesne romanar vil visast her";
+"No Bookmarks" = "Ingen bokmerke";
+"Add bookmarks to this collection" = "Legg til bokmerke i denne samlinga";
+"items" = "element";
+"All Watching" = "Alt du ser på";
+"No Reading History" = "Ingen leseloggar";
+"Books you're reading will appear here" = "Bøker du les vil visast her";
+"Create Collection" = "Opprett samling";
+"Collection Name" = "Samlingnamn";
+"Rename Collection" = "Endre namn på samling";
+"Rename" = "Endre namn";
+"Novel Title" = "Roman tittel";
+"Read Progress" = "Leseframdrift";
+"Date Created" = "Oppretta dato";
+"Name" = "Namn";
+"Item Count" = "Tal på element";
+"Date Added" = "Dato lagt til";
+"Title" = "Tittel";
+"Source" = "Kjelde";
+"Search reading..." = "Søk i lesing...";
+"Search collections..." = "Søk i samlingar...";
+"Search bookmarks..." = "Søk i bokmerke...";
+"%d items" = "%d element";
+"Fetching Data" = "Hentar data";
+"Please wait while fetching." = "Vent medan data vert henta.";
+"Start Reading" = "Start lesing";
+"Chapters" = "Kapittel";
+"Completed" = "Fullført";
+"Drag to reorder" = "Dra for å endre rekkefølgje";
+"Drag to reorder sections" = "Dra for å endre rekkefølgje på seksjonar";
+"Library View" = "Bibliotekvising";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Tilpass seksjonane som vert viste i biblioteket ditt. Du kan endre rekkefølgje eller slå dei heilt av.";
+"Library Sections Order" = "Rekkefølgje på bibliotekseksjonar";
+"Completion Percentage" = "Fullføringsprosent";
+"Translators" = "Omsetjarar";
+"Paste URL" = "Lim inn URL";
+
+/* Added missing localizations */
+"Collections" = "Samlingar";
+"Continue Reading" = "Hald fram med å lese";
+
+/* Backup & Restore */
+"Backup & Restore" = "Sikkerhetskopi og gjenoppretting";
+"Export Backup" = "Eksporter sikkerhetskopi";
+"Import Backup" = "Importer sikkerhetskopi";
+"Notice: This feature is still experimental. Please double-check your data after import/export." = "Merk: Denne funksjonen er fortsatt eksperimentell. Vennligst dobbeltsjekk dataene dine etter eksport/import.";
+"Backup" = "Sikkerhetskopi";

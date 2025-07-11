@@ -31,7 +31,7 @@ struct ReaderView: View {
     let chapterHref: String
     let chapterTitle: String
     let chapters: [[String: Any]]
-    let mediaTitle: String 
+    let mediaTitle: String
     let chapterNumber: Int
     
     @State private var htmlContent: String = ""
@@ -205,12 +205,12 @@ struct ReaderView: View {
                 .offset(y: isHeaderVisible ? 0 : -100)
                 .allowsHitTesting(isHeaderVisible)
                 .animation(.easeInOut(duration: 0.6), value: isHeaderVisible)
-                .zIndex(1) 
+                .zIndex(1)
             
             if isHeaderVisible {
             footerView
                     .transition(.move(edge: .bottom))
-                    .zIndex(2) 
+                    .zIndex(2)
             }
         }
         .navigationBarHidden(true)
@@ -277,8 +277,8 @@ struct ReaderView: View {
                 }
             } else {
                 if !htmlContent.isEmpty {
-                    let validHtmlContent = (!htmlContent.isEmpty && 
-                                          !htmlContent.contains("undefined") && 
+                    let validHtmlContent = (!htmlContent.isEmpty &&
+                                          !htmlContent.contains("undefined") &&
                                           htmlContent.count > 50) ? htmlContent : nil
                     
                     if validHtmlContent == nil {
@@ -312,9 +312,9 @@ struct ReaderView: View {
                 let isConnected = await NetworkMonitor.shared.ensureNetworkStatusInitialized()
                 let isOffline = !isConnected
                 
-                if let cachedContent = ContinueReadingManager.shared.getCachedHtml(for: chapterHref), 
-                   !cachedContent.isEmpty && 
-                   !cachedContent.contains("undefined") && 
+                if let cachedContent = ContinueReadingManager.shared.getCachedHtml(for: chapterHref),
+                   !cachedContent.isEmpty &&
+                   !cachedContent.contains("undefined") &&
                    cachedContent.count > 50 {
                     Logger.shared.log("Using cached HTML content for \(chapterHref)", type: "Debug")
                     htmlContent = cachedContent
@@ -420,12 +420,13 @@ struct ReaderView: View {
                         dismiss()
                     }) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 20, weight: .bold))
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundColor(currentTheme.text)
                             .padding(12)
                             .background(currentTheme.background.opacity(0.8))
                             .clipShape(Circle())
                             .circularGradientOutline()
+                            .frame(width: 44, height: 44)
                     }
                     .padding(.leading)
                     
@@ -434,6 +435,7 @@ struct ReaderView: View {
                         .foregroundColor(currentTheme.text)
                         .lineLimit(1)
                         .truncationMode(.tail)
+                        .padding(.trailing, 100)
                     
                     Spacer()
 
@@ -458,12 +460,13 @@ struct ReaderView: View {
                         goToNextChapter()
                     }) {
                         Image(systemName: "forward.end.fill")
-                            .font(.system(size: 14, weight: .bold))
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundColor(currentTheme.text)
-                            .padding(8)
+                            .padding(12)
                             .background(currentTheme.background.opacity(0.8))
                             .clipShape(Circle())
                             .circularGradientOutline()
+                            .frame(width: 44, height: 44)
                     }
                     .opacity(isHeaderVisible ? 1 : 0)
                     .offset(y: isHeaderVisible ? 0 : -100)
@@ -475,20 +478,21 @@ struct ReaderView: View {
                         }
                     }) {
                         Image(systemName: "ellipsis")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundColor(currentTheme.text)
                             .padding(12)
                             .background(currentTheme.background.opacity(0.8))
                             .clipShape(Circle())
                             .circularGradientOutline()
+                            .frame(width: 44, height: 44)
                             .rotationEffect(.degrees(isSettingsExpanded ? 90 : 0))
                     }
                     .opacity(isHeaderVisible ? 1 : 0)
                     .offset(y: isHeaderVisible ? 0 : -100)
                     .animation(.easeInOut(duration: 0.6), value: isHeaderVisible)
                 }
+                .padding(.trailing, 8)
             }
-            .padding(.trailing, 8)
             .padding(.top, (UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.safeAreaInsets.top ?? 0))
             .padding(.bottom, 30)
             .background(ProgressiveBlurView())
@@ -618,6 +622,7 @@ struct ReaderView: View {
                                     .background(currentTheme.background.opacity(0.8))
                                     .clipShape(Circle())
                                     .circularGradientOutline()
+                                    .frame(width: 44, height: 44)
                                     .rotationEffect(.degrees(-90))
                             }
                             
@@ -665,6 +670,8 @@ struct ReaderView: View {
                             }
                         }
                         .padding(.top, 80)
+                        .padding(.trailing, 8)
+                        .frame(width: 60, alignment: .trailing)
                         .transition(.opacity)
                     }
                 }, alignment: .topTrailing
@@ -742,7 +749,7 @@ struct ReaderView: View {
                             }
                     )
                 }
-                .frame(height: 24)  
+                .frame(height: 24)
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
                 .padding(.bottom, (UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.safeAreaInsets.bottom ?? 0) + 16)
@@ -909,7 +916,7 @@ struct ReaderView: View {
         
         UserDefaults.standard.set(imageUrl, forKey: "novelImageUrl_\(moduleId)_\(novelTitle)")
         
-        var progress = UserDefaults.standard.double(forKey: "readingProgress_\(chapterHref)") 
+        var progress = UserDefaults.standard.double(forKey: "readingProgress_\(chapterHref)")
         
         if progress < 0.01 {
             progress = 0.01
@@ -917,8 +924,8 @@ struct ReaderView: View {
         
         Logger.shared.log("Saving continue reading item: title=\(novelTitle), chapter=\(chapterTitle), number=\(currentChapterNumber), href=\(chapterHref), progress=\(progress), imageUrl=\(imageUrl)", type: "Debug")
         
-        let validHtmlContent = (!htmlContent.isEmpty && 
-                               !htmlContent.contains("undefined") && 
+        let validHtmlContent = (!htmlContent.isEmpty &&
+                               !htmlContent.contains("undefined") &&
                                htmlContent.count > 50) ? htmlContent : nil
         
         if validHtmlContent == nil && !htmlContent.isEmpty {
@@ -929,7 +936,7 @@ struct ReaderView: View {
             mediaTitle: novelTitle,
             chapterTitle: chapterTitle,
             chapterNumber: currentChapterNumber,
-            imageUrl: imageUrl, 
+            imageUrl: imageUrl,
             href: chapterHref,
             moduleId: moduleId,
             progress: progress,
@@ -990,8 +997,8 @@ struct ReaderView: View {
         
         Logger.shared.log("Updating reading progress: \(roundedProgress) for \(chapterHref), title: \(novelTitle), image: \(imageUrl)", type: "Debug")
         
-        let validHtmlContent = (!htmlContent.isEmpty && 
-                               !htmlContent.contains("undefined") && 
+        let validHtmlContent = (!htmlContent.isEmpty &&
+                               !htmlContent.contains("undefined") &&
                                htmlContent.count > 50) ? htmlContent : nil
         
         if validHtmlContent == nil && !htmlContent.isEmpty {
@@ -1015,7 +1022,7 @@ struct ReaderView: View {
                 mediaTitle: novelTitle,
                 chapterTitle: chapterTitle,
                 chapterNumber: currentChapterNumber,
-                imageUrl: imageUrl, 
+                imageUrl: imageUrl,
                 href: chapterHref,
                 moduleId: moduleId,
                 progress: roundedProgress,
@@ -1169,8 +1176,8 @@ struct HTMLView: UIViewRepresentable {
         func startAutoScroll(webView: WKWebView) {
             stopAutoScroll()
             
-            scrollTimer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in 
-                let scrollAmount = self.parent.autoScrollSpeed * 0.5 
+            scrollTimer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
+                let scrollAmount = self.parent.autoScrollSpeed * 0.5
                 
                 webView.evaluateJavaScript("window.scrollBy(0, \(scrollAmount));") { _, error in
                     if let error = error {

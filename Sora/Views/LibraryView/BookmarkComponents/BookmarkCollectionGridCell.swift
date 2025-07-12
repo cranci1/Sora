@@ -5,8 +5,8 @@
 //  Created by paul on 18/06/25.
 //
 
-import SwiftUI
 import NukeUI
+import SwiftUI
 
 struct BookmarkCollectionGridCell: View {
     let collection: BookmarkCollection
@@ -80,7 +80,8 @@ struct BookmarkCollectionGridCell: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
+            .frame(width: width, height: height)
             .padding(.horizontal, 4)
         }
     }
-} 
+}

@@ -66,8 +66,11 @@ fileprivate struct ModulePreviewRow: View {
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                     } else {
                         Image(systemName: "cube")
-                            .font(.system(size: 36))
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 60, height: 60)
                             .foregroundStyle(Color.accentColor)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                 }
                 

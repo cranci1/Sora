@@ -333,11 +333,63 @@ extension JSContext {
         self.setObject(atobFunction, forKeyedSubscript: "atob" as NSString)
     }
     
+    func setupScrapingUtilities() {
+        let scrapingUtils = """
+        function getElementsByTag(html, tag) {
+            const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'gi');
+            let result = [];
+            let match;
+            while ((match = regex.exec(html)) !== null) {
+                result.push(match[1]);
+            }
+            return result;
+        }
+        function getAttribute(html, tag, attr) {
+            const regex = new RegExp(`<${tag}[^>]*${attr}=[\"']?([^\"' >]+)[\"']?[^>]*>`, 'i');
+            const match = regex.exec(html);
+            return match ? match[1] : null;
+        }
+        function getInnerText(html) {
+            return html.replace(/<[^>]+>/g, '').replace(/\\s+/g, ' ').trim();
+        }
+        function extractBetween(str, start, end) {
+            const s = str.indexOf(start);
+            if (s === -1) return '';
+            const e = str.indexOf(end, s + start.length);
+            if (e === -1) return '';
+            return str.substring(s + start.length, e);
+        }
+        function stripHtml(html) {
+            return html.replace(/<[^>]+>/g, '');
+        }
+        function normalizeWhitespace(str) {
+            return str.replace(/\\s+/g, ' ').trim();
+        }
+        function urlEncode(str) {
+            return encodeURIComponent(str);
+        }
+        function urlDecode(str) {
+            try { return decodeURIComponent(str); } catch (e) { return str; }
+        }
+        function htmlEntityDecode(str) {
+            return str.replace(/&([a-zA-Z]+);/g, function(_, entity) {
+                const entities = { quot: '"', apos: "'", amp: '&', lt: '<', gt: '>' };
+                return entities[entity] || _;
+            });
+        }
+        function transformResponse(response, fn) {
+            try { return fn(response); } catch (e) { return response; }
+        }
+        """
+        self.evaluateScript(scrapingUtils)
+    }
+    
     func setupJavaScriptEnvironment() {
         setupWeirdCode()
         setupConsoleLogging()
         setupNativeFetch()
         setupFetchV2()
         setupBase64Functions()
+        setupScrapingUtilities()
     }
 }

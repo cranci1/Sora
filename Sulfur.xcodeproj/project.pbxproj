@@ -120,6 +120,7 @@
 		72443C7D2DC8036500A61321 /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C7C2DC8036500A61321 /* DownloadView.swift */; };
 		72443C7F2DC8038300A61321 /* SettingsViewDownloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */; };
 		727220712DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7272206F2DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift */; };
+		7273F0402E26B19700DF083D /* DownloadPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7273F03F2E26B19700DF083D /* DownloadPersistence.swift */; };
 		72D546DB2DFC5E950044C567 /* JSController+Downloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72D546DA2DFC5E950044C567 /* JSController+Downloader.swift */; };
 		73D164D52D8B5B470011A360 /* JavaScriptCore+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */; };
 /* End PBXBuildFile section */
@@ -238,6 +239,7 @@
 		72443C7C2DC8036500A61321 /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewDownloads.swift; sourceTree = "<group>"; };
 		7272206F2DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-StreamTypeDownload.swift"; sourceTree = "<group>"; };
+		7273F03F2E26B19700DF083D /* DownloadPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadPersistence.swift; sourceTree = "<group>"; };
 		72D546DA2DFC5E950044C567 /* JSController+Downloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController+Downloader.swift"; sourceTree = "<group>"; };
 		73D164D42D8B5B340011A360 /* JavaScriptCore+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JavaScriptCore+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -852,6 +854,7 @@
 		72443C832DC8046500A61321 /* DownloadUtils */ = {
 			isa = PBXGroup;
 			children = (
+				7273F03F2E26B19700DF083D /* DownloadPersistence.swift */,
 				7222485D2DCBAA2C00CABE2D /* DownloadModels.swift */,
 				131270162DC13A010093AA9C /* DownloadManager.swift */,
 				7222485E2DCBAA2C00CABE2D /* M3U8StreamExtractor.swift */,
@@ -1051,6 +1054,7 @@
 				13EA2BD52D32D97400C1EBD7 /* CustomPlayer.swift in Sources */,
 				727220712DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift in Sources */,
 				0402DA132DE7B5EC003BB42C /* SearchStateView.swift in Sources */,
+				7273F0402E26B19700DF083D /* DownloadPersistence.swift in Sources */,
 				0402DA142DE7B5EC003BB42C /* SearchResultsGrid.swift in Sources */,
 				72D546DB2DFC5E950044C567 /* JSController+Downloader.swift in Sources */,
 				0402DA152DE7B5EC003BB42C /* SearchComponents.swift in Sources */,

@@ -618,27 +618,9 @@ extension JSController {
     
     /// Load saved assets from UserDefaults
     func loadSavedAssets() {
-        // First, migrate any existing files from Documents to Application Support
-        migrateExistingFilesToPersistentStorage()
-        
-        guard let data = UserDefaults.standard.data(forKey: "downloadedAssets") else { 
-            print("No saved assets found")
-            JSController.hasValidatedAssets = true // Mark as validated since there's nothing to validate
-            return 
-        }
-        
-        do {
-            savedAssets = try JSONDecoder().decode([DownloadedAsset].self, from: data)
-            print("Loaded \(savedAssets.count) saved assets")
-            
-            // Only validate once per app session to avoid excessive file checks
-            if !JSController.hasValidatedAssets {
-                print("Validating asset locations...")
-                validateAndUpdateAssetLocations()
-                JSController.hasValidatedAssets = true
-            }
-        } catch {
-            print("Error loading saved assets: \(error.localizedDescription)")
+        DispatchQueue.main.async { [weak self] in
+            self?.savedAssets = DownloadPersistence.load()
+            self?.objectWillChange.send()
         }
     }
     
@@ -887,13 +869,8 @@ extension JSController {
     
     /// Save assets to UserDefaults
     func saveAssets() {
-        do {
-            let data = try JSONEncoder().encode(savedAssets)
-            UserDefaults.standard.set(data, forKey: "downloadedAssets")
-            print("Saved \(savedAssets.count) assets to UserDefaults")
-        } catch {
-            print("Error saving assets: \(error.localizedDescription)")
-        }
+        DownloadPersistence.save(savedAssets)
+        print("Saved \(savedAssets.count) assets to persistence")
     }
     
     /// Save the current state of downloads
@@ -915,40 +892,37 @@ extension JSController {
     /// Delete an asset
     func deleteAsset(_ asset: DownloadedAsset) {
         do {
-            // Check if video file exists before attempting to delete
             if FileManager.default.fileExists(atPath: asset.localURL.path) {
                 try FileManager.default.removeItem(at: asset.localURL)
-                print("Deleted asset file: \(asset.localURL.path)")
-            } else {
-                print("Asset file not found at path: \(asset.localURL.path)")
             }
-            
-            // Also delete subtitle file if it exists
-            if let subtitleURL = asset.localSubtitleURL,
-               FileManager.default.fileExists(atPath: subtitleURL.path) {
+            if let subtitleURL = asset.localSubtitleURL, FileManager.default.fileExists(atPath: subtitleURL.path) {
                 try FileManager.default.removeItem(at: subtitleURL)
-                print("Deleted subtitle file: \(subtitleURL.path)")
-            } else if asset.localSubtitleURL != nil {
-                print("Subtitle file not found at saved path, but reference existed")
+            } else {
+                if let downloadDir = getPersistentDownloadDirectory() {
+                    let assetID = asset.id.uuidString
+                    let subtitleExtensions = ["vtt", "srt", "webvtt"]
+                    for ext in subtitleExtensions {
+                        let candidate = downloadDir.appendingPathComponent("subtitle-\(assetID).\(ext)")
+                        if FileManager.default.fileExists(atPath: candidate.path) {
+                            try? FileManager.default.removeItem(at: candidate)
+                        }
+                    }
+                }
             }
-            
-            // Remove from saved assets regardless of whether files were found
-            savedAssets.removeAll { $0.id == asset.id }
-            saveAssets()
-            print("Removed asset from library: \(asset.name)")
-            
-            // Notify observers that an asset was deleted (cache clearing needed)
+            DownloadPersistence.delete(id: asset.id)
+            DispatchQueue.main.async { [weak self] in
+                self?.savedAssets = DownloadPersistence.load()
+                self?.objectWillChange.send()
+            }
             postDownloadNotification(.deleted)
         } catch {
-            print("Error deleting asset: \(error.localizedDescription)")
         }
     }
     
     /// Remove an asset from the library without deleting the file
     func removeAssetFromLibrary(_ asset: DownloadedAsset) {
         // Only remove the entry from savedAssets
-        savedAssets.removeAll { $0.id == asset.id }
-        saveAssets()
+        DownloadPersistence.delete(id: asset.id)
         print("Removed asset from library (file preserved): \(asset.name)")
         
         // Notify observers that the library changed (cache clearing needed)
@@ -1214,8 +1188,11 @@ extension JSController: AVAssetDownloadDelegate {
         )
         
         // Add to saved assets and save
-        savedAssets.append(newAsset)
-        saveAssets()
+        DownloadPersistence.upsert(newAsset)
+        DispatchQueue.main.async { [weak self] in
+            self?.savedAssets = DownloadPersistence.load()
+            self?.objectWillChange.send()
+        }
         
         // If there's a subtitle URL, download it now that the video is saved
         if let subtitleURL = download.subtitleURL {

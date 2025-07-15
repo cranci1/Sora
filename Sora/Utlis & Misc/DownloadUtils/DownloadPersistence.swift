@@ -1,8 +1,8 @@
 //
 //  DownloadPersistence.swift
-//  Sora
+//  Sulfur
 //
-//  iOS 15 JSON + UserDefaults persistence layer.
+//  Created by doomsboygaming on 15/07/25.
 //
 
 import Foundation

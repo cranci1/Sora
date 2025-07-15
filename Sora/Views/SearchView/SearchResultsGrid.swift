@@ -38,9 +38,8 @@ struct SearchResultsGrid: View {
                 ForEach(items) { item in
                     NavigationLink(destination: 
                         MediaInfoView(title: item.title, imageUrl: item.imageUrl, href: item.href, module: selectedModule)
-                            .onDisappear {
-                
-                            }
+                            .environmentObject(moduleManager)
+                            .environmentObject(libraryManager)
                     ) {
                         ZStack {
                             LazyImage(url: URL(string: item.imageUrl)) { state in

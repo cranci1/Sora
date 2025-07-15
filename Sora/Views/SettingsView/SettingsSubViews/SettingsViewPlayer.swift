@@ -305,10 +305,10 @@ struct SettingsViewPlayer: View {
                 }
                 
                 SettingsSection(title: NSLocalizedString("Progress bar Marker Color", comment: "")) {
-                    ColorPicker(NSLocalizedString("Segments Color", comment: ""), selection: Binding(
+                    ColorPicker(NSLocalizedString("Segments Color", comment: ""), selection: Binding<Color>(
                         get: {
                             if let data = UserDefaults.standard.data(forKey: "segmentsColorData"),
-                               let uiColor = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
+                               let uiColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) {
                                 return Color(uiColor)
                             }
                             return .yellow

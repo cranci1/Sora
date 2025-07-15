@@ -193,26 +193,25 @@ extension JSContext {
             let task = session.downloadTask(with: request) { tempFileURL, response, error in
                 defer { session.finishTasksAndInvalidate() }
                 
-                let callReject: (String) -> Void = { message in
-                    DispatchQueue.main.async {
-                        reject.call(withArguments: [message])
-                    }
-                }
                 let callResolve: ([String: Any]) -> Void = { dict in
                     DispatchQueue.main.async {
-                        resolve.call(withArguments: [dict])
+                        if !resolve.isUndefined {
+                            resolve.call(withArguments: [dict])
+                        } else {
+                            Logger.shared.log("Resolve callback is undefined", type: "Error")
+                        }
                     }
                 }
                 
                 if let error = error {
                     Logger.shared.log("Network error in fetchV2NativeFunction: \(error.localizedDescription)", type: "Error")
-                    callReject(error.localizedDescription)
+                    callResolve(["error": error.localizedDescription])
                     return
                 }
                 
                 guard let tempFileURL = tempFileURL else {
                     Logger.shared.log("No data in response", type: "Error")
-                    callReject("No data")
+                    callResolve(["error": "No data"])
                     return
                 }
                 
@@ -242,7 +241,7 @@ extension JSContext {
                     
                     if data.count > 10_000_000 {
                         Logger.shared.log("Response exceeds maximum size", type: "Error")
-                        callReject("Response exceeds maximum size")
+                        callResolve(["error": "Response exceeds maximum size"])
                         return
                     }
                     
@@ -262,7 +261,7 @@ extension JSContext {
                     
                 } catch {
                     Logger.shared.log("Error reading downloaded file: \(error.localizedDescription)", type: "Error")
-                    callReject("Error reading downloaded file")
+                    callResolve(["error": "Error reading downloaded file"])
                 }
             }
             task.resume()

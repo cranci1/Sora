@@ -24,7 +24,7 @@
 
 - [x] macOS 12.0+ support
 - [x] iOS/iPadOS 15.0+ support
-- [x] JavaScript-based plugin loader
+- [x] JavaScript-based module loader
 - [x] HLS and MP4 format support with optional offline watching (via user-installed modules)
 - [x] Tracking services (AniList, Trakt)
 - [x] Apple Keychain support for auth tokens
@@ -40,7 +40,7 @@ You can download Sora using Xcode or using the .ipa file, which you can find in 
 ## Frequently Asked Questions
 
 1. **What is Sora?**  
-   Sora is a modular media access app for iOS and macOS, enabling custom plugins to access and play anime, shows, and other media from third-party, user-provided sources.
+   Sora is a modular media access app for iOS and macOS, enabling custom modules to access and play anime, shows, and other media from third-party, user-provided sources.
 
 2. **Is Sora safe?**  
    Yes, Sora is open-source and prioritizes user privacy. It does not store user data on external servers and does not collect crash logs.

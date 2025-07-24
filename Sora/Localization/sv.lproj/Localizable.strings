@@ -485,3 +485,12 @@
 "Import Backup" = "Importera säkerhetskopia";
 "Notice: This feature is still experimental. Please double-check your data after import/export." = "Observera: Denna funktion är fortfarande experimentell. Kontrollera dina data efter export/import.";
 "Backup" = "Säkerhetskopia";
+
+"Total Orphaned File Size" = "Total storlek för föräldralösa filer";
+"Total Orphaned Files" = "Totalt antal föräldralösa filer";
+
+"Orphaned Downloads" = "Föräldralösa nedladdningar";
+"No orphaned files found." = "Inga föräldralösa filer hittades.";
+"Delete All Orphaned Files" = "Ta bort alla föräldralösa filer";
+"Delete Selected Files?" = "Ta bort valda filer?";
+"Are you sure you want to delete the selected orphaned files? This action cannot be undone." = "Är du säker på att du vill ta bort de valda föräldralösa filerna? Denna åtgärd kan inte ångras.";

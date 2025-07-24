@@ -497,3 +497,12 @@
 "Import Backup" = "Backup importieren";
 "Notice: This feature is still experimental. Please double-check your data after import/export." = "Hinweis: Diese Funktion ist noch experimentell. Bitte überprüfe deine Daten nach dem Export/Import.";
 "Backup" = "Backup";
+
+"Total Orphaned File Size" = "Gesamte Größe verwaister Dateien";
+"Total Orphaned Files" = "Anzahl verwaister Dateien";
+
+"Orphaned Downloads" = "Verwaiste Downloads";
+"No orphaned files found." = "Keine verwaisten Dateien gefunden.";
+"Delete All Orphaned Files" = "Alle verwaisten Dateien löschen";
+"Delete Selected Files?" = "Ausgewählte Dateien löschen?";
+"Are you sure you want to delete the selected orphaned files? This action cannot be undone." = "Möchten Sie die ausgewählten verwaisten Dateien wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.";

@@ -485,4 +485,13 @@
 "Export Backup" = "Back-up exporteren";
 "Import Backup" = "Back-up importeren";
 "Notice: This feature is still experimental. Please double-check your data after import/export." = "Let op: Deze functie is nog experimenteel. Controleer je gegevens na export/import.";
-"Backup" = "Back-up"; 
+"Backup" = "Back-up";
+
+"Total Orphaned File Size" = "Totale grootte van verweesde bestanden";
+"Total Orphaned Files" = "Totaal aantal verweesde bestanden";
+
+"Orphaned Downloads" = "Verweesde downloads";
+"No orphaned files found." = "Geen verweesde bestanden gevonden.";
+"Delete All Orphaned Files" = "Alle verweesde bestanden verwijderen";
+"Delete Selected Files?" = "Geselecteerde bestanden verwijderen?";
+"Are you sure you want to delete the selected orphaned files? This action cannot be undone." = "Weet u zeker dat u de geselecteerde verweesde bestanden wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."; 

@@ -510,3 +510,12 @@ For episode metadata, it refers to the episode thumbnail and title, since someti
 "Import Backup" = "Импорт резервной копии";
 "Notice: This feature is still experimental. Please double-check your data after import/export." = "Внимание: Эта функция все еще экспериментальная. Пожалуйста, проверьте свои данные после экспорта/импорта.";
 "Backup" = "Резервная копия";
+
+"Total Orphaned File Size" = "Общий размер осиротевших файлов";
+"Total Orphaned Files" = "Общее количество осиротевших файлов";
+
+"Orphaned Downloads" = "Осиротевшие загрузки";
+"No orphaned files found." = "Осиротевшие файлы не найдены.";
+"Delete All Orphaned Files" = "Удалить все осиротевшие файлы";
+"Delete Selected Files?" = "Удалить выбранные файлы?";
+"Are you sure you want to delete the selected orphaned files? This action cannot be undone." = "Вы уверены, что хотите удалить выбранные осиротевшие файлы? Это действие необратимо.";

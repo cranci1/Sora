@@ -459,3 +459,12 @@
 "Translators" = "Translators";
 "Paste URL" = "Paste URL";
 
+"Total Orphaned File Size" = "Total Orphaned File Size";
+"Total Orphaned Files" = "Total Orphaned Files";
+
+"Orphaned Downloads" = "Orphaned Downloads";
+"No orphaned files found." = "No orphaned files found.";
+"Delete All Orphaned Files" = "Delete All Orphaned Files";
+"Delete Selected Files?" = "Delete Selected Files?";
+"Are you sure you want to delete the selected orphaned files? This action cannot be undone." = "Are you sure you want to delete the selected orphaned files? This action cannot be undone.";
+

@@ -159,6 +159,9 @@ struct SettingsViewDownloads: View {
     @State private var totalStorageSize: Int64 = 0
     @State private var existingDownloadCount: Int = 0
     @State private var isCalculating: Bool = false
+    @State private var showOrphanedDownloads = false
+    @State private var orphanedStorageSize: Int64 = 0
+    @State private var orphanedFileCount: Int = 0
     
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -229,42 +232,64 @@ struct SettingsViewDownloads: View {
                             Image(systemName: "externaldrive")
                                 .frame(width: 24, height: 24)
                                 .foregroundStyle(.primary)
-                            
-                            Text(String(localized: "Storage Used"))
+                            Text(String(localized: "Total Storage Used"))
                                 .foregroundStyle(.primary)
-                            
                             Spacer()
-                            
                             if isCalculating {
                                 ProgressView()
                                     .scaleEffect(0.7)
                                     .padding(.trailing, 5)
                             }
-                            
                             Text(formatFileSize(totalStorageSize))
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
-                        
                         Divider()
                             .padding(.horizontal, 16)
-                        
                         HStack {
-                            Image(systemName: "doc.text")
+                            Image(systemName: "doc.text" )
                                 .frame(width: 24, height: 24)
                                 .foregroundStyle(.primary)
-                            
-                            Text(String(localized: "Files Downloaded"))
+                            Text(String(localized: "Total Orphaned File Size"))
                                 .foregroundStyle(.primary)
-                            
                             Spacer()
-                            
-                            Text("\(existingDownloadCount) of \(jsController.savedAssets.count)")
+                            Text(formatFileSize(orphanedStorageSize))
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
+                        Divider()
+                            .padding(.horizontal, 16)
+                        HStack {
+                            Image(systemName: "doc.text")
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(.primary)
+                            Text(String(localized: "Total Orphaned Files"))
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Text("\(orphanedFileCount)")
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        Divider()
+                            .padding(.horizontal, 16)
+                        
+                        Button(action: {
+                            showOrphanedDownloads = true
+                        }) {
+                            HStack {
+                                Image(systemName: "questionmark.folder")
+                                    .frame(width: 24, height: 24)
+                                    .foregroundStyle(.yellow)
+                                Text(String(localized: "Orphaned Downloads"))
+                                    .foregroundStyle(.yellow)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
                         
                         Divider()
                             .padding(.horizontal, 16)
@@ -327,30 +352,68 @@ struct SettingsViewDownloads: View {
             calculateTotalStorage()
             jsController.updateMaxConcurrentDownloads(maxConcurrentDownloads)
         }
+        .sheet(isPresented: $showOrphanedDownloads) {
+            OrphanedDownloadsView()
+        }
     }
     
     private func calculateTotalStorage() {
-        guard !jsController.savedAssets.isEmpty else {
-            totalStorageSize = 0
-            existingDownloadCount = 0
-            return
-        }
-        
+        let downloadsDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!.appendingPathComponent("SoraDownloads")
         isCalculating = true
-        
         DownloadedAsset.clearFileSizeCache()
         DownloadGroup.clearFileSizeCache()
-        
         DispatchQueue.global(qos: .userInitiated).async {
-            let total = jsController.savedAssets.reduce(0) { $0 + $1.fileSize }
-            let existing = jsController.savedAssets.filter { $0.fileExists }.count
-            
+            // Calculate total size of all files in SoraDownloads
+            let allFiles: [URL]
+            do {
+                allFiles = try FileManager.default.contentsOfDirectory(at: downloadsDir, includingPropertiesForKeys: [.fileSizeKey, .isDirectoryKey], options: .skipsHiddenFiles)
+            } catch {
+                allFiles = []
+            }
+            var totalDiskSize: Int64 = 0
+            for url in allFiles {
+                if let resourceValues = try? url.resourceValues(forKeys: [.fileSizeKey, .isDirectoryKey]),
+                   let isDirectory = resourceValues.isDirectory, isDirectory {
+                    totalDiskSize += calculateDirectorySize(url)
+                } else {
+                    totalDiskSize += Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
+                }
+            }
+            // Calculate orphaned files and their size
+            let orphanedFiles = DownloadPersistence.orphanedFiles()
+            var orphanedSize: Int64 = 0
+            for url in orphanedFiles {
+                if let resourceValues = try? url.resourceValues(forKeys: [.fileSizeKey, .isDirectoryKey]),
+                   let isDirectory = resourceValues.isDirectory, isDirectory {
+                    orphanedSize += calculateDirectorySize(url)
+                } else {
+                    orphanedSize += Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
+                }
+            }
             DispatchQueue.main.async {
-                self.totalStorageSize = total
-                self.existingDownloadCount = existing
+                self.totalStorageSize = totalDiskSize
+                self.orphanedStorageSize = orphanedSize
+                self.orphanedFileCount = orphanedFiles.count
                 self.isCalculating = false
             }
         }
+    }
+
+    private func calculateDirectorySize(_ directoryURL: URL) -> Int64 {
+        let fileManager = FileManager.default
+        var totalSize: Int64 = 0
+        do {
+            let contents = try fileManager.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: [.fileSizeKey, .isDirectoryKey], options: .skipsHiddenFiles)
+            for url in contents {
+                let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey, .isDirectoryKey])
+                if resourceValues.isDirectory == true {
+                    totalSize += calculateDirectorySize(url)
+                } else {
+                    totalSize += Int64(resourceValues.fileSize ?? 0)
+                }
+            }
+        } catch {}
+        return totalSize
     }
     
     private func clearAllDownloads(preservePersistentDownloads: Bool = false) {

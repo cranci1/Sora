@@ -506,3 +506,12 @@ For episode metadata, it refers to the episode thumbnail and title, since someti
 "Import Backup" = "Importovať zálohu";
 "Notice: This feature is still experimental. Please double-check your data after import/export." = "Upozornenie: Táto funkcia je stále experimentálna. Po exporte/importe si prosím skontrolujte svoje údaje.";
 "Backup" = "Záloha";
+
+"Total Orphaned File Size" = "Celková veľkosť osirelých súborov";
+"Total Orphaned Files" = "Celkový počet osirelých súborov";
+
+"Orphaned Downloads" = "Osirelé sťahovania";
+"No orphaned files found." = "Nenašli sa žiadne osirelé súbory.";
+"Delete All Orphaned Files" = "Vymazať všetky osirelé súbory";
+"Delete Selected Files?" = "Vymazať vybrané súbory?";
+"Are you sure you want to delete the selected orphaned files? This action cannot be undone." = "Ste si istí, že chcete vymazať vybrané osirelé súbory? Táto akcia je nevratná.";

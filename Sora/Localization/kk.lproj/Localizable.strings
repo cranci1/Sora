@@ -504,3 +504,12 @@ For episode metadata, it refers to the episode thumbnail and title, since someti
 "Import Backup" = "Сақтық көшірмені импорттау";
 "Notice: This feature is still experimental. Please double-check your data after import/export." = "Ескерту: Бұл мүмкіндік әлі де тәжірибелік. Экспорт/импорттан кейін деректеріңізді тексеріңіз.";
 "Backup" = "Сақтық көшірме";
+
+"Total Orphaned File Size" = "Жалпы жетім файлдардың өлшемі";
+"Total Orphaned Files" = "Жетім файлдардың жалпы саны";
+
+"Orphaned Downloads" = "Жетім жүктеулер";
+"No orphaned files found." = "Жетім файлдар табылмады.";
+"Delete All Orphaned Files" = "Барлық жетім файлдарды жою";
+"Delete Selected Files?" = "Таңдалған файлдарды жою керек пе?";
+"Are you sure you want to delete the selected orphaned files? This action cannot be undone." = "Таңдалған жетім файлдарды жойғыңыз келетініне сенімдісіз бе? Бұл әрекет қайтарылмайды.";

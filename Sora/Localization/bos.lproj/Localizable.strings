@@ -508,3 +508,12 @@ Za metapodatke epizode, odnosi se na sličicu i naslov epizode, jer ponekad mogu
 "Import Backup" = "Uvezi sigurnosnu kopiju";
 "Notice: This feature is still experimental. Please double-check your data after import/export." = "Napomena: Ova funkcija je još uvijek eksperimentalna. Molimo provjerite svoje podatke nakon izvoza/uvoza.";
 "Backup" = "Sigurnosna kopija";
+
+"Total Orphaned File Size" = "Ukupna veličina siročadnih datoteka";
+"Total Orphaned Files" = "Ukupan broj siročadnih datoteka";
+
+"Orphaned Downloads" = "Siročadne preuzimanja";
+"No orphaned files found." = "Nema pronađenih siročadnih datoteka.";
+"Delete All Orphaned Files" = "Obriši sve siročadne datoteke";
+"Delete Selected Files?" = "Obrisati odabrane datoteke?";
+"Are you sure you want to delete the selected orphaned files? This action cannot be undone." = "Jeste li sigurni da želite obrisati odabrane siročadne datoteke? Ova radnja se ne može poništiti.";

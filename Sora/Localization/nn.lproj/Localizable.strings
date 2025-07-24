@@ -486,3 +486,12 @@
 "Import Backup" = "Importer sikkerhetskopi";
 "Notice: This feature is still experimental. Please double-check your data after import/export." = "Merk: Denne funksjonen er fortsatt eksperimentell. Vennligst dobbeltsjekk dataene dine etter eksport/import.";
 "Backup" = "Sikkerhetskopi";
+
+"Total Orphaned File Size" = "Total storleik på foreldrelause filer";
+"Total Orphaned Files" = "Totalt tal på foreldrelause filer";
+
+"Orphaned Downloads" = "Foreldrelause nedlastingar";
+"No orphaned files found." = "Ingen foreldrelause filer funne.";
+"Delete All Orphaned Files" = "Slett alle foreldrelause filer";
+"Delete Selected Files?" = "Slette valde filer?";
+"Are you sure you want to delete the selected orphaned files? This action cannot be undone." = "Er du sikker på at du vil slette dei valde foreldrelause filene? Denne handlinga kan ikkje angrast.";

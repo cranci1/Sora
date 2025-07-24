@@ -490,3 +490,12 @@
 "Import Backup" = "استيراد النسخة الاحتياطية";
 "Notice: This feature is still experimental. Please double-check your data after import/export." = "تنبيه: هذه الميزة لا تزال تجريبية. يرجى التحقق من بياناتك بعد التصدير/الاستيراد.";
 "Backup" = "نسخة احتياطية";
+
+"Total Orphaned File Size" = "إجمالي حجم الملفات اليتيمة";
+"Total Orphaned Files" = "إجمالي عدد الملفات اليتيمة";
+
+"Orphaned Downloads" = "التنزيلات اليتيمة";
+"No orphaned files found." = "لم يتم العثور على ملفات يتيمة.";
+"Delete All Orphaned Files" = "حذف جميع الملفات اليتيمة";
+"Delete Selected Files?" = "حذف الملفات المحددة؟";
+"Are you sure you want to delete the selected orphaned files? This action cannot be undone." = "هل أنت متأكد أنك تريد حذف الملفات اليتيمة المحددة؟ لا يمكن التراجع عن هذا الإجراء.";

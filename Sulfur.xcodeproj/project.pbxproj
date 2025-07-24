@@ -119,6 +119,7 @@
 		722248662DCBC13E00CABE2D /* JSController-Downloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722248652DCBC13E00CABE2D /* JSController-Downloads.swift */; };
 		72443C7D2DC8036500A61321 /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C7C2DC8036500A61321 /* DownloadView.swift */; };
 		72443C7F2DC8038300A61321 /* SettingsViewDownloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */; };
+		7260B66D2E32A8CB00365CDA /* OrphanedDownloadsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7260B66C2E32A8CB00365CDA /* OrphanedDownloadsView.swift */; };
 		727220712DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7272206F2DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift */; };
 		7273F0402E26B19700DF083D /* DownloadPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7273F03F2E26B19700DF083D /* DownloadPersistence.swift */; };
 		72D546DB2DFC5E950044C567 /* JSController+Downloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72D546DA2DFC5E950044C567 /* JSController+Downloader.swift */; };
@@ -238,6 +239,7 @@
 		722248652DCBC13E00CABE2D /* JSController-Downloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Downloads.swift"; sourceTree = "<group>"; };
 		72443C7C2DC8036500A61321 /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		72443C7E2DC8038300A61321 /* SettingsViewDownloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewDownloads.swift; sourceTree = "<group>"; };
+		7260B66C2E32A8CB00365CDA /* OrphanedDownloadsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrphanedDownloadsView.swift; sourceTree = "<group>"; };
 		7272206F2DD642B100C2A4A2 /* JSController-StreamTypeDownload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-StreamTypeDownload.swift"; sourceTree = "<group>"; };
 		7273F03F2E26B19700DF083D /* DownloadPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadPersistence.swift; sourceTree = "<group>"; };
 		72D546DA2DFC5E950044C567 /* JSController+Downloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController+Downloader.swift"; sourceTree = "<group>"; };
@@ -580,6 +582,7 @@
 		133D7C832D2BE2630075467E /* SettingsSubViews */ = {
 			isa = PBXGroup;
 			children = (
+				7260B66C2E32A8CB00365CDA /* OrphanedDownloadsView.swift */,
 				041E9D712E11D71F0025F150 /* SettingsViewBackup.swift */,
 				1E9FF1D22D403E42008AC100 /* SettingsViewLoggerFilter.swift */,
 				1399FAD32D3AB38C00E97C31 /* SettingsViewLogger.swift */,
@@ -1066,6 +1069,7 @@
 				722248602DCBAA2C00CABE2D /* M3U8StreamExtractor.swift in Sources */,
 				13C0E5EA2D5F85EA00E7F619 /* ContinueWatchingManager.swift in Sources */,
 				13637B8A2DE0EA1100BDA2FC /* UserDefaults.swift in Sources */,
+				7260B66D2E32A8CB00365CDA /* OrphanedDownloadsView.swift in Sources */,
 				0457C59D2DE78267000AFBD9 /* BookmarkGridView.swift in Sources */,
 				0457C59E2DE78267000AFBD9 /* BookmarkLink.swift in Sources */,
 				0457C59F2DE78267000AFBD9 /* BookmarkGridItemView.swift in Sources */,

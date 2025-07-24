@@ -504,3 +504,12 @@ Para los metadatos del episodio, se refiere a la miniatura y el título del epis
 "Notice: This feature is still experimental. Please double-check your data after import/export." = "Aviso: Esta función aún es experimental. Por favor, verifica tus datos después de exportar/importar.";
 "Backup" = "Copia de seguridad";
 
+"Total Orphaned File Size" = "Tamaño total de archivos huérfanos";
+"Total Orphaned Files" = "Total de archivos huérfanos";
+
+"Orphaned Downloads" = "Descargas huérfanas";
+"No orphaned files found." = "No se encontraron archivos huérfanos.";
+"Delete All Orphaned Files" = "Eliminar todos los archivos huérfanos";
+"Delete Selected Files?" = "¿Eliminar archivos seleccionados?";
+"Are you sure you want to delete the selected orphaned files? This action cannot be undone." = "¿Está seguro de que desea eliminar los archivos huérfanos seleccionados? Esta acción no se puede deshacer.";
+

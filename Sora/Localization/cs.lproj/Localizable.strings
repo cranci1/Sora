@@ -509,3 +509,12 @@ Metadata epizody se týkají náhledu a názvu epizody, které mohou někdy obsa
 "Import Backup" = "Importovat zálohu";
 "Notice: This feature is still experimental. Please double-check your data after import/export." = "Upozornění: Tato funkce je stále experimentální. Po exportu/importu si prosím zkontrolujte svá data.";
 "Backup" = "Záloha";
+
+"Total Orphaned File Size" = "Celková velikost osiřelých souborů";
+"Total Orphaned Files" = "Celkový počet osiřelých souborů";
+
+"Orphaned Downloads" = "Osiřelé stahování";
+"No orphaned files found." = "Nebyly nalezeny žádné osiřelé soubory.";
+"Delete All Orphaned Files" = "Smazat všechny osiřelé soubory";
+"Delete Selected Files?" = "Smazat vybrané soubory?";
+"Are you sure you want to delete the selected orphaned files? This action cannot be undone." = "Opravdu chcete smazat vybrané osiřelé soubory? Tato akce je nevratná.";

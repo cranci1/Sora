@@ -1,117 +1,214 @@
 import SwiftUI
+import Drops
 
 struct OrphanedDownloadsView: View {
     @State private var orphanedFiles: [URL] = []
     @State private var selectedFiles: Set<URL> = []
     @State private var showDeleteConfirmation = false
     @State private var isLoading = false
+    @Environment(\.presentationMode) private var presentationMode
     
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text(LocalizedStringKey("Orphaned Downloads"))
-                    .font(.title2)
-                    .bold()
-                Spacer()
-                if !selectedFiles.isEmpty {
-                    Button(role: .destructive) {
-                        showDeleteConfirmation = true
-                    } label: {
-                        Image(systemName: "trash")
+        NavigationView {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    if isLoading {
+                        loadingView
+                    } else if orphanedFiles.isEmpty {
+                        emptyStateView
+                    } else {
+                        orphanedFilesListView
+                        
+                        if !selectedFiles.isEmpty {
+                            deleteSelectedButton
+                        }
                     }
                 }
+                .padding(.vertical, 20)
+                .scrollViewBottomPadding()
             }
-            .padding()
-            if isLoading {
-                ProgressView()
-                    .padding()
-                Spacer()
-            } else if orphanedFiles.isEmpty {
-                Text(LocalizedStringKey("No orphaned files found."))
-                    .foregroundColor(.secondary)
-                    .padding()
-                Spacer()
-            } else {
-                VStack(spacing: 0) {
-                    Button(role: .destructive) {
-                        selectedFiles = Set(orphanedFiles)
-                        showDeleteConfirmation = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "trash")
-                            Text(LocalizedStringKey("Delete All Orphaned Files"))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
+            .navigationTitle("Orphaned Downloads")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.primary)
                     }
-                    .padding(.horizontal)
-                    ScrollView {
-                        VStack(spacing: 12) {
-                            ForEach(orphanedFiles, id: \.self) { file in
-                                ZStack(alignment: .topTrailing) {
-                                    HStack {
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(file.lastPathComponent)
-                                                .foregroundColor(.primary)
-                                                .lineLimit(1)
-                                            Text(fileSizeString(for: file))
-                                                .foregroundColor(.secondary)
-                                                .font(.caption)
-                                        }
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color(UIColor.systemBackground))
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 12)
-                                                    .stroke(
-                                                        selectedFiles.contains(file) ? Color.accentColor : Color.gray.opacity(0.2),
-                                                        lineWidth: selectedFiles.contains(file) ? 2 : 1
-                                                    )
-                                            )
-                                    )
-                                    .onTapGesture {
-                                        if selectedFiles.contains(file) {
-                                            selectedFiles.remove(file)
-                                        } else {
-                                            selectedFiles.insert(file)
-                                        }
-                                    }
-                                    if selectedFiles.contains(file) {
-                                        ZStack {
-                                            Circle()
-                                                .fill(Color.white)
-                                                .frame(width: 28, height: 28)
-                                            Image(systemName: "checkmark")
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(width: 16, height: 16)
-                                                .foregroundColor(.accentColor)
-                                        }
-                                        .offset(x: -8, y: 8)
-                                    }
-                                }
-                            }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if !orphanedFiles.isEmpty && !isLoading {
+                        Button(action: {
+                            loadOrphanedFiles()
+                        }) {
+                            Image(systemName: "arrow.clockwise")
+                                .foregroundColor(.primary)
                         }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
+                    } else {
+                        // Empty spacer to maintain layout when refresh button is hidden
+                        Color.clear.frame(width: 20, height: 20)
                     }
                 }
             }
         }
         .onAppear(perform: loadOrphanedFiles)
-        .alert(LocalizedStringKey("Delete Selected Files?"), isPresented: $showDeleteConfirmation) {
-            Button(LocalizedStringKey("Cancel"), role: .cancel) {}
-            Button(LocalizedStringKey("Delete"), role: .destructive) {
+        .alert(NSLocalizedString("Delete Selected Files?", comment: ""), isPresented: $showDeleteConfirmation) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+            Button(NSLocalizedString("Delete", comment: ""), role: .destructive) {
                 deleteSelectedFiles()
             }
         } message: {
-            Text(LocalizedStringKey("Are you sure you want to delete the selected orphaned files? This action cannot be undone."))
+            Text(NSLocalizedString("Are you sure you want to delete the selected orphaned files? This action cannot be undone.", comment: ""))
         }
     }
+    
+    // MARK: - Extracted Views
+    
+    private var loadingView: some View {
+        VStack {
+            Spacer()
+            ProgressView()
+                .padding()
+            Text(NSLocalizedString("Loading orphaned files...", comment: ""))
+                .foregroundColor(.secondary)
+            Spacer()
+        }
+        .frame(minHeight: 300)
+    }
+    
+    private var emptyStateView: some View {
+        VStack {
+            Spacer()
+            Image(systemName: "checkmark.circle")
+                .font(.system(size: 50))
+                .foregroundColor(.green)
+                .padding()
+            Text(NSLocalizedString("No orphaned files found", comment: ""))
+                .font(.headline)
+                .foregroundColor(.primary)
+            Text(NSLocalizedString("Your downloads are well-organized", comment: ""))
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            Spacer()
+        }
+        .frame(minHeight: 300)
+    }
+    
+    private var orphanedFilesListView: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(NSLocalizedString("ORPHANED FILES", comment: ""))
+                .font(.footnote)
+                .foregroundColor(.gray)
+                .padding(.horizontal, 20)
+            
+            orphanedFilesContainer
+        }
+    }
+    
+    private var orphanedFilesContainer: some View {
+        VStack(spacing: 0) {
+            deleteAllButton
+            
+            Divider()
+                .padding(.horizontal, 16)
+            
+            ForEach(orphanedFiles, id: \.self) { file in
+                fileRow(for: file)
+                
+                if file != orphanedFiles.last {
+                    Divider()
+                        .padding(.horizontal, 16)
+                }
+            }
+        }
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(
+                    LinearGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: Color.accentColor.opacity(0.3), location: 0),
+                            .init(color: Color.accentColor.opacity(0), location: 1)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 0.5
+                )
+        )
+        .padding(.horizontal, 20)
+    }
+    
+    private var deleteAllButton: some View {
+        Button(action: {
+            selectedFiles = Set(orphanedFiles)
+            showDeleteConfirmation = true
+        }) {
+            HStack {
+                Image(systemName: "trash")
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(.red)
+                
+                Text(NSLocalizedString("Delete All Orphaned Files", comment: ""))
+                    .foregroundColor(.red)
+                
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
+    }
+    
+    private func fileRow(for file: URL) -> some View {
+        Button(action: {
+            if selectedFiles.contains(file) {
+                selectedFiles.remove(file)
+            } else {
+                selectedFiles.insert(file)
+            }
+        }) {
+            HStack {
+                Image(systemName: selectedFiles.contains(file) ? "checkmark.circle.fill" : "circle")
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(selectedFiles.contains(file) ? .accentColor : .gray)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(file.lastPathComponent)
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                    
+                    Text(fileSizeString(for: file))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
+    }
+    
+    private var deleteSelectedButton: some View {
+        Button(action: {
+            showDeleteConfirmation = true
+        }) {
+            Text(String(format: NSLocalizedString("Delete Selected (%d)", comment: "Button to delete selected orphaned files with count"), selectedFiles.count))
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.red)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal, 20)
+        }
+    }
+    
+    // MARK: - Helper Methods
     
     private func loadOrphanedFiles() {
         isLoading = true

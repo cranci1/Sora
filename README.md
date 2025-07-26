@@ -7,7 +7,7 @@
 
 [![Build and Release IPA](https://github.com/cranci1/Sora/actions/workflows/build.yml/badge.svg)](https://github.com/cranci1/Sora/actions/workflows/build.yml) [![Discord](https://img.shields.io/discord/1293430817841741899.svg?logo=discord&color=blue)](https://discord.gg/XR3SrmUbpd) [![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20iPadOS%2015.0%2B%20%26%20macOS%2012.0%2B-red?logo=apple&logoColor=white)](https://img.shields.io/badge/Platform-iOS%20%7C%20iPadOS%2015.0%2B%20%26%20macOS%2012.0%2B-red?logo=apple&logoColor=white)
 
-**An iOS and macOS modular web scraping app, under the GPLv3.0 License.**
+**A modular media player for iOS and macOS, under the GPLv3.0 License.**
 
 </div>
 
@@ -24,11 +24,11 @@
 
 - [x] macOS 12.0+ support
 - [x] iOS/iPadOS 15.0+ support
-- [x] JavaScript as main loader
-- [x] Download support (HLS & MP4)
+- [x] JavaScript-based module loader
+- [x] HLS and MP4 format support with optional offline watching (via user-installed modules)
 - [x] Tracking services (AniList, Trakt)
 - [x] Apple Keychain support for auth tokens
-- [x] Streams support (Jellyfin/Plex-like servers)
+- [x] Support for personal media servers (e.g., Jellyfin, Plex)
 - [x] External metadata providers (TMDB, AniList)
 - [x] Background playback and Picture-in-Picture (PiP) support
 - [x] External media player support (VLC, Infuse, Outplayer, nPlayer, SenPlayer, IINA, TracyPlayer)
@@ -40,7 +40,7 @@ You can download Sora using Xcode or using the .ipa file, which you can find in 
 ## Frequently Asked Questions
 
 1. **What is Sora?**  
-   Sora is a modular web scraping application designed to work exclusively with custom modules.
+   Sora is a modular media player for iOS and macOS, enabling custom modules to play media from user-provided sources.
 
 2. **Is Sora safe?**  
    Yes, Sora is open-source and prioritizes user privacy. It does not store user data on external servers and does not collect crash logs.
@@ -86,16 +86,16 @@ along with Sora. If not, see <https://www.gnu.org/licenses/>.
 
 ## Legal
 
-**_Sora is not intended for piracy. The Sora project does not endorse or support any form of piracy._**
+**Sora is a media player that does not host or provide any content. Users are responsible for providing their own content.**
+
+### User Responsibility
+- Users must ensure they have legal rights to any content they use
+- Users are responsible for complying with all applicable laws
+- Users must respect copyright and intellectual property rights
 
 ### No Liability
+The developers assume no responsibility for user actions or content. This software is provided "as-is" without warranties. Users bear full responsibility for their use of the software and any modules.
 
-The developer(s) of this software assume no liability for damages, legal claims, or other issues arising from the use or misuse of this software or any third-party modules. Users bear full responsibility for their actions. Use of this software and its modules is at your own risk.
+### Modules
+Sora does not include any modules. Third-party modules are the responsibility of their creators, not the Sora developers.
 
-### Third-Party Websites and Intellectual Property
-
-This software is not affiliated with or endorsed by any third-party entities. Any references to third-party sites in user-generated modules do not imply endorsement. Users are responsible for ensuring their scraping activities comply with the terms of service and intellectual property rights of the sites they interact with.
-
-### DMCA
-
-The developer(s) are not responsible for the misuse of any content inside or outside the app and shall not be held liable for the dissemination of any content within the app. Any violations should be reported to the source website or module creator. The developer bears no legal responsibility for any module used within the app.

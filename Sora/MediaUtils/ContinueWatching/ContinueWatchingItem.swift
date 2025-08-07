@@ -20,4 +20,6 @@ struct ContinueWatchingItem: Codable, Identifiable {
     let module: ScrapingModule
     let headers: [String:String]?
     let totalEpisodes: Int  
+    let episodeTitle: String?
+    let seasonNumber: Int?
 }

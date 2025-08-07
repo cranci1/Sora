@@ -339,6 +339,8 @@ struct FullWidthContinueWatchingCell: View {
                             fullUrl: item.fullUrl,
                             title: item.mediaTitle,
                             episodeNumber: item.episodeNumber,
+                            episodeTitle: item.episodeTitle ?? "",
+                            seasonNumber: item.seasonNumber ?? 1,
                             onWatchNext: { },
                             subtitlesURL: item.subtitles,
                             aniListID: item.aniListID ?? 0,
@@ -405,12 +407,12 @@ struct FullWidthContinueWatchingCell: View {
                                 .lineLimit(1)
                             
                             HStack {
-                                Text("Episode \(item.episodeNumber)")
+                                Text(episodeLabel(for: item))
                                     .font(.subheadline)
                                     .foregroundColor(.white.opacity(0.9))
-                                
+                                    .lineLimit(2)
+                                    .truncationMode(.tail)
                                 Spacer()
-                                
                                 Text("\(Int(item.progress * 100))% seen")
                                     .font(.caption)
                                     .foregroundColor(.white.opacity(0.9))
@@ -473,4 +475,15 @@ struct FullWidthContinueWatchingCell: View {
             currentProgress = max(0, min(item.progress, 1))
         }
     }
+}
+
+private func episodeLabel(for item: ContinueWatchingItem) -> String {
+    let hasTitle = !(item.episodeTitle?.isEmpty ?? true)
+    let isSingleSeason = (item.seasonNumber ?? 1) <= 1
+    let episodePart = "E\(item.episodeNumber)"
+    let seasonPart = isSingleSeason ? "" : "S\(item.seasonNumber ?? 1)"
+    let colon = hasTitle ? ":" : ""
+    let title = item.episodeTitle ?? ""
+    let main = [seasonPart, episodePart].filter { !$0.isEmpty }.joined()
+    return hasTitle ? "\(main)\(colon) \(title)" : main
 } 

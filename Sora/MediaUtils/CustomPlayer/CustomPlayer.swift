@@ -254,11 +254,15 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var isMenuOpen = false
     private var menuProtectionTimer: Timer?
     
+    let episodeTitle: String
+    
     init(module: ScrapingModule,
          urlString: String,
          fullUrl: String,
          title: String,
          episodeNumber: Int,
+         episodeTitle: String,
+         seasonNumber: Int,
          onWatchNext: @escaping () -> Void,
          subtitlesURL: String?,
          aniListID: Int,
@@ -271,6 +275,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         self.titleText = title
         self.episodeNumber = episodeNumber
         self.episodeImageUrl = episodeImageUrl
+        self.episodeTitle = episodeTitle
+        self.seasonNumber = seasonNumber
         self.onWatchNext = onWatchNext
         self.subtitlesURL = subtitlesURL
         self.aniListID = aniListID
@@ -1257,9 +1263,14 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         titleContainer.translatesAutoresizingMaskIntoConstraints = false
         titleContainer.backgroundColor = .clear
         controlsContainerView.addSubview(titleContainer) 
-        
         episodeNumberLabel = UILabel()
-        episodeNumberLabel.text = "Episode \(episodeNumber)"
+        let hasTitle = !episodeTitle.isEmpty
+        let isSingleSeason = (seasonNumber == 1 || seasonNumber == nil)
+        let episodePart = "E\(episodeNumber)"
+        let seasonPart = isSingleSeason ? "" : "S\(seasonNumber ?? 1)"
+        let colon = hasTitle ? ":" : ""
+        let main = [seasonPart, episodePart].filter { !$0.isEmpty }.joined()
+        episodeNumberLabel.text = hasTitle ? "\(main)\(colon) \(episodeTitle)" : main
         episodeNumberLabel.textColor = UIColor(white: 1.0, alpha: 0.6)
         episodeNumberLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
         episodeNumberLabel.textAlignment = .left
@@ -1946,7 +1957,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                         aniListID: self.aniListID,
                         module: self.module,
                         headers: self.headers,
-                        totalEpisodes: self.totalEpisodes
+                        totalEpisodes: self.totalEpisodes,
+                        episodeTitle: self.episodeTitle,
+                        seasonNumber: self.seasonNumber
                     )
                     ContinueWatchingManager.shared.save(item: item)
                 }

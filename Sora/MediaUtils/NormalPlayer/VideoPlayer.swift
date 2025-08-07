@@ -314,7 +314,9 @@ class VideoPlayerViewController: UIViewController {
                     aniListID: self.aniListID,
                     module: self.module,
                     headers: self.headers,
-                    totalEpisodes: self.totalEpisodes
+                    totalEpisodes: self.totalEpisodes,
+                    episodeTitle: "", 
+                    seasonNumber: self.seasonNumber
                 )
                 ContinueWatchingManager.shared.save(item: item)
             }

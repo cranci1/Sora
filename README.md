@@ -53,15 +53,31 @@ You can download Sora using Xcode or using the .ipa file, which you can find in 
 
 ## Acknowledgements
 
+## Acknowledgements
+
 Frameworks:
-- [Drops](https://github.com/omaralbeik/Drops) - MIT License
-- [NukeUI](https://github.com/kean/NukeUI) - MIT License
-- [SoraCore](https://github.com/cranci1/SoraCore) - Custom License
-- [MarqueeLabel](https://github.com/cbpowell/MarqueeLabel) - MIT License
+- [Drops](https://github.com/omaralbeik/Drops) – MIT License  
+- [NukeUI](https://github.com/kean/NukeUI) – MIT License  
+- [SoraCore](https://github.com/cranci1/SoraCore) – Custom License  
+- [MarqueeLabel](https://github.com/cbpowell/MarqueeLabel) – MIT License  
 
 Misc:
-- [50/50](https://github.com/50n50) for the app icon
-- [Ciro](https://github.com/CiroHoodLove) for the episodes banners
+- [50/50](https://github.com/50n50) for the app icon  
+- [Ciro](https://github.com/CiroHoodLove) for the episode banners  
+
+Translators:
+- [paul](https://github.com/50n50) – Dutch  
+- Utopia – Bosnian  
+- simplymox – Italian  
+- [ibro](https://github.com/xibrox) – Russian, Czech, Kazakh  
+- [Ciro](https://github.com/CiroHoodLove) – Arabic, French  
+- [storm](https://github.com/stormfjeld) – Norwegian, Swedish  
+- VastSector0 – Spanish  
+- [Seiike](https://github.com/Seeike) – Slovak  
+- [Cufiy](https://github.com/JMcrafter26) – German  
+- yoshi1780 – Mongolian  
+- Perju – Romanian  
+
 
 ## License
 

@@ -1,0 +1,227 @@
+"About" = "Despre";
+"About Sora" = "Despre Sora";
+"Active" = "Activ";
+"Active Downloads" = "Descărcări Active";
+"Actively downloading media can be tracked from here." = "Descărcările pot fii urmarite de aici";
+"Add Module" = "Adaugă Modul";
+"Adjust the number of media items per row in portrait and landscape modes." = "Ajustează numărul de elemente media pe rand in modurile portret si peisaj";
+"Advanced" = "Avansat";
+"AKA Sulfur" = "AKA Sulfur";
+"All Bookmarks" = "Toate Marcajele";
+"All Watching" = "Watching";
+"Also known as Sulfur" = "AKA Sulfur";
+"AniList" = "AniList";
+"AniList ID" = "ID AniList";
+"AniList Match" = "Potrivire AniList";
+"AniList.co" = "AniList.co";
+"Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time." = "Se colectează date anonime pentru a îmbunătăți aplicația. Nu sunt colectate informații personale. Acestea pot fi dezactivate oricând.";
+"App Info" = "Informații Aplicație";
+"App Language" = "Limbă aplicație";
+"App Storage" = "Stocare Aplicație";
+"Appearance" = "Aspect";
+/* Alerts and Actions */
+"Are you sure you want to clear all cached data? This will help free up storage space." = "Ești sigur că vrei să ștergi toate datele din cache? Acest lucru va elibera spațiu de stocare";
+"Are you sure you want to delete '%@'?" = "Ești sigur că vrei să ștergi '%@'?";
+"Are you sure you want to delete all %1$d episodes in '%2$@'?" = "Ești sigur că vrei să ștergi toate episoadele";
+"Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use." = "Ești sigur că vrei să ștergeți toate materialele descărcate? Poți alege să ștergeți numai biblioteca, păstrând fișierele descărcate pentru utilizare ulterioară.";
+"Are you sure you want to erase all app data? This action cannot be undone." = "Ești sigur că vrei să ștergi toate datele? Această acțiune nu este reversibilă";
+/* Features */
+"Background Enabled" = "Background pornit";
+"Bookmark items for an easier access later." = "Marchează elemente pentru acces mai rapid in viitor";
+"Bookmarks" = "Marcaje";
+"Bottom Padding" = "Înălțime";
+"Cancel" = "Anulează";
+"Cellular Quality" = "Calitate Celulară";
+"Check out some community modules here!" = "Vezi module Aici";
+"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." = "Alegeți rezoluția video preferată pentru conexiunile WiFi și celulare. Rezoluțiile mai mari folosesc mai multe date, dar oferă o calitate mai bună. Dacă calitatea exactă nu este disponibilă, cea mai apropiată opțiune va fi selectată automat.\n\nNotă: nu toate sursele video și playerele acceptă selecția calității. Această caracteristică funcționează cel mai bine cu fluxurile HLS folosind playerul Sora";
+"Clear" = "Șterge";
+"Clear All Downloads" = "Șterge toate descărcările";
+"Clear Cache" = "Șterge Cache";
+"Clear Library Only" = "Șterge doar Biblioteca";
+"Clear Logs" = "Șterge Logs";
+"Click the plus button to add a module!" = "Apasă plus pentru a adăuga un modul";
+"Continue Watching" = "Continuă să vizionezi";
+"Continue Watching Episode %d" = "Continuă să vizionezi episodul %d";
+"Contributors" = "Contribuitori";
+"Copied to Clipboard" = "Copiat în Clipboard";
+"Copy to Clipboard" = "Copiază in Clipboard";
+"Copy URL" = "Copiază URL";
+/* Episodes */
+"%lld Episodes" = "%lld Episoade";
+"%lld of %lld" = "%lld din %lld";
+"%lld-%lld" = " %lld-%lld";
+"%lld%% seen" = " %lld%% văzut";
+"Episode %lld" = "Episod %lld";
+"Episodes" = "Episoade";
+"Episodes might not be available yet or there could be an issue with the source." = "Este posibil ca episoadele să nu fie încă disponibile sau ar putea exista o problemă cu sursa";
+"Episodes Range" = " Episoade";
+/* System */
+"cranci1" = "cranci1";
+"Dark" = "Întunecat";
+"DATA & LOGS" = "Date si LOGS";
+"Debug" = " Debug";
+"Debugging and troubleshooting." = " Debugging si Troubleshooting";
+/* Actions */
+"Delete" = " Șterge";
+"Delete All" = "Șterge tot";
+"Delete All Downloads" = "Șterge toate descărcările";
+"Delete All Episodes" = "Șterge toate episoadele";
+"Delete Download" = "Șterge Descărcarea";
+"Delete Episode" ="Șterge Episodul";
+/* Player */
+"Double Tap to Seek" = " Apasă de două ori pentru a căuta";
+"Double tapping the screen on it's sides will skip with the short tap setting." = "Apăsarea de două ori va da skip";
+/* Downloads */
+"Download" = "Descarcă";
+"Download Episode" = "Descarcă episodul";
+"Download Summary" = "Descarcă Rezumatul";
+"Download This Episode" = "Descarcă acest episod";
+"Downloaded" = " Descărcat";
+"Downloaded Shows" = "Seriale Descărcate";
+"Downloading" = " Se Descarcă";
+"Downloads" = "Descărcări";
+/* Settings */
+"Enable Analytics" = "Pornește Analiticele";
+"Enable Subtitles" = "Pornește subtitrările";
+/* Data Management */
+"Erase" = "Șterge";
+"Erase all App Data" = "Șterge toate dataele";
+"Erase App Data" = "Șterge datele din aplicație";
+/* Errors */
+"Error" = "Eroare";
+"Error Fetching Results" = "Eroare în Preluare";
+"Errors and critical issues." = "Erori Critice";
+"Failed to load contributors" = "Încărcare a contibuitorilor eșuată";
+/* Features */
+"Fetch Episode metadata" = "Fetch Episode metadata";
+"Files Downloaded" = "Fișiere descărcate";
+"Font Size" = "mărime Font";
+/* Interface */
+"Force Landscape" = "Blochează în Landscape";
+"General" = "General";
+"General events and activities." = "Evenimente si activități generale";
+"General Preferences" = "preferințe generale";
+"Hide Splash Screen" = "Ascunde Splash Screen";
+"HLS video downloading." = "Video HLS se descarcă";
+"Hold Speed" = "Viteză Hold";
+/* Info */
+"Info" = "Informații";
+"INFOS" = "INFOS";
+"Installed Modules" = "Module Instalate";
+"Interface" = " Interfață";
+/* Social */
+"Join the Discord" = " Alătură-te pe Discord";
+/* Layout */
+"Landscape Columns" = " Columne Landscape";
+"Language" = "Limbă";
+"LESS" = "Micșorează";
+/* Library */
+"Library" = "Bibliotecă";
+"License (GPLv3.0)" = " Licență (GPLv3.0)";
+"Light" = "Lumină";
+/* Loading States */
+"Loading Episode %lld..." = "Se încarcă episodul %lld...";
+"Loading logs..." = "Se încarcă logs";
+"Loading module information..." = "Se încarcă informațiile despre modul";
+"Loading Stream" = "Se încarcă Streamul";
+/* Logging */
+"Log Debug Info" = "Înregistrează Info Debug";
+"Log Filters" = "Înregistrează Filtre";
+"Log In with AniList" = "Intră cu AniList";
+"Log In with Trakt" = "Intră cu Trakt";
+"Log Out from AniList" = "Log Out din Anilist";
+"Log Out from Trakt" = " Log Out din Trakt";
+"Log Types" = "Tipuri de înregistrări";
+"Logged in as" = "Înregistrat Ca";
+"Logged in as " = " Înregistrat Ca";
+/* Logs and Settings */
+"Logs" = "Logs";
+"Long press Skip" = "Long press Skip";
+"MAIN" = "Principal";
+"Main Developer" = "Developer PRINCIPAL";
+"MAIN SETTINGS" = "SETĂRI PRINCIPALE";
+/* Media Actions */
+"Mark All Previous Watched" = "Marchează toate cele anterioare ca văzute";
+"Mark as Watched" = " Marchează ca văzut";
+"Mark Episode as Watched" = "Marchează episodul ca văzut";
+"Mark Previous Episodes as Watched" = "marchează episoadele anterioare ca văzute";
+"Mark watched" = "Marchează Văzute";
+"Match with AniList" = "Potrivește cu AniList";
+"Match with TMDB" = "Potrivește cu TMDB";
+"Matched ID: %lld" = "ID Potrivit:%lld";
+"Matched with: %@" = "Potrivit cu: %@";
+"Max Concurrent Downloads" = "Număr maxim de încărcări concomitente";
+/* Media Interface */
+"Media Grid Layout" = "Aspect Grilă Media";
+"Media Player" = "Player Media";
+"Media View" = "Aspect Media";
+"Metadata Provider" = "Furnizor Metadata";
+"Metadata Providers Order" = "Ordine Furnizori Metadata";
+"Module Removed" = " Module Eliminate";
+"Modules" = " Module";
+/* Headers */
+"MODULES" = "MODULE";
+"MORE" = "MAI MULT";
+/* Status Messages */
+"No Active Downloads" = "Fără Descărcări active";
+"No AniList matches found" = "Nicio potrivire AniList";
+"No Data Available" = "Fără date disponibile";
+"No Downloads" = "Nicio Descărcare";
+"No episodes available" = "Fără Episoade disponibile";
+"No Episodes Available" = "Fără Episoadedisponibile";
+"No items to continue watching." = "Niciun element pentru a continua vizionarea";
+"No matches found" = "Nu s-a găsit nicio Potrivire";
+"No Module Selected" = "Niciun Modul Selectat";
+"No Modules" = "Fără module";
+"No Results Found" = "Nu s-a găsit niciun rezultat";
+"No Search Results Found" = "Nu s-au găsit rezultate";
+"Nothing to Continue Watching" = "Nimic pentru a continua vizionarea";
+/*Notes and Messages */
+"Note that the modules will be replaced only if there is a different version string inside the JSON file." = " Rețineți că modulele vor fi înlocuite numai dacă există un șir de versiuni diferit în fișierul JSON";
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nErasing the App Data will clears all your settings and data of the app." = "Cache-ul aplicației ajută aplicația să încarce imagini mai rapid.\n\nȘtergerea folderului Documente va șterge toate modulele descărcate\n\nȘtergerea datelor va inlătura toate setările si datele din aplicație";
+"Translators" = "Translatori";
+"Paste URL" = " Paste URL";
+/* Added missing localizations */
+"Series Title" = "Titlul Seriei";
+"Content Source" = "Sursa";
+"Watch Progress" = "Progres";
+"Recent searches" = "Căutări recente";
+"Nothing to Continue Reading" = "Nimic de citit în continuare";
+"Your recently read novels will appear here" = "Nuvelele citite recent vor apărea aici";
+"No Bookmarks" = "Niciun Marcaj";
+"Add bookmarks to this collection" ="Adaugă un marcaj colecției";
+"items" = "elemente";
+"All Watching" = "Toate seriile în progres";
+"No Reading History" = "Fără Istoric";
+"Books you're reading will appear here" = "Cărțile pe care le citeștivor apărea aici";
+"Create Collection" = "Crează o Colecție";
+"Collection Name" = "Numele Colecției";
+"Rename Collection" = "Renumește Colecția";
+"Rename" = "Renumește";
+"Novel Title" = "Titlul Nuvelei";
+"Read Progress" = "Progres";
+"Date Created" = "Data Creării";
+"Name" = "Nume";
+"Item Count" = "Număr Elemente";
+"Date Added" = "Data Adăugării";
+"Title" = " Titlu";
+"Source" = "Sursă";
+"Search reading..." = "Caută în Reading";
+"Search collections..." = "Caută în Colecții";
+"Search bookmarks..." = "Caută marcaje";
+"%d items" = "%d items";
+"Fetching Data" = "Se preiau datele";
+"Please wait while fetching." = " Se preiau datele";
+"Start Reading"= " Incepe citirea";
+"Chapters" = " Capitole";
+"Completed" = " Completat";
+"Drag to reorder" = " Trage pentru a rearanja";
+"Drag to reorder sections" = "Trage pentru a rearanja secțiunile";
+"Library View" = " Aspect Pagină";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Personalizează secțiunile din bibliotecă. Le poți rearanja sau dezactiva complet";
+"Library Sections Order" = "Ordinea Secțiunilor din Bibliotecă";
+"Completion Percentage" = "Procent de Completare";
+"Translators" = "Translatori";
+"Paste URL" = "Paste URL";
+"Collections" = "Colecții";
+"Continue Reading" = "Continuă să citești";

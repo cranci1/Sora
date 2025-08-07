@@ -248,6 +248,8 @@ struct DownloadView: View {
             fullUrl: asset.originalURL.absoluteString,
             title: asset.metadata?.showTitle ?? asset.name,
             episodeNumber: asset.metadata?.episode ?? 0,
+            episodeTitle: asset.metadata?.episodeTitle ?? "",
+            seasonNumber: asset.metadata?.seasonNumber ?? 1,
             onWatchNext: {},
             subtitlesURL: asset.localSubtitleURL?.absoluteString,
             aniListID: 0,

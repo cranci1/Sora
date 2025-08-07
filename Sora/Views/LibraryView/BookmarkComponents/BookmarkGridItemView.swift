@@ -36,7 +36,7 @@ struct BookmarkGridItemView: View {
             .overlay(
                 ZStack(alignment: .bottomTrailing) {
                     Circle()
-                        .fill(Color.black.opacity(0.5))
+                        .fill(.ultraThinMaterial)
                         .frame(width: 28, height: 28)
                         .overlay(
                             LazyImage(url: URL(string: module.metadata.iconUrl)) { state in

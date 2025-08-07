@@ -291,9 +291,10 @@ struct SettingsViewData: View {
             do {
                 let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
                 for fileURL in fileURLs {
+                    if fileURL.lastPathComponent == "Backups" { continue } // Skip Backups folder
                     try fileManager.removeItem(at: fileURL)
                 }
-                Logger.shared.log("All files in documents folder removed", type: "General")
+                Logger.shared.log("All files in documents folder removed (except Backups)", type: "General")
                 exit(0)
             } catch {
                 Logger.shared.log("Error removing files in documents folder: \(error)", type: "Error")

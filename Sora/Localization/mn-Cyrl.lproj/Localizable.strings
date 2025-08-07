@@ -1,0 +1,467 @@
+/* General */
+"About" = "Бидний тухайд";
+"About Sora" = "Sora аппын тухай";
+"Active" = "Идэвхтэй";
+"Active Downloads" = "Татаж байна";
+"Actively downloading media can be tracked from here." = "Татаж байгаа үзвэрүүдийг эндээс харж болно";
+"Add Module" = "Модул нэмэх";
+"Adjust the number of media items per row in portrait and landscape modes." = "Хэвтээ болон босоо загварын нэг мөрөн харуулах үзвэрийн тоо";
+"Advanced" = "Нарийн тохиргоо";
+"AKA Sulfur" = "өөрөөр Sulfur";
+"All Bookmarks" = "Бүх хадгалсан үзвэрүүд";
+"All Watching" = "Үзэж буй үзвэрүүд";
+"Also known as Sulfur" = "өөрөөр Sulfur гэж нэрлэдэг";
+"AniList" = "AniList";
+"AniList ID" = "AniList ХД";
+"AniList Match" = "AniList тохирол";
+"AniList.co" = "AniList.co";
+"Anonymous data is collected to improve the app. No personal information is collected. This can be disabled at any time." = "Аппыг сайжруулах зорилгоор мэдээллийг нууцалж цуглуулдаг. Таны хувийн мэдээллийг цуглуулдаггүй болно. Мөн хүссэн үедээ мэдээлэл цуглуулахыг цуцалж болно.";
+"App Info" = "Аппын мэдээлэл ";
+"App Language" = "Хэл";
+"App Storage" = "Багтаамж";
+"Appearance" = "Харагдах байдал";
+
+/* Alerts and Actions */
+"Are you sure you want to clear all cached data? This will help free up storage space." = "Та хадгалагдсан өгөгдлийн устгахдаа итгэлтэй байна уу? Устгасан тохиолдолд багтаамж чөлөөлөгдөнө.";
+"Are you sure you want to delete '%@'?" = "Та '%@' үзвэрийг устгахдаа итгэлтэй байна уу?";
+"Are you sure you want to delete all %1$d episodes in '%2$@'?" = "Та '%2$@' үзвэрийн %1$d ангиудыг устгахдаа итгэлтэй байна уу?";
+"Are you sure you want to delete all downloaded assets? You can choose to clear only the library while preserving the downloaded files for future use." = "Та бүх татаж авсан үзвэрийг устгахдаа итгэлтэй байна уу? Зөвхөн сангаа цэврэлсэнээр, татаж авсан үзвэрүүдээ устгахгүй байж болно.";
+"Are you sure you want to erase all app data? This action cannot be undone." = "Та аппын бүх өгөгдлийг утгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.";
+
+/* Features */
+"Background Enabled" = "Аппыг идэвхгүй үед татах";
+"Bookmark items for an easier access later." = "Үзвэрийг хадгалсанаар дараа нь олоход хялбар болно";
+"Bookmarks" = "Хадгалсан үзвэр";
+"Bottom Padding" = "Доод зай";
+"Cancel" = "Цуцлах";
+"Cellular Quality" = "Утасны дата бичлэгийн чанар";
+"Check out some community modules here!" = "Илүү олон модулиудыг эндээс олоорой!";
+"Choose preferred video resolution for WiFi and cellular connections. Higher resolutions use more data but provide better quality. If the exact quality isn't available, the closest option will be selected automatically.\n\nNote: Not all video sources and players support quality selection. This feature works best with HLS streams using the Sora player." = "Өөрийн WiFi болон утасны датанд тааруулж бичлэгийн чанарыг сонгоорой. Өндөр чанартай бичлэг нь илүү их дата ашиглана. Хэрэв таны сонгосон бичлэгийн чанар байхгүй бол хамгийн ойролцоо чанарыг сонгож тоглуулна.\n\nТэмдэглэл: Бүх үзвэрүүд болон бичлэг тоглуулагч нь чанар сонгох үйлдэлгүй байдаг. Бичлэгийн чанар сонгох үйлдлийг HLS төрлийн үзвэрийг Sora тоглуулагч ашиглан үзэж байгаа тохиолдолд ашиглахад хамгийн тохиромжтой байдаг.";
+"Clear" = "Устгах";
+"Clear All Downloads" = "Бүх таталтыг устгах";
+"Clear Cache" = "Кэш цэвэрлэх";
+"Clear Library Only" = "Зөвхөн санг цэвэрлэх";
+"Clear Logs" = "Лог цэвэрлэх";
+"Click the plus button to add a module!" = "Нэмэх тэмдэг дээр дарж шинэ модуль нэмнэ үү!";
+"Continue Watching" = "Үргэлжлүүлж үзэх";
+"Continue Watching Episode %d" = "%d ангийг үргэлжлүүлж үзэх";
+"Contributors" = "Хувь нэмэр оруулсан";
+"Copied to Clipboard" = "Хуулсан";
+"Copy to Clipboard" = "Хуулсан";
+"Copy URL" = "Холбоосыг хуулах";
+
+/* Episodes */
+"%lld Episodes" = "%lld анги";
+"%lld of %lld" = "%lld-ийн %lld";
+"%lld-%lld" = "%lld-%lld";
+"%lld%% seen" = "%lld%% үзсэн";
+"Episode %lld" = "%lld-р анги";
+"Episodes" = "Ангиуд";
+"Episodes might not be available yet or there could be an issue with the source." = " ";
+"Episodes Range" = " ";
+
+/* System */
+"cranci1" = "cranci1";
+"Dark" = "Хар";
+"DATA & LOGS" = "Өгөгдөл ба лог";
+"Debug" = "Алдаа илрүүлэх";
+"Debugging and troubleshooting." = "Алдааг илрүүлэх ба асуудал олох";
+
+/* Actions */
+"Delete" = "Устгах";
+"Delete All" = "Бүгдийг устгах";
+"Delete All Downloads" = "Бүх таталтыг устгах";
+"Delete All Episodes" = "Бүх ангийг устгах";
+"Delete Download" = "Таталт устгах";
+"Delete Episode" = "Анги устгах";
+
+/* Player */
+"Double Tap to Seek" = "Хоёр дарж гүйлгэх";
+"Double tapping the screen on it's sides will skip with the short tap setting." = "Дэлгэцийн хоёр талд хоёр удаа хурдан дарвал богино хугацаагаар бичлэгийг гүйлгэнэ.";
+
+/* Downloads */
+"Download" = "Татах";
+"Download Episode" = "Анги татах";
+"Download Summary" = "Таталтын түүх";
+"Download This Episode" = "Энэ ангийг татах";
+"Downloaded" = "Татсан";
+"Downloaded Shows" = "Татсан үзвэрүүд";
+"Downloading" = "Татаж байна";
+"Downloads" = "Таталтууд";
+
+/* Settings */
+"Enable Analytics" = "Аналитик ажилуулах";
+"Enable Subtitles" = "Хадмал харуулах";
+
+/* Data Management */
+"Erase" = "Арилгах";
+"Erase all App Data" = "Аппын бүх өгөгдлийг арилгах";
+"Erase App Data" = "Аппын өгөгдлийг арилгах";
+
+/* Errors */
+"Error" = "Алдаа";
+"Error Fetching Results" = "Илэрцийг олоход гарсан алдаа";
+"Errors and critical issues." = "Алдаанууд болон ноцтой асуудлууд";
+"Failed to load contributors" = "Контрибуторуудыг ачааллаж чадсангүй";
+
+/* Features */
+"Fetch Episode metadata" = "Ангийн мета мэдээллийг татах";
+"Files Downloaded" = "Татаж авсан файлууд";
+"Font Size" = "Үсгийн хэмжээ";
+
+/* Interface */
+"Force Landscape" = "Байнга хэвтээ байлгах";
+"General" = "Ерөнхий";
+"General events and activities." = "Ерөнхий эвэнт ба үйл ажиллагаанууд";
+"General Preferences" = "Ерөнхий тохиргоо";
+"Hide Splash Screen" = "Эхлэлийн дэлгэцийг нуух";
+"HLS video downloading." = "HLS бичлэг таталт";
+"Hold Speed" = "Дарах хурд";
+
+/* Info */
+"Info" = "Мэдээлэл";
+"INFOS" = "МЭДЭЭЛЛҮҮД";
+"Installed Modules" = "Суулгасан модулиуд";
+"Interface" = "Харилцах хэсэг";
+
+/* Social */
+"Join the Discord" = "Дискорд сувагт нэгдэх";
+
+/* Layout */
+"Landscape Columns" = "Хэвтээ багана";
+"Language" = "Хэл";
+"LESS" = "БАГАСГАХ";
+
+/* Library */
+"Library" = "Сан";
+"License (GPLv3.0)" = "Лиценз (GPLх3.0)";
+"Light" = "Цагаан";
+
+/* Loading States */
+"Loading Episode %lld..." = "%lld-р ангийг ачаалж байна...";
+"Loading logs..." = "Логийг ачаалж байна...";
+"Loading module information..." = "Модулийн мэдээллийг ачаалж байна...";
+"Loading Stream" = "Үзвэрийг ачаалж байна";
+
+/* Logging */
+"Log Debug Info" = "Дибаг мэдээллийг бичих";
+"Log Filters" = "Лог шүүлтүүрүүд";
+"Log In with AniList" = "AniList-ээр нэвтрэх";
+"Log In with Trakt" = "Trakt-аар нэвтрэх";
+"Log Out from AniList" = "AniList-ээс гарах";
+"Log Out from Trakt" = "Trakt-аас гарах";
+"Log Types" = "Логийн төрлүүд";
+"Logged in as" = "Нэвтэрсэн байна";
+"Logged in as " = " нэвтэрсэн байна";
+
+/* Logs and Settings */
+"Logs" = "Логууд";
+"Long press Skip" = "Удаан дарж алгасах";
+"MAIN" = "ҮНДСЭН";
+"Main Developer" = "Үндсэн Хөгжүүлэгч";
+"MAIN SETTINGS" = "ҮНДСЭН ТОХИРГООНУУД";
+
+/* Media Actions */
+"Mark All Previous Watched" = "Өмнөх бүгдийг үзсэнээр тэмдэглэх";
+"Mark as Watched" = "Үзсэнээр тэмдэглэх";
+"Mark Episode as Watched" = "Ангийг үзсэнээр тэмдэглэх";
+"Mark Previous Episodes as Watched" = "Өмнөх бүх ангийг үзсэнээр тэмдэглэх";
+"Mark watched" = "Үзсэнийг тэмдэглэх";
+"Match with AniList" = "Anilist-тэй тааруулах";
+"Match with TMDB" = "TMDB-тэй тааруулах";
+"Matched ID: %lld" = "Тааруулсан ХД: %lld";
+"Matched with: %@" = "Тааруулсан: %@";
+"Max Concurrent Downloads" = "Зэрэг татах дээд хэмжээ";
+
+/* Media Interface */
+"Media Grid Layout" = "Медиа грид байршил";
+"Media Player" = "Медиа тоглуулагч";
+"Media View" = "Медиа харагдац";
+"Metadata Provider" = "Нэмэлт мэдээлэл нийлүүлэгч";
+"Metadata Providers Order" = "Нэмэлт мэдээлэл нийлүүлэгчид";
+"Module Removed" = "Модуль устсан";
+"Modules" = "Модулиуд";
+
+/* Headers */
+"MODULES" = "МОДУЛИУД";
+"MORE" = "ИЛҮҮ";
+
+/* Status Messages */
+"No Active Downloads" = "Идэвхтэй таталт байхгүй байна";
+"No AniList matches found" = "Anilist дээр олдсонгүй";
+"No Data Available" = "Мэдээлэл байхгүй байна";
+"No Downloads" = "Таталт байхгүй байна";
+"No episodes available" = "Анги олдсонгүй";
+"No Episodes Available" = "Анги Олдсонгүй";
+"No items to continue watching." = "Үргэлүүлж үзэх зүйл байхгүй";
+"No matches found" = "Илэрц олдсонгүй";
+"No Module Selected" = "Модуль сонгоогүй байна";
+"No Modules" = "Модуль байгүй";
+"No Results Found" = "Хайлт олдсонгүй";
+"No Search Results Found" = "Хайлтын Үр Дүн Олдсонгүй";
+"Nothing to Continue Watching" = "Үргэлжлүүлж Үзэх Зүйл Байхгүй";
+
+/* Notes and Messages */
+"Note that the modules will be replaced only if there is a different version string inside the JSON file." = "Модулийн JSON файл доторх хувилбарийн нэр өөрчлөгдсөн тохиолдолд л модуль шинэчлэгдэнэ.";
+
+/* Actions */
+"OK" = "ЗА";
+"Open Community Library" = "Нийтлэг Санг Нээх";
+
+/* External Services */
+"Open in AniList" = "Anilist дотор нээх";
+"Original Poster" = "Жинхэнэ Постлогч";
+
+/* Playback */
+"Paused" = "Зогсоосон";
+"Play" = "Тоглуулах";
+"Player" = "Тоглуулагч";
+
+/* System Messages */
+"Please restart the app to apply the language change." = "Аппаас гарч дахин орсноор хэл солигдоно";
+"Please select a module from settings" = "Тохиргооны хэсгээс модуль сонгоно уу";
+
+/* Interface */
+"Portrait Columns" = "Босоо Баганууд";
+"Progress bar Marker Color" = "Явцын зурвасын тэмдэглэгээний өнгө";
+"Provider: %@" = "Нийлүүлэгч: %@";
+
+/* Queue */
+"Queue" = "Дараалал";
+"Queued" = "Хүлээлтэд орсон";
+
+/* Content */
+"Recently watched content will appear here." = "Сүүлд үзсэн үзвэрүүд энд харагдана";
+
+/* Settings */
+"Refresh Modules on Launch" = "Апп нээгдэх болгонд модуль шинэчлэх";
+"Refresh Storage Info" = "Багтаамжийн мэдээллийг шинэчлэх";
+"Remember Playback speed" = "Тоглуулах хурдыг сануулах";
+
+/* Actions */
+"Remove" = "Устгах";
+"Remove All Cache" = "Бүх Кэшийг Устгах";
+
+/* File Management */
+"Remove All Documents" = "Бүх мэдээлийг устгах";
+"Remove Documents" = "Мэдээллийг Устгах";
+"Remove Downloaded Media" = "Татаж авсан үзвэрийг устгах";
+"Remove Downloads" = "Таталтуудыг Устгах";
+"Remove from Bookmarks" = "Хадгалахаа болих";
+"Remove Item" = "Анги Устгах";
+
+/* Support */
+"Report an Issue" = "Алдаа мэдээлэх";
+
+/* Reset Options */
+"Reset" = "Анхны төлөвт оруулах";
+"Reset AniList ID" = "AniList ХД анхны төлөвт оруулах";
+"Reset Episode Progress" = "Эхнээс нь үзэх";
+"Reset progress" = "Анхны төлөвт оруулах явц";
+"Reset Progress" = "Явцыг ахний төлөвт оруулах";
+
+/* System */
+"Restart Required" = "Дахин ачааллах шаардлагатай";
+"Running Sora %@ - cranci1" = "Sora %@ ачаалж байна - cranci1";
+
+/* Actions */
+"Save" = "Хадгалах";
+"Search" = "Хайа";
+
+/* Search */
+"Search downloads" = "Татсан үзвэр хайх";
+"Search for something..." = "Үзвэр хайх...";
+"Search..." = "Хайх...";
+
+/* Content */
+"Season %d" = "%d-р Улирал";
+"Season %lld" = "%lld-р Улирал";
+"Segments Color" = "Ерөнхий өнгө";
+
+/* Modules */
+"Select Module" = "Модуль сонгох";
+"Set Custom AniList ID" = "AniList ХД харуулах";
+
+/* Interface */
+"Settings" = "Тохиргоо";
+"Shadow" = "Сүүдэр";
+"Show More (%lld more characters)" = "Илүү харуулах (%lld тэмдэгт харагдана)";
+"Show PiP Button" = "PiP товч харуулах";
+"Show Skip 85s Button" = "85с алгасах товч харуулах";
+"Show Skip Intro / Outro Buttons" = "Эхлэл/Төгсгөлийн дууг алгасах точ хөруулах";
+"Shows" = "Харуулах";
+"Size (%@)" = "Хэмжээ (%d)";
+"Skip Settings" = "Алгасах тохиргоо";
+
+/* Player Features */
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments." = "Зарим үйлдлүүд нь зөвхөн Sora болон Үндсэн тоглуулагч дээр ажилладаг, тухайлбал Үргэлж хэвтээ байдлаар үзэх, удаан дарж хурд удирдах болон алгасах хугацаа нь тохиргоо";
+
+/* App Info */
+"Sora" = "Sora";
+"Sora %@ by cranci1" = "Sora %@ by cranci1";
+"Sora and cranci1 are not affiliated with AniList or Trakt in any way.
+
+Also note that progress updates may not be 100% accurate." = "
+Sora ба cranci1 нь AniList эсвэл Trakt-тэй ямар ч хамааралгүй болно.
+
+Мөн явцын шинэчлэлтүүд 100% үнэн зөв байж чадахгүй гэдгийг анхаарна уу.";
+"Sora GitHub Repository" = "Sora GitHub хуудас";
+"Sora/Sulfur will always remain free with no ADs!" = "Sora/Sulfur нь үргэлж үнэ төлбөргүй, зар сурталчилгаагүй байх болно!";
+
+/* Interface */
+"Sort" = "Эрэмблэх";
+"Speed Settings" = "Тоглуулах хурд";
+
+/* Playback */
+"Start Watching" = "Үзэх";
+"Start Watching Episode %d" = "%d ангийг үзэх";
+"Storage Used" = "Ашигласан багтаамж";
+"Stream" = "Үзвэр";
+"Streaming and video playback." = "Үзвэр ба бичлэг";
+
+/* Subtitles */
+"Subtitle Color" = "Хадмалын өнгө";
+"Subtitle Settings" = "Хадмалын тохиргоо";
+
+/* Sync */
+"Sync anime progress" = "Аниме үзсэн ангиудыг тэмдэглэх";
+"Sync TV shows progress" = "Цувралын үзсэн ангиудыг тэмдэглэх";
+
+/* System */
+"System" = "Систем";
+
+/* Instructions */
+"Tap a title to override the current match." = "Нэр дээр дарж одоогийн хайлтыг солино уу";
+"Tap Skip" = "Энд дарж гүйлгэнэ үү";
+"Tap to manage your modules" = "Энд дарж модуль солино уу";
+"Tap to select a module" = "Энд дарж модуль сонгоно уу";
+
+/* App Information */
+"The app cache helps the app load images faster. Clearing the Documents folder will delete all downloaded modules. Do not erase App Data unless you understand the consequences — it may cause the app to malfunction." = " Аппын кэш нь зургуудийг илүү хурдан ачаалахад тусалдаг. Documents хавтасыг устгавал бүх татсан үзвэрүүдийг утгана. Гарах үр дагаврыг нь ойлголгүйгээр Апп датаг бүү устга - Энэ нь дараа нь аппыг буруу ажиллахад нөлөөлөх боломжтой";
+"The episode range controls how many episodes appear on each page. Episodes are grouped into sets (like 1–25, 26–50, and so on), allowing you to navigate through them more easily. For episode metadata, it refers to the episode thumbnail and title, since sometimes it can contain spoilers." = " Ангийн хязгаар нь нэг хуудсанд хэдэн харагдахыг тохируулдаг. Ингэснээр ангиуд нь багцлагдаж (Жишээ нь 1-25, 26-50 гэх мэт), үзэх ангиа сонгоход илүү хялбар болгоно. Ангийн мета өгөгдөл нь тухайн ангийн харагдац зураг болон нэрийг хадгалдаг тул зарим тохиолдолд спойлер агуулдаг.";
+
+
+
+"The module provided only a single episode, this is most likely a movie, so we decided to make separate screens for these cases." = "Модуль зөвхөн нэг анги агуулсан байсан тул, кино байх боломжтой гэж үзээд тусгай дэлгэц хийхээр шийдсэн.";
+
+/* Interface */
+"Thumbnails Width" = "Үзвэрийн зургийн урт";
+"TMDB Match" = "ТМДБ тохирол";
+"Trackers" = "Тракерууд";
+"Trakt" = "Trakt";
+"Trakt.tv" = "Trakt.tv";
+
+/* Search */
+"Try different keywords" = "Өөр үгээр хайж үзнэ үү";
+"Try different search terms" = "Өөр төрлөөр хайж үзнэ үү";
+
+/* Player Controls */
+"Two Finger Hold for Pause" = "Хоёр хуруугаар дарж бичлэгийг зогсоох";
+"Unable to fetch matches. Please try again later." = "Илэрц олж чадсангүй. Дараа дахин оролдоно уу?";
+"Use TMDB Poster Image" = "ТМДБ нүүр зураг ашиглах";
+
+/* Version */
+"v%@" = "х%@";
+"Video Player" = "Бичлэг тоглуулагч";
+
+/* Video Settings */
+"Video Quality Preferences" = "Бичлэгийн чанарын тохиргоо";
+"View All" = "Бүгдийг харах";
+"Watched" = "Үзсэн";
+"Why am I not seeing any episodes?" = "Яагаад нэг ч анги байхгүй байна?";
+"WiFi Quality" = "WiFi чанар";
+
+/* User Status */
+"You are not logged in" = "Та нэвтрээгүй байна";
+"You have no items saved." = "Танд хадгалсан үзвэр байхгүй байна";
+"Your downloaded episodes will appear here" = "Таны татсан үзвэрийн ангиуд энд харагдана";
+"Your recently watched content will appear here" = "Таны сүүлд үзсэн үзвэрүүд энд харагдана";
+
+/* Download Settings */
+"Download Settings" = "Таталтын тохиргоо";
+"Max concurrent downloads controls how many episodes can download simultaneously. Higher values may use more bandwidth and device resources." = "Зэрэг таталт хийх хязгаар нь зэрэг татах ангийн тоо юм. Өндөр байх тусам илүү их дата болон утасны нөөцийг ашиглана.";
+"Quality" = "Чанар";
+"Max Concurrent Downloads" = "Зэрэг таталт хийх хязгаар";
+"Allow Cellular Downloads" = "Утасны датагаар татах";
+"Quality Information" = "Чанарын мэдээлэл";
+
+/* Storage */
+"Storage Management" = "Багтаамж удирдах";
+"Storage Used" = "Ашигласан багтаамж";
+"Library cleared successfully" = "Санг амжилттай цэвэрлэлээ";
+"All downloads deleted successfully" = "Бүх татсан үзвэрүүдийг амжилттай устлаа";
+
+/* New additions */
+"Recent searches" = "Сүүлд хайсан";
+"me frfr" = "me frfr";
+"Data" = "Мэдээлэл";
+"Maximum Quality Available" = "Хамгийн өндөр чанартай";
+"All Reading" = "Бүх унших зүйл";
+"No Reading History" = "Унших түүх байхгүй";
+"Books you're reading will appear here" = "Таны уншиж байгаа номууд энд харагдана";
+"All Watching" = "Бүх үзэх зүйл";
+"Continue Reading" = "Унших үргэлжлүүлэх";
+"Nothing to Continue Reading" = "Үргэлжлүүлж унших зүйл байхгүй";
+"Your recently read novels will appear here" = "Таны саяхан уншсан зохиолууд энд харагдана";
+"No Bookmarks" = "Хадгалсан зүйл байхгүй";
+"Add bookmarks to this collection" = "Энэ цуглуулгад хадгалсан зүйл нэмэх";
+"items" = "зүйл";
+"Chapter %d" = "Бүлэг %d";
+"Episode %d" = "Анги %d";
+"%d%%" = "%d%%";
+"%d%% seen" = "%d%% үзсэн";
+"DownloadCountFormat" = "Татаж авсан: %d";
+"Error loading chapter" = "Бүлэг ачаалахад алдаа гарлаа";
+"Font Size: %dpt" = "Фонтын хэмжээ: %dpt";
+"Line Spacing: %.1f" = "Мөр хоорондын зай: %.1f";
+"Line Spacing" = "Мөр хоорондын зай";
+"Margin: %dpx" = "Захын зай: %dpx";
+"Margin" = "Захын зай";
+"Auto Scroll Speed" = "Автомат гүйлгэх хурд";
+"Speed" = "Хурд";
+"Speed: %.1fx" = "Хурд: %.1fx";
+"Matched %@: %@" = "Таарсан %@: %@";
+"Enter the AniList ID for this series" = "Энэ цувралын AniList ID-г оруулна уу";
+
+/* New additions */
+"Create Collection" = "Цуглуулга үүсгэх";
+"Collection Name" = "Цуглуулгын нэр";
+"Rename Collection" = "Цуглуулгын нэр солих";
+"Rename" = "Нэр солих";
+"All Reading" = "Бүх унших зүйл";
+"Recently Added" = "Саяхан нэмэгдсэн";
+"Novel Title" = "Зохиолын гарчиг";
+"Read Progress" = "Уншсан явц";
+"Date Created" = "Үүсгэсэн огноо";
+"Name" = "Нэр";
+"Item Count" = "Зүйлийн тоо";
+"Date Added" = "Нэмсэн огноо";
+"Title" = "Гарчиг";
+"Source" = "Эх сурвалж";
+"Search reading..." = "Унж байгаа зүйл хайх...";
+"Search collections..." = "Цуглуулга хайх...";
+"Search bookmarks..." = "Хадгалсан зүйл хайх...";
+"%d items" = "%d зүйл";
+"Fetching Data" = "Өгөгдөл татаж байна";
+"Please wait while fetching." = "Татаж байна, хүлээнэ үү.";
+"Start Reading" = "Унж эхлэх";
+"Chapters" = "Бүлгүүд";
+"Completed" = "Дууссан";
+"Drag to reorder" = "Дарааллаар байрлуулахын тулд чирнэ үү";
+"Drag to reorder sections" = "Хэсгүүдийг дарааллаар байрлуулахын тулд чирнэ үү";
+"Library View" = "Сангийн харагдац";
+"Customize the sections shown in your library. You can reorder sections or disable them completely." = "Сангийн харагдах хэсгүүдийг тохируулна уу. Хэсгүүдийг дахин эрэмбэлж эсвэл бүрэн идэвхгүй болгож болно.";
+"Library Sections Order" = "Сангийн хэсгүүдийн дараалал";
+"Completion Percentage" = "Дуусгах хувь";
+"Some features are limited to the Sora and Default player, such as ForceLandscape, holdSpeed and custom time skip increments.\n\nThe completion percentage setting determines at what point before the end of a video the app will mark it as completed on AniList and Trakt." = "Зарим үйлдлүүд нь зөвхөн Sora болон Үндсэн тоглуулагч дээр ажилладаг, тухайлбал Үргэлж хэвтээ байдлаар үзэх, удаан дарж хурд удирдах болон алгасах хугацаа нь тохиргоо\n\nДуусгах хувь нь бичлэгийн төгсгөлөөс хэдэн хувийн өмнө AniList болон Trakt дээр үзсэнээр тэмдэглэхээ тодорхойлно.";
+"The app cache helps the app load images faster.\n\nClearing the Documents folder will delete all downloaded modules.\n\nErasing the App Data will clears all your settings and data of the app." = "Аппын кэш нь зургуудийг илүү хурдан ачаалахад тусалдаг.\n\nDocuments хавтасыг устгавал бүх татсан үзвэрүүдийг утгана.\n\nАпп датаг устгавал аппын бүх тохиргоо болон өгөгдөл устана.";
+"Translators" = "Орчуулагчид";
+"Paste URL" = "Холбоосыг буулгах";
+
+/* Added missing localizations */
+"Series Title" = "Цувралын гарчиг";
+"Content Source" = "Агуулгын эх сурвалж";
+"Watch Progress" = "Үзсэн явц";
+"Recent searches" = "Саяхны хайлт";
+"Collections" = "Цуглуулгууд";
+"Continue Reading" = "Унших үргэлжлүүлэх";

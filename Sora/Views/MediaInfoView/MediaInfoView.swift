@@ -72,6 +72,8 @@ struct MediaInfoView: View {
     @State private var refreshTrigger: Bool = false
     @State private var buttonRefreshTrigger: Bool = false
     
+    @State private var episodeTitleCache: [Int: String] = [:]
+    
     private var selectedRangeKey: String { "selectedRangeStart_\(href)" }
     private var selectedSeasonKey: String { "selectedSeason_\(href)" }
     
@@ -192,6 +194,12 @@ struct MediaInfoView: View {
                 UserDefaults.standard.set(newValue.lowerBound, forKey: selectedRangeKey)
             }
             .onChange(of: selectedSeason) { newValue in
+                let ranges = generateRanges(for: currentEpisodeList.count)
+                if let validRange = ranges.first(where: { $0 == selectedRange }) {
+                    selectedRange = validRange
+                } else {
+                    selectedRange = ranges.first ?? 0..<episodeChunkSize
+                }
                 UserDefaults.standard.set(newValue, forKey: selectedSeasonKey)
             }
             .onChange(of: selectedChapterRange) { newValue in
@@ -565,7 +573,7 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var rangeSelectorStyled: some View {
         Menu {
-            ForEach(generateRanges(), id: \..self) { range in
+            ForEach(episodeRanges, id: \.self) { range in
                 Button(action: { selectedRange = range }) {
                     Text("\(range.lowerBound + 1)-\(range.upperBound)")
                 }
@@ -590,27 +598,24 @@ struct MediaInfoView: View {
             Text(NSLocalizedString("Episodes", comment: ""))
                 .font(.system(size: 22, weight: .bold))
                 .foregroundColor(.primary)
-            
             Spacer()
-            
-            HStack(spacing: 4) {
-                if isGroupedBySeasons || episodeLinks.count > episodeChunkSize {
-                    HStack(spacing: 8) {
-                        if isGroupedBySeasons {
-                            seasonSelectorStyled
-                        }
-                        Spacer()
-                        if episodeLinks.count > episodeChunkSize {
-                            rangeSelectorStyled
-                                .padding(.trailing, 4)
-                        }
-                    }
-                    .padding(.top, -8)
+            sourceButton
+            menuButton
+        }
+        if isGroupedBySeasons || episodeLinks.count > episodeChunkSize {
+            HStack {
+                if isGroupedBySeasons {
+                    seasonSelectorStyled
+                } else {
+                    Spacer(minLength: 0)
                 }
-                
-                sourceButton
-                menuButton
+                Spacer()
+                if episodeLinks.count > episodeChunkSize {
+                    rangeSelectorStyled
+                        .padding(.trailing, 4)
+                }
             }
+            .padding(.top, -8)
         }
     }
     
@@ -628,9 +633,9 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var flatEpisodeList: some View {
         VStack(spacing: 15) {
-            ForEach(episodeLinks.indices.filter { selectedRange.contains($0) }, id: \.self) { i in
-                let ep = episodeLinks[i]
-                createEpisodeCell(episode: ep, index: i, season: 1)
+            ForEach(currentEpisodeList.indices.filter { selectedRange.contains($0) }, id: \.self) { i in
+                let ep = currentEpisodeList[i]
+                createEpisodeCell(episode: ep, index: i, season: isGroupedBySeasons ? selectedSeason + 1 : 1)
             }
         }
     }
@@ -640,8 +645,9 @@ struct MediaInfoView: View {
         let seasons = groupedEpisodes()
         if !seasons.isEmpty, selectedSeason < seasons.count {
             VStack(spacing: 15) {
-                ForEach(seasons[selectedSeason]) { ep in
-                    createEpisodeCell(episode: ep, index: selectedSeason, season: selectedSeason + 1)
+                ForEach(seasons[selectedSeason].indices.filter { selectedRange.contains($0) }, id: \.self) { i in
+                    let ep = seasons[selectedSeason][i]
+                    createEpisodeCell(episode: ep, index: i, season: selectedSeason + 1)
                 }
             }
         } else {
@@ -1942,36 +1948,61 @@ struct MediaInfoView: View {
             DropManager.shared.showDrop(title: "Error", subtitle: "Invalid stream URL", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
             return
         }
-        
         guard self.activeFetchID == fetchID else { return }
         let isMovie = tmdbType == .movie
-        
-        let customMediaPlayer = CustomMediaPlayerViewController(
-            module: module,
-            urlString: url.absoluteString,
-            fullUrl: fullURL,
-            title: title,
-            episodeNumber: selectedEpisodeNumber,
-            onWatchNext: { selectNextEpisode() },
-            subtitlesURL: subtitles,
-            aniListID: itemID ?? 0,
-            totalEpisodes: episodeLinks.count,
-            episodeImageUrl: selectedEpisodeImage,
-            headers: headers ?? nil
-        )
-        customMediaPlayer.seasonNumber = selectedSeason + 1
-        customMediaPlayer.tmdbID = tmdbID
-        customMediaPlayer.isMovie = isMovie
-        customMediaPlayer.modalPresentationStyle = .fullScreen
-        Logger.shared.log("Opening custom media player with url: \(url)")
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first?.rootViewController {
-            findTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
-        } else {
-            Logger.shared.log("Failed to find root view controller", type: "Error")
-            DropManager.shared.showDrop(title: "Error", subtitle: "Failed to present player", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
+        let episode: EpisodeLink? = {
+            if isGroupedBySeasons {
+                let seasons = groupedEpisodes()
+                if selectedSeason < seasons.count {
+                    return seasons[selectedSeason].first(where: { $0.number == selectedEpisodeNumber })
+                }
+                return nil
+            } else {
+                return episodeLinks.first(where: { $0.number == selectedEpisodeNumber })
+            }
+        }()
+        fetchTMDBEpisodeTitle(episodeNumber: selectedEpisodeNumber, season: selectedSeason + 1) { episodeTitle in
+            let customMediaPlayer = CustomMediaPlayerViewController(
+                module: module,
+                urlString: url.absoluteString,
+                fullUrl: fullURL,
+                title: title,
+                episodeNumber: selectedEpisodeNumber,
+                episodeTitle: episodeTitle,
+                seasonNumber: selectedSeason + 1,
+                onWatchNext: { selectNextEpisode() },
+                subtitlesURL: subtitles,
+                aniListID: itemID ?? 0,
+                totalEpisodes: episodeLinks.count,
+                episodeImageUrl: selectedEpisodeImage,
+                headers: headers ?? nil
+            )
+            customMediaPlayer.tmdbID = tmdbID
+            customMediaPlayer.isMovie = isMovie
+            customMediaPlayer.modalPresentationStyle = .fullScreen
+            Logger.shared.log("Opening custom media player with url: \(url)")
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootVC = windowScene.windows.first?.rootViewController {
+                findTopViewController.findViewController(rootVC).present(customMediaPlayer, animated: true, completion: nil)
+            } else {
+                Logger.shared.log("Failed to find root view controller", type: "Error")
+                DropManager.shared.showDrop(title: "Error", subtitle: "Failed to present player", duration: 2.0, icon: UIImage(systemName: "xmark.circle"))
+            }
         }
+    }
+    
+    private func fetchTMDBEpisodeTitle(episodeNumber: Int, season: Int, completion: @escaping (String) -> Void) {
+        guard let tmdbID = tmdbID else { completion(""); return }
+        let urlString = "https://api.themoviedb.org/3/tv/\(tmdbID)/season/\(season)/episode/\(episodeNumber)?api_key=738b4edd0a156cc126dc4a4b8aea4aca"
+        guard let url = URL(string: urlString) else { completion(""); return }
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            var title = ""
+            if let data = data,
+               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                title = json["name"] as? String ?? ""
+            }
+            DispatchQueue.main.async { completion(title) }
+        }.resume()
     }
     
     private func downloadSingleEpisodeDirectly(episode: EpisodeLink) {
@@ -2196,8 +2227,14 @@ struct MediaInfoView: View {
             completion(nil as EpisodeMetadataInfo?)
             return
         }
-        
-        fetchEpisodeMetadataFromNetwork(anilistId: anilistId, episodeNumber: episode.number, completion: completion)
+        fetchEpisodeMetadataFromNetwork(anilistId: anilistId, episodeNumber: episode.number) { info in
+            if let info = info, let enTitle = info.title["en"] {
+                DispatchQueue.main.async {
+                    episodeTitleCache[episode.number] = enTitle
+                }
+            }
+            completion(info)
+        }
     }
     
     private func fetchEpisodeMetadataFromNetwork(anilistId: Int, episodeNumber: Int, completion: @escaping (EpisodeMetadataInfo?) -> Void) {
@@ -2358,5 +2395,39 @@ struct MediaInfoView: View {
         item.simultaneousGesture(TapGesture().onEnded {
             UserDefaults.standard.set(true, forKey: "navigatingToReaderView")
         })
+    }
+    
+    // MARK: - Episode Range Fix for Seasons
+    private func generateRanges(for count: Int) -> [Range<Int>] {
+        let chunkSize = episodeChunkSize
+        var ranges: [Range<Int>] = []
+        for i in stride(from: 0, to: count, by: chunkSize) {
+            let end = min(i + chunkSize, count)
+            ranges.append(i..<end)
+        }
+        return ranges
+    }
+    
+    private var currentEpisodeList: [EpisodeLink] {
+        if isGroupedBySeasons {
+            let seasons = groupedEpisodes()
+            if selectedSeason < seasons.count {
+                return seasons[selectedSeason]
+            }
+            return []
+        } else {
+            return episodeLinks
+        }
+    }
+    
+    private var episodeRanges: [Range<Int>] {
+        generateRanges(for: currentEpisodeList.count)
+    }
+    
+    private func getEpisodeTitleForPlayer(episodeNumber: Int) -> String {
+        if let cached = episodeTitleCache[episodeNumber], !cached.isEmpty {
+            return cached
+        }
+        return ""
     }
 }

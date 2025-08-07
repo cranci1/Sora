@@ -171,6 +171,11 @@ struct SettingsView: View {
                             }
                             Divider().padding(.horizontal, 16)
                             
+                            NavigationLink(destination: SettingsViewLibrary().navigationBarBackButtonHidden(false)) {
+                                SettingsNavigationRow(icon: "books.vertical", titleKey: "Library")
+                            }
+                            Divider().padding(.horizontal, 16)
+                            
                             NavigationLink(destination: SettingsViewPlayer().navigationBarBackButtonHidden(false)) {
                                 SettingsNavigationRow(icon: "play.circle", titleKey: "Video Player")
                             }
@@ -458,6 +463,40 @@ class Settings: ObservableObject {
             languageCode = "kk"
         case "Mongolian":
             languageCode = "mn"
+            
+            let mainBundle = Bundle.main
+            if let lprojPaths = mainBundle.paths(forResourcesOfType: "lproj", inDirectory: nil) as? [String] {
+                let availableLangs = lprojPaths.map { path -> String in
+                    let components = path.components(separatedBy: "/")
+                    let filename = components.last ?? ""
+                    return filename.replacingOccurrences(of: ".lproj", with: "")
+                }
+                Logger.shared.log("Available language bundles: \(availableLangs.joined(separator: ", "))", type: "Debug")
+            }
+
+            if let _ = mainBundle.path(forResource: "mn", ofType: "lproj") {
+                Logger.shared.log("Found mn.lproj bundle", type: "Debug")
+            } else {
+                Logger.shared.log("mn.lproj bundle not found", type: "Error")
+            }
+        case "Romanian":
+            languageCode = "ro"
+
+            let mainBundle = Bundle.main
+            if let lprojPaths = mainBundle.paths(forResourcesOfType: "lproj", inDirectory: nil) as? [String] {
+                let availableLangs = lprojPaths.map { path -> String in
+                    let components = path.components(separatedBy: "/")
+                    let filename = components.last ?? ""
+                    return filename.replacingOccurrences(of: ".lproj", with: "")
+                }
+                Logger.shared.log("Available language bundles: \(availableLangs.joined(separator: ", "))", type: "Debug")
+            }
+
+            if let _ = mainBundle.path(forResource: "ro", ofType: "lproj") {
+                Logger.shared.log("Found ro.lproj bundle", type: "Debug")
+            } else {
+                Logger.shared.log("ro.lproj bundle not found", type: "Error")
+            }
         case "Swedish":
             languageCode = "sv"
         case "Italian":
@@ -465,7 +504,32 @@ class Settings: ObservableObject {
         default:
             languageCode = "en"
         }
+        
         UserDefaults.standard.set([languageCode], forKey: "AppleLanguages")
+        Logger.shared.log("Setting language to: \(languageCode) for \(selectedLanguage)", type: "Debug")
+        
         UserDefaults.standard.synchronize()
+        
+        LocalizationManager.shared.setLanguage(languageCode)
+        
+        if selectedLanguage == "Mongolian" {
+            if let mongolianBundle = Bundle(path: Bundle.main.path(forResource: "mn", ofType: "lproj") ?? "") {
+                Logger.shared.log("Mongolian bundle: \(mongolianBundle)", type: "Debug")
+                
+                let testKey = "About"
+                let testString = mongolianBundle.localizedString(forKey: testKey, value: nil, table: nil)
+                Logger.shared.log("Test Mongolian string for '\(testKey)': \(testString)", type: "Debug")
+            }
+        }
+
+        if selectedLanguage == "Romanian" {
+            if let romanianBundle = Bundle(path: Bundle.main.path(forResource: "ro", ofType: "lproj") ?? "") {
+                Logger.shared.log("Romanian bundle: \(romanianBundle)", type: "Debug")
+
+                let testKey = "About"
+                let testString = romanianBundle.localizedString(forKey: testKey, value: nil, table: nil)
+                Logger.shared.log("Test Romanian string for '\(testKey)': \(testString)", type: "Debug")
+            }
+        }
     }
 }

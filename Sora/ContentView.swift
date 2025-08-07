@@ -52,7 +52,7 @@ struct ContentView: View {
                         }
                 }
             }
-            .searchable(text: $searchQuery)
+            //.searchable(text: $searchQuery)
         } else {
             ZStack(alignment: .bottom) {
                 ZStack {

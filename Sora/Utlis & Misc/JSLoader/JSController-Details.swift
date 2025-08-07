@@ -51,7 +51,8 @@ extension JSController {
                let episodesResult = fetchEpisodesFunction.call(withArguments: [html]).toArray() as? [[String: String]] {
                 for episodeData in episodesResult {
                     if let num = episodeData["number"], let link = episodeData["href"], let number = Int(num) {
-                        episodeLinks.append(EpisodeLink(number: number, title: "", href: link, duration: nil))
+                        let title = episodeData["title"] ?? ""
+                        episodeLinks.append(EpisodeLink(number: number, title: title, href: link, duration: nil))
                     }
                 }
             }

@@ -10,7 +10,7 @@ on:
 jobs:
   build-ios:
     name: Build IPA
-    runs-on: macOS-latest
+    runs-on: macOS-15
     steps:
       - name: Use Node.js 20
         uses: actions/setup-node@v4
@@ -34,7 +34,7 @@ jobs:
 
   build-mac:
     name: Build Mac Catalyst
-    runs-on: macOS-latest
+    runs-on: macOS-15
     steps:
       - name: Use Node.js 20
         uses: actions/setup-node@v4

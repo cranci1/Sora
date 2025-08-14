@@ -632,10 +632,12 @@ struct MediaInfoView: View {
     
     @ViewBuilder
     private var flatEpisodeList: some View {
-        VStack(spacing: 15) {
-            ForEach(currentEpisodeList.indices.filter { selectedRange.contains($0) }, id: \.self) { i in
-                let ep = currentEpisodeList[i]
-                createEpisodeCell(episode: ep, index: i, season: isGroupedBySeasons ? selectedSeason + 1 : 1)
+        ScrollView {
+            VStack(spacing: 15) {
+                ForEach(currentEpisodeList.indices.filter { selectedRange.contains($0) }, id: \.self) { i in
+                    let ep = currentEpisodeList[i]
+                    createEpisodeCell(episode: ep, index: i, season: isGroupedBySeasons ? selectedSeason + 1 : 1)
+                }
             }
         }
     }
@@ -644,10 +646,12 @@ struct MediaInfoView: View {
     private var seasonsEpisodeList: some View {
         let seasons = groupedEpisodes()
         if !seasons.isEmpty, selectedSeason < seasons.count {
-            VStack(spacing: 15) {
-                ForEach(seasons[selectedSeason].indices.filter { selectedRange.contains($0) }, id: \.self) { i in
-                    let ep = seasons[selectedSeason][i]
-                    createEpisodeCell(episode: ep, index: i, season: selectedSeason + 1)
+            ScrollView {
+                VStack(spacing: 15) {
+                    ForEach(seasons[selectedSeason].indices.filter { selectedRange.contains($0) }, id: \.self) { i in
+                        let ep = seasons[selectedSeason][i]
+                        createEpisodeCell(episode: ep, index: i, season: selectedSeason + 1)
+                    }
                 }
             }
         } else {

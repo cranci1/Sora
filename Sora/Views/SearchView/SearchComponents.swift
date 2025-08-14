@@ -69,3 +69,46 @@ struct SearchHistoryRow: View {
         }
     }
 }
+
+struct SearchBar: View {
+    @Binding var text: String
+    @Binding var isSearching: Bool
+    @FocusState private var isFocused: Bool
+    
+    var body: some View {
+        HStack {
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
+                
+                TextField("Search", text: $text)
+                    .focused($isFocused)
+                    .submitLabel(.search)
+                    .autocorrectionDisabled(true)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                    .textInputAutocapitalization(.never)
+                    .onChange(of: text) { _ in
+                        // This triggers search while typing
+                        NotificationCenter.default.post(name: .tabBarSearchQueryUpdated, object: nil, userInfo: ["searchQuery": text])
+                    }
+                    .onSubmit {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                
+                if !text.isEmpty {
+                    Button(action: {
+                        text = ""
+                        isFocused = false
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
+            .padding(8)
+            .background(Color(.systemGray6))
+            .cornerRadius(10)
+        }
+    }
+}

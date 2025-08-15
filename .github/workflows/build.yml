@@ -10,52 +10,60 @@ on:
 jobs:
   build-ios:
     name: Build IPA
-    runs-on: macOS-15
+    runs-on: macos-latest
+
     steps:
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
-        
-      - name: Run ipabuild.sh
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Make build script executable
+        run: chmod +x ./ipabuild.sh
+
+      - name: Build IPA
+        run: ./ipabuild.sh
+
+      - name: Compress IPA
         run: |
-          chmod +x ipabuild.sh
-          ./ipabuild.sh
-          
+          cd build
+          zip -r Sulfur.zip Sulfur.ipa
+
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Sulfur-IPA
-          path: build/Sulfur.ipa
-          compression-level: 0
+          name: Sulfur-iOS-Build
+          path: build/Sulfur.zip
+          retention-days: 30
 
-  build-mac:
-    name: Build Mac Catalyst
-    runs-on: macOS-15
+  build-macos:
+    name: Build macOS App
+    runs-on: macos-latest
+
     steps:
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
-        
-      - name: Run macbuild.sh
-        run: |
-          chmod +x macbuild.sh
-          ./macbuild.sh
-          
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Make build script executable
+        run: chmod +x ./macbuild.sh
+
+      - name: Build macOS App
+        run: ./macbuild.sh
+
       - name: Create DMG
-        run: |
-          hdiutil create -volname "Sulfur" -srcfolder build/Sulfur.app -ov -format UDZO build/Sulfur.dmg
-          
-      - name: Upload Mac artifact
+        run: hdiutil create -volname "Sulfur" -srcfolder build/Sulfur.app -ov -format UDZO build/Sulfur.dmg
+
+      - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Sulfur-Mac
+          name: Sulfur-macOS-Build
           path: build/Sulfur.dmg
-          compression-level: 0
+          retention-days: 30

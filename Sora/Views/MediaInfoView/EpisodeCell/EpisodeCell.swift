@@ -22,7 +22,7 @@ struct EpisodeCell: View {
     let showPosterURL: String?
     let tmdbID: Int?
     let seasonNumber: Int?
-    let malID: Int?  // Add MAL ID property
+    let malID: Int?  // MAL ID for the series
     
     let isMultiSelectMode: Bool
     let isSelected: Bool
@@ -67,18 +67,11 @@ struct EpisodeCell: View {
     // Jikan data models
     private struct JikanResponse: Decodable {
         let data: [JikanEpisode]
-        let pagination: Pagination
-    }
-    
-    private struct Pagination: Decodable {
-        let last_visible_page: Int
-        let has_next_page: Bool
     }
     
     private struct JikanEpisode: Decodable {
         let mal_id: Int
         let filler: Bool
-        let recap: Bool
     }
     
     init(
@@ -99,7 +92,7 @@ struct EpisodeCell: View {
         onMarkAllPrevious: @escaping () -> Void,
         tmdbID: Int? = nil,
         seasonNumber: Int? = nil,
-        malID: Int? = nil  // Add MAL ID parameter
+        malID: Int? = nil  // MAL ID parameter
     ) {
         self.episodeIndex = episodeIndex
         self.episode = episode
@@ -983,10 +976,13 @@ private extension EpisodeCell {
         }.resume()
     }
     
-    // MARK: - Jikan Filler Implementation
+    // Jikan Filler Implementation
     
     private func fetchJikanFillerInfo() {
-        guard let malID = malID else { return }
+        guard let malID = malID else {
+            Logger.shared.log("MAL ID not available for filler info", type: "Debug")
+            return
+        }
         let episodeNumber = episodeID + 1
         
         // Check cache first
@@ -998,6 +994,7 @@ private extension EpisodeCell {
         }
         
         if let episodes = cachedEpisodes {
+            Logger.shared.log("Using cached filler info for MAL ID: \(malID)", type: "Debug")
             updateFillerStatus(episodes: episodes)
             return
         }
@@ -1011,12 +1008,18 @@ private extension EpisodeCell {
             }
         }
         
-        if !shouldFetch { return }
+        if !shouldFetch {
+            Logger.shared.log("Fetch already in progress for MAL ID: \(malID)", type: "Debug")
+            return
+        }
+        
+        Logger.shared.log("Fetching filler info for MAL ID: \(malID)", type: "Debug")
         
         // Fetch all pages
         fetchAllJikanPages(malID: malID) { episodes in
             // Update cache
             if let episodes = episodes {
+                Logger.shared.log("Successfully fetched filler info for MAL ID: \(malID)", type: "Debug")
                 Self.jikanCacheQueue.async(flags: .barrier) {
                     Self.jikanCache[malID] = (Date(), episodes)
                 }
@@ -1025,6 +1028,8 @@ private extension EpisodeCell {
                 DispatchQueue.main.async {
                     self.updateFillerStatus(episodes: episodes)
                 }
+            } else {
+                Logger.shared.log("Failed to fetch filler info for MAL ID: \(malID)", type: "Error")
             }
             
             // Remove from in-progress set
@@ -1035,56 +1040,20 @@ private extension EpisodeCell {
     }
     
     private func fetchAllJikanPages(malID: Int, completion: @escaping ([JikanEpisode]?) -> Void) {
-        let firstPageURL = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes?page=1")!
+        let url = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes")!
         
-        URLSession.shared.dataTask(with: firstPageURL) { data, response, error in
+        URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data, error == nil else {
+                Logger.shared.log("Jikan API request failed: \(error?.localizedDescription ?? "Unknown error")", type: "Error")
                 completion(nil)
                 return
             }
             
             do {
-                let firstPageResponse = try JSONDecoder().decode(JikanResponse.self, from: data)
-                var allEpisodes = firstPageResponse.data
-                let totalPages = firstPageResponse.pagination.last_visible_page
-                
-                if totalPages <= 1 {
-                    completion(allEpisodes)
-                    return
-                }
-                
-                // Fetch remaining pages
-                let group = DispatchGroup()
-                var episodesFromPages: [Int: [JikanEpisode]] = [:]
-                
-                for page in 2...totalPages {
-                    group.enter()
-                    // Add delay to respect rate limits
-                    DispatchQueue.global().asyncAfter(deadline: .now() + Double(page-1) * 0.3) {
-                        let url = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes?page=\(page)")!
-                        URLSession.shared.dataTask(with: url) { data, response, error in
-                            defer { group.leave() }
-                            guard let data = data, error == nil else { return }
-                            do {
-                                let response = try JSONDecoder().decode(JikanResponse.self, from: data)
-                                episodesFromPages[page] = response.data
-                            } catch {
-                                // Ignore page error
-                            }
-                        }.resume()
-                    }
-                }
-                
-                group.notify(queue: .global()) {
-                    // Combine episodes in order
-                    for page in 2...totalPages {
-                        if let episodes = episodesFromPages[page] {
-                            allEpisodes.append(contentsOf: episodes)
-                        }
-                    }
-                    completion(allEpisodes)
-                }
+                let response = try JSONDecoder().decode(JikanResponse.self, from: data)
+                completion(response.data)
             } catch {
+                Logger.shared.log("Failed to parse Jikan response: \(error)", type: "Error")
                 completion(nil)
             }
         }.resume()
@@ -1092,10 +1061,20 @@ private extension EpisodeCell {
     
     private func updateFillerStatus(episodes: [JikanEpisode]) {
         let episodeNumber = episodeID + 1
-        guard episodeNumber <= episodes.count else { return }
+        
+        guard episodeNumber <= episodes.count else {
+            Logger.shared.log("Episode \(episodeNumber) not found in Jikan response", type: "Debug")
+            return
+        }
         
         let jikanEpisode = episodes[episodeNumber - 1]
-        isFiller = jikanEpisode.filler || jikanEpisode.recap
+        isFiller = jikanEpisode.filler
+        
+        if jikanEpisode.filler {
+            Logger.shared.log("Marking episode \(episodeNumber) as filler", type: "Debug")
+        } else {
+            Logger.shared.log("Episode \(episodeNumber) is not filler", type: "Debug")
+        }
     }
     
     func handleFetchFailure(error: Error) {

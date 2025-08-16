@@ -61,6 +61,7 @@ struct MediaInfoView: View {
     @State private var isModuleSelectorPresented = false
     @State private var isMatchingPresented = false
     @State private var matchedTitle: String? = nil
+    @State private var matchedMalID: Int? = nil
     @State private var showSettingsMenu = false
     @State private var customAniListID: Int?
     @State private var showStreamLoadingView: Bool = false
@@ -689,7 +690,8 @@ struct MediaInfoView: View {
                 markAllPreviousEpisodes(episode: episode, index: index, inSeason: isGroupedBySeasons)
             },
             tmdbID: tmdbID,
-            seasonNumber: season
+            seasonNumber: season,
+            malID: matchedMalID
         )
         .disabled(isFetchingEpisode)
     }
@@ -860,6 +862,7 @@ struct MediaInfoView: View {
             AnilistMatchPopupView(seriesTitle: title) { id, title, malId in
                 handleAniListMatch(selectedID: id)
                 matchedTitle = title
+                matchedMalID = malId
                 fetchMetadataIDIfNeeded()
             }
         }

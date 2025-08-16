@@ -22,6 +22,7 @@ struct EpisodeCell: View {
     let showPosterURL: String?
     let tmdbID: Int?
     let seasonNumber: Int?
+    let malID: Int?  // MAL ID for the series
     
     let isMultiSelectMode: Bool
     let isSelected: Bool
@@ -53,11 +54,25 @@ struct EpisodeCell: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     
-    //Filler state & cache
+    // Filler state
     @State private var isFiller: Bool = false
-    private static var fillerCache: [String: (fetchedAt: Date, episodes: Set<Int>)] = [:]
-    private static let fillerCacheQueue = DispatchQueue(label: "sora.filler.cache.queue", attributes: .concurrent)
-    private static let fillerCacheTTL: TimeInterval = 60 * 60 * 24
+    
+    // Jikan API cache
+    private static var jikanCache: [Int: (fetchedAt: Date, episodes: [JikanEpisode])] = [:]
+    private static let jikanCacheQueue = DispatchQueue(label: "sora.jikan.cache.queue", attributes: .concurrent)
+    private static let jikanCacheTTL: TimeInterval = 60 * 60 * 24 * 7  // 1 week
+    private static var inProgressMALIDs: Set<Int> = []
+    private static let inProgressQueue = DispatchQueue(label: "sora.jikan.inprogress.queue")
+    
+    // Jikan data models
+    private struct JikanResponse: Decodable {
+        let data: [JikanEpisode]
+    }
+    
+    private struct JikanEpisode: Decodable {
+        let mal_id: Int
+        let filler: Bool
+    }
     
     init(
         episodeIndex: Int,
@@ -76,7 +91,8 @@ struct EpisodeCell: View {
         onTap: @escaping (String) -> Void,
         onMarkAllPrevious: @escaping () -> Void,
         tmdbID: Int? = nil,
-        seasonNumber: Int? = nil
+        seasonNumber: Int? = nil,
+        malID: Int? = nil  // MAL ID parameter
     ) {
         self.episodeIndex = episodeIndex
         self.episode = episode
@@ -94,6 +110,7 @@ struct EpisodeCell: View {
         self.onMarkAllPrevious = onMarkAllPrevious
         self.tmdbID = tmdbID
         self.seasonNumber = seasonNumber
+        self.malID = malID  // Initialize MAL ID
         
         let isLightMode = (UserDefaults.standard.string(forKey: "selectedAppearance") == "light") ||
         ((UserDefaults.standard.string(forKey: "selectedAppearance") == "system") &&
@@ -538,8 +555,8 @@ private extension EpisodeCell {
             } else {
                 fetchAnimeEpisodeDetails()
             }
-            // Fetch filler info in parallel with episode details
-            fetchFillerInfo()
+            // Fetch filler info using Jikan API
+            fetchJikanFillerInfo()
         }
     }
     
@@ -959,67 +976,106 @@ private extension EpisodeCell {
         }.resume()
     }
     
-    func fetchFillerInfo() {
-        let raw = parentTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !raw.isEmpty else { return }
-        
-        var slug = raw.lowercased()
-        slug = slug.replacingOccurrences(of: " ", with: "-")
-        slug = slug.components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).inverted).joined()
-        let epNum = self.episodeID + 1
+    // Jikan Filler Implementation
+    
+    private func fetchJikanFillerInfo() {
+        guard let malID = malID else {
+            Logger.shared.log("MAL ID not available for filler info", type: "Debug")
+            return
+        }
+        let episodeNumber = episodeID + 1
         
         // Check cache first
-        var cachedEpisodes: Set<Int>? = nil
-        Self.fillerCacheQueue.sync {
-            if let entry = Self.fillerCache[slug], Date().timeIntervalSince(entry.fetchedAt) < Self.fillerCacheTTL {
+        var cachedEpisodes: [JikanEpisode]? = nil
+        Self.jikanCacheQueue.sync {
+            if let entry = Self.jikanCache[malID], Date().timeIntervalSince(entry.fetchedAt) < Self.jikanCacheTTL {
                 cachedEpisodes = entry.episodes
             }
         }
         
-        if let set = cachedEpisodes {
-            DispatchQueue.main.async {
-                self.isFiller = set.contains(epNum)
-            }
+        if let episodes = cachedEpisodes {
+            Logger.shared.log("Using cached filler info for MAL ID: \(malID)", type: "Debug")
+            updateFillerStatus(episodes: episodes)
             return
         }
         
-        // Not in cache or expired, fetch from API
-        guard let url = URL(string: "https://sora-filler-episodes-api.jmcrafter26.workers.dev/\(slug)") else { return }
+        // Prevent duplicate requests
+        var shouldFetch = false
+        Self.inProgressQueue.sync {
+            if !Self.inProgressMALIDs.contains(malID) {
+                Self.inProgressMALIDs.insert(malID)
+                shouldFetch = true
+            }
+        }
         
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            var episodesSet = Set<Int>()
-            
-            defer {
-                // Cache the result (even if empty) and update UI
-                Self.fillerCacheQueue.async(flags: .barrier) {
-                    Self.fillerCache[slug] = (fetchedAt: Date(), episodes: episodesSet)
+        if !shouldFetch {
+            Logger.shared.log("Fetch already in progress for MAL ID: \(malID)", type: "Debug")
+            return
+        }
+        
+        Logger.shared.log("Fetching filler info for MAL ID: \(malID)", type: "Debug")
+        
+        // Fetch all pages
+        fetchAllJikanPages(malID: malID) { episodes in
+            // Update cache
+            if let episodes = episodes {
+                Logger.shared.log("Successfully fetched filler info for MAL ID: \(malID)", type: "Debug")
+                Self.jikanCacheQueue.async(flags: .barrier) {
+                    Self.jikanCache[malID] = (Date(), episodes)
                 }
                 
+                // Update UI
                 DispatchQueue.main.async {
-                    self.isFiller = episodesSet.contains(epNum)
+                    self.updateFillerStatus(episodes: episodes)
                 }
+            } else {
+                Logger.shared.log("Failed to fetch filler info for MAL ID: \(malID)", type: "Error")
             }
             
-            // Handle API errors or empty responses
+            // Remove from in-progress set
+            Self.inProgressQueue.async {
+                Self.inProgressMALIDs.remove(malID)
+            }
+        }
+    }
+    
+    private func fetchAllJikanPages(malID: Int, completion: @escaping ([JikanEpisode]?) -> Void) {
+        let url = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes")!
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data, error == nil else {
+                Logger.shared.log("Jikan API request failed: \(error?.localizedDescription ?? "Unknown error")", type: "Error")
+                completion(nil)
                 return
             }
             
             do {
-                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let fillerArray = json["fillerEpisodes"] as? [String],
-                   !fillerArray.isEmpty {
-                    
-                    let fillerString = fillerArray[0]
-                    let numbers = fillerString.split(separator: ",").compactMap { 
-                        Int($0.trimmingCharacters(in: .whitespaces)) 
-                    }
-                    episodesSet = Set(numbers)
-                }
+                let response = try JSONDecoder().decode(JikanResponse.self, from: data)
+                completion(response.data)
             } catch {
-                print("Filler parse error: \(error)")
+                Logger.shared.log("Failed to parse Jikan response: \(error)", type: "Error")
+                completion(nil)
             }
         }.resume()
+    }
+    
+    private func updateFillerStatus(episodes: [JikanEpisode]) {
+        let episodeNumber = episodeID + 1
+
+        guard episodeNumber > 0, episodeNumber <= episodes.count else {
+            Logger.shared.log("Episode \(episodeNumber) not found in Jikan response", type: "Debug")
+            isFiller = false // Defensive: always set to false if out of bounds
+            return
+        }
+
+        let jikanEpisode = episodes[episodeNumber - 1]
+        isFiller = jikanEpisode.filler
+        
+        if jikanEpisode.filler {
+            Logger.shared.log("Marking episode \(episodeNumber) as filler", type: "Debug")
+        } else {
+            Logger.shared.log("Episode \(episodeNumber) is not filler", type: "Debug")
+        }
     }
     
     func handleFetchFailure(error: Error) {

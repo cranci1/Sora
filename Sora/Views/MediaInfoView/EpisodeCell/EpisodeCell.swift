@@ -963,25 +963,21 @@ private extension EpisodeCell {
         }.resume()
     }
     
-    // MARK: - Filler episodes detection (with caching)
     func fetchFillerInfo() {
         let raw = parentTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !raw.isEmpty else { return }
         
-        // Basic slug normalization: lowercase, spaces -> hyphens, remove non-alphanumeric/hyphen
         var slug = raw.lowercased()
         slug = slug.replacingOccurrences(of: " ", with: "-")
         slug = slug.components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).inverted).joined()
         let epNum = self.episodeID + 1
         
-        // Check cache (thread-safe)
         var cachedEpisodes: Set<Int>? = nil
         Self.fillerCacheQueue.sync {
             if let entry = Self.fillerCache[slug] {
                 if Date().timeIntervalSince(entry.fetchedAt) < Self.fillerCacheTTL {
                     cachedEpisodes = entry.episodes
                 } else {
-                    // stale -> remove asynchronously
                     Self.fillerCacheQueue.async(flags: .barrier) {
                         Self.fillerCache[slug] = nil
                     }
@@ -995,7 +991,7 @@ private extension EpisodeCell {
             return
         }
         
-        guard let url = URL(string: "https://filler-list.chaiwala-anime.workers.dev/\(slug)") else { return }
+        guard let url = URL(string: "https://sora-filler-episodes-api.jmcrafter26.workers.dev/\(slug)") else { return }
         
         URLSession.shared.dataTask(with: url) { data, _, error in
             guard let data = data, error == nil else { return }
@@ -1007,7 +1003,6 @@ private extension EpisodeCell {
                         if let n = item as? Int { episodesSet.insert(n) }
                         else if let s = item as? String, let n = Int(s) { episodesSet.insert(n) }
                     }
-                    // store into cache (barrier)
                     Self.fillerCacheQueue.async(flags: .barrier) {
                         Self.fillerCache[slug] = (fetchedAt: Date(), episodes: episodesSet)
                     }
@@ -1017,7 +1012,6 @@ private extension EpisodeCell {
                     }
                 }
             } catch {
-                // ignore parsing errors silently
             }
         }.resume()
     }

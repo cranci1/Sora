@@ -857,7 +857,7 @@ struct MediaInfoView: View {
                 .circularGradientOutline()
         }
         .sheet(isPresented: $isMatchingPresented) {
-            AnilistMatchPopupView(seriesTitle: title) { id, matched in
+            AnilistMatchPopupView(seriesTitle: title) { id, title, malId in
                 handleAniListMatch(selectedID: id)
                 matchedTitle = matched
                 fetchMetadataIDIfNeeded()

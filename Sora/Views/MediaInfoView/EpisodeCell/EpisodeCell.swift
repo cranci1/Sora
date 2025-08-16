@@ -707,7 +707,7 @@ private extension EpisodeCell {
                 Logger.shared.log("Started download for Episode \(self.episodeID + 1): \(self.episode)", type: "Download")
                 AnalyticsManager.shared.sendEvent(
                     event: "download",
-                    additionalData: ["episode": self.episodeID + 1, "url": streamUrl]
+                    additionalData: {"episode": self.episodeID + 1, "url": streamUrl}
                 )
             } else {
                 DropManager.shared.error(message)
@@ -976,7 +976,7 @@ private extension EpisodeCell {
         }.resume()
     }
     
-    // Jikan Filler Implementation
+    // MARK: - Jikan Filler Implementation
     
     private func fetchJikanFillerInfo() {
         guard let malID = malID else {

@@ -175,6 +175,7 @@ struct AnilistMatchPopupView: View {
     }
 
     private func fetchMatches() {
+        // Updated query to include idMal
         let query = """
         query {
           Page(page: 1, perPage: 6) {

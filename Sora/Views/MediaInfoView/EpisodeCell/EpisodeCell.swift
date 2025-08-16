@@ -154,8 +154,11 @@ struct EpisodeCell: View {
             updateProgress()
         }
     }
+}
+
+private extension EpisodeCell {
     
-    private var actionButtonsBackground: some View {
+    var actionButtonsBackground: some View {
         HStack {
             Spacer()
             actionButtons
@@ -163,7 +166,7 @@ struct EpisodeCell: View {
         .zIndex(0)
     }
     
-    private var episodeCellContent: some View {
+    var episodeCellContent: some View {
         HStack {
             episodeThumbnail
             episodeInfo
@@ -200,7 +203,7 @@ struct EpisodeCell: View {
         .onTapGesture { handleTap() }
     }
     
-    private var cellBackground: some View {
+    var cellBackground: some View {
         RoundedRectangle(cornerRadius: 15)
             .fill(Color(UIColor.systemBackground))
             .overlay(
@@ -223,7 +226,7 @@ struct EpisodeCell: View {
             )
     }
     
-    private var episodeThumbnail: some View {
+    var episodeThumbnail: some View {
         ZStack {
             AsyncImageView(
                 url: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl,
@@ -238,7 +241,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private var episodeInfo: some View {
+    var episodeInfo: some View {
         VStack(alignment: .leading) {
             HStack(spacing: 8) {
                 Text("Episode \(episodeID + 1)")
@@ -270,13 +273,13 @@ struct EpisodeCell: View {
         }
     }
     
-    private var downloadedIndicator: some View {
+    var downloadedIndicator: some View {
         Image(systemName: "externaldrive.fill.badge.checkmark")
             .foregroundColor(.accentColor)
             .font(.system(size: 18))
     }
     
-    private var contextMenuContent: some View {
+    var contextMenuContent: some View {
         Group {
             if progress <= 0.9 {
                 Button(action: markAsWatched) {
@@ -302,7 +305,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private var actionButtons: some View {
+    var actionButtons: some View {
         HStack(spacing: 8) {
             ActionButton(
                 icon: "arrow.down.circle",
@@ -348,8 +351,11 @@ struct EpisodeCell: View {
         }
         .padding(.horizontal, 8)
     }
+}
+
+private extension EpisodeCell {
     
-    private enum DragState {
+    enum DragState {
         case inactive
         case pressing
         case dragging(translation: CGSize)
@@ -382,7 +388,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func handleDragChanged(_ value: DragGesture.Value) {
+    func handleDragChanged(_ value: DragGesture.Value) {
         let translation = value.translation
         let velocity = value.velocity
         
@@ -411,7 +417,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func handleDragEnded(_ value: DragGesture.Value) {
+    func handleDragEnded(_ value: DragGesture.Value) {
         let translation = value.translation
         let velocity = value.velocity
         
@@ -443,7 +449,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func handleTap() {
+    func handleTap() {
         if isShowingActions {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                 swipeOffset = 0
@@ -457,7 +463,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func calculateMaxSwipeDistance() -> CGFloat {
+    func calculateMaxSwipeDistance() -> CGFloat {
         var buttonCount = 1
         
         if progress <= 0.9 { buttonCount += 1 }
@@ -471,8 +477,11 @@ struct EpisodeCell: View {
         
         return swipeDistance
     }
+}
+
+private extension EpisodeCell {
     
-    private func closeActionsAndPerform(action: @escaping () -> Void) {
+    func closeActionsAndPerform(action: @escaping () -> Void) {
         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
             isShowingActions = false
             swipeOffset = 0
@@ -483,7 +492,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func markAsWatched() {
+    func markAsWatched() {
         let defaults = UserDefaults.standard
         let totalTime = 1000.0
         defaults.set(totalTime, forKey: "lastPlayedTime_\(episode)")
@@ -500,30 +509,30 @@ struct EpisodeCell: View {
             ) { result in
                 switch result {
                 case .success:
-                    print("AniList sync: marked ep \(epNum) as \(newStatus)")
+                    Logger.shared.log("AniList sync: marked ep \(epNum) as \(newStatus)", type: "General")
                 case .failure(let err):
-                    print("AniList sync failed: \(err.localizedDescription)")
+                    Logger.shared.log("AniList sync failed: \(err.localizedDescription)", type: "Error")
                 }
             }
         }
     }
 
     
-    private func resetProgress() {
+    func resetProgress() {
         let userDefaults = UserDefaults.standard
         userDefaults.set(0.0, forKey: "lastPlayedTime_\(episode)")
         userDefaults.set(0.0, forKey: "totalTime_\(episode)")
         updateProgress()
     }
     
-    private func updateProgress() {
+    func updateProgress() {
         let userDefaults = UserDefaults.standard
         let lastPlayedTime = userDefaults.double(forKey: "lastPlayedTime_\(episode)")
         let totalTime = userDefaults.double(forKey: "totalTime_\(episode)")
         currentProgress = totalTime > 0 ? min(lastPlayedTime / totalTime, 1.0) : 0
     }
     
-    private func updateDownloadStatus() {
+    func updateDownloadStatus() {
         let newStatus = jsController.isEpisodeDownloadedOrInProgress(
             showTitle: parentTitle,
             episodeNumber: episodeID + 1
@@ -533,33 +542,38 @@ struct EpisodeCell: View {
             downloadStatus = newStatus
         }
     }
-    
-    private func setupOnAppear() {
+}
+
+private extension EpisodeCell {
+    func setupOnAppear() {
         updateProgress()
         updateDownloadStatus()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             if UserDefaults.standard.string(forKey: "metadataProviders") ?? "TMDB" == "TMDB" {
-                self.fetchTMDBEpisodeImage()
+                fetchTMDBEpisodeImage()
             } else {
-                self.fetchAnimeEpisodeDetails()
+                fetchAnimeEpisodeDetails()
             }
             // Fetch filler info using Jikan API
             fetchJikanFillerInfo()
         }
     }
     
-    private func handleItemIDChange() {
+    func handleItemIDChange() {
         isLoading = true
         retryAttempts = 0
         fetchEpisodeDetails()
     }
     
-    private func fetchEpisodeDetails() {
+    func fetchEpisodeDetails() {
         fetchAnimeEpisodeDetails()
     }
+}
+
+private extension EpisodeCell {
     
-    private func downloadEpisode() {
+    func downloadEpisode() {
         updateDownloadStatus()
         
         guard case .notDownloaded = downloadStatus, !isDownloading else {
@@ -584,7 +598,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func handleAlreadyDownloadedOrInProgress() {
+    func handleAlreadyDownloadedOrInProgress() {
         switch downloadStatus {
         case .downloaded:
             DropManager.shared.info("Episode \(episodeID + 1) is already downloaded")
@@ -595,7 +609,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func tryNextDownloadMethod(methodIndex: Int, downloadID: UUID, softsub: Bool) {
+    func tryNextDownloadMethod(methodIndex: Int, downloadID: UUID, softsub: Bool) {
         guard isDownloading else { return }
         
         switch methodIndex {
@@ -628,7 +642,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func handleDownloadResult(
+    func handleDownloadResult(
         _ result: (streams: [String]?, subtitles: [String]?, sources: [[String: Any]]?),
         downloadID: UUID,
         methodIndex: Int,
@@ -667,7 +681,7 @@ struct EpisodeCell: View {
         tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
     }
     
-    private func startActualDownload(url: URL, streamUrl: String, downloadID: UUID, subtitleURL: URL? = nil) {
+    func startActualDownload(url: URL, streamUrl: String, downloadID: UUID, subtitleURL: URL? = nil) {
         let headers = createDownloadHeaders(for: url)
         let episodeThumbnailURL = URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl)
         let showPosterImageURL = URL(string: showPosterURL ?? defaultBannerImage)
@@ -690,7 +704,7 @@ struct EpisodeCell: View {
             showPosterURL: showPosterImageURL
         ) { success, message in
             if success {
-                print("Started download for Episode \(self.episodeID + 1): \(self.episode)")
+                Logger.shared.log("Started download for Episode \(self.episodeID + 1): \(self.episode)", type: "Download")
                 AnalyticsManager.shared.sendEvent(
                     event: "download",
                     additionalData: ["episode": self.episodeID + 1, "url": streamUrl]
@@ -702,7 +716,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func createDownloadHeaders(for url: URL) -> [String: String] {
+    func createDownloadHeaders(for url: URL) -> [String: String] {
         if !module.metadata.baseUrl.isEmpty && !module.metadata.baseUrl.contains("undefined") {
             return [
                 "Origin": module.metadata.baseUrl,
@@ -732,8 +746,11 @@ struct EpisodeCell: View {
             return [:]
         }
     }
+}
+
+private extension EpisodeCell {
     
-    private func showDownloadStreamSelectionAlert(streams: [Any], downloadID: UUID, subtitleURL: String? = nil) {
+    func showDownloadStreamSelectionAlert(streams: [Any], downloadID: UUID, subtitleURL: String? = nil) {
         DispatchQueue.main.async {
             let alert = UIAlertController(
                 title: "Select Download Server",
@@ -751,7 +768,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func addStreamActions(to alert: UIAlertController, streams: [Any], downloadID: UUID, subtitleURL: String?) {
+    func addStreamActions(to alert: UIAlertController, streams: [Any], downloadID: UUID, subtitleURL: String?) {
         var index = 0
         var streamIndex = 1
         
@@ -774,7 +791,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func parseStreamInfo(streams: [Any], index: Int, streamIndex: Int) -> (title: String, streamUrl: String, newIndex: Int) {
+    func parseStreamInfo(streams: [Any], index: Int, streamIndex: Int) -> (title: String, streamUrl: String, newIndex: Int) {
         if let streams = streams as? [String] {
             if index + 1 < streams.count && !streams[index].lowercased().contains("http") {
                 return (streams[index], streams[index + 1], index + 2)
@@ -790,7 +807,7 @@ struct EpisodeCell: View {
         return ("Server \(streamIndex)", "", index + 1)
     }
     
-    private func presentAlert(_ alert: UIAlertController) {
+    func presentAlert(_ alert: UIAlertController) {
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first,
               let rootVC = window.rootViewController else { return }
@@ -811,7 +828,7 @@ struct EpisodeCell: View {
         findTopViewController(rootVC).present(alert, animated: true)
     }
     
-    private func findTopViewController(_ controller: UIViewController) -> UIViewController {
+    func findTopViewController(_ controller: UIViewController) -> UIViewController {
         if let navigationController = controller as? UINavigationController {
             return findTopViewController(navigationController.visibleViewController!)
         }
@@ -825,8 +842,11 @@ struct EpisodeCell: View {
         }
         return controller
     }
+}
+
+private extension EpisodeCell {
     
-    private func fetchAnimeEpisodeDetails() {
+    func fetchAnimeEpisodeDetails() {
         if let fetchMeta = UserDefaults.standard.object(forKey: "fetchEpisodeMetadata"),
            !(fetchMeta as? Bool ?? true) {
             DispatchQueue.main.async {
@@ -837,17 +857,17 @@ struct EpisodeCell: View {
         }
         guard let url = URL(string: "https://api.ani.zip/mappings?anilist_id=\(itemID)") else {
             isLoading = false
-            print("Invalid URL for itemID: \(itemID)")
+            Logger.shared.log("Invalid URL for itemID: \(itemID)", type: "Error")
             return
         }
         
         if retryAttempts > 0 {
-            print("Retrying episode details fetch (attempt \(retryAttempts)/\(maxRetryAttempts))")
+            Logger.shared.log("Retrying episode details fetch (attempt \(retryAttempts)/\(maxRetryAttempts))", type: "Debug")
         }
         
         URLSession.custom.dataTask(with: url) { data, response, error in
             if let error = error {
-                print("Failed to fetch anime episode details: \(error)")
+                Logger.shared.log("Failed to fetch anime episode details: \(error)", type: "Error")
                 self.handleFetchFailure(error: error)
                 return
             }
@@ -861,7 +881,7 @@ struct EpisodeCell: View {
         }.resume()
     }
     
-    private func processAnimeEpisodeData(_ data: Data) {
+    func processAnimeEpisodeData(_ data: Data) {
         do {
             let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
             guard let json = jsonObject as? [String: Any],
@@ -872,7 +892,7 @@ struct EpisodeCell: View {
             
             let episodeKey = "\(episodeID + 1)"
             guard let episodeDetails = episodes[episodeKey] as? [String: Any] else {
-                print("Episode \(episodeKey) not found in response")
+                Logger.shared.log("Episode \(episodeKey) not found in response", type: "Error")
                 DispatchQueue.main.async {
                     self.isLoading = false
                     self.retryAttempts = 0
@@ -883,7 +903,7 @@ struct EpisodeCell: View {
             updateEpisodeMetadata(from: episodeDetails)
             
         } catch {
-            print("JSON parsing error: \(error.localizedDescription)")
+            Logger.shared.log("JSON parsing error: \(error.localizedDescription)", type: "Error")
             DispatchQueue.main.async {
                 self.isLoading = false
                 self.retryAttempts = 0
@@ -891,7 +911,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func updateEpisodeMetadata(from episodeDetails: [String: Any]) {
+    func updateEpisodeMetadata(from episodeDetails: [String: Any]) {
         let title = episodeDetails["title"] as? [String: String] ?? [:]
         let image = episodeDetails["image"] as? String ?? ""
         
@@ -910,7 +930,7 @@ struct EpisodeCell: View {
         }
     }
     
-    private func fetchTMDBEpisodeImage() {
+    func fetchTMDBEpisodeImage() {
         if let fetchMeta = UserDefaults.standard.object(forKey: "fetchEpisodeMetadata"),
            !(fetchMeta as? Bool ?? true) {
             DispatchQueue.main.async {
@@ -948,7 +968,7 @@ struct EpisodeCell: View {
                     }
                 }
             } catch {
-                print("Failed to parse TMDB episode details: \(error.localizedDescription)")
+                Logger.shared.log("Failed to parse TMDB episode details: \(error.localizedDescription)", type: "Error")
                 DispatchQueue.main.async {
                     self.isLoading = false
                 }
@@ -1032,8 +1052,6 @@ struct EpisodeCell: View {
             do {
                 let response = try JSONDecoder().decode(JikanResponse.self, from: data)
                 completion(response.data)
-                let response = try JSONDecoder().decode(JikanResponse.self, from: data)
-                completion(response.data)
             } catch {
                 Logger.shared.log("Failed to parse Jikan response: \(error)", type: "Error")
                 completion(nil)
@@ -1068,13 +1086,13 @@ struct EpisodeCell: View {
                 self.retryAttempts += 1
                 let backoffDelay = self.initialBackoffDelay * pow(2.0, Double(self.retryAttempts - 1))
                 
-                print("Will retry episode details fetch in \(backoffDelay) seconds")
+                Logger.shared.log("Will retry episode details fetch in \(backoffDelay) seconds", type: "Debug")
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + backoffDelay) {
                     self.fetchAnimeEpisodeDetails()
                 }
             } else {
-                print("Failed to fetch episode details after \(self.maxRetryAttempts) attempts")
+                Logger.shared.log("Failed to fetch episode details after \(self.maxRetryAttempts) attempts", type: "Error")
                 self.isLoading = false
                 self.retryAttempts = 0
             }
@@ -1133,6 +1151,9 @@ private struct AsyncImageView: View {
                         .cornerRadius(8)
                 } else if state.error != nil {
                     placeholderView
+                        .onAppear {
+                            Logger.shared.log("Failed to load episode image: \(state.error?.localizedDescription ?? "Unknown error")", type: "Error")
+                        }
                 } else {
                     placeholderView
                 }

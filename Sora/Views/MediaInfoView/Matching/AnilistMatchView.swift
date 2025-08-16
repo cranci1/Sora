@@ -53,7 +53,6 @@ struct AnilistMatchPopupView: View {
                                     let result = results[index]
                                     Button(action: {
                                         if let id = result["id"] as? Int {
-                                            let malID = result["mal_id"] as? Int?
                                             let title = result["title"] as? String ?? seriesTitle
                                             let malId = result["mal_id"] as? Int
                                             Logger.shared.log("Selected AniList ID: \(id), MAL ID: \(malId?.description ?? "nil")", type: "AnilistMatch")
@@ -180,7 +179,6 @@ struct AnilistMatchPopupView: View {
             media(search: "\(seriesTitle)", type: ANIME) {
               id
               idMal
-              idMal
               title {
                 romaji
                 english
@@ -197,9 +195,7 @@ struct AnilistMatchPopupView: View {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let requestBody: [String: Any] = ["query": query]
-        request.httpBody = try? JSONSerialization.data(withJSONObject: requestBody)
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["query": query])
 
         URLSession.shared.dataTask(with: request) { data, _, _ in
             DispatchQueue.main.async {
@@ -215,10 +211,6 @@ struct AnilistMatchPopupView: View {
                 results = mediaList.map { media in
                     let titleInfo = media["title"] as? [String: Any]
                     let cover = (media["coverImage"] as? [String: Any])?["large"] as? String
-                    let malID = media["idMal"] as? Int
-                    
-                    print("Found AniList ID: \(media["id"] ?? "nil"), MAL ID: \(malID?.description ?? "nil")")
-                    
                     return [
                         "id": media["id"] ?? 0,
                         "mal_id": media["idMal"] as? Int, // <-- MAL ID

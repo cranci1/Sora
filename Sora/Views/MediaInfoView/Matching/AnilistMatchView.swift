@@ -213,7 +213,7 @@ struct AnilistMatchPopupView: View {
                     let cover = (media["coverImage"] as? [String: Any])?["large"] as? String
                     return [
                         "id": media["id"] ?? 0,
-                        "mal_id": media["idMal"] as? Int, // <-- MAL ID
+                        "mal_id": media["idMal"] as? Int ?? 0,
                         "title": titleInfo?["romaji"] ?? "Unknown",
                         "title_english": titleInfo?["english"] as Any,
                         "cover": cover as Any

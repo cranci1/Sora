@@ -53,6 +53,12 @@ struct EpisodeCell: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     
+    //Filler state & cache
+    @State private var isFiller: Bool = false
+    private static var fillerCache: [String: (fetchedAt: Date, episodes: Set<Int>)] = [:]
+    private static let fillerCacheQueue = DispatchQueue(label: "sora.filler.cache.queue", attributes: .concurrent)
+    private static let fillerCacheTTL: TimeInterval = 60 * 60 * 24
+    
     init(
         episodeIndex: Int,
         episode: String,
@@ -89,7 +95,6 @@ struct EpisodeCell: View {
         self.tmdbID = tmdbID
         self.seasonNumber = seasonNumber
         
-        
         let isLightMode = (UserDefaults.standard.string(forKey: "selectedAppearance") == "light") ||
         ((UserDefaults.standard.string(forKey: "selectedAppearance") == "system") &&
          UITraitCollection.current.userInterfaceStyle == .light)
@@ -100,14 +105,6 @@ struct EpisodeCell: View {
         self.defaultBannerImage = defaultBannerImage.isEmpty ?
         (isLightMode ? defaultLightBanner : defaultDarkBanner) : defaultBannerImage
     }
-    
-    // MARK: - Filler state & cache
-    @State private var isFiller: Bool = false
-    
-    /// Simple thread-safe in-memory cache: slug -> (fetchedAt, episodes)
-    private static var fillerCache: [String: (fetchedAt: Date, episodes: Set<Int>)] = [:]
-    private static let fillerCacheQueue = DispatchQueue(label: "sora.filler.cache.queue", attributes: .concurrent)
-    private static let fillerCacheTTL: TimeInterval = 60 * 60 * 24 // 24 hours
     
     var body: some View {
         ZStack {
@@ -232,10 +229,9 @@ private extension EpisodeCell {
             HStack(spacing: 8) {
                 Text("Episode \(episodeID + 1)")
                     .font(.system(size: 15))
-                    .foregroundColor(isFiller ? .red : .primary)
+                    .foregroundColor(.primary)
                 
                 if isFiller {
-                    // Modern capsule badge that matches subtle UI
                     Text("Filler")
                         .font(.system(size: 12, weight: .semibold))
                         .padding(.horizontal, 8)
@@ -542,7 +538,7 @@ private extension EpisodeCell {
             } else {
                 fetchAnimeEpisodeDetails()
             }
-            // fetch filler info (non-blocking) — uses cache internally
+            // Fetch filler info in parallel with episode details
             fetchFillerInfo()
         }
     }
@@ -694,7 +690,7 @@ private extension EpisodeCell {
                 Logger.shared.log("Started download for Episode \(self.episodeID + 1): \(self.episode)", type: "Download")
                 AnalyticsManager.shared.sendEvent(
                     event: "download",
-                    additionalData: ["episode": self.episodeID + 1, "url": streamUrl]
+                    additionalData: {"episode": self.episodeID + 1, "url": streamUrl}
                 )
             } else {
                 DropManager.shared.error(message)
@@ -964,59 +960,67 @@ private extension EpisodeCell {
     }
     
     func fetchFillerInfo() {
-    let raw = parentTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !raw.isEmpty else { return }
-    
-    var slug = raw.lowercased()
-    slug = slug.replacingOccurrences(of: " ", with: "-")
-    slug = slug.components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).inverted).joined()
-    let epNum = self.episodeID + 1
-    
-    var cachedEpisodes: Set<Int>? = nil
-    Self.fillerCacheQueue.sync {
-        if let entry = Self.fillerCache[slug] {
-            if Date().timeIntervalSince(entry.fetchedAt) < Self.fillerCacheTTL {
+        let raw = parentTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !raw.isEmpty else { return }
+        
+        var slug = raw.lowercased()
+        slug = slug.replacingOccurrences(of: " ", with: "-")
+        slug = slug.components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).inverted).joined()
+        let epNum = self.episodeID + 1
+        
+        // Check cache first
+        var cachedEpisodes: Set<Int>? = nil
+        Self.fillerCacheQueue.sync {
+            if let entry = Self.fillerCache[slug], Date().timeIntervalSince(entry.fetchedAt) < Self.fillerCacheTTL {
                 cachedEpisodes = entry.episodes
-            } else {
-                Self.fillerCacheQueue.async(flags: .barrier) {
-                    Self.fillerCache[slug] = nil
-                }
             }
         }
-    }
-    if let set = cachedEpisodes {
-        DispatchQueue.main.async {
-            self.isFiller = set.contains(epNum)
+        
+        if let set = cachedEpisodes {
+            DispatchQueue.main.async {
+                self.isFiller = set.contains(epNum)
+            }
+            return
         }
-        return
-    }
-    
-    guard let url = URL(string: "https://sora-filler-episodes-api.jmcrafter26.workers.dev/\(slug)") else { return }
-    
-    URLSession.shared.dataTask(with: url) { data, _, error in
-        guard let data = data, error == nil else { return }
-        do {
-            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let fillerArray = json["fillerEpisodes"] as? [String],
-               let fillerString = fillerArray.first {
-                
-                let numbers = fillerString.split(separator: ",").compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
-                let episodesSet = Set(numbers)
-                
+        
+        // Not in cache or expired, fetch from API
+        guard let url = URL(string: "https://sora-filler-episodes-api.jmcrafter26.workers.dev/\(slug)") else { return }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            var episodesSet = Set<Int>()
+            
+            defer {
+                // Cache the result (even if empty) and update UI
                 Self.fillerCacheQueue.async(flags: .barrier) {
                     Self.fillerCache[slug] = (fetchedAt: Date(), episodes: episodesSet)
                 }
                 
-                let isF = episodesSet.contains(epNum)
                 DispatchQueue.main.async {
-                    self.isFiller = isF
+                    self.isFiller = episodesSet.contains(epNum)
                 }
             }
-        } catch {
-            print("Filler parse error: \(error)")
-        }
-    }.resume()
-}
+            
+            // Handle API errors or empty responses
+            guard let data = data, error == nil else {
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let fillerArray = json["fillerEpisodes"] as? [String],
+                   !fillerArray.isEmpty {
+                    
+                    let fillerString = fillerArray[0]
+                    let numbers = fillerString.split(separator: ",").compactMap { 
+                        Int($0.trimmingCharacters(in: .whitespaces)) 
+                    }
+                    episodesSet = Set(numbers)
+                }
+            } catch {
+                print("Filler parse error: \(error)")
+            }
+        }.resume()
+    }
     
     func handleFetchFailure(error: Error) {
         Logger.shared.log("Episode details fetch error: \(error.localizedDescription)", type: "Error")

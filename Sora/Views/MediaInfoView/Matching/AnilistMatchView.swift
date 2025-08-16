@@ -9,7 +9,7 @@ import SwiftUI
 
 struct AnilistMatchPopupView: View {
     let seriesTitle: String
-    let onSelect: (Int, Int?, String) -> Void  // Updated to include MAL ID
+    let onSelect: (Int, Int?, String) -> Void
 
     @State private var results: [[String: Any]] = []
     @State private var isLoading = true
@@ -57,7 +57,7 @@ struct AnilistMatchPopupView: View {
                                             let title = result["title"] as? String ?? seriesTitle
                                             
                                             // Log the IDs
-                                            Logger.shared.log("Selected AniList ID: \(id), MAL ID: \(malID?.description ?? "nil")", type: "Debug")
+                                            print("Selected AniList ID: \(id), MAL ID: \(malID?.description ?? "nil")")
                                             
                                             onSelect(id, malID, title)
                                             dismiss()
@@ -175,7 +175,6 @@ struct AnilistMatchPopupView: View {
     }
 
     private func fetchMatches() {
-        // Updated query to include idMal
         let query = """
         query {
           Page(page: 1, perPage: 6) {
@@ -198,7 +197,9 @@ struct AnilistMatchPopupView: View {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try? JSONSerialization.data(withJSONObject: ["query": query])
+        
+        let requestBody: [String: Any] = ["query": query]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: requestBody)
 
         URLSession.shared.dataTask(with: request) { data, _, _ in
             DispatchQueue.main.async {
@@ -214,9 +215,9 @@ struct AnilistMatchPopupView: View {
                 results = mediaList.map { media in
                     let titleInfo = media["title"] as? [String: Any]
                     let cover = (media["coverImage"] as? [String: Any])?["large"] as? String
-                    let malID = media["idMal"] as? Int?
+                    let malID = media["idMal"] as? Int
                     
-                    Logger.shared.log("Found AniList ID: \(media["id"] ?? "nil"), MAL ID: \(malID?.description ?? "nil")", type: "Debug")
+                    print("Found AniList ID: \(media["id"] ?? "nil"), MAL ID: \(malID?.description ?? "nil")")
                     
                     return [
                         "id": media["id"] ?? 0,

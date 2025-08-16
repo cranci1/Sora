@@ -964,57 +964,59 @@ private extension EpisodeCell {
     }
     
     func fetchFillerInfo() {
-        let raw = parentTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !raw.isEmpty else { return }
-        
-        var slug = raw.lowercased()
-        slug = slug.replacingOccurrences(of: " ", with: "-")
-        slug = slug.components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).inverted).joined()
-        let epNum = self.episodeID + 1
-        
-        var cachedEpisodes: Set<Int>? = nil
-        Self.fillerCacheQueue.sync {
-            if let entry = Self.fillerCache[slug] {
-                if Date().timeIntervalSince(entry.fetchedAt) < Self.fillerCacheTTL {
-                    cachedEpisodes = entry.episodes
-                } else {
-                    Self.fillerCacheQueue.async(flags: .barrier) {
-                        Self.fillerCache[slug] = nil
-                    }
+    let raw = parentTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !raw.isEmpty else { return }
+    
+    var slug = raw.lowercased()
+    slug = slug.replacingOccurrences(of: " ", with: "-")
+    slug = slug.components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).inverted).joined()
+    let epNum = self.episodeID + 1
+    
+    var cachedEpisodes: Set<Int>? = nil
+    Self.fillerCacheQueue.sync {
+        if let entry = Self.fillerCache[slug] {
+            if Date().timeIntervalSince(entry.fetchedAt) < Self.fillerCacheTTL {
+                cachedEpisodes = entry.episodes
+            } else {
+                Self.fillerCacheQueue.async(flags: .barrier) {
+                    Self.fillerCache[slug] = nil
                 }
             }
         }
-        if let set = cachedEpisodes {
-            DispatchQueue.main.async {
-                self.isFiller = set.contains(epNum)
-            }
-            return
-        }
-        
-        guard let url = URL(string: "https://sora-filler-episodes-api.jmcrafter26.workers.dev/\(slug)") else { return }
-        
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            guard let data = data, error == nil else { return }
-            do {
-                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let filler = json["fillerEpisodes"] as? [Any] {
-                    var episodesSet = Set<Int>()
-                    for item in filler {
-                        if let n = item as? Int { episodesSet.insert(n) }
-                        else if let s = item as? String, let n = Int(s) { episodesSet.insert(n) }
-                    }
-                    Self.fillerCacheQueue.async(flags: .barrier) {
-                        Self.fillerCache[slug] = (fetchedAt: Date(), episodes: episodesSet)
-                    }
-                    let isF = episodesSet.contains(epNum)
-                    DispatchQueue.main.async {
-                        self.isFiller = isF
-                    }
-                }
-            } catch {
-            }
-        }.resume()
     }
+    if let set = cachedEpisodes {
+        DispatchQueue.main.async {
+            self.isFiller = set.contains(epNum)
+        }
+        return
+    }
+    
+    guard let url = URL(string: "https://sora-filler-episodes-api.jmcrafter26.workers.dev/\(slug)") else { return }
+    
+    URLSession.shared.dataTask(with: url) { data, _, error in
+        guard let data = data, error == nil else { return }
+        do {
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let fillerArray = json["fillerEpisodes"] as? [String],
+               let fillerString = fillerArray.first {
+                
+                let numbers = fillerString.split(separator: ",").compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
+                let episodesSet = Set(numbers)
+                
+                Self.fillerCacheQueue.async(flags: .barrier) {
+                    Self.fillerCache[slug] = (fetchedAt: Date(), episodes: episodesSet)
+                }
+                
+                let isF = episodesSet.contains(epNum)
+                DispatchQueue.main.async {
+                    self.isFiller = isF
+                }
+            }
+        } catch {
+            print("Filler parse error: \(error)")
+        }
+    }.resume()
+}
     
     func handleFetchFailure(error: Error) {
         Logger.shared.log("Episode details fetch error: \(error.localizedDescription)", type: "Error")

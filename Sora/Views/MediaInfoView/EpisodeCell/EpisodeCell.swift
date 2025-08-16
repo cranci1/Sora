@@ -101,6 +101,14 @@ struct EpisodeCell: View {
         (isLightMode ? defaultLightBanner : defaultDarkBanner) : defaultBannerImage
     }
     
+    // MARK: - Filler state & cache
+    @State private var isFiller: Bool = false
+    
+    /// Simple thread-safe in-memory cache: slug -> (fetchedAt, episodes)
+    private static var fillerCache: [String: (fetchedAt: Date, episodes: Set<Int>)] = [:]
+    private static let fillerCacheQueue = DispatchQueue(label: "sora.filler.cache.queue", attributes: .concurrent)
+    private static let fillerCacheTTL: TimeInterval = 60 * 60 * 24 // 24 hours
+    
     var body: some View {
         ZStack {
             actionButtonsBackground
@@ -221,8 +229,28 @@ private extension EpisodeCell {
     
     var episodeInfo: some View {
         VStack(alignment: .leading) {
-            Text("Episode \(episodeID + 1)")
-                .font(.system(size: 15))
+            HStack(spacing: 8) {
+                Text("Episode \(episodeID + 1)")
+                    .font(.system(size: 15))
+                    .foregroundColor(isFiller ? .red : .primary)
+                
+                if isFiller {
+                    // Modern capsule badge that matches subtle UI
+                    Text("Filler")
+                        .font(.system(size: 12, weight: .semibold))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(Color.red.opacity(colorScheme == .dark ? 0.20 : 0.10))
+                        )
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.red.opacity(0.24), lineWidth: 0.6)
+                        )
+                        .foregroundColor(.red)
+                }
+            }
             
             if !episodeTitle.isEmpty {
                 Text(episodeTitle)
@@ -514,6 +542,8 @@ private extension EpisodeCell {
             } else {
                 fetchAnimeEpisodeDetails()
             }
+            // fetch filler info (non-blocking) — uses cache internally
+            fetchFillerInfo()
         }
     }
     
@@ -933,6 +963,65 @@ private extension EpisodeCell {
         }.resume()
     }
     
+    // MARK: - Filler episodes detection (with caching)
+    func fetchFillerInfo() {
+        let raw = parentTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !raw.isEmpty else { return }
+        
+        // Basic slug normalization: lowercase, spaces -> hyphens, remove non-alphanumeric/hyphen
+        var slug = raw.lowercased()
+        slug = slug.replacingOccurrences(of: " ", with: "-")
+        slug = slug.components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-")).inverted).joined()
+        let epNum = self.episodeID + 1
+        
+        // Check cache (thread-safe)
+        var cachedEpisodes: Set<Int>? = nil
+        Self.fillerCacheQueue.sync {
+            if let entry = Self.fillerCache[slug] {
+                if Date().timeIntervalSince(entry.fetchedAt) < Self.fillerCacheTTL {
+                    cachedEpisodes = entry.episodes
+                } else {
+                    // stale -> remove asynchronously
+                    Self.fillerCacheQueue.async(flags: .barrier) {
+                        Self.fillerCache[slug] = nil
+                    }
+                }
+            }
+        }
+        if let set = cachedEpisodes {
+            DispatchQueue.main.async {
+                self.isFiller = set.contains(epNum)
+            }
+            return
+        }
+        
+        guard let url = URL(string: "https://filler-list.chaiwala-anime.workers.dev/\(slug)") else { return }
+        
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            guard let data = data, error == nil else { return }
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let filler = json["fillerEpisodes"] as? [Any] {
+                    var episodesSet = Set<Int>()
+                    for item in filler {
+                        if let n = item as? Int { episodesSet.insert(n) }
+                        else if let s = item as? String, let n = Int(s) { episodesSet.insert(n) }
+                    }
+                    // store into cache (barrier)
+                    Self.fillerCacheQueue.async(flags: .barrier) {
+                        Self.fillerCache[slug] = (fetchedAt: Date(), episodes: episodesSet)
+                    }
+                    let isF = episodesSet.contains(epNum)
+                    DispatchQueue.main.async {
+                        self.isFiller = isF
+                    }
+                }
+            } catch {
+                // ignore parsing errors silently
+            }
+        }.resume()
+    }
+    
     func handleFetchFailure(error: Error) {
         Logger.shared.log("Episode details fetch error: \(error.localizedDescription)", type: "Error")
         
@@ -1025,5 +1114,3 @@ private struct AsyncImageView: View {
             .cornerRadius(8)
     }
 }
-
-

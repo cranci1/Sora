@@ -9,7 +9,7 @@ import SwiftUI
 
 struct AnilistMatchPopupView: View {
     let seriesTitle: String
-    let onSelect: (Int, String) -> Void
+    let onSelect: (Int, Int?, String) -> Void  // Updated to include MAL ID
 
     @State private var results: [[String: Any]] = []
     @State private var isLoading = true
@@ -53,8 +53,13 @@ struct AnilistMatchPopupView: View {
                                     let result = results[index]
                                     Button(action: {
                                         if let id = result["id"] as? Int {
+                                            let malID = result["mal_id"] as? Int?
                                             let title = result["title"] as? String ?? seriesTitle
-                                            onSelect(id, title)
+                                            
+                                            // Log the IDs
+                                            Logger.shared.log("Selected AniList ID: \(id), MAL ID: \(malID?.description ?? "nil")", type: "Debug")
+                                            
+                                            onSelect(id, malID, title)
                                             dismiss()
                                         }
                                     }) {
@@ -84,6 +89,11 @@ struct AnilistMatchPopupView: View {
                                                 if let english = result["title_english"] as? String {
                                                     Text(english)
                                                         .font(.caption)
+                                                        .foregroundStyle(.secondary)
+                                                }
+                                                if let malID = result["mal_id"] as? Int {
+                                                    Text("MAL ID: \(malID)")
+                                                        .font(.caption2)
                                                         .foregroundStyle(.secondary)
                                                 }
                                             }
@@ -153,7 +163,7 @@ struct AnilistMatchPopupView: View {
                 Button("Cancel", role: .cancel) { }
                 Button("Save") {
                     if let idInt = Int(manualIDText.trimmingCharacters(in: .whitespaces)) {
-                        onSelect(idInt, seriesTitle)
+                        onSelect(idInt, nil, seriesTitle)
                         dismiss()
                     }
                 }
@@ -170,6 +180,7 @@ struct AnilistMatchPopupView: View {
           Page(page: 1, perPage: 6) {
             media(search: "\(seriesTitle)", type: ANIME) {
               id
+              idMal
               title {
                 romaji
                 english
@@ -202,8 +213,13 @@ struct AnilistMatchPopupView: View {
                 results = mediaList.map { media in
                     let titleInfo = media["title"] as? [String: Any]
                     let cover = (media["coverImage"] as? [String: Any])?["large"] as? String
+                    let malID = media["idMal"] as? Int?
+                    
+                    Logger.shared.log("Found AniList ID: \(media["id"] ?? "nil"), MAL ID: \(malID?.description ?? "nil")", type: "Debug")
+                    
                     return [
                         "id": media["id"] ?? 0,
+                        "mal_id": malID as Any,
                         "title": titleInfo?["romaji"] ?? "Unknown",
                         "title_english": titleInfo?["english"] as Any,
                         "cover": cover as Any

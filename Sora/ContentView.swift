@@ -3,7 +3,6 @@
 //  Sora
 //
 //  Created by Francesco on 06/01/25.
-//
 
 import SwiftUI
 

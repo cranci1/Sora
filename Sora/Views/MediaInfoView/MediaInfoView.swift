@@ -200,8 +200,6 @@ struct MediaInfoView: View {
             .onAppear {
                 setupViewOnAppear()
 
-                // Fetch Jikan filler info (if available)
-                fetchJikanFillerInfoIfNeeded()
                 NotificationCenter.default.post(name: .hideTabBar, object: nil)
                 UserDefaults.standard.set(true, forKey: "isMediaInfoActive")
             }
@@ -219,6 +217,14 @@ struct MediaInfoView: View {
             }
             .onChange(of: selectedChapterRange) { newValue in
                 UserDefaults.standard.set(newValue.lowerBound, forKey: selectedChapterRangeKey)
+            }
+            .onChange(of: itemID) { newValue in
+                guard newValue != nil else { return }
+                fetchJikanFillerInfoIfNeeded()
+            }
+            .onChange(of: matchedMalID) { newValue in
+                guard newValue != nil else { return }
+                fetchJikanFillerInfoIfNeeded()
             }
             .onDisappear {
                 currentFetchTask?.cancel()
@@ -1660,7 +1666,7 @@ struct MediaInfoView: View {
                     self.itemID = id
                     aniListSuccess = true
                     Logger.shared.log("Successfully fetched AniList ID: \(id)", type: "Debug")
-                    fetchMalIDFromAniList(anilistID: id) { fetchedMalID in
+                    self.fetchMalIDFromAniList(anilistID: id) { fetchedMalID in
                         self.matchedMalID = fetchedMalID
                     }      
                 case .failure(let error):

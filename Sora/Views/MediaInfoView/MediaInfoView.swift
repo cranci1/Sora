@@ -1646,6 +1646,9 @@ struct MediaInfoView: View {
                     self.itemID = id
                     aniListSuccess = true
                     Logger.shared.log("Successfully fetched AniList ID: \(id)", type: "Debug")
+                    fetchMalIDFromAniList(anilistID: id) { fetchedMalID in
+                        self.matchedMalID = fetchedMalID
+                    }      
                 case .failure(let error):
                     Logger.shared.log("Failed to fetch AniList ID: \(error)", type: "Debug")
                 }

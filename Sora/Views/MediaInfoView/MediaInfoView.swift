@@ -1,11 +1,9 @@
-//
-//  MediaInfoView.swift
-//  Sora
-//
-//  Created by Francesco on 05/01/25.
-//
-
 import NukeUI
+import SwiftUI
+import SafariServices
+import AVFoundation
+
+NukeUI
 import SwiftUI
 import SafariServices
 
@@ -17,6 +15,7 @@ struct MediaItem: Identifiable {
     let aliases: String
     let airdate: String
 }
+
 
 struct MediaInfoView: View {
     let title: String
@@ -33,6 +32,17 @@ struct MediaInfoView: View {
     @State private var tmdbID: Int?
     @State private var tmdbType: TMDBFetcher.MediaType? = nil
     @State private var currentFetchTask: Task<Void, Never>? = nil
+
+    // Jikan filler set for this media (passed down to EpisodeCell)
+    @State private var jikanFillerSet: Set<Int>? = nil
+
+    // Static/shared Jikan cache & progress guards (one cache for the app to avoid duplicate/expensive fetches)
+    private static var jikanCache: [Int: (fetchedAt: Date, fillerEpisodes: Set<Int>)] = [:]
+    private static let jikanCacheQueue = DispatchQueue(label: "sora.jikan.cache.queue", attributes: .concurrent)
+    private static let jikanCacheTTL: TimeInterval = 60 * 60 * 24 * 7 // 1 week
+    private static var inProgressMALIDs: Set<Int> = []
+    private static let inProgressQueue = DispatchQueue(label: "sora.jikan.inprogress.queue")
+    
     
     @State private var isLoading: Bool = true
     @State private var showFullSynopsis: Bool = false
@@ -188,6 +198,9 @@ struct MediaInfoView: View {
             .ignoresSafeArea(.container, edges: .top)
             .onAppear {
                 setupViewOnAppear()
+
+                // Fetch Jikan filler info (if available)
+                fetchJikanFillerInfoIfNeeded()
                 NotificationCenter.default.post(name: .hideTabBar, object: nil)
                 UserDefaults.standard.set(true, forKey: "isMediaInfoActive")
             }
@@ -691,7 +704,7 @@ struct MediaInfoView: View {
             },
             tmdbID: tmdbID,
             seasonNumber: season,
-            malID: matchedMalID
+            fillerEpisodes: jikanFillerSet
         )
         .disabled(isFetchingEpisode)
     }
@@ -2479,4 +2492,101 @@ struct MediaInfoView: View {
         }
         return ""
     }
+
+    // MARK: - Jikan filler fetching (moved here)
+    private struct JikanResponse: Decodable {
+        let data: [JikanEpisode]
+    }
+    private struct JikanEpisode: Decodable {
+        let mal_id: Int
+        let filler: Bool
+    }
+
+    private func fetchJikanFillerInfoIfNeeded() {
+        guard jikanFillerSet == nil else { return }
+        fetchJikanFillerInfo()
+    }
+
+    private func fetchJikanFillerInfo() {
+        guard let malID = matchedMalID ?? itemID else {
+            Logger.shared.log("MAL ID not available for filler info", type: "Debug")
+            return
+        }
+
+        var cached: Set<Int>? = nil
+        Self.jikanCacheQueue.sync {
+            if let entry = Self.jikanCache[malID],
+               Date().timeIntervalSince(entry.fetchedAt) < Self.jikanCacheTTL {
+                cached = entry.fillerEpisodes
+            }
+        }
+        if let cachedSet = cached {
+            DispatchQueue.main.async { self.jikanFillerSet = cachedSet }
+            return
+        }
+
+        var shouldFetch = false
+        Self.inProgressQueue.sync {
+            if !Self.inProgressMALIDs.contains(malID) {
+                Self.inProgressMALIDs.insert(malID)
+                shouldFetch = true
+            }
+        }
+        if !shouldFetch { return }
+
+        fetchAllJikanPages(malID: malID) { episodes in
+            defer {
+                Self.inProgressQueue.async {
+                    Self.inProgressMALIDs.remove(malID)
+                }
+            }
+
+            guard let episodes = episodes else {
+                Self.jikanCacheQueue.async(flags: .barrier) {
+                    Self.jikanCache[malID] = (Date(), Set<Int>())
+                }
+                DispatchQueue.main.async { self.jikanFillerSet = Set<Int>() }
+                return
+            }
+
+            let fillerNumbers = Set(episodes.filter { $0.filler }.map { $0.mal_id })
+
+            Self.jikanCacheQueue.async(flags: .barrier) {
+                Self.jikanCache[malID] = (Date(), fillerNumbers)
+            }
+
+            DispatchQueue.main.async { self.jikanFillerSet = fillerNumbers }
+        }
+    }
+
+    private func fetchAllJikanPages(malID: Int, completion: @escaping ([JikanEpisode]?) -> Void) {
+        var allEpisodes: [JikanEpisode] = []
+        let perPage = 100
+        var currentPage = 1
+
+        func fetchPage() {
+            guard let url = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes?page=\(currentPage)") else {
+                completion(nil); return
+            }
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    Logger.shared.log("Jikan API request failed (page \(currentPage)): \(error.localizedDescription)", type: "Error")
+                    completion(nil); return
+                }
+                guard let data = data else { completion(nil); return }
+                do {
+                    let response = try JSONDecoder().decode(JikanResponse.self, from: data)
+                    allEpisodes.append(contentsOf: response.data)
+                    if response.data.count == perPage {
+                        currentPage += 1; fetchPage()
+                    } else { completion(allEpisodes) }
+                } catch {
+                    Logger.shared.log("Failed to parse Jikan response (page \(currentPage)): \(error.localizedDescription)", type: "Error")
+                    completion(nil)
+                }
+            }.resume()
+        }
+        fetchPage()
+    }
+
 }

@@ -4,6 +4,7 @@
 //
 //  Created by Francesco on 18/12/24.
 //
+//
 
 import NukeUI
 import SwiftUI
@@ -22,7 +23,9 @@ struct EpisodeCell: View {
     let showPosterURL: String?
     let tmdbID: Int?
     let seasonNumber: Int?
-    let malID: Int?  // MAL ID for the series
+    
+    //receives the set of filler episode numbers (from MediaInfoView)
+    let fillerEpisodes: Set<Int>?
     
     let isMultiSelectMode: Bool
     let isSelected: Bool
@@ -54,25 +57,8 @@ struct EpisodeCell: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     
-    // Filler state
+    // Filler state (derived from passed-in fillerEpisodes)
     @State private var isFiller: Bool = false
-    
-    // Jikan API cache
-    private static var jikanCache: [Int: (fetchedAt: Date, episodes: [JikanEpisode])] = [:]
-    private static let jikanCacheQueue = DispatchQueue(label: "sora.jikan.cache.queue", attributes: .concurrent)
-    private static let jikanCacheTTL: TimeInterval = 60 * 60 * 24 * 7  // 1 week
-    private static var inProgressMALIDs: Set<Int> = []
-    private static let inProgressQueue = DispatchQueue(label: "sora.jikan.inprogress.queue")
-    
-    // Jikan data models
-    private struct JikanResponse: Decodable {
-        let data: [JikanEpisode]
-    }
-    
-    private struct JikanEpisode: Decodable {
-        let mal_id: Int
-        let filler: Bool
-    }
     
     init(
         episodeIndex: Int,
@@ -92,7 +78,7 @@ struct EpisodeCell: View {
         onMarkAllPrevious: @escaping () -> Void,
         tmdbID: Int? = nil,
         seasonNumber: Int? = nil,
-        malID: Int? = nil  // MAL ID parameter
+        fillerEpisodes: Set<Int>? = nil
     ) {
         self.episodeIndex = episodeIndex
         self.episode = episode
@@ -110,7 +96,7 @@ struct EpisodeCell: View {
         self.onMarkAllPrevious = onMarkAllPrevious
         self.tmdbID = tmdbID
         self.seasonNumber = seasonNumber
-        self.malID = malID  // Initialize MAL ID
+        self.fillerEpisodes = fillerEpisodes
         
         let isLightMode = (UserDefaults.standard.string(forKey: "selectedAppearance") == "light") ||
         ((UserDefaults.standard.string(forKey: "selectedAppearance") == "system") &&
@@ -129,14 +115,28 @@ struct EpisodeCell: View {
             
             episodeCellContent
         }
-        .onAppear { setupOnAppear() }
-        .onDisappear { activeDownloadTask = nil }
+        .onAppear {
+            setupOnAppear()
+            // set filler state based on passed-in set (if available)
+            let epNum = episodeID + 1
+            if let set = fillerEpisodes {
+                self.isFiller = set.contains(epNum)
+            }
+        }
         .onChange(of: progress) { _ in updateProgress() }
         .onChange(of: itemID) { _ in handleItemIDChange() }
         .onChange(of: tmdbID) { _ in
             isLoading = true
             retryAttempts = 0
             fetchEpisodeDetails()
+        }
+        .onChange(of: fillerEpisodes) { newValue in
+            let epNum = episodeID + 1
+            if let set = newValue {
+                self.isFiller = set.contains(epNum)
+            } else {
+                self.isFiller = false
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadProgressChanged"))) { _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -244,11 +244,13 @@ private extension EpisodeCell {
     var episodeInfo: some View {
         VStack(alignment: .leading) {
             HStack(spacing: 8) {
+                // Episode number uses default color now (no red)
                 Text("Episode \(episodeID + 1)")
                     .font(.system(size: 15))
                     .foregroundColor(.primary)
                 
                 if isFiller {
+                    // Modern capsule badge that matches subtle UI (unchanged)
                     Text("Filler")
                         .font(.system(size: 12, weight: .semibold))
                         .padding(.horizontal, 8)
@@ -555,8 +557,7 @@ private extension EpisodeCell {
             } else {
                 fetchAnimeEpisodeDetails()
             }
-            // Fetch filler info using Jikan API
-            fetchJikanFillerInfo()
+            // NOTE: filler info is now handled by MediaInfoView and passed in via `fillerEpisodes`.
         }
     }
     
@@ -975,116 +976,8 @@ private extension EpisodeCell {
             }
         }.resume()
     }
-    
-    // Jikan Filler Implementation
-    
-    private func fetchJikanFillerInfo() {
-        guard let malID = malID else {
-            Logger.shared.log("MAL ID not available for filler info", type: "Debug")
-            return
-        }
-        let episodeNumber = episodeID + 1
-        
-        // Check cache first
-        var cachedEpisodes: [JikanEpisode]? = nil
-        Self.jikanCacheQueue.sync {
-            if let entry = Self.jikanCache[malID], Date().timeIntervalSince(entry.fetchedAt) < Self.jikanCacheTTL {
-                cachedEpisodes = entry.episodes
-            }
-        }
-        
-        if let episodes = cachedEpisodes {
-            Logger.shared.log("Using cached filler info for MAL ID: \(malID)", type: "Debug")
-            updateFillerStatus(episodes: episodes)
-            return
-        }
-        
-        // Prevent duplicate requests
-        var shouldFetch = false
-        Self.inProgressQueue.sync {
-            if !Self.inProgressMALIDs.contains(malID) {
-                Self.inProgressMALIDs.insert(malID)
-                shouldFetch = true
-            }
-        }
-        
-        if !shouldFetch {
-            Logger.shared.log("Fetch already in progress for MAL ID: \(malID)", type: "Debug")
-            return
-        }
-        
-        Logger.shared.log("Fetching filler info for MAL ID: \(malID)", type: "Debug")
-        
-        // Fetch all pages
-        fetchAllJikanPages(malID: malID) { episodes in
-            // Update cache
-            if let episodes = episodes {
-                Logger.shared.log("Successfully fetched filler info for MAL ID: \(malID)", type: "Debug")
-                Self.jikanCacheQueue.async(flags: .barrier) {
-                    Self.jikanCache[malID] = (Date(), episodes)
-                }
-                
-                // Update UI
-                DispatchQueue.main.async {
-                    self.updateFillerStatus(episodes: episodes)
-                }
-            } else {
-                Logger.shared.log("Failed to fetch filler info for MAL ID: \(malID)", type: "Error")
-            }
-            
-            // Remove from in-progress set
-            Self.inProgressQueue.async {
-                Self.inProgressMALIDs.remove(malID)
-            }
-        }
-    }
-    
-    private func fetchAllJikanPages(malID: Int, completion: @escaping ([JikanEpisode]?) -> Void) {
-        var allEpisodes: [JikanEpisode] = []
-        var currentPage = 1
-        let perPage = 100
 
-        func fetchPage() {
-            let url = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes?page=\(currentPage)&limit=\(perPage)")!
-            URLSession.shared.dataTask(with: url) { data, response, error in
-                guard let data = data, error == nil else {
-                    Logger.shared.log("Jikan API request failed: \(error?.localizedDescription ?? "Unknown error")", type: "Error")
-                    completion(nil)
-                    return
-                }    
-                do {
-                    let response = try JSONDecoder().decode(JikanResponse.self, from: data)
-                    allEpisodes.append(contentsOf: response.data)
-                    if response.data.count == perPage {
-                        currentPage += 1
-                        fetchPage()
-                    } else {
-                        completion(allEpisodes)
-                    }
-                } catch {
-                    Logger.shared.log("Failed to parse Jikan response: \(error)", type: "Error")
-                    completion(nil)
-                }
-            }.resume()
-        }
-        fetchPage()
-    }                
-    
-    private func updateFillerStatus(episodes: [JikanEpisode]) {
-        let episodeNumber = episodeID + 1
-
-        if let jikanEpisode = episodes.first(where: { $0.mal_id == episodeNumber }) {
-            isFiller = jikanEpisode.filler
-            if jikanEpisode.filler {
-                Logger.shared.log("Marking episode \(episodeNumber) as filler", type: "Debug")
-            } else {
-                Logger.shared.log("Episode \(episodeNumber) is not filler", type: "Debug")
-            }
-        } else {
-            Logger.shared.log("Episode \(episodeNumber) not found in Jikan response", type: "Debug")
-            isFiller = false          
-        }
-    }    
+    // Removed Jikan fetching from EpisodeCell. All filler/Jikan handling is now in MediaInfoView and passed in via `fillerEpisodes`.
     
     func handleFetchFailure(error: Error) {
         Logger.shared.log("Episode details fetch error: \(error.localizedDescription)", type: "Error")

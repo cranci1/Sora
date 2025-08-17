@@ -2419,7 +2419,7 @@ struct MediaInfoView: View {
     }
     
     private func resetChapterProgress(href: String) {
-        UserDefaults.standard.set(0.0, for极 "readingProgress_\(href)")
+        UserDefaults.standard.set(0.0, forKey: "readingProgress_\(href)")
         
         UserDefaults.standard.removeObject(forKey: "scrollPosition_\(href)")
         
@@ -2446,7 +2446,7 @@ struct MediaInfoView: View {
                     
                     userDefaults.set(1.0, forKey: "scrollPosition_\(href)")
                     
-                    ContinueReadingManager.shared.updateProgress(for: href, progress极 1.0)
+                    ContinueReadingManager.shared.updateProgress(for: href, progress: 1.0)
                     markedCount += 1
                 }
             }

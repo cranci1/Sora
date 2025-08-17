@@ -37,13 +37,6 @@ struct MediaInfoView: View {
     // Jikan filler set for this media (passed down to EpisodeCell)
     @State private var jikanFillerSet: Set<Int>? = nil
 
-    // Static/shared Jikan cache & progress guards (one cache for the app to avoid duplicate/expensive fetches)
-    private static var jikanCache: [Int: (fetchedAt: Date, episodes: [JikanEpisode])] = [:]
-    private static let jikanCacheQueue = DispatchQueue(label: "sora.jikan.cache.queue", attributes: .concurrent)
-    private static let jikanCacheTTL: TimeInterval = 60 * 60 * 24 * 7 // 1 week
-    private static var inProgressMALIDs: Set<Int> = []
-    private static let inProgressQueue = DispatchQueue(label: "sora.jikan.inprogress.queue")
-    
     // Track fetched pages for MAL ID
     private static var fetchedPagesForMALID: [Int: Set<Int>] = [:]
     
@@ -2514,6 +2507,9 @@ struct MediaInfoView: View {
         let filler: Bool
     }
     
+    // Track fetched pages for MAL ID
+    private static var fetchedPagesForMALID: [Int: Set<Int>] = [:]
+    
     private func fetchRequiredFillerPages() {
         guard let malID = matchedMalID ?? itemID else {
             Logger.shared.log("MAL ID not available for filler info", type: "Debug")
@@ -2525,8 +2521,10 @@ struct MediaInfoView: View {
             Self.fetchedPagesForMALID[malID] = Set<Int>()
         }
         
-        // Calculate which pages we need based on current episode range
+        // Get the current episode list (for the selected season)
         let currentEpisodes = currentEpisodeList
+        
+        // Calculate which pages we need based on current episode range
         let episodesInRange = currentEpisodes[selectedRange].map { $0.number }
         
         guard let minEpisode = episodesInRange.min(),

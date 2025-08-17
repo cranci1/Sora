@@ -18,7 +18,6 @@ struct MediaItem: Identifiable {
     let airdate: String
 }
 
-
 struct MediaInfoView: View {
     let title: String
     @State var imageUrl: String
@@ -39,7 +38,7 @@ struct MediaInfoView: View {
     @State private var jikanFillerSet: Set<Int>? = nil
 
     // Static/shared Jikan cache & progress guards (one cache for the app to avoid duplicate/expensive fetches)
-    private static var jikanCache: [Int: (fetchedAt: Date, fillerEpisodes: Set<Int>)] = [:]
+    private static var jikanCache: [Int: (fetchedAt: Date, episodes: [JikanEpisode])] = [:]
     private static let jikanCacheQueue = DispatchQueue(label: "sora.jikan.cache.queue", attributes: .concurrent)
     private static let jikanCacheTTL: TimeInterval = 60 * 60 * 24 * 7 // 1 week
     private static var inProgressMALIDs: Set<Int> = []
@@ -567,7 +566,7 @@ struct MediaInfoView: View {
         let seasons = groupedEpisodes()
         if seasons.count > 1 {
             Menu {
-                ForEach(0..<seasons.count, id: \..self) { index in
+                ForEach(0..<seasons.count, id: \.self) { index in
                     Button(action: { selectedSeason = index }) {
                         Text(String(format: NSLocalizedString("Season %d", comment: ""), index + 1))
                     }
@@ -750,7 +749,7 @@ struct MediaInfoView: View {
             }
             
             LazyVStack(spacing: 15) {
-                ForEach(chapters.indices.filter { selectedChapterRange.contains($0) }, id: \..self) { i in
+                ForEach(chapters.indices.filter { selectedChapterRange.contains($0) }, id: \.self) { i in
                     let chapter = chapters[i]
                     let _ = refreshTrigger
                     if let href = chapter["href"] as? String,
@@ -804,7 +803,7 @@ struct MediaInfoView: View {
     @ViewBuilder
     private var chapterRangeSelectorStyled: some View {
         Menu {
-            ForEach(generateChapterRanges(), id: \..self) { range in
+            ForEach(generateChapterRanges(), id: \.self) { range in
                 Button(action: { selectedChapterRange = range }) {
                     Text("\(range.lowerBound + 1)-\(range.upperBound)")
                 }
@@ -2495,10 +2494,11 @@ struct MediaInfoView: View {
         return ""
     }
 
-    // MARK: - Jikan filler fetching (moved here)
+    // MARK: - Updated Jikan Filler Implementation
     private struct JikanResponse: Decodable {
         let data: [JikanEpisode]
     }
+    
     private struct JikanEpisode: Decodable {
         let mal_id: Int
         let filler: Bool
@@ -2515,18 +2515,21 @@ struct MediaInfoView: View {
             return
         }
 
-        var cached: Set<Int>? = nil
+        // Check cache first
+        var cachedEpisodes: [JikanEpisode]? = nil
         Self.jikanCacheQueue.sync {
-            if let entry = Self.jikanCache[malID],
-               Date().timeIntervalSince(entry.fetchedAt) < Self.jikanCacheTTL {
-                cached = entry.fillerEpisodes
+            if let entry = Self.jikanCache[malID], Date().timeIntervalSince(entry.fetchedAt) < Self.jikanCacheTTL {
+                cachedEpisodes = entry.episodes
             }
         }
-        if let cachedSet = cached {
-            DispatchQueue.main.async { self.jikanFillerSet = cachedSet }
+        
+        if let episodes = cachedEpisodes {
+            Logger.shared.log("Using cached filler info for MAL ID: \(malID)", type: "Debug")
+            updateFillerSet(episodes: episodes)
             return
         }
-
+        
+        // Prevent duplicate requests
         var shouldFetch = false
         Self.inProgressQueue.sync {
             if !Self.inProgressMALIDs.contains(malID) {
@@ -2534,61 +2537,72 @@ struct MediaInfoView: View {
                 shouldFetch = true
             }
         }
-        if !shouldFetch { return }
-
+        
+        if !shouldFetch {
+            Logger.shared.log("Fetch already in progress for MAL ID: \(malID)", type: "Debug")
+            return
+        }
+        
+        Logger.shared.log("Fetching filler info for MAL ID: \(malID)", type: "Debug")
+        
+        // Fetch all pages
         fetchAllJikanPages(malID: malID) { episodes in
-            defer {
-                Self.inProgressQueue.async {
-                    Self.inProgressMALIDs.remove(malID)
-                }
-            }
-
-            guard let episodes = episodes else {
+            // Update cache
+            if let episodes = episodes {
+                Logger.shared.log("Successfully fetched filler info for MAL ID: \(malID)", type: "Debug")
                 Self.jikanCacheQueue.async(flags: .barrier) {
-                    Self.jikanCache[malID] = (Date(), Set<Int>())
+                    Self.jikanCache[malID] = (Date(), episodes)
                 }
-                DispatchQueue.main.async { self.jikanFillerSet = Set<Int>() }
-                return
+                
+                // Update UI
+                DispatchQueue.main.async {
+                    self.updateFillerSet(episodes: episodes)
+                }
+            } else {
+                Logger.shared.log("Failed to fetch filler info for MAL ID: \(malID)", type: "Error")
             }
-
-            let fillerNumbers = Set(episodes.filter { $0.filler }.map { $0.mal_id })
-
-            Self.jikanCacheQueue.async(flags: .barrier) {
-                Self.jikanCache[malID] = (Date(), fillerNumbers)
+            
+            // Remove from in-progress set
+            Self.inProgressQueue.async {
+                Self.inProgressMALIDs.remove(malID)
             }
-
-            DispatchQueue.main.async { self.jikanFillerSet = fillerNumbers }
         }
     }
-
+    
     private func fetchAllJikanPages(malID: Int, completion: @escaping ([JikanEpisode]?) -> Void) {
         var allEpisodes: [JikanEpisode] = []
-        let perPage = 100
         var currentPage = 1
+        let perPage = 100
 
         func fetchPage() {
-            guard let url = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes?page=\(currentPage)") else {
-                completion(nil); return
-            }
+            let url = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes?page=\(currentPage)&limit=\(perPage)")!
             URLSession.shared.dataTask(with: url) { data, response, error in
-                if let error = error {
-                    Logger.shared.log("Jikan API request failed (page \(currentPage)): \(error.localizedDescription)", type: "Error")
-                    completion(nil); return
-                }
-                guard let data = data else { completion(nil); return }
+                guard let data = data, error == nil else {
+                    Logger.shared.log("Jikan API request failed: \(error?.localizedDescription ?? "Unknown error")", type: "Error")
+                    completion(nil)
+                    return
+                }    
                 do {
                     let response = try JSONDecoder().decode(JikanResponse.self, from: data)
                     allEpisodes.append(contentsOf: response.data)
                     if response.data.count == perPage {
-                        currentPage += 1; fetchPage()
-                    } else { completion(allEpisodes) }
+                        currentPage += 1
+                        fetchPage()
+                    } else {
+                        completion(allEpisodes)
+                    }
                 } catch {
-                    Logger.shared.log("Failed to parse Jikan response (page \(currentPage)): \(error.localizedDescription)", type: "Error")
+                    Logger.shared.log("Failed to parse Jikan response: \(error)", type: "Error")
                     completion(nil)
                 }
             }.resume()
         }
         fetchPage()
+    }                
+    
+    private func updateFillerSet(episodes: [JikanEpisode]) {
+        let fillerNumbers = Set(episodes.filter { $0.filler }.map { $0.mal_id })
+        self.jikanFillerSet = fillerNumbers
+        Logger.shared.log("Updated filler set with \(fillerNumbers.count) filler episodes", type: "Debug")
     }
-
 }

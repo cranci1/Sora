@@ -862,7 +862,14 @@ struct MediaInfoView: View {
             AnilistMatchPopupView(seriesTitle: title) { id, title, malId in
                 handleAniListMatch(selectedID: id)
                 matchedTitle = title
-                matchedMalID = malId
+
+                if let malId = malId, malId != 0 {
+                    matchedMalID = malId
+                } else {
+                    fetchMalIDFromAniList(anilistID: id) { fetchedMalID in
+                        matchedMalID = fetchedMalID
+                    }
+                }     
                 fetchMetadataIDIfNeeded()
             }
         }
@@ -1710,6 +1717,38 @@ struct MediaInfoView: View {
         }.resume()
     }
     
+    func fetchMalIDFromAniList(anilistID: Int, completion: @escaping (Int?) -> Void) {
+    let query = """
+    query {
+      Media(id: \(anilistID)) {
+        idMal
+      }
+    }
+    """
+    guard let url = URL(string: "https://graphql.anilist.co") else {
+        completion(nil)
+        return
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = try? JSONSerialization.data(withJSONObject: ["query": query])
+
+    URLSession.shared.dataTask(with: request) { data, _, _ in
+        var malID: Int? = nil
+        if let data = data,
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let dataDict = json["data"] as? [String: Any],
+           let media = dataDict["Media"] as? [String: Any],
+           let idMal = media["idMal"] as? Int {
+            malID = idMal
+        }
+        DispatchQueue.main.async {
+            completion(malID)
+        }
+    }.resume()
+}
     private func fetchTMDBPosterImageAndSet() {
         guard let tmdbID = tmdbID, let tmdbType = tmdbType else { return }
         let apiType = tmdbType.rawValue

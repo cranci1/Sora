@@ -2507,9 +2507,6 @@ struct MediaInfoView: View {
         let filler: Bool
     }
     
-    // Track fetched pages for MAL ID
-    private static var fetchedPagesForMALID: [Int: Set<Int>] = [:]
-    
     private func fetchRequiredFillerPages() {
         guard let malID = matchedMalID ?? itemID else {
             Logger.shared.log("MAL ID not available for filler info", type: "Debug")

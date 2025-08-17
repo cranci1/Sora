@@ -1040,43 +1040,51 @@ private extension EpisodeCell {
     }
     
     private func fetchAllJikanPages(malID: Int, completion: @escaping ([JikanEpisode]?) -> Void) {
-        let url = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes")!
-        
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            guard let data = data, error == nil else {
-                Logger.shared.log("Jikan API request failed: \(error?.localizedDescription ?? "Unknown error")", type: "Error")
-                completion(nil)
-                return
-            }
-            
-            do {
-                let response = try JSONDecoder().decode(JikanResponse.self, from: data)
-                completion(response.data)
-            } catch {
-                Logger.shared.log("Failed to parse Jikan response: \(error)", type: "Error")
-                completion(nil)
-            }
-        }.resume()
-    }
+        var allEpisodes: [JikanEpisode] = []
+        var currentPage = 1
+        let perPage = 100
+
+        func fetchPage() {
+            let url = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes?page=\(currentPage)&limit=\(perPage)")!
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                guard let data = data, error == nil else {
+                    Logger.shared.log("Jikan API request failed: \(error?.localizedDescription ?? "Unknown error")", type: "Error")
+                    completion(nil)
+                    return
+                }    
+                do {
+                    let response = try JSONDecoder().decode(JikanResponse.self, from: data)
+                    allEpisodes.append(contentsOf: response.data)
+                    if response.data.count == perPage {
+                        currentPage += 1
+                        fetchPage()
+                    } else {
+                        completion(allEpisodes)
+                    }
+                } catch {
+                    Logger.shared.log("Failed to parse Jikan response: \(error)", type: "Error")
+                    completion(nil)
+                }
+            }.resume()
+        }
+        fetchPage()
+    }                
     
     private func updateFillerStatus(episodes: [JikanEpisode]) {
         let episodeNumber = episodeID + 1
 
-        guard episodeNumber > 0, episodeNumber <= episodes.count else {
-            Logger.shared.log("Episode \(episodeNumber) not found in Jikan response", type: "Debug")
-            isFiller = false // Defensive: always set to false if out of bounds
-            return
-        }
-
-        let jikanEpisode = episodes[episodeNumber - 1]
-        isFiller = jikanEpisode.filler
-        
-        if jikanEpisode.filler {
-            Logger.shared.log("Marking episode \(episodeNumber) as filler", type: "Debug")
+        if let jikanEpisode = episodes.first(where: { $0.mal_id == episodeNumber }) {
+            isFiller = jikanEpisode.filler
+            if jikanEpisode.filler {
+                Logger.shared.log("Marking episode \(episodeNumber) as filler", type: "Debug")
+            } else {
+                Logger.shared.log("Episode \(episodeNumber) is not filler", type: "Debug")
+            }
         } else {
-            Logger.shared.log("Episode \(episodeNumber) is not filler", type: "Debug")
+            Logger.shared.log("Episode \(episodeNumber) not found in Jikan response", type: "Debug")
+            isFiller = false          
         }
-    }
+    }    
     
     func handleFetchFailure(error: Error) {
         Logger.shared.log("Episode details fetch error: \(error.localizedDescription)", type: "Error")

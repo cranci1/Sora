@@ -44,6 +44,8 @@ struct MediaInfoView: View {
     private static var inProgressMALIDs: Set<Int> = []
     private static let inProgressQueue = DispatchQueue(label: "sora.jikan.inprogress.queue")
     
+    // Track fetched pages for MAL ID
+    private static var fetchedPagesForMALID: [Int: Set<Int>] = [:]
     
     @State private var isLoading: Bool = true
     @State private var showFullSynopsis: Bool = false
@@ -205,6 +207,7 @@ struct MediaInfoView: View {
             }
             .onChange(of: selectedRange) { newValue in
                 UserDefaults.standard.set(newValue.lowerBound, forKey: selectedRangeKey)
+                fetchRequiredFillerPages()
             }
             .onChange(of: selectedSeason) { newValue in
                 let ranges = generateRanges(for: currentEpisodeList.count)
@@ -214,17 +217,18 @@ struct MediaInfoView: View {
                     selectedRange = ranges.first ?? 0..<episodeChunkSize
                 }
                 UserDefaults.standard.set(newValue, forKey: selectedSeasonKey)
+                fetchRequiredFillerPages()
             }
             .onChange(of: selectedChapterRange) { newValue in
                 UserDefaults.standard.set(newValue.lowerBound, forKey: selectedChapterRangeKey)
             }
             .onChange(of: itemID) { newValue in
                 guard newValue != nil else { return }
-                fetchJikanFillerInfoIfNeeded()
+                fetchRequiredFillerPages()
             }
             .onChange(of: matchedMalID) { newValue in
                 guard newValue != nil else { return }
-                fetchJikanFillerInfoIfNeeded()
+                fetchRequiredFillerPages()
             }
             .onDisappear {
                 currentFetchTask?.cancel()
@@ -2415,7 +2419,7 @@ struct MediaInfoView: View {
     }
     
     private func resetChapterProgress(href: String) {
-        UserDefaults.standard.set(0.0, forKey: "readingProgress_\(href)")
+        UserDefaults.standard.set(0.0, for极 "readingProgress_\(href)")
         
         UserDefaults.standard.removeObject(forKey: "scrollPosition_\(href)")
         
@@ -2442,7 +2446,7 @@ struct MediaInfoView: View {
                     
                     userDefaults.set(1.0, forKey: "scrollPosition_\(href)")
                     
-                    ContinueReadingManager.shared.updateProgress(for: href, progress: 1.0)
+                    ContinueReadingManager.shared.updateProgress(for: href, progress极 1.0)
                     markedCount += 1
                 }
             }
@@ -2500,7 +2504,7 @@ struct MediaInfoView: View {
         return ""
     }
 
-    // MARK: - Updated Jikan Filler Implementation
+    // MARK: - Updated Jikan Filler Implementation with Pagination
     private struct JikanResponse: Decodable {
         let data: [JikanEpisode]
     }
@@ -2509,106 +2513,77 @@ struct MediaInfoView: View {
         let mal_id: Int
         let filler: Bool
     }
-
-    private func fetchJikanFillerInfoIfNeeded() {
-        guard jikanFillerSet == nil else { return }
-        fetchJikanFillerInfo()
-    }
-
-    private func fetchJikanFillerInfo() {
+    
+    private func fetchRequiredFillerPages() {
         guard let malID = matchedMalID ?? itemID else {
             Logger.shared.log("MAL ID not available for filler info", type: "Debug")
             return
         }
-
-        // Check cache first
-        var cachedEpisodes: [JikanEpisode]? = nil
-        Self.jikanCacheQueue.sync {
-            if let entry = Self.jikanCache[malID], Date().timeIntervalSince(entry.fetchedAt) < Self.jikanCacheTTL {
-                cachedEpisodes = entry.episodes
-            }
+        
+        // Initialize fetched pages set if needed
+        if Self.fetchedPagesForMALID[malID] == nil {
+            Self.fetchedPagesForMALID[malID] = Set<Int>()
         }
         
-        if let episodes = cachedEpisodes {
-            Logger.shared.log("Using cached filler info for MAL ID: \(malID)", type: "Debug")
-            updateFillerSet(episodes: episodes)
+        // Calculate which pages we need based on current episode range
+        let currentEpisodes = currentEpisodeList
+        let episodesInRange = currentEpisodes[selectedRange].map { $0.number }
+        
+        guard let minEpisode = episodesInRange.min(),
+              let maxEpisode = episodesInRange.max() else {
             return
         }
         
-        // Prevent duplicate requests
-        var shouldFetch = false
-        Self.inProgressQueue.sync {
-            if !Self.inProgressMALIDs.contains(malID) {
-                Self.inProgressMALIDs.insert(malID)
-                shouldFetch = true
-            }
-        }
+        // Calculate page numbers needed (each page covers 100 episodes)
+        let minPage = (minEpisode - 1) / 100 + 1
+        let maxPage = (maxEpisode - 1) / 100 + 1
         
-        if !shouldFetch {
-            Logger.shared.log("Fetch already in progress for MAL ID: \(malID)", type: "Debug")
-            return
-        }
+        Logger.shared.log("Fetching filler pages \(minPage)-\(maxPage) for episodes \(minEpisode)-\(maxEpisode)", type: "Debug")
         
-        Logger.shared.log("Fetching filler info for MAL ID: \(malID)", type: "Debug")
-        
-        // Fetch all pages
-        fetchAllJikanPages(malID: malID) { episodes in
-            // Update cache
-            if let episodes = episodes {
-                Logger.shared.log("Successfully fetched filler info for MAL ID: \(malID)", type: "Debug")
-                Self.jikanCacheQueue.async(flags: .barrier) {
-                    Self.jikanCache[malID] = (Date(), episodes)
-                }
-                
-                // Update UI
-                DispatchQueue.main.async {
-                    self.updateFillerSet(episodes: episodes)
-                }
-            } else {
-                Logger.shared.log("Failed to fetch filler info for MAL ID: \(malID)", type: "Error")
-            }
-            
-            // Remove from in-progress set
-            Self.inProgressQueue.async {
-                Self.inProgressMALIDs.remove(malID)
+        // Fetch each required page
+        for page in minPage...maxPage {
+            if !Self.fetchedPagesForMALID[malID]!.contains(page) {
+                fetchJikanPage(malID: malID, page: page)
             }
         }
     }
     
-    private func fetchAllJikanPages(malID: Int, completion: @escaping ([JikanEpisode]?) -> Void) {
-        var allEpisodes: [JikanEpisode] = []
-        var currentPage = 1
-        let perPage = 100
-
-        func fetchPage() {
-            let url = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes?page=\(currentPage)&limit=\(perPage)")!
-            URLSession.shared.dataTask(with: url) { data, response, error in
-                guard let data = data, error == nil else {
-                    Logger.shared.log("Jikan API request failed: \(error?.localizedDescription ?? "Unknown error")", type: "Error")
-                    completion(nil)
-                    return
-                }    
-                do {
-                    let response = try JSONDecoder().decode(JikanResponse.self, from: data)
-                    allEpisodes.append(contentsOf: response.data)
-                    if response.data.count == perPage {
-                        currentPage += 1
-                        fetchPage()
-                    } else {
-                        completion(allEpisodes)
-                    }
-                } catch {
-                    Logger.shared.log("Failed to parse Jikan response: \(error)", type: "Error")
-                    completion(nil)
-                }
-            }.resume()
+    private func fetchJikanPage(malID: Int, page: Int) {
+        guard let url = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes?page=\(page)") else {
+            return
         }
-        fetchPage()
-    }                
-    
-    private func updateFillerSet(episodes: [JikanEpisode]) {
-        let fillerNumbers = Set(episodes.filter { $0.filler }.map { $0.mal_id })
-        self.jikanFillerSet = fillerNumbers
-        Logger.shared.log("Updated filler set with \(fillerNumbers.count) filler episodes", type: "Debug")
+        
+        Logger.shared.log("Fetching filler page \(page) for MAL ID: \(malID)", type: "Debug")
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else {
+                Logger.shared.log("Jikan API request failed for page \(page): \(error?.localizedDescription ?? "Unknown error")", type: "Error")
+                return
+            }
+            
+            do {
+                let response = try JSONDecoder().decode(JikanResponse.self, from: data)
+                var newFillers = Set<Int>()
+                
+                for episode in response.data {
+                    if episode.filler {
+                        newFillers.insert(episode.mal_id)
+                    }
+                }
+                
+                DispatchQueue.main.async {
+                    // Update fetched pages tracking
+                    Self.fetchedPagesForMALID[malID]?.insert(page)
+                    
+                    // Update UI
+                    let currentFillers = self.jikanFillerSet ?? Set<Int>()
+                    self.jikanFillerSet = currentFillers.union(newFillers)
+                    
+                    Logger.shared.log("Fetched \(newFillers.count) fillers from page \(page) for MAL ID: \(malID)", type: "Debug")
+                }
+            } catch {
+                Logger.shared.log("Failed to parse Jikan response for page \(page): \(error)", type: "Error")
+            }
+        }.resume()
     }
 }

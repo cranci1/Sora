@@ -1,9 +1,11 @@
-import NukeUI
-import SwiftUI
-import SafariServices
-import AVFoundation
+//
+//  MediaInfoView.swift
+//  Sora
+//
+//  Created by Francesco on 05/01/25.
+//
 
-NukeUI
+import NukeUI
 import SwiftUI
 import SafariServices
 

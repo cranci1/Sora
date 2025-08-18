@@ -8,113 +8,8 @@
 import AVKit
 import NukeUI
 import SwiftUI
-import UIKit
 
 struct DownloadView: View {
-
-
-    // MARK: - Helper to present the custom player for a downloaded asset
-    static func presentPlayer(for asset: DownloadedAsset, jsController: JSController) {
-        // Verify local files exist before attempting playback
-        guard jsController.verifyAssetFileExists(asset) else { return }
-
-        // Determine stream type based on local file extension
-        let streamType = asset.localURL.pathExtension.lowercased() == "mp4" ? "mp4" : "hls"
-
-        // Build a minimal module/metadata for the local playback context
-        let dummyMetadata = ModuleMetadata(
-            sourceName: "",
-            author: ModuleMetadata.Author(name: "", icon: ""),
-            iconUrl: "",
-            version: "",
-            language: "",
-            baseUrl: "",
-            streamType: streamType,
-            quality: "",
-            searchBaseUrl: "",
-            scriptUrl: "",
-            asyncJS: nil,
-            streamAsyncJS: nil,
-            softsub: nil,
-            multiStream: nil,
-            multiSubs: nil,
-            type: nil,
-            novel: false
-        )
-        
-        let dummyModule = ScrapingModule(
-            metadata: dummyMetadata,
-            localPath: "",
-            metadataUrl: ""
-        )
-
-        // Pre-compute the show/season group to determine total available downloaded episodes
-        let showTitle = asset.metadata?.showTitle ?? asset.name
-        let seasonNumber = asset.metadata?.seasonNumber
-        let group = jsController.savedAssets
-            .filter { a in
-                let aTitle = a.metadata?.showTitle ?? a.name
-                let sameTitle = (aTitle == showTitle)
-                let sameSeason = (seasonNumber == nil) || (a.metadata?.seasonNumber == seasonNumber)
-                return sameTitle && sameSeason
-            }
-            .sorted { (a, b) in
-                let ae = a.metadata?.episode ?? 0
-                let be = b.metadata?.episode ?? 0
-                return ae < be
-            }
-
-        let totalEpisodes = group.count
-
-        let customPlayer = CustomMediaPlayerViewController(
-            module: dummyModule,
-            urlString: asset.localURL.absoluteString,
-            fullUrl: asset.originalURL.absoluteString,
-            title: asset.metadata?.showTitle ?? asset.name,
-            episodeNumber: asset.metadata?.episode ?? 0,
-            episodeTitle: asset.metadata?.episodeTitle ?? "",
-            seasonNumber: asset.metadata?.seasonNumber ?? 1,
-            onWatchNext: {
-                // Find the next downloaded episode within the same show (and season if available)
-                let currentEp = asset.metadata?.episode ?? 0
-                let all = jsController.savedAssets
-                let candidates = all
-                    .filter { a in
-                        let aTitle = a.metadata?.showTitle ?? a.name
-                        let sameTitle = (aTitle == showTitle)
-                        let sameSeason = (seasonNumber == nil) || (a.metadata?.seasonNumber == seasonNumber)
-                        return sameTitle && sameSeason && (a.metadata?.episode ?? 0) > currentEp
-                    }
-                    .sorted { (a, b) in
-                        let ae = a.metadata?.episode ?? 0
-                        let be = b.metadata?.episode ?? 0
-                        return ae < be
-                    }
-
-                if let next = candidates.first {
-                    DispatchQueue.main.async {
-                        DownloadView.presentPlayer(for: next, jsController: jsController)
-                    }
-                } else {
-                    // No later downloaded episode found – optionally show a lightweight notification
-                    // (silent no-op to avoid additional imports)
-                }
-            },
-            subtitlesURL: asset.localSubtitleURL?.absoluteString,
-            aniListID: 0,
-            totalEpisodes: totalEpisodes,
-            episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
-            headers: nil
-        )
-
-        customPlayer.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootViewController = windowScene.windows.first?.rootViewController {
-            rootViewController.present(customPlayer, animated: true)
-        }
-    }
-
     @EnvironmentObject var jsController: JSController
     @State private var searchText = ""
     @State private var selectedTab = 0
@@ -194,7 +89,7 @@ struct DownloadView: View {
                                 downloads: jsController.downloadQueue
                             )
                         }
-
+                        
                         if !jsController.activeDownloads.isEmpty {
                             DownloadSectionView(
                                 title: NSLocalizedString("Active Downloads", comment: ""),
@@ -203,40 +98,76 @@ struct DownloadView: View {
                             )
                         }
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
+                    .padding(.top, 20)
+                    .scrollViewBottomPadding()
                 }
             }
         }
     }
-    private var emptyActiveDownloadsView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "arrow.down.circle")
-                .font(.largeTitle)
-                .foregroundStyle(.secondary)
-            Text(NSLocalizedString("No Active Downloads", comment: ""))
-                .font(.title3)
-                .fontWeight(.medium)
-                .foregroundStyle(.primary)
-            Text(NSLocalizedString("When you start a download it will appear here.", comment: ""))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+    
+    private var downloadedContentView: some View {
+        Group {
+            if filteredAndSortedAssets.isEmpty {
+                emptyDownloadsView
+            } else {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        DownloadSummaryCard(
+                            totalShows: groupedAssets.count,
+                            totalEpisodes: filteredAndSortedAssets.count,
+                            totalSize: filteredAndSortedAssets.reduce(0) { $0 + $1.fileSize }
+                        )
+                        
+                        DownloadedSection(
+                            groups: groupedAssets,
+                            onDelete: { asset in
+                                assetToDelete = asset
+                                showDeleteAlert = true
+                            },
+                            onPlay: playAsset
+                        )
+                    }
+                    .padding(.top, 20)
+                    .scrollViewBottomPadding()
+                }
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-        .padding(.horizontal, 40)
     }
-
-    private var emptyDownloadsView: some View {
+    
+    private var emptyActiveDownloadsView: some View {
         VStack(spacing: 20) {
             Image(systemName: "arrow.down.circle")
                 .font(.largeTitle)
                 .foregroundStyle(.secondary)
+            
+            VStack(spacing: 8) {
+                Text(NSLocalizedString("No Active Downloads", comment: ""))
+                    .font(.title2)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+                
+                Text(NSLocalizedString("Actively downloading media can be tracked from here.", comment: ""))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        .padding(.horizontal, 40)
+    }
+    
+    private var emptyDownloadsView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "arrow.down.circle")                                    
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
+            
             VStack(spacing: 8) {
                 Text(NSLocalizedString("No Downloads", comment: ""))
                     .font(.title2)
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)
+                
                 Text(NSLocalizedString("Your downloaded episodes will appear here", comment: ""))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -246,26 +177,7 @@ struct DownloadView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .padding(.horizontal, 40)
     }
-
-    private var downloadedContentView: some View {
-        Group {
-            if jsController.savedAssets.isEmpty {
-                emptyDownloadsView
-            } else {
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 16) {
-                        DownloadedSection(
-                            groups: groupedAssets,
-                            onDelete: { asset in jsController.deleteAsset(asset) },
-                            onPlay: { asset in playAsset(asset) }
-                        )
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-                }
-            }
-        }
-    }
+    
     private var filteredAndSortedAssets: [DownloadedAsset] {
         let filtered = searchText.isEmpty
         ? jsController.savedAssets
@@ -329,16 +241,6 @@ struct DownloadView: View {
             localPath: "",
             metadataUrl: ""
         )
-        // Determine total number of downloaded episodes in this show/season for UI
-        let _showTitle = asset.metadata?.showTitle ?? asset.name
-        let _seasonNumber = asset.metadata?.seasonNumber
-        let _group = jsController.savedAssets.filter { a in
-            let aTitle = a.metadata?.showTitle ?? a.name
-            let sameTitle = (aTitle == _showTitle)
-            let sameSeason = (_seasonNumber == nil) || (a.metadata?.seasonNumber == _seasonNumber)
-            return sameTitle && sameSeason
-        }
-        let _totalEpisodes = _group.count
         
         let customPlayer = CustomMediaPlayerViewController(
             module: dummyModule,
@@ -352,7 +254,7 @@ struct DownloadView: View {
                 let showTitle = asset.metadata?.showTitle ?? asset.name
                 let seasonNumber = asset.metadata?.seasonNumber
                 let currentEp = asset.metadata?.episode ?? 0
-                let candidates = jsController.savedAssets
+                let next = jsController.savedAssets
                     .filter { a in
                         let aTitle = a.metadata?.showTitle ?? a.name
                         let sameTitle = (aTitle == showTitle)
@@ -364,15 +266,16 @@ struct DownloadView: View {
                         let be = b.metadata?.episode ?? 0
                         return ae < be
                     }
-                if let next = candidates.first {
+                    .first
+                if let next = next {
                     DispatchQueue.main.async {
-                        DownloadView.presentPlayer(for: next, jsController: jsController)
+                        self.playAsset(next)
                     }
                 }
             },
             subtitlesURL: asset.localSubtitleURL?.absoluteString,
             aniListID: 0,
-            totalEpisodes: _totalEpisodes,
+            totalEpisodes: asset.metadata?.episode ?? 0,
             episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
             headers: nil
         )

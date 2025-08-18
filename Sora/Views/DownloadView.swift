@@ -194,33 +194,49 @@ struct DownloadView: View {
                                 downloads: jsController.downloadQueue
                             )
                         }
-                        
+
                         if !jsController.activeDownloads.isEmpty {
                             DownloadSectionView(
                                 title: NSLocalizedString("Active Downloads", comment: ""),
                                 icon: "arrow.down.circle.fill",
-                                downloads: {
-        DownloadView.presentPlayer(for: asset, jsController: jsController)
-         .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                                downloads: jsController.activeDownloads
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                }
             }
+        }
+    }
+    private var emptyActiveDownloadsView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "arrow.down.circle")
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
+            Text(NSLocalizedString("No Active Downloads", comment: ""))
+                .font(.title3)
+                .fontWeight(.medium)
+                .foregroundStyle(.primary)
+            Text(NSLocalizedString("When you start a download it will appear here.", comment: ""))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .padding(.horizontal, 40)
     }
-    
+
     private var emptyDownloadsView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "arrow.down.circle")                                    
+            Image(systemName: "arrow.down.circle")
                 .font(.largeTitle)
                 .foregroundStyle(.secondary)
-            
             VStack(spacing: 8) {
                 Text(NSLocalizedString("No Downloads", comment: ""))
                     .font(.title2)
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)
-                
                 Text(NSLocalizedString("Your downloaded episodes will appear here", comment: ""))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -230,7 +246,26 @@ struct DownloadView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .padding(.horizontal, 40)
     }
-    
+
+    private var downloadedContentView: some View {
+        Group {
+            if jsController.savedAssets.isEmpty {
+                emptyDownloadsView
+            } else {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        DownloadedSection(
+                            groups: groupedAssets,
+                            onDelete: { asset in jsController.deleteAsset(asset) },
+                            onPlay: { asset in playAsset(asset) }
+                        )
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                }
+            }
+        }
+    }
     private var filteredAndSortedAssets: [DownloadedAsset] {
         let filtered = searchText.isEmpty
         ? jsController.savedAssets
@@ -294,6 +329,16 @@ struct DownloadView: View {
             localPath: "",
             metadataUrl: ""
         )
+        // Determine total number of downloaded episodes in this show/season for UI
+        let _showTitle = asset.metadata?.showTitle ?? asset.name
+        let _seasonNumber = asset.metadata?.seasonNumber
+        let _group = jsController.savedAssets.filter { a in
+            let aTitle = a.metadata?.showTitle ?? a.name
+            let sameTitle = (aTitle == _showTitle)
+            let sameSeason = (_seasonNumber == nil) || (a.metadata?.seasonNumber == _seasonNumber)
+            return sameTitle && sameSeason
+        }
+        let _totalEpisodes = _group.count
         
         let customPlayer = CustomMediaPlayerViewController(
             module: dummyModule,
@@ -327,7 +372,7 @@ struct DownloadView: View {
             },
             subtitlesURL: asset.localSubtitleURL?.absoluteString,
             aniListID: 0,
-            totalEpisodes: asset.metadata?.episode ?? 0,
+            totalEpisodes: _totalEpisodes,
             episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
             headers: nil
         )

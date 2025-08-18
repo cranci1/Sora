@@ -2579,15 +2579,52 @@ struct MediaInfoView: View {
         var allEpisodes: [JikanEpisode] = []
         var currentPage = 1
         let perPage = 100
+        var nextAllowedTime = DispatchTime.now()
 
         func fetchPage() {
+            // Throttle to <= 3 req/sec (Jikan limit)
+            let now = DispatchTime.now()
+            let delay: Double
+            if now < nextAllowedTime {
+                let diff = Double(nextAllowedTime.uptimeNanoseconds - now.uptimeNanoseconds) / 1_000_000_000
+                delay = max(diff, 0)
+            } else {
+                delay = 0
+            }
+            DispatchQueue.global().asyncAfter(deadline: .now() + delay) {
+                nextAllowedTime = DispatchTime.now() + .milliseconds(350)
+
             let url = URL(string: "https://api.jikan.moe/v4/anime/\(malID)/episodes?page=\(currentPage)&limit=\(perPage)")!
             URLSession.shared.dataTask(with: url) { data, response, error in
-                guard let data = data, error == nil else {
-                    Logger.shared.log("Jikan API request failed: \(error?.localizedDescription ?? "Unknown error")", type: "Error")
+                // Handle transient errors and Jikan rate-limits with minimal backoff/retry.
+                let http = response as? HTTPURLResponse
+                let status = http?.statusCode ?? 0
+                
+                // Simple per-page retry counter stored via associated closure capture
+                struct RetryCounter { static var attempts: [Int: Int] = [:] }
+                let key = currentPage
+                let attempts = RetryCounter.attempts[key] ?? 0
+
+                let shouldRetry: Bool = (error != nil) || (status == 429) || (status >= 500)
+                if shouldRetry && attempts < 5 {
+                    let retryAfterSeconds: Double = {
+                        if status == 429, let ra = http?.value(forHTTPHeaderField: "Retry-After"), let v = Double(ra) { return min(v, 5.0) }
+                        return min(pow(1.5, Double(attempts)) , 5.0)
+                    }()
+                    RetryCounter.attempts[key] = attempts + 1
+                    Logger.shared.log("Jikan page \(currentPage) retry \(attempts+1) after \(retryAfterSeconds)s (status=\(status), error=\(error?.localizedDescription ?? "nil"))", type: "Debug")
+                    DispatchQueue.global().asyncAfter(deadline: .now() + retryAfterSeconds) {
+                        fetchPage()
+                    }
+                    return
+                }
+
+                guard let data = data, error == nil, (200..<300).contains(status) || status == 0 else {
+                    Logger.shared.log("Jikan API request failed for page \(currentPage): status=\(status), error=\(error?.localizedDescription ?? "Unknown")", type: "Error")
                     completion(nil)
                     return
-                }    
+                }
+
                 do {
                     let response = try JSONDecoder().decode(JikanResponse.self, from: data)
                     allEpisodes.append(contentsOf: response.data)
@@ -2602,6 +2639,8 @@ struct MediaInfoView: View {
                     completion(nil)
                 }
             }.resume()
+        
+            }
         }
         fetchPage()
     }                

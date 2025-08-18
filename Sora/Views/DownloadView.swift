@@ -250,7 +250,47 @@ struct DownloadView: View {
             episodeNumber: asset.metadata?.episode ?? 0,
             episodeTitle: asset.metadata?.episodeTitle ?? "",
             seasonNumber: asset.metadata?.seasonNumber ?? 1,
-            onWatchNext: {},
+            
+onWatchNext: {
+                    // Attempt to play the next downloaded episode of the same show
+                    guard let currentShow = asset.metadata?.showTitle,
+                          let currentEp = asset.metadata?.episode else { return }
+
+                    let nextEp = currentEp + 1
+
+                    // Find next downloaded item for the same show
+                    if let nextItem = jsController.savedAssets.first(where: { $0.metadata?.showTitle == currentShow && $0.metadata?.episode == nextEp }) {
+
+                        // Resolve local stream & subtitle URLs for the next episode
+                        let nextLocalStream = jsController.getLocalStreamIfAvailable(title: currentShow, episode: nextEp)
+                        let nextLocalSubtitle = jsController.findSubtitleInPersistentStorage(title: currentShow, episode: nextEp)
+
+                        // Build the title
+                        let baseTitle = "Episode \(nextEp)"
+                        let fullTitle = (nextItem.metadata?.episodeTitle?.isEmpty == false) ? "\(baseTitle): \(nextItem.metadata?.episodeTitle ?? "")" : baseTitle
+
+                        // Present the player with the next episode
+                        presentPlayer(
+                            url: nextLocalStream ?? URL(string: nextItem.url ?? "")!,
+                            title: fullTitle,
+                            isDirectStream: true,
+                            episode: nextEp,
+                            streamURL: nextLocalStream?.absoluteString ?? (nextItem.url ?? ""),
+                            subtitlesURL: nextLocalSubtitle?.absoluteString,
+                            showPosterURL: nextItem.metadata?.showPosterURL,
+                            asset: nextItem
+                        )
+
+                        // Also update the UI selection to the newly playing episode if visible
+                        if let index = jsController.savedAssets.firstIndex(where: { $0.id == nextItem.id }) {
+                            jsController.selectedDownloadedIndex = index
+                        }
+                    } else {
+                        // No next downloaded episode found — keep behavior minimal as requested
+                        DropManager.shared.info("No next downloaded episode found for \(currentShow)")
+                    }
+                }
+,
             subtitlesURL: asset.localSubtitleURL?.absoluteString,
             aniListID: 0,
             totalEpisodes: asset.metadata?.episode ?? 0,

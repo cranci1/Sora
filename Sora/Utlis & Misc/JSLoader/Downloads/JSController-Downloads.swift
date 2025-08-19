@@ -978,7 +978,7 @@ extension JSController {
     
     /// Checks if an asset file exists before attempting to play it
     /// - Parameter asset: The asset to verify
-    /// - Returns: True if the file exists, false otherwise
+    /// - Returns: true if the file exists, false otherwise
     func verifyAssetFileExists(_ asset: DownloadedAsset) -> Bool {
         let fileExists = FileManager.default.fileExists(atPath: asset.localURL.path)
         
@@ -1759,7 +1759,7 @@ extension JSController {
 
         // Single AniSkip v1 call for both OP/ED
         guard let url = URL(string: "https://api.aniskip.com/v1/skip-times/\(seriesID)/\(epNumber)?types=op&types=ed") else {
-            completion(False)
+            completion(false)
             return
         }
 

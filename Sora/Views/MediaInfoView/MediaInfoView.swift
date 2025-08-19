@@ -691,6 +691,7 @@ struct MediaInfoView: View {
             episodeIndex: index,
             episode: episode.href,
             episodeID: episode.number - 1,
+            malID: matchedMalID,
             progress: progress,
             itemID: itemID ?? 0,
             totalEpisodes: episodeLinks.count,
@@ -712,7 +713,6 @@ struct MediaInfoView: View {
             tmdbID: tmdbID,
             seasonNumber: season,
             fillerEpisodes: jikanFillerSet,
-            malID: matchedMalID
         )
         .disabled(isFetchingEpisode)
     }

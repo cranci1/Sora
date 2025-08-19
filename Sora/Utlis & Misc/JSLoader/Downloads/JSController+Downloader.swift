@@ -61,7 +61,8 @@ extension JSController {
                                 imageURL: URL? = nil, isEpisode: Bool = false, 
                                 showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
                                 subtitleURL: URL? = nil, showPosterURL: URL? = nil,
-                                completionHandler: ((Bool, String) -> Void)? = nil) {
+                                aniListID: Int? = nil, malID: Int? = nil, isFiller: Bool? = nil,
+                                completionHandler: ((Bool, String) -> Void)? = nil) -> Void)? = nil) {
         
         let request = DownloadRequest(
             url: url, headers: headers, title: title, imageURL: imageURL,
@@ -129,10 +130,10 @@ extension JSController {
     
     
     func downloadMP4(url: URL, headers: [String: String], title: String? = nil, 
-                   imageURL: URL? = nil, isEpisode: Bool = false, 
-                   showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
-                   subtitleURL: URL? = nil, showPosterURL: URL? = nil,
-                   completionHandler: ((Bool, String) -> Void)? = nil) {
+                    imageURL: URL? = nil, isEpisode: Bool = false, showTitle: String? = nil,
+                    season: Int? = nil, episode: Int? = nil, subtitleURL: URL? = nil,
+                    showPosterURL: URL? = nil, aniListID: Int? = nil, malID: Int? = nil, isFiller: Bool? = nil,
+                    completionHandler: ((Bool, String) -> Void)? = nil) -> Void)? = nil) {
         
         let request = DownloadRequest(
             url: url, headers: headers, title: title, imageURL: imageURL,
@@ -389,7 +390,10 @@ extension JSController {
             subtitleURL: request.subtitleURL,
             asset: asset,
             headers: request.headers,
-            module: nil
+            module: nil,
+            aniListID: request.aniListID,
+            malID: request.malID,
+            isFiller: request.isFiller
         )
     }
     

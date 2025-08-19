@@ -36,7 +36,10 @@ extension JSController {
         episode: Int? = nil,
         subtitleURL: URL? = nil,
         showPosterURL: URL? = nil,
-        completionHandler: ((Bool, String) -> Void)? = nil
+        aniListID: Int? = nil,
+        malID: Int? = nil,
+        isFiller: Bool? = nil,
+        completionHandler: ((Bool, String) -> Void)? = nil) -> Void)? = nil
     ) {
         let streamType = module.metadata.streamType.lowercased()
         
@@ -56,7 +59,7 @@ extension JSController {
                 aniListID: aniListID,
                 malID: malID,
                 isFiller: isFiller,
-                aniListID: aniListID, malID: malID, isFiller: isFiller, completionHandler: completionHandler
+                completionHandler: completionHandler
             )
         }else {
             Logger.shared.log("Using MP4 download method")
@@ -74,7 +77,7 @@ extension JSController {
                 aniListID: aniListID,
                 malID: malID,
                 isFiller: isFiller,
-                aniListID: aniListID, malID: malID, isFiller: isFiller, completionHandler: completionHandler
+                completionHandler: completionHandler
             )
         }
     }

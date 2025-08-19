@@ -23,12 +23,14 @@ struct DownloadRequest {
     let showPosterURL: URL?
     
     init(url: URL, headers: [String: String], title: String? = nil, imageURL: URL? = nil, 
+         aniListID: Int? = nil, 
          isEpisode: Bool = false, showTitle: String? = nil, season: Int? = nil, 
          episode: Int? = nil, subtitleURL: URL? = nil, showPosterURL: URL? = nil) {
         self.url = url
         self.headers = headers
         self.title = title
         self.imageURL = imageURL
+        self.aniListID = aniListID
         self.isEpisode = isEpisode
         self.showTitle = showTitle
         self.season = season
@@ -52,9 +54,7 @@ struct QualityOption {
 
 extension JSController {
     
-    func downloadWithM3U8Support(url: URL, headers: [String: String], title: String? = nil, 
-                                imageURL: URL? = nil, aniListID: Int? = nil, isEpisode: Bool = false, 
-                                showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
+    func downloadWithM3U8Support(url: URL, headers: [String: String], title: String? = nil, imageURL: URL? = nil, aniListID: Int? = nil, isEpisode: Bool = false, showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
                                 subtitleURL: URL? = nil, showPosterURL: URL? = nil,
                                 completionHandler: ((Bool, String) -> Void)? = nil) {
         
@@ -123,13 +123,12 @@ extension JSController {
     
     
     func downloadMP4(url: URL, headers: [String: String], title: String? = nil, 
-                   imageURL: URL? = nil, aniListID: Int? = nil, isEpisode: Bool = false, 
-                   showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
+                   aniListID: Int? = nil, imageURL: URL? = nil, aniListID: Int? = nil, isEpisode: Bool = false, showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
                    subtitleURL: URL? = nil, showPosterURL: URL? = nil,
                    completionHandler: ((Bool, String) -> Void)? = nil) {
         
         let request = DownloadRequest(
-            url: url, headers: headers, title: title, imageURL: imageURL,
+            url: url, headers: headers, title: title, imageURL: imageURL, aniListID: aniListID,
             isEpisode: isEpisode, showTitle: showTitle, season: season,
             episode: episode, subtitleURL: subtitleURL, showPosterURL: showPosterURL
         )

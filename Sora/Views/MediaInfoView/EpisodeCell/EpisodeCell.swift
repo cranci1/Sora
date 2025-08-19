@@ -14,6 +14,7 @@ struct EpisodeCell: View {
     let episodeIndex: Int
     let episode: String
     let episodeID: Int
+    let malID: Int? = nil
     let progress: Double
     let itemID: Int
     let totalEpisodes: Int?
@@ -49,6 +50,7 @@ struct EpisodeCell: View {
     @State private var dragState: DragState = .inactive
     
     @State private var retryAttempts: Int = 0
+        private var malIDFromParent: Int? { malID }
     private let maxRetryAttempts: Int = 3
     private let initialBackoffDelay: TimeInterval = 1.0
     
@@ -702,7 +704,10 @@ private extension EpisodeCell {
             season: 1,
             episode: episodeID + 1,
             subtitleURL: subtitleURL,
-            showPosterURL: showPosterImageURL
+            showPosterURL: showPosterImageURL,
+            aniListID: itemID,
+            malID: malIDFromParent,
+            isFiller: isFiller
         ) { success, message in
             if success {
                 Logger.shared.log("Started download for Episode \(self.episodeID + 1): \(self.episode)", type: "Download")

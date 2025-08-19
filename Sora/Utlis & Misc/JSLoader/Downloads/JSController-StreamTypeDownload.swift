@@ -53,7 +53,10 @@ extension JSController {
                 episode: episode,
                 subtitleURL: subtitleURL,
                 showPosterURL: showPosterURL,
-                completionHandler: completionHandler
+                aniListID: aniListID,
+                malID: malID,
+                isFiller: isFiller,
+                aniListID: aniListID, malID: malID, isFiller: isFiller, completionHandler: completionHandler
             )
         }else {
             Logger.shared.log("Using MP4 download method")
@@ -68,7 +71,10 @@ extension JSController {
                 episode: episode,
                 subtitleURL: subtitleURL,
                 showPosterURL: showPosterURL,
-                completionHandler: completionHandler
+                aniListID: aniListID,
+                malID: malID,
+                isFiller: isFiller,
+                aniListID: aniListID, malID: malID, isFiller: isFiller, completionHandler: completionHandler
             )
         }
     }

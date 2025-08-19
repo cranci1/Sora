@@ -711,7 +711,8 @@ struct MediaInfoView: View {
             },
             tmdbID: tmdbID,
             seasonNumber: season,
-            fillerEpisodes: jikanFillerSet
+            fillerEpisodes: jikanFillerSet,
+            malID: matchedMalID
         )
         .disabled(isFetchingEpisode)
     }

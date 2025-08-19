@@ -333,7 +333,10 @@ extension JSController {
             subtitleURL: queuedDownload.subtitleURL,
             asset: asset,
             headers: queuedDownload.headers,
-            module: queuedDownload.module
+            module: queuedDownload.module,
+            aniListID: queuedDownload.aniListID,
+            malID: queuedDownload.malID,
+            isFiller: queuedDownload.isFiller
         )
         
         // Add to active downloads
@@ -1214,6 +1217,17 @@ extension JSController: AVAssetDownloadDelegate {
         }
         
         // If there's a subtitle URL, download it now that the video is saved
+        // Also fetch OP/ED skip timestamps in parallel and save simple sidecar JSON next to the video
+        if download.metadata?.episode != nil && download.isEpisode {
+            fetchSkipTimestampsFor(request: download, persistentURL: persistentURL) { ok in
+                if ok {
+                    print("[SkipSidecar] Saved OP/ED sidecar for episode \(download.metadata?.episode ?? -1) at: \(persistentURL.path)")
+                } else {
+                    print("[SkipSidecar] Failed to save sidecar for episode \(download.metadata?.episode ?? -1)")
+                }
+            }
+        }
+        
         if let subtitleURL = download.subtitleURL {
             downloadSubtitle(subtitleURL: subtitleURL, assetID: newAsset.id.uuidString)
         } else {
@@ -1543,6 +1557,9 @@ struct JSActiveDownload: Identifiable, Equatable {
     var asset: AVURLAsset?
     var headers: [String: String]
     var module: ScrapingModule?  // Add module property to store ScrapingModule
+    let aniListID: Int?
+    let malID: Int?
+    let isFiller: Bool?
     
     // Computed property to get the current task state
     var taskState: URLSessionTask.State {
@@ -1646,4 +1663,73 @@ enum DownloadQueueStatus: Equatable {
     case downloading
     /// Download has been completed
     case completed
-} 
+
+    // MARK: - Skip Sidecar (OP/ED) Fetch
+    /// Fetches OP & ED skip timestamps (AniSkip) and writes a minimal sidecar JSON next to the persisted video.
+    /// Uses MAL id for fillers when available; falls back to AniList otherwise.
+    private func fetchSkipTimestampsFor(request: JSActiveDownload, persistentURL: URL, completion: @escaping (Bool)->Void) 
+{
+        // Determine preferred ID
+        let epNumber = request.metadata?.episode ?? 0
+        let useMAL = (request.isFiller == true) && (request.malID != nil)
+        let idType = useMAL ? "mal" : "anilist"
+        guard let seriesID = useMAL ? request.malID : request.aniListID else {
+            print("[SkipSidecar] Missing series ID for AniSkip (MAL/AniList)")
+            completion(false)
+            return
+        }
+        // Single AniSkip v1 call for both OP/ED
+        let url = URL(string: "https://api.aniskip.com/v1/skip-times/\(seriesID)/\(epNumber)?types=op&types=ed")!
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            if let e = error {
+                print("[SkipSidecar] AniSkip fetch error: \(e.localizedDescription)")
+                completion(false)
+                return
+            }
+            guard let data = data else { completion(false); return }
+            struct Resp: Decodable { let found: Bool; let results: [Res]? }
+            struct Res: Decodable { let skip_type: String; let interval: Interval }
+            struct Interval: Decodable { let start_time: Double; let end_time: Double }
+            var opRange: (Double, Double)? = nil
+            var edRange: (Double, Double)? = nil
+            if let r = try? JSONDecoder().decode(Resp.self, from: data), r.found, let arr = r.results {
+                for item in arr {
+                    if item.skip_type == "op" { opRange = (item.interval.start_time, item.interval.end_time) }
+                    if item.skip_type == "ed" { edRange = (item.interval.start_time, item.interval.end_time) }
+                }
+            }
+            if opRange == nil && edRange == nil { completion(false); return }
+            // Determine sidecar path
+            let fm = FileManager.default
+            var dir = persistentURL.deletingLastPathComponent()
+            var baseName = persistentURL.deletingPathExtension().lastPathComponent
+            var isDir: ObjCBool = false
+            if fm.fileExists(atPath: persistentURL.path, isDirectory: &isDir), isDir.boolValue {
+                dir = persistentURL.deletingLastPathComponent()
+                baseName = persistentURL.lastPathComponent
+            }
+            let sidecar = dir.appendingPathComponent(baseName + ".skip.json")
+            var payload: [String: Any] = [
+                "source": "aniskip",
+                "idType": idType,
+                "episode": epNumber,
+                "createdAt": ISO8601DateFormatter().string(from: Date())
+            ]
+            if let aid = request.aniListID { payload["anilistId"] = aid }
+            if let mid = request.malID { payload["malId"] = mid }
+            if let op = opRange { payload["op"] = ["start": op.0, "end": op.1] }
+            if let ed = edRange { payload["ed"] = ["start": ed.0, "end": ed.1] }
+            do {
+                let data = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
+                try data.write(to: sidecar, options: .atomic)
+                print("[SkipSidecar] Wrote sidecar at: \(sidecar.path)")
+                completion(true)
+            } catch {
+                print("[SkipSidecar] Sidecar write error: \(error.localizedDescription)")
+                completion(false)
+            }
+        }.resume()
+    }
+
+    
+}

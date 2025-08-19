@@ -300,6 +300,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
             
             asset = AVURLAsset(url: url)
+            // Try to load OP/ED skip sidecar for local files
+            self.loadLocalSkipSidecar(for: url)
         } else {
             Logger.shared.log("Loading remote URL: \(url.absoluteString)", type: "Debug")
             var request = URLRequest(url: url)
@@ -2648,6 +2650,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
             
             asset = AVURLAsset(url: url)
+            // Try to load OP/ED skip sidecar for local files
+            self.loadLocalSkipSidecar(for: url)
         } else {
             Logger.shared.log("Switching to remote URL: \(url.absoluteString)", type: "Debug")
             var request = URLRequest(url: url)
@@ -3864,3 +3868,39 @@ class GradientBlurButton: UIButton {
         super.removeFromSuperview()
     }
 }
+
+
+    /// Load OP/ED skip data from a simple sidecar JSON saved next to the local video (if present)
+    private func loadLocalSkipSidecar(for fileURL: URL) {
+        let fm = FileManager.default
+        var dir = fileURL.deletingLastPathComponent()
+        var base = fileURL.deletingPathExtension().lastPathComponent
+        var isDir: ObjCBool = false
+        if fm.fileExists(atPath: fileURL.path, isDirectory: &isDir), isDir.boolValue {
+            // HLS package directory: look in parent dir, use directory name
+            dir = fileURL.deletingLastPathComponent()
+            base = fileURL.lastPathComponent
+        }
+        let sidecar = dir.appendingPathComponent(base + ".skip.json")
+        do {
+            let data = try Data(contentsOf: sidecar)
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let op = (json["op"] as? [String: Any]), let s = op["start"] as? Double, let e = op["end"] as? Double {
+                    let range = CMTimeRange(start: CMTime(seconds: s, preferredTimescale: 600), end: CMTime(seconds: e, preferredTimescale: 600))
+                    self.skipIntervals.op = range
+                    print("[Player] Loaded local OP: \(s)-\(e)")
+                }
+                if let ed = (json["ed"] as? [String: Any]), let s = ed["start"] as? Double, let e = ed["end"] as? Double {
+                    let range = CMTimeRange(start: CMTime(seconds: s, preferredTimescale: 600), end: CMTime(seconds: e, preferredTimescale: 600))
+                    self.skipIntervals.ed = range
+                    print("[Player] Loaded local ED: \(s)-\(e)")
+                }
+                DispatchQueue.main.async {
+                    self.updateSkipButtonsVisibility()
+                }
+            }
+        } catch {
+            print("[Player] No local skip sidecar found or failed to load: \(error.localizedDescription)")
+        }
+    }
+    

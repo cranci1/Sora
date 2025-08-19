@@ -62,7 +62,8 @@ extension JSController {
                                 showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
                                 subtitleURL: URL? = nil, showPosterURL: URL? = nil,
                                 aniListID: Int? = nil, malID: Int? = nil, isFiller: Bool? = nil,
-                                completionHandler: ((Bool, String) -> Void)? = nil) -> Void)? = nil) {
+                                completionHandler: ((Bool, String) -> Void)? = nil) {
+
         
         let request = DownloadRequest(
             url: url, headers: headers, title: title, imageURL: imageURL,
@@ -133,7 +134,8 @@ extension JSController {
                     imageURL: URL? = nil, isEpisode: Bool = false, showTitle: String? = nil,
                     season: Int? = nil, episode: Int? = nil, subtitleURL: URL? = nil,
                     showPosterURL: URL? = nil, aniListID: Int? = nil, malID: Int? = nil, isFiller: Bool? = nil,
-                    completionHandler: ((Bool, String) -> Void)? = nil) -> Void)? = nil) {
+                    completionHandler: ((Bool, String) -> Void)? = nil) {
+
         
         let request = DownloadRequest(
             url: url, headers: headers, title: title, imageURL: imageURL,

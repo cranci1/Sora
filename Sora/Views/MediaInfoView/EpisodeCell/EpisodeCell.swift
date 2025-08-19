@@ -66,6 +66,7 @@ struct EpisodeCell: View {
         episodeIndex: Int,
         episode: String,
         episodeID: Int,
+        malID: Int? = nil,
         progress: Double,
         itemID: Int,
         totalEpisodes: Int? = nil,
@@ -85,6 +86,7 @@ struct EpisodeCell: View {
         self.episodeIndex = episodeIndex
         self.episode = episode
         self.episodeID = episodeID
+        self.malID = malID
         self.progress = progress
         self.itemID = itemID
         self.totalEpisodes = totalEpisodes

@@ -3871,6 +3871,8 @@ class GradientBlurButton: UIButton {
 
 
     /// Load OP/ED skip data from a simple sidecar JSON saved next to the local video (if present)
+    extension CustomMediaPlayerViewController {
+extension CustomMediaPlayerViewController {
     private func loadLocalSkipSidecar(for fileURL: URL) {
         let fm = FileManager.default
         var dir = fileURL.deletingLastPathComponent()
@@ -3903,4 +3905,8 @@ class GradientBlurButton: UIButton {
             print("[Player] No local skip sidecar found or failed to load: \(error.localizedDescription)")
         }
     }
+}
+
+}
+
     

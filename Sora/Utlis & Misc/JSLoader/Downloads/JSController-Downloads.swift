@@ -1218,7 +1218,7 @@ extension JSController: AVAssetDownloadDelegate {
         
         // If there's a subtitle URL, download it now that the video is saved
         // Also fetch OP/ED skip timestamps in parallel and save simple sidecar JSON next to the video
-        if download.metadata?.episode != nil && download.isEpisode {
+        if download.metadata?.episode != nil && download.type == .episode {
             fetchSkipTimestampsFor(request: download, persistentURL: persistentURL) { ok in
                 if ok {
                     print("[SkipSidecar] Saved OP/ED sidecar for episode \(download.metadata?.episode ?? -1) at: \(persistentURL.path)")
@@ -1603,7 +1603,10 @@ struct JSActiveDownload: Identifiable, Equatable {
         subtitleURL: URL? = nil,
         asset: AVURLAsset? = nil,
         headers: [String: String] = [:],
-        module: ScrapingModule? = nil  // Add module parameter to initializer
+        module: ScrapingModule? = nil,
+        aniListID: Int? = nil,
+        malID: Int? = nil,
+        isFiller: Bool? = nil
     ) {
         self.id = id
         self.originalURL = originalURL
@@ -1619,6 +1622,9 @@ struct JSActiveDownload: Identifiable, Equatable {
         self.asset = asset
         self.headers = headers
         self.module = module  // Store the module
+        self.aniListID = aniListID
+        self.malID = malID
+        self.isFiller = isFiller
     }
 }
 

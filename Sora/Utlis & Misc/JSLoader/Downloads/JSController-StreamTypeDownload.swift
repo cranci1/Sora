@@ -39,7 +39,7 @@ extension JSController {
         aniListID: Int? = nil,
         malID: Int? = nil,
         isFiller: Bool? = nil,
-        completionHandler: ((Bool, String) -> Void)? = nil) -> Void)? = nil
+        completionHandler: ((Bool, String) -> Void)? = nil
     ) {
         let streamType = module.metadata.streamType.lowercased()
         

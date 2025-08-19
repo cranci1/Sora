@@ -104,6 +104,7 @@ extension JSController {
     ///   - completionHandler: Optional callback for download status
     func startDownload(
         url: URL,
+        aniListID: Int? = nil,
         headers: [String: String] = [:],
         title: String? = nil,
         imageURL: URL? = nil,
@@ -121,6 +122,7 @@ extension JSController {
             // Use the stream type aware download method
             downloadWithStreamTypeSupport(
                 url: url,
+                aniListID: aniListID,
                 headers: headers,
                 title: title,
                 imageURL: imageURL,
@@ -177,7 +179,8 @@ extension JSController {
             subtitleURL: subtitleURL,
             asset: asset,
             headers: headers,
-            module: module  // Pass the module to store it for queue processing
+            module: module,  // Pass the module to store it for queue processing
+            aniListID: aniListID
         )
         
         // Add to the download queue
@@ -271,6 +274,7 @@ extension JSController {
             // Use the exact same method that manual downloads use
             downloadWithStreamTypeSupport(
                 url: queuedDownload.originalURL,
+                aniListID: queuedDownload.aniListID,
                 headers: queuedDownload.headers,
                 title: queuedDownload.title,
                 imageURL: queuedDownload.imageURL,
@@ -929,6 +933,13 @@ extension JSController {
                 }
             }
             DownloadPersistence.delete(id: asset.id)
+
+            // Remove AniSkip sidecar if present
+            if let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+                let dir = appSupport.appendingPathComponent("SoraDownloads", isDirectory: true)
+                let sidecar = dir.appendingPathComponent("aniskip-\(asset.id.uuidString).json")
+                try? FileManager.default.removeItem(at: sidecar)
+            }
             DispatchQueue.main.async { [weak self] in
                 self?.savedAssets = DownloadPersistence.load()
                 self?.objectWillChange.send()
@@ -1208,7 +1219,13 @@ extension JSController: AVAssetDownloadDelegate {
         
         // Add to saved assets and save
         DownloadPersistence.upsert(newAsset)
-        DispatchQueue.main.async { [weak self] in
+        
+        // Fetch and save AniSkip OP/ED markers as a sidecar (non-blocking, optional)
+        if let isEp = download.metadata?.episode, isEp > 0 {
+            let epNumber = isEp
+            fetchAndSaveAniSkipSidecar(aniListID: aniListID, episode: epNumber, assetID: newAsset.id.uuidString)
+        }
+DispatchQueue.main.async { [weak self] in
             self?.savedAssets = DownloadPersistence.load()
             self?.objectWillChange.send()
         }
@@ -1543,6 +1560,7 @@ struct JSActiveDownload: Identifiable, Equatable {
     var asset: AVURLAsset?
     var headers: [String: String]
     var module: ScrapingModule?  // Add module property to store ScrapingModule
+    var aniListID: Int? = nil
     
     // Computed property to get the current task state
     var taskState: URLSessionTask.State {
@@ -1586,7 +1604,8 @@ struct JSActiveDownload: Identifiable, Equatable {
         subtitleURL: URL? = nil,
         asset: AVURLAsset? = nil,
         headers: [String: String] = [:],
-        module: ScrapingModule? = nil  // Add module parameter to initializer
+        module: ScrapingModule? = nil,
+        aniListID: Int? = nil  // Add module parameter to initializer
     ) {
         self.id = id
         self.originalURL = originalURL
@@ -1646,4 +1665,58 @@ enum DownloadQueueStatus: Equatable {
     case downloading
     /// Download has been completed
     case completed
-} 
+}
+
+    // MARK: - AniSkip Sidecar
+    private func fetchAndSaveAniSkipSidecar(aniListID: Int?, episode: Int, assetID: String) {
+        guard let ani = aniListID else { return }
+        AniListMutation().fetchMalID(animeId: ani) { result in
+            switch result {
+            case .success(let mal):
+                let types = ["op", "ed"]
+                var segments: [(String, Double, Double)] = []
+                let group = DispatchGroup()
+                for t in types {
+                    group.enter()
+                    if let url = URL(string: "https://api.aniskip.com/v2/skip-times/\(mal)/\(episode)?types=\(t)&episodeLength=0") {
+                        URLSession.shared.dataTask(with: url) { data, _, _ in
+                            defer { group.leave() }
+                            guard let d = data,
+                                  let resp = try? JSONDecoder().decode(AniSkipResponse.self, from: d),
+                                  resp.found,
+                                  let interval = resp.results.first?.interval else { return }
+                            segments.append((t, interval.startTime, interval.endTime))
+                        }.resume()
+                    } else {
+                        group.leave()
+                    }
+                }
+                group.notify(queue: .global()) {
+                    guard !segments.isEmpty else { return }
+                    let payload: [String: Any] = [
+                        "provider": "aniskip",
+                        "malId": mal,
+                        "episode": episode,
+                        "segments": segments.map { ["type": $0.0, "start": $0.1, "end": $0.2] },
+                        "fetchedAt": ISO8601DateFormatter().string(from: Date()),
+                        "v": 1
+                    ]
+                    do {
+                        if let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+                            let dir = appSupport.appendingPathComponent("SoraDownloads", isDirectory: true)
+                            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+                            let file = dir.appendingPathComponent("aniskip-\(assetID).json")
+                            let data = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
+                            try data.write(to: file, options: .atomic)
+                            Logger.shared.log("Saved AniSkip sidecar: \(file.lastPathComponent)", type: "Download")
+                        }
+                    } catch {
+                        Logger.shared.log("Failed to save AniSkip sidecar: \(error)", type: "Error")
+                    }
+                }
+            case .failure:
+                break
+            }
+        }
+    }
+

@@ -2228,6 +2228,7 @@ struct MediaInfoView: View {
             
             self.jsController.downloadWithStreamTypeSupport(
                 url: url,
+                aniListID: self.itemID,
                 headers: headers,
                 title: episodeTitle,
                 imageURL: episodeThumbnailURL,

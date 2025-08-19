@@ -691,13 +691,7 @@ private extension EpisodeCell {
         let fullEpisodeTitle = episodeTitle.isEmpty ? baseTitle : "\(baseTitle): \(episodeTitle)"
         let animeTitle = parentTitle.isEmpty ? "Unknown Anime" : parentTitle
         
-        jsController.downloadWithStreamTypeSupport(
-            url: url,
-            headers: headers,
-            title: fullEpisodeTitle,
-            imageURL: episodeThumbnailURL,
-            module: module,
-            isEpisode: true,
+        jsController.downloadWithStreamTypeSupport(url: url, headers: headers, title: fullEpisodeTitle, imageURL: episodeThumbnailURL, module: module, isEpisode: true, aniListID: itemID, 
             showTitle: animeTitle,
             season: 1,
             episode: episodeID + 1,
@@ -976,8 +970,6 @@ private extension EpisodeCell {
             }
         }.resume()
     }
-
-    // Removed Jikan fetching from EpisodeCell. All filler/Jikan handling is now in MediaInfoView and passed in via `fillerEpisodes`.
     
     func handleFetchFailure(error: Error) {
         Logger.shared.log("Episode details fetch error: \(error.localizedDescription)", type: "Error")

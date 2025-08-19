@@ -6,6 +6,7 @@
 //
 
 import AVKit
+import Foundation
 import NukeUI
 import SwiftUI
 
@@ -242,7 +243,24 @@ struct DownloadView: View {
             metadataUrl: ""
         )
         
-        let customPlayer = CustomMediaPlayerViewController(
+        
+        var localSkipSegments: [(String, Double, Double)]? = nil
+        if let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+            let dir = appSupport.appendingPathComponent("SoraDownloads", isDirectory: true)
+            let sidecar = dir.appendingPathComponent("aniskip-\(asset.id.uuidString).json")
+            if let data = try? Data(contentsOf: sidecar),
+               let obj = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+               let segs = obj["segments"] as? [[String: Any]] {
+                localSkipSegments = segs.compactMap { dict in
+                    if let t = dict["type"] as? String,
+                       let st = dict["start"] as? Double,
+                       let en = dict["end"] as? Double { return (t, st, en) }
+                    return nil
+                }
+                if localSkipSegments?.isEmpty == true { localSkipSegments = nil }
+            }
+        }
+let customPlayer = CustomMediaPlayerViewController(
             module: dummyModule,
             urlString: asset.localURL.absoluteString,
             fullUrl: asset.originalURL.absoluteString,
@@ -277,6 +295,7 @@ struct DownloadView: View {
             aniListID: 0,
             totalEpisodes: asset.metadata?.episode ?? 0,
             episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
+            localSkipSegments: localSkipSegments,
             headers: nil
         )
         

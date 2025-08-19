@@ -24,26 +24,14 @@ extension JSController {
     ///   - episode: Episode number (optional)
     ///   - subtitleURL: Optional subtitle URL to download after video (optional)
     ///   - completionHandler: Called when the download is initiated or fails
-    func downloadWithStreamTypeSupport(
-        url: URL, 
-        headers: [String: String], 
-        title: String? = nil,
-        imageURL: URL? = nil, 
-        module: ScrapingModule,
-        isEpisode: Bool = false, 
-        showTitle: String? = nil, 
-        season: Int? = nil, 
-        episode: Int? = nil,
-        subtitleURL: URL? = nil,
-        showPosterURL: URL? = nil,
-        completionHandler: ((Bool, String) -> Void)? = nil
-    ) {
+    func downloadWithStreamTypeSupport(url: URL, headers: [String: String], title: String? = nil, imageURL: URL? = nil, module: ScrapingModule, isEpisode: Bool = false, aniListID: Int? = nil, showTitle: String? = nil, season: Int? = nil, episode: Int? = nil, subtitleURL: URL? = nil, showPosterURL: URL? = nil, completionHandler: ((Bool, String) -> Void)? = nil) {
         let streamType = module.metadata.streamType.lowercased()
         
         if streamType == "hls" || streamType == "m3u8" || url.absoluteString.contains(".m3u8") {
             Logger.shared.log("Using HLS download method")
             downloadWithM3U8Support(
                 url: url,
+                aniListID: aniListID,
                 headers: headers,
                 title: title,
                 imageURL: imageURL,
@@ -59,6 +47,7 @@ extension JSController {
             Logger.shared.log("Using MP4 download method")
             downloadMP4(
                 url: url,
+                aniListID: aniListID,
                 headers: headers,
                 title: title,
                 imageURL: imageURL,

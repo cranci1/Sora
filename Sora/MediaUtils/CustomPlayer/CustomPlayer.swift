@@ -48,7 +48,9 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var isPlaying = true
     var currentTimeVal: Double = 0.0
     var duration: Double = 0.0
-    var isVideoLoaded = false
+    
+    let localSkipSegments: [(String, Double, Double)]?
+var isVideoLoaded = false
     
     private var isHoldPauseEnabled: Bool {
         UserDefaults.standard.bool(forKey: "holdForPauseEnabled")
@@ -267,7 +269,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
          subtitlesURL: String?,
          aniListID: Int,
          totalEpisodes: Int,
-         episodeImageUrl: String,headers:[String:String]?) {
+         episodeImageUrl: String, localSkipSegments: [(String, Double, Double)]? = nil, headers:[String:String]?) {
         
         self.module = module
         self.streamURL = urlString
@@ -276,6 +278,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         self.episodeNumber = episodeNumber
         self.episodeImageUrl = episodeImageUrl
         self.episodeTitle = episodeTitle
+        self.localSkipSegments = localSkipSegments
         self.seasonNumber = seasonNumber
         self.onWatchNext = onWatchNext
         self.subtitlesURL = subtitlesURL
@@ -393,7 +396,19 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         view.bringSubviewToFront(subtitleStackView)
         subtitleStackView.isHidden = !SubtitleSettingsManager.shared.settings.enabled
         
-        AniListMutation().fetchMalID(animeId: aniListID) { [weak self] result in
+        
+        if let segs = localSkipSegments {
+            for s in segs {
+                if s.0 == "op" {
+                    self.skipIntervals.op = CMTimeRange(start: CMTime(seconds: s.1, preferredTimescale: 600), end: CMTime(seconds: s.2, preferredTimescale: 600))
+                } else if s.0 == "ed" {
+                    self.skipIntervals.ed = CMTimeRange(start: CMTime(seconds: s.1, preferredTimescale: 600), end: CMTime(seconds: s.2, preferredTimescale: 600))
+                }
+            }
+            self.updateSegments()
+        }
+if localSkipSegments == nil {
+            AniListMutation().fetchMalID(animeId: aniListID) { [weak self] result in
             switch result {
             case .success(let mal):
                 self?.malID = mal
@@ -402,6 +417,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             case .failure(let error):
                 Logger.shared.log("Unable to fetch MAL ID: \(error)",type:"Error")
             }
+        }
         }
         
         for control in controlsToHide {

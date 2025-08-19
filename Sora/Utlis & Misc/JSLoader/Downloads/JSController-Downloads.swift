@@ -1739,3 +1739,85 @@ enum DownloadQueueStatus: Equatable {
 
     
 }
+
+// MARK: - AniSkip Sidecar (OP/ED) Fetch
+extension JSController {
+    /// Fetches OP & ED skip timestamps (AniSkip) and writes a minimal sidecar JSON next to the persisted video.
+    /// Uses MAL id for fillers when available; falls back to AniList otherwise.
+    func fetchSkipTimestampsFor(request: JSActiveDownload,
+                                persistentURL: URL,
+                                completion: @escaping (Bool) -> Void) {
+        // Determine preferred ID
+        let epNumber = request.metadata?.episode ?? 0
+        let useMAL = (request.isFiller == true) && (request.malID != nil)
+        let idType = useMAL ? "mal" : "anilist"
+        guard let seriesID = useMAL ? request.malID : request.aniListID else {
+            print("[SkipSidecar] Missing series ID for AniSkip (MAL/AniList)")
+            completion(false)
+            return
+        }
+
+        // Single AniSkip v1 call for both OP/ED
+        guard let url = URL(string: "https://api.aniskip.com/v1/skip-times/\(seriesID)/\(epNumber)?types=op&types=ed") else {
+            completion(False)
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            if let e = error {
+                print("[SkipSidecar] AniSkip fetch error: \(e.localizedDescription)")
+                completion(false)
+                return
+            }
+            guard let data = data else {
+                completion(false)
+                return
+            }
+
+            struct Resp: Decodable { let found: Bool; let results: [Res]? }
+            struct Res: Decodable { let skip_type: String; let interval: Interval }
+            struct Interval: Decodable { let start_time: Double; let end_time: Double }
+
+            var opRange: (Double, Double)? = nil
+            var edRange: (Double, Double)? = nil
+
+            if let r = try? JSONDecoder().decode(Resp.self, from: data), r.found, let arr = r.results {
+                for item in arr {
+                    if item.skip_type == "op" { opRange = (item.interval.start_time, item.interval.end_time) }
+                    if item.skip_type == "ed" { edRange = (item.interval.start_time, item.interval.end_time) }
+                }
+            }
+
+            if opRange == nil && edRange == nil {
+                completion(false)
+                return
+            }
+
+            // Determine sidecar path next to the persisted video file
+            let dir = persistentURL.deletingLastPathComponent()
+            let baseName = persistentURL.deletingPathExtension().lastPathComponent
+            let sidecar = dir.appendingPathComponent(baseName + ".skip.json")
+
+            var payload: [String: Any] = [
+                "source": "aniskip",
+                "idType": idType,
+                "episode": epNumber,
+                "createdAt": ISO8601DateFormatter().string(from: Date())
+            ]
+            if let aid = request.aniListID { payload["anilistId"] = aid }
+            if let mid = request.malID { payload["malId"] = mid }
+            if let op = opRange { payload["op"] = ["start": op.0, "end": op.1] }
+            if let ed = edRange { payload["ed"] = ["start": ed.0, "end": ed.1] }
+
+            do {
+                let json = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
+                try json.write(to: sidecar, options: .atomic)
+                print("[SkipSidecar] Wrote sidecar at: \(sidecar.path)")
+                completion(true)
+            } catch {
+                print("[SkipSidecar] Sidecar write error: \(error.localizedDescription)")
+                completion(false)
+            }
+        }.resume()
+    }
+}

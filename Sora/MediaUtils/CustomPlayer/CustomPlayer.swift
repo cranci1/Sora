@@ -48,9 +48,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var isPlaying = true
     var currentTimeVal: Double = 0.0
     var duration: Double = 0.0
-    
-    let localSkipSegments: [(String, Double, Double)]?
-var isVideoLoaded = false
+    var isVideoLoaded = false
     
     private var isHoldPauseEnabled: Bool {
         UserDefaults.standard.bool(forKey: "holdForPauseEnabled")
@@ -154,6 +152,7 @@ var isVideoLoaded = false
     
     private var malID: Int?
     private var skipIntervals: (op: CMTimeRange?, ed: CMTimeRange?) = (nil, nil)
+    private var preloadedSkipInfo: SkipInfo? = nil
     
     private var skipIntroButton: UIButton!
     private var skipOutroButton: UIButton!
@@ -268,8 +267,9 @@ var isVideoLoaded = false
          onWatchNext: @escaping () -> Void,
          subtitlesURL: String?,
          aniListID: Int,
+         skipInfo: SkipInfo? = nil,
          totalEpisodes: Int,
-         episodeImageUrl: String, localSkipSegments: [(String, Double, Double)]? = nil, headers:[String:String]?) {
+         episodeImageUrl: String,headers:[String:String]?) {
         
         self.module = module
         self.streamURL = urlString
@@ -278,11 +278,11 @@ var isVideoLoaded = false
         self.episodeNumber = episodeNumber
         self.episodeImageUrl = episodeImageUrl
         self.episodeTitle = episodeTitle
-        self.localSkipSegments = localSkipSegments
         self.seasonNumber = seasonNumber
         self.onWatchNext = onWatchNext
         self.subtitlesURL = subtitlesURL
         self.aniListID = aniListID
+        self.preloadedSkipInfo = skipInfo
         self.headers = headers
         self.totalEpisodes = totalEpisodes
         
@@ -396,19 +396,12 @@ var isVideoLoaded = false
         view.bringSubviewToFront(subtitleStackView)
         subtitleStackView.isHidden = !SubtitleSettingsManager.shared.settings.enabled
         
-        
-        if let segs = localSkipSegments {
-            for s in segs {
-                if s.0 == "op" {
-                    self.skipIntervals.op = CMTimeRange(start: CMTime(seconds: s.1, preferredTimescale: 600), end: CMTime(seconds: s.2, preferredTimescale: 600))
-                } else if s.0 == "ed" {
-                    self.skipIntervals.ed = CMTimeRange(start: CMTime(seconds: s.1, preferredTimescale: 600), end: CMTime(seconds: s.2, preferredTimescale: 600))
-                }
-            }
+        if let info = preloadedSkipInfo {
+            if let s = info.opStart, let e = info.opEnd { self.skipIntervals.op = CMTimeRange(start: CMTime(seconds: s, preferredTimescale: 600), end: CMTime(seconds: e, preferredTimescale: 600)) }
+            if let s = info.edStart, let e = info.edEnd { self.skipIntervals.ed = CMTimeRange(start: CMTime(seconds: s, preferredTimescale: 600), end: CMTime(seconds: e, preferredTimescale: 600)) }
             self.updateSegments()
         }
-if localSkipSegments == nil {
-            AniListMutation().fetchMalID(animeId: aniListID) { [weak self] result in
+        AniListMutation().fetchMalID(animeId: aniListID) { [weak self] result in
             switch result {
             case .success(let mal):
                 self?.malID = mal
@@ -417,7 +410,6 @@ if localSkipSegments == nil {
             case .failure(let error):
                 Logger.shared.log("Unable to fetch MAL ID: \(error)",type:"Error")
             }
-        }
         }
         
         for control in controlsToHide {

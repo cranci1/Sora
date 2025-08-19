@@ -14,29 +14,28 @@ struct DownloadRequest {
     let headers: [String: String]
     let title: String?
     let imageURL: URL?
-    let aniListID: Int?
     let isEpisode: Bool
     let showTitle: String?
     let season: Int?
     let episode: Int?
     let subtitleURL: URL?
     let showPosterURL: URL?
+    let anilistId: Int?
     
     init(url: URL, headers: [String: String], title: String? = nil, imageURL: URL? = nil, 
-         aniListID: Int? = nil, 
          isEpisode: Bool = false, showTitle: String? = nil, season: Int? = nil, 
-         episode: Int? = nil, subtitleURL: URL? = nil, showPosterURL: URL? = nil) {
+         episode: Int? = nil, subtitleURL: URL? = nil, showPosterURL: URL? = nil, anilistId: Int? = nil) {
         self.url = url
         self.headers = headers
         self.title = title
         self.imageURL = imageURL
-        self.aniListID = aniListID
         self.isEpisode = isEpisode
         self.showTitle = showTitle
         self.season = season
         self.episode = episode
         self.subtitleURL = subtitleURL
         self.showPosterURL = showPosterURL
+        self.anilistId = anilistId
     }
 }
 
@@ -54,12 +53,14 @@ struct QualityOption {
 
 extension JSController {
     
-    func downloadWithM3U8Support(url: URL, headers: [String: String], title: String? = nil, imageURL: URL? = nil, aniListID: Int? = nil, isEpisode: Bool = false, showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
+    func downloadWithM3U8Support(url: URL, headers: [String: String], title: String? = nil, 
+                                imageURL: URL? = nil, isEpisode: Bool = false, 
+                                showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
                                 subtitleURL: URL? = nil, showPosterURL: URL? = nil,
                                 completionHandler: ((Bool, String) -> Void)? = nil) {
         
         let request = DownloadRequest(
-            url: url, headers: headers, title: title, imageURL: imageURL, aniListID: aniListID,
+            url: url, headers: headers, title: title, imageURL: imageURL,
             isEpisode: isEpisode, showTitle: showTitle, season: season, 
             episode: episode, subtitleURL: subtitleURL, showPosterURL: showPosterURL
         )
@@ -95,7 +96,7 @@ extension JSController {
                 if let qualityURL = URL(string: selectedQuality.url) {
                     let qualityRequest = DownloadRequest(
                         url: qualityURL, headers: request.headers, title: request.title,
-                        imageURL: request.imageURL, aniListID: request.aniListID, isEpisode: request.isEpisode, 
+                        imageURL: request.imageURL, isEpisode: request.isEpisode, 
                         showTitle: request.showTitle, season: request.season,
                         episode: request.episode, subtitleURL: request.subtitleURL,
                         showPosterURL: request.showPosterURL
@@ -123,12 +124,13 @@ extension JSController {
     
     
     func downloadMP4(url: URL, headers: [String: String], title: String? = nil, 
-                   aniListID: Int? = nil, imageURL: URL? = nil, aniListID: Int? = nil, isEpisode: Bool = false, showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
+                   imageURL: URL? = nil, isEpisode: Bool = false, 
+                   showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
                    subtitleURL: URL? = nil, showPosterURL: URL? = nil,
                    completionHandler: ((Bool, String) -> Void)? = nil) {
         
         let request = DownloadRequest(
-            url: url, headers: headers, title: title, imageURL: imageURL, aniListID: aniListID,
+            url: url, headers: headers, title: title, imageURL: imageURL,
             isEpisode: isEpisode, showTitle: showTitle, season: season,
             episode: episode, subtitleURL: subtitleURL, showPosterURL: showPosterURL
         )
@@ -399,7 +401,6 @@ extension JSController {
     private func downloadWithOriginalMethod(request: DownloadRequest, completionHandler: ((Bool, String) -> Void)?) {
         self.startDownload(
             url: request.url,
-            aniListID: request.aniListID,
             headers: request.headers,
             title: request.title,
             imageURL: request.imageURL,
@@ -409,6 +410,7 @@ extension JSController {
             episode: request.episode,
             subtitleURL: request.subtitleURL,
             showPosterURL: request.showPosterURL,
+            anilistId: request.anilistId,
             completionHandler: completionHandler
         )
     }

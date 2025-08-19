@@ -2233,7 +2233,6 @@ struct MediaInfoView: View {
                 imageURL: episodeThumbnailURL,
                 module: self.module,
                 isEpisode: true,
-                aniListID: self.itemID,
                 showTitle: self.title,
                 season: 1,
                 episode: episode.number,

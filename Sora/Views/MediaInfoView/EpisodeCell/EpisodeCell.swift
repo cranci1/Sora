@@ -691,7 +691,13 @@ private extension EpisodeCell {
         let fullEpisodeTitle = episodeTitle.isEmpty ? baseTitle : "\(baseTitle): \(episodeTitle)"
         let animeTitle = parentTitle.isEmpty ? "Unknown Anime" : parentTitle
         
-        jsController.downloadWithStreamTypeSupport(url: url, headers: headers, title: fullEpisodeTitle, imageURL: episodeThumbnailURL, module: module, isEpisode: true, aniListID: itemID, 
+        jsController.downloadWithStreamTypeSupport(
+            url: url,
+            headers: headers,
+            title: fullEpisodeTitle,
+            imageURL: episodeThumbnailURL,
+            module: module,
+            isEpisode: true,
             showTitle: animeTitle,
             season: 1,
             episode: episodeID + 1,

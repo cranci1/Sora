@@ -14,7 +14,7 @@ struct EpisodeCell: View {
     let episodeIndex: Int
     let episode: String
     let episodeID: Int
-    let malID: Int? = nil
+    let malID: Int?
     let progress: Double
     let itemID: Int
     let totalEpisodes: Int?

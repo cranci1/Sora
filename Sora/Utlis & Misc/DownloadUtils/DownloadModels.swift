@@ -414,7 +414,9 @@ struct AssetMetadata: Codable {
     let episodeTitle: String?
     let seasonNumber: Int?
     
-    init(
+    
+    let anilistId: Int?
+init(
         title: String,
         overview: String? = nil,
         posterURL: URL? = nil,
@@ -425,7 +427,8 @@ struct AssetMetadata: Codable {
         episode: Int? = nil,
         showPosterURL: URL? = nil,
         episodeTitle: String? = nil,
-        seasonNumber: Int? = nil
+        seasonNumber: Int? = nil,
+        anilistId: Int? = nil
     ) {
         self.title = title
         self.overview = overview
@@ -438,7 +441,9 @@ struct AssetMetadata: Codable {
         self.showPosterURL = showPosterURL
         self.episodeTitle = episodeTitle
         self.seasonNumber = seasonNumber
-    }
+    
+        self.anilistId = anilistId
+}
 }
 
 // MARK: - New Group Model

@@ -368,6 +368,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupPipIfSupported()
         setupTimeBatteryIndicator()
         setupTopRowLayout()
+        self.loadLocalSkipTimestampsIfAvailable()
+
         updateSkipButtonsVisibility()
         
         if !isSkip85Visible {
@@ -399,6 +401,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 self?.malID = mal
                 self?.fetchSkipTimes(type: "op")
                 self?.fetchSkipTimes(type: "ed")
+                self?.loadLocalSkipTimestampsIfAvailable()
             case .failure(let error):
                 Logger.shared.log("Unable to fetch MAL ID: \(error)",type:"Error")
             }
@@ -3863,4 +3866,57 @@ class GradientBlurButton: UIButton {
         cleanupVisualEffects()
         super.removeFromSuperview()
     }
+
+private func loadLocalSkipTimestampsIfAvailable() {
+    // Try from subtitle file path first
+    var candidateURLs: [URL] = []
+    if let sub = subtitlesURL, !sub.isEmpty, let u = URL(string: sub) {
+        candidateURLs.append(u)
+    }
+    if let u = URL(string: streamURL) {
+        candidateURLs.append(u)
+    }
+    for u in candidateURLs {
+        // Ensure file URL
+        let fileURL: URL
+        if u.isFileURL {
+            fileURL = u
+        } else if let url = URL(string: u.absoluteString), url.isFileURL {
+            fileURL = url
+        } else {
+            continue
+        }
+        let base = fileURL.deletingPathExtension()
+        let candidates = [
+            base.appendingPathExtension("skip.json"),
+            base.deletingLastPathComponent().appendingPathComponent(base.lastPathComponent + ".skip.json")
+        ]
+        for jsonURL in candidates {
+            if FileManager.default.fileExists(atPath: jsonURL.path),
+               let data = try? Data(contentsOf: jsonURL),
+               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let op = json["op"] as? [String: Any],
+                   let s = op["start"] as? Double, let e = op["end"] as? Double {
+                    self.skipIntervals.op = CMTimeRange(
+                        start: CMTime(seconds: s, preferredTimescale: 600),
+                        end: CMTime(seconds: e, preferredTimescale: 600)
+                    )
+                }
+                if let ed = json["ed"] as? [String: Any],
+                   let s = ed["start"] as? Double, let e = ed["end"] as? Double {
+                    self.skipIntervals.ed = CMTimeRange(
+                        start: CMTime(seconds: s, preferredTimescale: 600),
+                        end: CMTime(seconds: e, preferredTimescale: 600)
+                    )
+                }
+                if self.duration > 0 {
+                    self.updateSegments()
+                }
+                self.updateSkipButtonsVisibility()
+                return
+            }
+        }
+    }
+}
+
 }

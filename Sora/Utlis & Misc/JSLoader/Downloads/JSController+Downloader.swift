@@ -14,7 +14,9 @@ struct DownloadRequest {
     let headers: [String: String]
     let title: String?
     let imageURL: URL?
-    let isEpisode: Bool
+    
+    let aniListID: Int?
+let isEpisode: Bool
     let showTitle: String?
     let season: Int?
     let episode: Int?
@@ -57,10 +59,11 @@ extension JSController {
                                 subtitleURL: URL? = nil, showPosterURL: URL? = nil,
                                 completionHandler: ((Bool, String) -> Void)? = nil) {
         
+        let pendingAni = UserDefaults.standard.object(forKey: "PendingAniListIDForDownload") as? Int
         let request = DownloadRequest(
             url: url, headers: headers, title: title, imageURL: imageURL,
             isEpisode: isEpisode, showTitle: showTitle, season: season, 
-            episode: episode, subtitleURL: subtitleURL, showPosterURL: showPosterURL
+            episode: episode, subtitleURL: subtitleURL, showPosterURL: showPosterURL, aniListID: pendingAni
         )
         
         logDownloadStart(request: request)
@@ -92,13 +95,7 @@ extension JSController {
                 self.logM3U8QualitySelected(quality: selectedQuality)
                 
                 if let qualityURL = URL(string: selectedQuality.url) {
-                    let qualityRequest = DownloadRequest(
-                        url: qualityURL, headers: request.headers, title: request.title,
-                        imageURL: request.imageURL, isEpisode: request.isEpisode, 
-                        showTitle: request.showTitle, season: request.season,
-                        episode: request.episode, subtitleURL: request.subtitleURL,
-                        showPosterURL: request.showPosterURL
-                    )
+                    let qualityRequest = DownloadRequest(url: qualityURL, headers: request.headers, title: request.title, imageURL: request.imageURL, isEpisode: request.isEpisode, showTitle: request.showTitle, season: request.season, episode: request.episode, subtitleURL: request.subtitleURL, showPosterURL: request.showPosterURL, aniListID: request.aniListID)
                     self.downloadWithOriginalMethod(request: qualityRequest, completionHandler: completionHandler)
                 } else {
                     self.logM3U8InvalidURL()

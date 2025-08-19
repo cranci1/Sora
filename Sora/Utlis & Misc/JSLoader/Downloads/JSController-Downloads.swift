@@ -114,11 +114,13 @@ extension JSController {
         subtitleURL: URL? = nil,
         showPosterURL: URL? = nil,
         module: ScrapingModule? = nil,
+        aniListID: Int? = nil,
         completionHandler: ((Bool, String) -> Void)? = nil
     ) {
         // If a module is provided, use the stream type aware download
         if let module = module {
             // Use the stream type aware download method
+            if let anilist = aniListID { UserDefaults.standard.set(anilist, forKey: "PendingAniListIDForDownload") } else { UserDefaults.standard.removeObject(forKey: "PendingAniListIDForDownload") }
             downloadWithStreamTypeSupport(
                 url: url,
                 headers: headers,
@@ -1214,7 +1216,10 @@ extension JSController: AVAssetDownloadDelegate {
         }
         
         // If there's a subtitle URL, download it now that the video is saved
-        if let subtitleURL = download.subtitleURL {
+        
+        // Save OP/ED skip timestamps JSON in parallel
+        saveSkipTimestampsJSON(for: persistentURL, anilistId: newAsset.metadata?.anilistId, episodeNumber: newAsset.metadata?.episode)
+if let subtitleURL = download.subtitleURL {
             downloadSubtitle(subtitleURL: subtitleURL, assetID: newAsset.id.uuidString)
         } else {
             // No subtitle URL, so we can consider the download complete
@@ -1647,3 +1652,68 @@ enum DownloadQueueStatus: Equatable {
     /// Download has been completed
     case completed
 } 
+
+
+// MARK: - AniSkip Timestamps Saving
+private func saveSkipTimestampsJSON(for videoURL: URL, anilistId: Int?, episodeNumber: Int?) {
+    // Determine destination JSON path next to the video file
+    let base = videoURL.deletingPathExtension()
+    let jsonURL = base.appendingPathExtension("skip.json")
+
+    func writeJSON(op: (Double,Double)?, ed: (Double,Double)?, mal: Int?) {
+        var dict: [String: Any] = [
+            "source": "aniskip",
+            "createdAt": ISO8601DateFormatter().string(from: Date())
+        ]
+        if let mal = mal { dict["malId"] = mal }
+        if let aid = anilistId { dict["anilistId"] = aid }
+        if let ep = episodeNumber { dict["episode"] = ep }
+        if let op = op {
+            dict["op"] = ["start": op.0, "end": op.1]
+        }
+        if let ed = ed {
+            dict["ed"] = ["start": ed.0, "end": ed.1]
+        }
+        do {
+            let data = try JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted])
+            try data.write(to: jsonURL, options: .atomic)
+        } catch {
+            print("Failed to write skip JSON: \(error.localizedDescription)")
+        }
+    }
+
+    guard let anilistId = anilistId, anilistId > 0, let ep = episodeNumber else {
+        // No IDs; nothing to fetch
+        return
+    }
+    // Map AniList -> MAL then fetch AniSkip for both OP and ED
+    AniListMutation().fetchMalID(animeId: anilistId) { result in
+        switch result {
+        case .success(let mal):
+            let group = DispatchGroup()
+            var opInterval: (Double,Double)? = nil
+            var edInterval: (Double,Double)? = nil
+
+            func fetch(type: String, assign: @escaping ((Double,Double))->Void) {
+                guard let url = URL(string: "https://api.aniskip.com/v2/skip-times/\(mal)/\(ep)?types=\(type)&episodeLength=0") else { return }
+                group.enter()
+                URLSession.shared.dataTask(with: url) { data, _, _ in
+                    defer { group.leave() }
+                    guard let data = data,
+                          let resp = try? JSONDecoder().decode(AniSkipResponse.self, from: data),
+                          resp.found, let interval = resp.results.first?.interval else { return }
+                    assign((interval.startTime, interval.endTime))
+                }.resume()
+            }
+
+            fetch(type: "op") { opInterval = $0 }
+            fetch(type: "ed") { edInterval = $0 }
+
+            group.notify(queue: .global(qos: .utility)) {
+                writeJSON(op: opInterval, ed: edInterval, mal: mal)
+            }
+        case .failure(let e):
+            print("Failed to map AniList to MAL for skip JSON: \(e.localizedDescription)")
+        }
+    }
+}

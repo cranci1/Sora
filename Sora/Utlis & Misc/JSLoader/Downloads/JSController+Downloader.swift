@@ -20,11 +20,10 @@ struct DownloadRequest {
     let episode: Int?
     let subtitleURL: URL?
     let showPosterURL: URL?
-    let anilistId: Int?
     
     init(url: URL, headers: [String: String], title: String? = nil, imageURL: URL? = nil, 
          isEpisode: Bool = false, showTitle: String? = nil, season: Int? = nil, 
-         episode: Int? = nil, subtitleURL: URL? = nil, showPosterURL: URL? = nil, anilistId: Int? = nil) {
+         episode: Int? = nil, subtitleURL: URL? = nil, showPosterURL: URL? = nil) {
         self.url = url
         self.headers = headers
         self.title = title
@@ -35,7 +34,6 @@ struct DownloadRequest {
         self.episode = episode
         self.subtitleURL = subtitleURL
         self.showPosterURL = showPosterURL
-        self.anilistId = anilistId
     }
 }
 
@@ -410,7 +408,6 @@ extension JSController {
             episode: request.episode,
             subtitleURL: request.subtitleURL,
             showPosterURL: request.showPosterURL,
-            anilistId: request.anilistId,
             completionHandler: completionHandler
         )
     }

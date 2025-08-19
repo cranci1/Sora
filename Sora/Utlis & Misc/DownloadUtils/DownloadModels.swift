@@ -55,18 +55,6 @@ enum DownloadType: String, Codable {
         case .episode:
             return "Episode"
         }
-
-// MARK: - Skip Information
-struct SkipInfo: Codable, Equatable {
-    let opStart: Double?
-    let opEnd: Double?
-    let edStart: Double?
-    let edEnd: Double?
-    let introURL: String?
-    let outroURL: String?
-}
-
-
     }
 }
 
@@ -82,7 +70,6 @@ struct DownloadedAsset: Identifiable, Codable, Equatable {
     // New fields for subtitle support
     let subtitleURL: URL?
     let localSubtitleURL: URL?
-    let skipInfo: SkipInfo?
     
     // For caching purposes, but not stored as part of the codable object
     private var _cachedFileSize: Int64? = nil
@@ -426,7 +413,6 @@ struct AssetMetadata: Codable {
     let showPosterURL: URL? // Main show poster URL (distinct from episode-specific images)
     let episodeTitle: String?
     let seasonNumber: Int?
-    let anilistId: Int?
     
     init(
         title: String,

@@ -34,7 +34,6 @@ extension JSController {
         showTitle: String? = nil, 
         season: Int? = nil, 
         episode: Int? = nil,
-        anilistId: Int? = nil,
         subtitleURL: URL? = nil,
         showPosterURL: URL? = nil,
         completionHandler: ((Bool, String) -> Void)? = nil

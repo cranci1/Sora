@@ -1208,31 +1208,6 @@ extension JSController: AVAssetDownloadDelegate {
         
         // Add to saved assets and save
         DownloadPersistence.upsert(newAsset)
-        // Fetch skip info in background if we know AniList ID & episode number
-        if let meta = newAsset.metadata, let aId = meta.anilistId, let ep = meta.episodeNumber {
-            self.fetchSkipInfo(anilistId: aId, episodeNumber: ep) { info in
-                guard let info = info else { return }
-                let updated = DownloadedAsset(
-                    id: newAsset.id,
-                    name: newAsset.name,
-                    downloadDate: newAsset.downloadDate,
-                    originalURL: newAsset.originalURL,
-                    localURL: newAsset.localURL,
-                    imageURL: newAsset.imageURL,
-                    fileSize: newAsset.fileSize,
-                    type: newAsset.type,
-                    progress: newAsset.progress,
-                    headers: newAsset.headers,
-                    referer: newAsset.referer,
-                    userAgent: newAsset.userAgent,
-                    metadata: newAsset.metadata,
-                    subtitleURL: newAsset.subtitleURL,
-                    localSubtitleURL: newAsset.localSubtitleURL,
-                    skipInfo: info
-                )
-                DownloadPersistence.upsert(updated)
-            }
-        }
         DispatchQueue.main.async { [weak self] in
             self?.savedAssets = DownloadPersistence.load()
             self?.objectWillChange.send()
@@ -1671,35 +1646,4 @@ enum DownloadQueueStatus: Equatable {
     case downloading
     /// Download has been completed
     case completed
-
-// MARK: - Offline Skip Info (lightweight)
-private struct _AniSkipEntry: Codable { let interval: _Interval }
-private struct _Interval: Codable { let startTime: Double; let endTime: Double }
-private struct _AniSkipAPIResponse: Codable { let found: Bool; let results: [String:[_AniSkipEntry]]? }
-
-private func fetchSkipInfo(anilistId: Int, episodeNumber: Int, completion: @escaping (SkipInfo?) -> Void) {
-    // Convert AniList -> MAL
-    AniListMutation().fetchMalID(animeId: anilistId) { res in
-        guard case .success(let malId) = res, let malId = malId else { completion(nil); return }
-        // Build requests for OP and ED
-        let types = ["op","ed"]
-        var info = SkipInfo(opStart: nil, opEnd: nil, edStart: nil, edEnd: nil, introURL: nil, outroURL: nil)
-        let group = DispatchGroup()
-        for t in types {
-            group.enter()
-            let urlStr = "https://api.aniskip.com/v2/skip-times/" + String(malId) + "?episode=" + String(episodeNumber) + "&types=" + t + "&anilistID=" + String(anilistId)
-            guard let url = URL(string: urlStr) else { group.leave(); continue }
-            URLSession.shared.dataTask(with: url) { data, _, _ in
-                defer { group.leave() }
-                guard let data = data, let resp = try? JSONDecoder().decode(_AniSkipAPIResponse.self, from: data), resp.found else { return }
-                if let entries = resp.results?[t], let first = entries.first {
-                    if t == "op" { info = SkipInfo(opStart: first.interval.startTime, opEnd: first.interval.endTime, edStart: info.edStart, edEnd: info.edEnd, introURL: nil, outroURL: nil) }
-                    if t == "ed" { info = SkipInfo(opStart: info.opStart, opEnd: info.opEnd, edStart: first.interval.startTime, edEnd: first.interval.endTime, introURL: nil, outroURL: nil) }
-                }
-            }.resume()
-        }
-        group.notify(queue: .main) { completion((info.opStart != nil || info.edStart != nil) ? info : nil) }
-    }
-}
-
 } 

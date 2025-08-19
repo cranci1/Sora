@@ -152,7 +152,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     private var malID: Int?
     private var skipIntervals: (op: CMTimeRange?, ed: CMTimeRange?) = (nil, nil)
-    private var preloadedSkipInfo: SkipInfo? = nil
     
     private var skipIntroButton: UIButton!
     private var skipOutroButton: UIButton!
@@ -267,7 +266,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
          onWatchNext: @escaping () -> Void,
          subtitlesURL: String?,
          aniListID: Int,
-         skipInfo: SkipInfo? = nil,
          totalEpisodes: Int,
          episodeImageUrl: String,headers:[String:String]?) {
         
@@ -282,7 +280,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         self.onWatchNext = onWatchNext
         self.subtitlesURL = subtitlesURL
         self.aniListID = aniListID
-        self.preloadedSkipInfo = skipInfo
         self.headers = headers
         self.totalEpisodes = totalEpisodes
         
@@ -396,11 +393,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         view.bringSubviewToFront(subtitleStackView)
         subtitleStackView.isHidden = !SubtitleSettingsManager.shared.settings.enabled
         
-        if let info = preloadedSkipInfo {
-            if let s = info.opStart, let e = info.opEnd { self.skipIntervals.op = CMTimeRange(start: CMTime(seconds: s, preferredTimescale: 600), end: CMTime(seconds: e, preferredTimescale: 600)) }
-            if let s = info.edStart, let e = info.edEnd { self.skipIntervals.ed = CMTimeRange(start: CMTime(seconds: s, preferredTimescale: 600), end: CMTime(seconds: e, preferredTimescale: 600)) }
-            self.updateSegments()
-        }
         AniListMutation().fetchMalID(animeId: aniListID) { [weak self] result in
             switch result {
             case .success(let mal):

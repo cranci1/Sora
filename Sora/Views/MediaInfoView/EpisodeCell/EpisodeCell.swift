@@ -976,6 +976,8 @@ private extension EpisodeCell {
             }
         }.resume()
     }
+
+    // Removed Jikan fetching from EpisodeCell. All filler/Jikan handling is now in MediaInfoView and passed in via `fillerEpisodes`.
     
     func handleFetchFailure(error: Error) {
         Logger.shared.log("Episode details fetch error: \(error.localizedDescription)", type: "Error")

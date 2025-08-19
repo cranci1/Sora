@@ -31,10 +31,10 @@ extension JSController {
             Logger.shared.log("Using HLS download method")
             downloadWithM3U8Support(
                 url: url,
-                aniListID: aniListID,
                 headers: headers,
                 title: title,
                 imageURL: imageURL,
+                aniListID: aniListID,
                 isEpisode: isEpisode,
                 showTitle: showTitle,
                 season: season,
@@ -47,10 +47,10 @@ extension JSController {
             Logger.shared.log("Using MP4 download method")
             downloadMP4(
                 url: url,
-                aniListID: aniListID,
                 headers: headers,
                 title: title,
                 imageURL: imageURL,
+                aniListID: aniListID,
                 isEpisode: isEpisode,
                 showTitle: showTitle,
                 season: season,

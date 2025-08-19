@@ -122,10 +122,10 @@ extension JSController {
             // Use the stream type aware download method
             downloadWithStreamTypeSupport(
                 url: url,
-                aniListID: aniListID,
                 headers: headers,
                 title: title,
                 imageURL: imageURL,
+                aniListID: aniListID,
                 module: module,
                 isEpisode: isEpisode,
                 showTitle: showTitle,
@@ -274,10 +274,10 @@ extension JSController {
             // Use the exact same method that manual downloads use
             downloadWithStreamTypeSupport(
                 url: queuedDownload.originalURL,
-                aniListID: queuedDownload.aniListID,
                 headers: queuedDownload.headers,
                 title: queuedDownload.title,
                 imageURL: queuedDownload.imageURL,
+                aniListID: queuedDownload.aniListID,
                 module: module,
                 isEpisode: queuedDownload.type == .episode,
                 showTitle: queuedDownload.metadata?.showTitle,
@@ -1223,7 +1223,7 @@ extension JSController: AVAssetDownloadDelegate {
         // Fetch and save AniSkip OP/ED markers as a sidecar (non-blocking, optional)
         if let isEp = download.metadata?.episode, isEp > 0 {
             let epNumber = isEp
-            fetchAndSaveAniSkipSidecar(aniListID: aniListID, episode: epNumber, assetID: newAsset.id.uuidString)
+            fetchAndSaveAniSkipSidecar(aniListID: download.aniListID, episode: epNumber, assetID: newAsset.id.uuidString)
         }
 DispatchQueue.main.async { [weak self] in
             self?.savedAssets = DownloadPersistence.load()
@@ -1719,4 +1719,3 @@ enum DownloadQueueStatus: Equatable {
             }
         }
     }
-

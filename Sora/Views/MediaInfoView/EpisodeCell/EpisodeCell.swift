@@ -83,6 +83,10 @@ struct EpisodeCell: View {
         seasonNumber: Int? = nil,
         fillerEpisodes: Set<Int>? = nil
     ) {
+    init(module: ScrapingModule, episodeIndex: Int, episodeID: Int, progress: Double, isBookmarked: Bool, state: EpisodeState, metadata: MediaInfoView.MediaMetadata, anilistID: Int? = nil, malID: Int? = nil, fillerEpisodes: Set<Int> = [], malIDFromParent: Int? = nil) {
+        self.init(module: module, episodeIndex: episodeIndex, episodeID: episodeID, malID: malID ?? malIDFromParent, progress: progress, isBookmarked: isBookmarked, state: state, metadata: metadata, anilistID: anilistID, fillerEpisodes: fillerEpisodes, malIDFromParent: malIDFromParent)
+    }
+    
         self.episodeIndex = episodeIndex
         self.episode = episode
         self.episodeID = episodeID

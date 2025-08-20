@@ -1799,3 +1799,21 @@ func fetchSkipTimestampsFor(request: JSActiveDownload, persistentURL: URL, compl
 
     
 }
+
+
+
+/// Temporary shim to resolve missing symbol error for `fetchSkipTimestampsFor(...)`.
+/// This instance method lives on `JSController` so unqualified calls inside the type resolve correctly.
+/// If a more complete global implementation exists elsewhere, consider delegating to it.
+extension JSController {
+    /// Fetch OP/ED skip timestamps sidecar for a finished download.
+    /// Currently acts as a no-op fallback to avoid build failures when the symbol is unavailable.
+    /// - Parameters:
+    ///   - request: The active download metadata.
+    ///   - persistentURL: Final URL where the video was persisted.
+    ///   - completion: Called with `true` on success, `false` on failure.
+    func fetchSkipTimestampsFor(request: JSActiveDownload, persistentURL: URL, completion: @escaping (Bool) -> Void) {
+        Logger.shared.log("[SkipSidecar] Fallback: fetchSkipTimestampsFor not implemented in this build.", type: "Download")
+        completion(false)
+    }
+}

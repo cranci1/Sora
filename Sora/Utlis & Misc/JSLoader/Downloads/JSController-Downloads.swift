@@ -1738,7 +1738,7 @@ extension JSController {
                 return
             }
 
-            // Build v2 URL and include separate query items for each type. The AniSkip API expects
+            // Build URL and include separate query items for each type. The AniSkip API expects
             // repeated `types` parameters, not a comma-separated list. Using URLComponents ensures
             // proper encoding of the query items.
             var components = URLComponents()
@@ -1847,6 +1847,11 @@ extension JSController {
                 let baseName = persistentURL.deletingPathExtension().lastPathComponent
                 let sidecar = dir.appendingPathComponent(baseName + ".skip.json")
                 
+                // Build the sidecar payload in the format expected by CustomMediaPlayer.
+                // The player expects a top-level "results" array where each entry
+                // contains a snake_case "skip_type" and an "interval" with
+                // "start_time" and "end_time" keys. Extra top-level metadata
+                // fields (e.g., source, malId) are ignored by the decoder.
                 var payload: [String: Any] = [
                     "source": "aniskip",
                     "idType": "mal",
@@ -1854,9 +1859,21 @@ extension JSController {
                     "episode": episodeNumber,
                     "createdAt": ISO8601DateFormatter().string(from: Date())
                 ]
-                if let op = opRange { payload["op"] = ["start": op.0, "end": op.1] }
-                if let ed = edRange { payload["ed"] = ["start": ed.0, "end": ed.1] }
-                
+                var resultsArray: [[String: Any]] = []
+                if let op = opRange {
+                    resultsArray.append([
+                        "skip_type": "op",
+                        "interval": ["start_time": op.0, "end_time": op.1]
+                    ])
+                }
+                if let ed = edRange {
+                    resultsArray.append([
+                        "skip_type": "ed",
+                        "interval": ["start_time": ed.0, "end_time": ed.1]
+                    ])
+                }
+                payload["results"] = resultsArray
+
                 do {
                     let json = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
                     try json.write(to: sidecar, options: .atomic)

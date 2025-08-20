@@ -1399,7 +1399,7 @@ struct EnhancedEpisodeRow: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(
-                                Color.red.opacity(colorScheme == .dark ? 0.20 : 0.10)
+                                (self.colorScheme == .dark ? Color.red.opacity(0.20) : Color.red.opacity(0.10))
                                     .clipShape(Capsule())
                             )
                             .overlay(

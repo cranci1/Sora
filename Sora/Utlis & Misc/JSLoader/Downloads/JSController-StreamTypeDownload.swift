@@ -44,7 +44,7 @@ extension JSController {
         let streamType = module.metadata.streamType.lowercased()
         
         if streamType == "hls" || streamType == "m3u8" || url.absoluteString.contains(".m3u8") {
-            Logger.shared.log("Using HLS download method")
+            Logger.shared.log("Using HLS download method", type: "Download")
             downloadWithM3U8Support(
                 url: url,
                 headers: headers,
@@ -62,7 +62,7 @@ extension JSController {
                 completionHandler: completionHandler
             )
         }else {
-            Logger.shared.log("Using MP4 download method")
+            Logger.shared.log("Using MP4 download method", type: "Download")
             downloadMP4(
                 url: url,
                 headers: headers,

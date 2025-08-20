@@ -102,11 +102,19 @@ extension JSController {
                 
                 if let qualityURL = URL(string: selectedQuality.url) {
                     let qualityRequest = DownloadRequest(
-                        url: qualityURL, headers: request.headers, title: request.title,
-                        imageURL: request.imageURL, isEpisode: request.isEpisode, 
-                        showTitle: request.showTitle, season: request.season,
-                        episode: request.episode, subtitleURL: request.subtitleURL,
-                        showPosterURL: request.showPosterURL
+                        url: qualityURL,
+                        headers: request.headers,
+                        title: request.title,
+                        imageURL: request.imageURL,
+                        isEpisode: request.isEpisode,
+                        showTitle: request.showTitle,
+                        season: request.season,
+                        episode: request.episode,
+                        subtitleURL: request.subtitleURL,
+                        showPosterURL: request.showPosterURL,
+                        aniListID: request.aniListID,
+                        malID: request.malID,
+                        isFiller: request.isFiller
                     )
                     self.downloadWithOriginalMethod(request: qualityRequest, completionHandler: completionHandler)
                 } else {
@@ -422,6 +430,9 @@ extension JSController {
             episode: request.episode,
             subtitleURL: request.subtitleURL,
             showPosterURL: request.showPosterURL,
+            aniListID: request.aniListID,
+            malID: request.malID,
+            isFiller: request.isFiller,
             completionHandler: completionHandler
         )
     }

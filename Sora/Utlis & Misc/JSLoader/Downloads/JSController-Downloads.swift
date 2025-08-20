@@ -114,6 +114,9 @@ extension JSController {
         subtitleURL: URL? = nil,
         showPosterURL: URL? = nil,
         module: ScrapingModule? = nil,
+        aniListID: Int? = nil,
+        malID: Int? = nil,
+        isFiller: Bool? = nil,
         completionHandler: ((Bool, String) -> Void)? = nil
     ) {
         // If a module is provided, use the stream type aware download
@@ -131,6 +134,9 @@ extension JSController {
                 episode: episode,
                 subtitleURL: subtitleURL,
                 showPosterURL: showPosterURL,
+                aniListID: aniListID,
+                malID: malID,
+                isFiller: isFiller,
                 completionHandler: completionHandler
             )
             return
@@ -177,7 +183,10 @@ extension JSController {
             subtitleURL: subtitleURL,
             asset: asset,
             headers: headers,
-            module: module
+            module: module,
+            aniListID: aniListID,
+            malID: malID,
+            isFiller: isFiller
         )
         
         // Add to the download queue

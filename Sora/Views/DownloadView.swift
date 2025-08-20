@@ -1399,8 +1399,8 @@ struct EnhancedEpisodeRow: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(
-                                Capsule()
-                                    .fill(Color.red.opacity(colorScheme == .dark ? 0.20 : 0.10))
+                                Color.red.opacity(colorScheme == .dark ? 0.20 : 0.10)
+                                    .clipShape(Capsule())
                             )
                             .overlay(
                                 Capsule()

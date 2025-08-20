@@ -1226,22 +1226,40 @@ extension JSController: AVAssetDownloadDelegate {
         // If there's a subtitle URL, download it now that the video is saved
         // Also fetch OP/ED skip timestamps in parallel and save simple sidecar JSON next to the video
         
-if download.metadata?.episode != nil && download.type == .episode {
+        if download.metadata?.episode != nil && download.type == .episode {
             // Ensure we have MAL ID just like the streaming path (CustomPlayer)
             if download.malID == nil, let aid = download.aniListID {
                 AniListMutation().fetchMalID(animeId: aid) { [weak self] result in
                     switch result {
                     case .success(let mal):
-                        // Update the active download in-place with MAL ID
+                        // Replace the download entry with a new instance carrying MAL ID
                         if let idx = self?.activeDownloads.firstIndex(where: { $0.id == download.id }) {
-                            var updated = self?.activeDownloads[idx]
-                            updated?.malID = mal
-                            if let up = updated { self?.activeDownloads[idx] = up }
-                            self?.fetchSkipTimestampsFor(request: up, persistentURL: persistentURL) { ok in
+                            let cur = self?.activeDownloads[idx] ?? download
+                            let updated = JSActiveDownload(
+                                id: cur.id,
+                                originalURL: cur.originalURL,
+                                progress: cur.progress,
+                                task: cur.task,
+                                urlSessionTask: cur.urlSessionTask,
+                                queueStatus: cur.queueStatus,
+                                type: cur.type,
+                                metadata: cur.metadata,
+                                title: cur.title,
+                                imageURL: cur.imageURL,
+                                subtitleURL: cur.subtitleURL,
+                                asset: cur.asset,
+                                headers: cur.headers,
+                                module: cur.module,
+                                aniListID: cur.aniListID,
+                                malID: mal,
+                                isFiller: cur.isFiller
+                            )
+                            self?.activeDownloads[idx] = updated
+                            self?.fetchSkipTimestampsFor(request: updated, persistentURL: persistentURL) { ok in
                                 if ok {
-                                    Logger.shared.log("[SkipSidecar] Saved OP/ED sidecar for episode \(up.metadata?.episode ?? -1) at: \(persistentURL.path)", type: "Download")
+                                    Logger.shared.log("[SkipSidecar] Saved OP/ED sidecar for episode \(updated.metadata?.episode ?? -1) at: \(persistentURL.path)", type: "Download")
                                 } else {
-                                    Logger.shared.log("[SkipSidecar] Failed to save sidecar for episode \(up.metadata?.episode ?? -1)", type: "Download")
+                                    Logger.shared.log("[SkipSidecar] Failed to save sidecar for episode \(updated.metadata?.episode ?? -1)", type: "Download")
                                 }
                             }
                         }
@@ -1261,8 +1279,6 @@ if download.metadata?.episode != nil && download.type == .episode {
             }
         }
 
-        }
-        
         if let subtitleURL = download.subtitleURL {
             downloadSubtitle(subtitleURL: subtitleURL, assetID: newAsset.id.uuidString)
         } else {
@@ -1279,7 +1295,7 @@ if download.metadata?.episode != nil && download.type == .episode {
                 ])
             }
         }
-        
+
         // Clean up the download task
         cleanupDownloadTask(assetDownloadTask)
         

@@ -1392,6 +1392,22 @@ struct EnhancedEpisodeRow: View {
             VStack(alignment: .leading) {
                 Text("Episode \(asset.metadata?.episode ?? 0)")
                     .font(.system(size: 15))
+
+                    if asset.metadata?.isFiller == true {
+                        Text("Filler")
+                            .font(.system(size: 12, weight: .semibold))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Color.red.opacity(colorScheme == .dark ? 0.20 : 0.10))
+                            )
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.red.opacity(0.24), lineWidth: 0.6)
+                            )
+                            .foregroundColor(.red)
+                    }
                 if let title = asset.metadata?.title {
                     Text(title)
                         .font(.system(size: 13))

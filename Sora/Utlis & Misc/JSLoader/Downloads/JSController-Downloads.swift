@@ -162,7 +162,8 @@ extension JSController {
             showTitle: animeTitle,
             season: season,
             episode: episode,
-            showPosterURL: showPosterURL // Main show poster
+            showPosterURL: showPosterURL, // Main show poster
+            isFiller: isFiller
         )
         
         // Create the download ID now so we can use it for notifications
@@ -1224,14 +1225,42 @@ extension JSController: AVAssetDownloadDelegate {
         
         // If there's a subtitle URL, download it now that the video is saved
         // Also fetch OP/ED skip timestamps in parallel and save simple sidecar JSON next to the video
-        if download.metadata?.episode != nil && download.type == .episode {
-            fetchSkipTimestampsFor(request: download, persistentURL: persistentURL) { ok in
-                if ok {
-                    Logger.shared.log("[SkipSidecar] Saved OP/ED sidecar for episode \(download.metadata?.episode ?? -1) at: \(persistentURL.path)", type: "Download")
-                } else {
-                    Logger.shared.log("[SkipSidecar] Failed to save sidecar for episode \(download.metadata?.episode ?? -1)", type: "Download")
+        
+if download.metadata?.episode != nil && download.type == .episode {
+            // Ensure we have MAL ID just like the streaming path (CustomPlayer)
+            if download.malID == nil, let aid = download.aniListID {
+                AniListMutation().fetchMalID(animeId: aid) { [weak self] result in
+                    switch result {
+                    case .success(let mal):
+                        // Update the active download in-place with MAL ID
+                        if let idx = self?.activeDownloads.firstIndex(where: { $0.id == download.id }) {
+                            var updated = self?.activeDownloads[idx]
+                            updated?.malID = mal
+                            if let up = updated { self?.activeDownloads[idx] = up }
+                            self?.fetchSkipTimestampsFor(request: up, persistentURL: persistentURL) { ok in
+                                if ok {
+                                    Logger.shared.log("[SkipSidecar] Saved OP/ED sidecar for episode \(up.metadata?.episode ?? -1) at: \(persistentURL.path)", type: "Download")
+                                } else {
+                                    Logger.shared.log("[SkipSidecar] Failed to save sidecar for episode \(up.metadata?.episode ?? -1)", type: "Download")
+                                }
+                            }
+                        }
+                    case .failure(let error):
+                        Logger.shared.log("Unable to fetch MAL ID: \(error)", type: "Error")
+                        Logger.shared.log("[SkipSidecar] Missing MAL ID for AniSkip v2 request", type: "Download")
+                    }
+                }
+            } else {
+                fetchSkipTimestampsFor(request: download, persistentURL: persistentURL) { ok in
+                    if ok {
+                        Logger.shared.log("[SkipSidecar] Saved OP/ED sidecar for episode \(download.metadata?.episode ?? -1) at: \(persistentURL.path)", type: "Download")
+                    } else {
+                        Logger.shared.log("[SkipSidecar] Failed to save sidecar for episode \(download.metadata?.episode ?? -1)", type: "Download")
+                    }
                 }
             }
+        }
+
         }
         
         if let subtitleURL = download.subtitleURL {

@@ -44,25 +44,25 @@ extension JSController {
     
     func initializeDownloadSession() {
         #if targetEnvironment(simulator)
-            Logger.shared.log("Download Sessions are not available on Simulator", type: "Error")
+            Logger.shared.log("Download Sessions are not available on Simulator", type: "Download")
         #else
             Task {
                 let sessionIdentifier = "hls-downloader-\(UUID().uuidString)"
-
+                
                 let configuration = URLSessionConfiguration.background(withIdentifier: sessionIdentifier)
-
+                
                 configuration.allowsCellularAccess = true
                 configuration.shouldUseExtendedBackgroundIdleMode = true
                 configuration.waitsForConnectivity = true
-
+                
                 await MainActor.run {
                     self.downloadURLSession = AVAssetDownloadURLSession(
                         configuration: configuration,
                         assetDownloadDelegate: self,
                         delegateQueue: .main
                     )
-
-                    print("Download session initialized with ID: \(sessionIdentifier)")
+                    
+                    Logger.shared.log("Download session initialized with ID: \(sessionIdentifier)", type: "Download")
                 }
             }
         #endif
@@ -73,7 +73,7 @@ extension JSController {
     /// Sets up JavaScript download function if needed
     func setupDownloadFunction() {
         // No JavaScript-side setup needed for now
-        print("Download function setup completed")
+        Logger.shared.log("Download function setup completed", type: "Download")
     }
     
     /// Helper function to post download notifications with proper naming
@@ -177,7 +177,7 @@ extension JSController {
             subtitleURL: subtitleURL,
             asset: asset,
             headers: headers,
-            module: module  // Pass the module to store it for queue processing
+            module: module
         )
         
         // Add to the download queue
@@ -211,7 +211,7 @@ extension JSController {
         
         // Check if download session is ready before processing queue
         guard downloadURLSession != nil else {
-            print("Download session not ready, deferring queue processing...")
+            Logger.shared.log("Download session not ready, deferring queue processing...", type: "Download")
             isProcessingQueue = false
             // Retry after a delay to allow session initialization
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
@@ -262,11 +262,11 @@ extension JSController {
     
     /// Start a previously queued download
     private func startQueuedDownload(_ queuedDownload: JSActiveDownload) {
-        print("Starting queued download: \(queuedDownload.title ?? queuedDownload.originalURL.lastPathComponent)")
+        Logger.shared.log("Starting queued download: \(queuedDownload.title ?? queuedDownload.originalURL.lastPathComponent)", type: "Download")
         
         // If we have a module, use the same method as manual downloads (this fixes the bug!)
         if let module = queuedDownload.module {
-            print("Using downloadWithStreamTypeSupport for queued download (same as manual downloads)")
+            Logger.shared.log("Using downloadWithStreamTypeSupport for queued download (same as manual downloads)", type: "Download")
             
             // Use the exact same method that manual downloads use
             downloadWithStreamTypeSupport(
@@ -283,9 +283,9 @@ extension JSController {
                 showPosterURL: queuedDownload.metadata?.showPosterURL,
                 completionHandler: { success, message in
                     if success {
-                        print("Queued download started successfully via downloadWithStreamTypeSupport")
+                        Logger.shared.log("Queued download started successfully via downloadWithStreamTypeSupport", type: "Download")
                     } else {
-                        print("Queued download failed: \(message)")
+                        Logger.shared.log("Queued download failed: \(message)", type: "Download")
                     }
                 }
             )
@@ -293,15 +293,15 @@ extension JSController {
         }
         
         // Legacy fallback for downloads without module (should rarely be used now)
-        print("Using legacy download method for queued download (no module available)")
+        Logger.shared.log("Using legacy download method for queued download (no module available)", type: "Download")
         
         guard let asset = queuedDownload.asset else {
-            print("Missing asset for queued download")
+            Logger.shared.log("Missing asset for queued download", type: "Download")
             return
         }
         
         guard let downloadSession = downloadURLSession else {
-            print("Download session not yet initialized, retrying in background...")
+            Logger.shared.log("Download session not yet initialized, retrying in background...", type: "Download")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                 self?.startQueuedDownload(queuedDownload)
             }
@@ -314,7 +314,7 @@ extension JSController {
             assetArtworkData: nil,
             options: nil
         ) else {
-            print("Failed to create download task for queued download")
+            Logger.shared.log("Failed to create download task for queued download", type: "Download")
             return
         }
         
@@ -345,7 +345,7 @@ extension JSController {
         
         // Start the download
         task.resume()
-        print("Queued download started: \(download.title ?? download.originalURL.lastPathComponent)")
+        Logger.shared.log("Queued download started: \(download.title ?? download.originalURL.lastPathComponent)", type: "Download")
         
         // Save the download state
         saveDownloadState()
@@ -406,8 +406,7 @@ extension JSController {
         
         saveDownloadState()
         
-        print("Cleaned up download task")
-        
+        Logger.shared.log("Cleaned up download task", type: "Download")
         // Start processing the queue again if we have pending downloads
         if !downloadQueue.isEmpty && !isProcessingQueue {
             processDownloadQueue()
@@ -458,11 +457,11 @@ extension JSController {
     ///   - subtitleURL: The URL of the subtitle file to download
     ///   - assetID: The ID of the asset this subtitle is associated with
     func downloadSubtitle(subtitleURL: URL, assetID: String) {
-        print("Downloading subtitle from: \(subtitleURL.absoluteString) for asset ID: \(assetID)")
+        Logger.shared.log("Downloading subtitle from: \(subtitleURL.absoluteString) for asset ID: \(assetID)", type: "Download")
         
         // Check if this asset belongs to a cancelled download - if so, don't download subtitle
         if let assetUUID = UUID(uuidString: assetID), cancelledDownloadIDs.contains(assetUUID) {
-            print("Skipping subtitle download for cancelled download: \(assetID)")
+            Logger.shared.log("Skipping subtitle download for cancelled download: \(assetID)", type: "Download")
             return
         }
         
@@ -482,34 +481,34 @@ extension JSController {
             request.addValue(referer, forHTTPHeaderField: "Origin")
         }
         
-        print("Subtitle download request headers: \(request.allHTTPHeaderFields ?? [:])")
+        Logger.shared.log("Subtitle download request headers: \(request.allHTTPHeaderFields ?? [:])", type: "Download")
         
         // Create a task to download the subtitle file
         let task = session.downloadTask(with: request) { [weak self] (tempURL, response, error) in
             guard let self = self else {
-                print("Self reference lost during subtitle download")
+                Logger.shared.log("Self reference lost during subtitle download", type: "Download")
                 return
             }
             
             if let error = error {
-                print("Subtitle download error: \(error.localizedDescription)")
+                Logger.shared.log("Subtitle download error: \(error.localizedDescription)", type: "Download")
                 return
             }
             
             guard let tempURL = tempURL else {
-                print("No temporary URL received for subtitle download")
+                Logger.shared.log("No temporary URL received for subtitle download", type: "Download")
                 return
             }
             
             guard let downloadDir = self.getPersistentDownloadDirectory() else {
-                print("Failed to get persistent download directory for subtitle")
+                Logger.shared.log("Failed to get persistent download directory for subtitle", type: "Download")
                 return
             }
             
             // Log response details for debugging
             if let httpResponse = response as? HTTPURLResponse {
-                print("Subtitle download HTTP status: \(httpResponse.statusCode)")
-                print("Subtitle download content type: \(httpResponse.mimeType ?? "unknown")")
+                Logger.shared.log("Subtitle download HTTP status: \(httpResponse.statusCode)", type: "Download")
+                Logger.shared.log("Subtitle download content type: \(httpResponse.mimeType ?? "unknown")", type: "Download")
             }
             
             // Try to read content to validate it's actually a subtitle file
@@ -518,19 +517,19 @@ extension JSController {
                 let subtitleContent = String(data: subtitleData, encoding: .utf8) ?? ""
                 
                 if subtitleContent.isEmpty {
-                    print("Warning: Subtitle file appears to be empty")
+                    Logger.shared.log("Warning: Subtitle file appears to be empty", type: "Download")
                 } else {
-                    print("Subtitle file contains \(subtitleData.count) bytes of data")
+                    Logger.shared.log("Subtitle file contains \(subtitleData.count) bytes of data", type: "Download")
                     if subtitleContent.hasPrefix("WEBVTT") {
-                        print("Valid WebVTT subtitle detected")
+                        Logger.shared.log("Valid WebVTT subtitle detected", type: "Download")
                     } else if subtitleContent.contains(" --> ") {
-                        print("Subtitle file contains timing markers")
+                        Logger.shared.log("Subtitle file contains timing markers", type: "Download")
                     } else {
-                        print("Warning: Subtitle content doesn't appear to be in a recognized format")
+                        Logger.shared.log("Warning: Subtitle content doesn't appear to be in a recognized format", type: "Download")
                     }
                 }
             } catch {
-                print("Error reading subtitle content for validation: \(error.localizedDescription)")
+                Logger.shared.log("Error reading subtitle content for validation: \(error.localizedDescription)", type: "Download")
             }
             
             // Determine file extension based on the content type or URL
@@ -557,18 +556,16 @@ extension JSController {
                 // If file already exists, remove it
                 if FileManager.default.fileExists(atPath: localURL.path) {
                     try FileManager.default.removeItem(at: localURL)
-                    print("Removed existing subtitle file at \(localURL.path)")
+                    Logger.shared.log("Removed existing subtitle file at \(localURL.path)", type: "Download")
                 }
                 
                 // Move the downloaded file to the persistent location
                 try FileManager.default.moveItem(at: tempURL, to: localURL)
                 
                 // Update the asset with the subtitle URL
-                self.updateAssetWithSubtitle(assetID: assetID, 
-                                         subtitleURL: subtitleURL, 
-                                         localSubtitleURL: localURL)
+                self.updateAssetWithSubtitle(assetID: assetID, subtitleURL: subtitleURL, localSubtitleURL: localURL)
                 
-                print("Subtitle downloaded successfully: \(localURL.path)")
+                Logger.shared.log("Subtitle downloaded successfully: \(localURL.path)", type: "Download")
                 
                 // Show success notification
                 DispatchQueue.main.async {
@@ -594,12 +591,12 @@ extension JSController {
                     }
                 }
             } catch {
-                print("Error moving subtitle file: \(error.localizedDescription)")
+                Logger.shared.log("Error moving subtitle file: \(error.localizedDescription)", type: "Download")
             }
         }
         
         task.resume()
-        print("Subtitle download task started")
+        Logger.shared.log("Subtitle download task started", type: "Download")
     }
     
     /// Updates an asset with subtitle information after subtitle download completes
@@ -620,7 +617,7 @@ extension JSController {
                 localURL: existingAsset.localURL,
                 type: existingAsset.type,
                 metadata: existingAsset.metadata,
-                subtitleURL: subtitleURL,
+                subtitleURL: existingAsset.subtitleURL,
                 localSubtitleURL: localSubtitleURL
             )
             
@@ -661,7 +658,7 @@ extension JSController {
         do {
             if !fileManager.fileExists(atPath: persistentDir.path) {
                 try fileManager.createDirectory(at: persistentDir, withIntermediateDirectories: true)
-                print("Created persistent download directory at \(persistentDir.path)")
+                Logger.shared.log("Created persistent download directory at \(persistentDir.path)", type: "Download")
             }
             
             // Find any video files (.movpkg, .mp4) in the Documents directory
@@ -669,7 +666,7 @@ extension JSController {
             let videoFiles = files.filter { ["movpkg", "mp4"].contains($0.pathExtension.lowercased()) }
             
             if !videoFiles.isEmpty {
-                print("Found \(videoFiles.count) video files in Documents directory to migrate")
+                Logger.shared.log("Found \(videoFiles.count) video files in Documents directory to migrate", type: "Download")
                 
                 // Migrate each file
                 for fileURL in videoFiles {
@@ -682,18 +679,18 @@ extension JSController {
                         let uniqueID = UUID().uuidString
                         let newDestinationURL = persistentDir.appendingPathComponent("\(filename)-\(uniqueID)")
                         try fileManager.copyItem(at: fileURL, to: newDestinationURL)
-                        print("Migrated file with unique name: \(filename) → \(newDestinationURL.lastPathComponent)")
+                        Logger.shared.log("Migrated file with unique name: \(filename) → \(newDestinationURL.lastPathComponent)", type: "Download")
                     } else {
                         // Move the file to the persistent directory
                         try fileManager.copyItem(at: fileURL, to: destinationURL)
-                        print("Migrated file: \(filename)")
+                        Logger.shared.log("Migrated file: \(filename)", type: "Download")
                     }
                 }
             } else {
-                print("No video files found in Documents directory for migration")
+                Logger.shared.log("No video files found in Documents directory for migration", type: "Download")
             }
         } catch {
-            print("Error during migration: \(error.localizedDescription)")
+            Logger.shared.log("Error during migration: \(error.localizedDescription)", type: "Download")
         }
     }
     
@@ -710,12 +707,12 @@ extension JSController {
             
             // Check if the video file exists at the stored path
             if !fileManager.fileExists(atPath: asset.localURL.path) {
-                print("Asset file not found at saved path: \(asset.localURL.path)")
+                Logger.shared.log("Asset file not found at saved path: \(asset.localURL.path)", type: "Download")
                 
                 // Try to find the file in the persistent directory
                 if let persistentURL = findAssetInPersistentStorage(assetName: asset.name) {
                     // Update the asset with the new video URL
-                    print("Found asset in persistent storage: \(persistentURL.path)")
+                    Logger.shared.log("Found asset in persistent storage: \(persistentURL.path)", type: "Download")
                     updatedAsset = DownloadedAsset(
                         id: asset.id,
                         name: asset.name,
@@ -730,7 +727,7 @@ extension JSController {
                     needsUpdate = true
                 } else {
                     // If we can't find the video file, mark it for removal
-                    print("Asset not found in persistent storage. Marking for removal: \(asset.name)")
+                    Logger.shared.log("Asset not found in persistent storage. Marking for removal: \(asset.name)", type: "Download")
                     assetsToRemove.append(asset.id)
                     updatedAssets = true
                     continue // Skip subtitle validation for assets being removed
@@ -740,11 +737,11 @@ extension JSController {
             // Check if the subtitle file exists (if one is expected)
             if let localSubtitleURL = updatedAsset.localSubtitleURL {
                 if !fileManager.fileExists(atPath: localSubtitleURL.path) {
-                    print("Subtitle file not found at saved path: \(localSubtitleURL.path)")
+                    Logger.shared.log("Subtitle file not found at saved path: \(localSubtitleURL.path)", type: "Download")
                     
                     // Try to find the subtitle file in the persistent directory
                     if let foundSubtitleURL = findSubtitleInPersistentStorage(assetID: updatedAsset.id.uuidString) {
-                        print("Found subtitle file in persistent storage: \(foundSubtitleURL.path)")
+                        Logger.shared.log("Found subtitle file in persistent storage: \(foundSubtitleURL.path)", type: "Download")
                         updatedAsset = DownloadedAsset(
                             id: updatedAsset.id,
                             name: updatedAsset.name,
@@ -759,7 +756,7 @@ extension JSController {
                         needsUpdate = true
                     } else {
                         // Subtitle file is missing - remove the subtitle reference but keep the video
-                        print("Subtitle file not found in persistent storage for asset: \(updatedAsset.name)")
+                        Logger.shared.log("Subtitle file not found in persistent storage for asset: \(updatedAsset.name)", type: "Download")
                         updatedAsset = DownloadedAsset(
                             id: updatedAsset.id,
                             name: updatedAsset.name,
@@ -780,7 +777,7 @@ extension JSController {
             if needsUpdate {
                 savedAssets[index] = updatedAsset
                 updatedAssets = true
-                print("Updated asset paths for: \(updatedAsset.name)")
+                Logger.shared.log("Updated asset paths for: \(updatedAsset.name)", type: "Download")
             }
         }
         
@@ -788,7 +785,7 @@ extension JSController {
         if !assetsToRemove.isEmpty {
             let countBefore = savedAssets.count
             savedAssets.removeAll { assetsToRemove.contains($0.id) }
-            print("Removed \(countBefore - savedAssets.count) missing assets from the library")
+            Logger.shared.log("Removed \(countBefore - savedAssets.count) missing assets from the library", type: "Download")
             
             // Notify observers of the change (library cleanup requires cache clearing)
             postDownloadNotification(.cleanup)
@@ -797,7 +794,7 @@ extension JSController {
         // Save the updated asset information if changes were made
         if updatedAssets {
             saveAssets()
-            print("Asset validation complete. Updated \(updatedAssets ? "some" : "no") asset paths.")
+            Logger.shared.log("Asset validation complete. Updated \(updatedAssets ? "some" : "no") asset paths.", type: "Download")
         }
     }
     
@@ -834,7 +831,7 @@ extension JSController {
                 }
             }
         } catch {
-            print("Error searching for asset in persistent storage: \(error.localizedDescription)")
+            Logger.shared.log("Error searching for asset in persistent storage: \(error.localizedDescription)", type: "Download")
         }
         
         return nil
@@ -848,7 +845,7 @@ extension JSController {
         
         // Get Application Support directory
         guard let appSupportDir = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
-            print("Cannot access Application Support directory for subtitle search")
+            Logger.shared.log("Cannot access Application Support directory for subtitle search", type: "Download")
             return nil
         }
         
@@ -857,7 +854,7 @@ extension JSController {
         
         // Check if directory exists
         guard fileManager.fileExists(atPath: downloadDir.path) else {
-            print("Download directory does not exist for subtitle search")
+            Logger.shared.log("Download directory does not exist for subtitle search", type: "Download")
             return nil
         }
         
@@ -876,14 +873,14 @@ extension JSController {
                 // Check if this is a subtitle file with the correct naming pattern
                 if subtitleExtensions.contains(fileExtension) &&
                    filename.hasPrefix("subtitle-\(assetID).") {
-                    print("Found subtitle file for asset \(assetID): \(filename)")
+                    Logger.shared.log("Found subtitle file for asset \(assetID): \(filename)", type: "Download")
                     return file
                 }
             }
             
-            print("No subtitle file found for asset ID: \(assetID)")
+            Logger.shared.log("No subtitle file found for asset ID: \(assetID)", type: "Download")
         } catch {
-            print("Error searching for subtitle in persistent storage: \(error.localizedDescription)")
+            Logger.shared.log("Error searching for subtitle in persistent storage: \(error.localizedDescription)", type: "Download")
         }
         
         return nil
@@ -892,7 +889,7 @@ extension JSController {
     /// Save assets to UserDefaults
     func saveAssets() {
         DownloadPersistence.save(savedAssets)
-        print("Saved \(savedAssets.count) assets to persistence")
+        Logger.shared.log("Saved \(savedAssets.count) assets to persistence", type: "Download")
     }
     
     /// Save the current state of downloads
@@ -908,7 +905,7 @@ extension JSController {
         }
         
         UserDefaults.standard.set(downloadInfo, forKey: "activeDownloads")
-        print("Saved download state with \(downloadInfo.count) active downloads")
+        Logger.shared.log("Saved download state with \(downloadInfo.count) active downloads", type: "Download")
     }
     
     /// Delete an asset
@@ -945,7 +942,7 @@ extension JSController {
     func removeAssetFromLibrary(_ asset: DownloadedAsset) {
         // Only remove the entry from savedAssets
         DownloadPersistence.delete(id: asset.id)
-        print("Removed asset from library (file preserved): \(asset.name)")
+        Logger.shared.log("Removed asset from library (file preserved): \(asset.name)", type: "Download")
         
         // Notify observers that the library changed (cache clearing needed)
         postDownloadNotification(.libraryChange)
@@ -957,7 +954,7 @@ extension JSController {
         
         // Get Application Support directory
         guard let appSupportDir = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
-            print("Cannot access Application Support directory")
+            Logger.shared.log("Cannot access Application Support directory", type: "Download")
             return nil
         }
         
@@ -967,11 +964,11 @@ extension JSController {
         do {
             if !fileManager.fileExists(atPath: downloadDir.path) {
                 try fileManager.createDirectory(at: downloadDir, withIntermediateDirectories: true)
-                print("Created persistent download directory at \(downloadDir.path)")
+                Logger.shared.log("Created persistent download directory at \(downloadDir.path)", type: "Download")
             }
             return downloadDir
         } catch {
-            print("Error creating download directory: \(error.localizedDescription)")
+            Logger.shared.log("Error creating download directory: \(error.localizedDescription)", type: "Download")
             return nil
         }
     }
@@ -1103,7 +1100,7 @@ extension JSController {
         // Notify of the cancellation
         postDownloadNotification(.statusChange)
         
-        print("Cancelled queued download: \(downloadID)")
+        Logger.shared.log("Cancelled queued download: \(downloadID)", type: "Download")
     }
     
     /// Cancel an active download that is currently in progress
@@ -1126,25 +1123,25 @@ extension JSController {
             // Show notification
             DropManager.shared.info("Download cancelled: \(downloadTitle)")
             
-            print("Cancelled active download: \(downloadTitle)")
+            Logger.shared.log("Cancelled active download: \(downloadTitle)", type: "Download")
         }
     }
     
     /// Pause an MP4 download
     func pauseMP4Download(_ downloadID: UUID) {
         guard let index = activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
-            print("MP4 Download not found for pausing: \(downloadID)")
+            Logger.shared.log("MP4 Download not found for pausing: \(downloadID)", type: "Download")
             return
         }
         
         let download = activeDownloads[index]
         guard let urlTask = download.urlSessionTask else {
-            print("No URL session task found for MP4 download: \(downloadID)")
+            Logger.shared.log("No URL session task found for MP4 download: \(downloadID)", type: "Download")
             return
         }
         
         urlTask.suspend()
-        print("Paused MP4 download: \(download.title ?? download.originalURL.lastPathComponent)")
+        Logger.shared.log("Paused MP4 download: \(download.title ?? download.originalURL.lastPathComponent)", type: "Download")
         
         // Notify UI of status change
         postDownloadNotification(.statusChange)
@@ -1153,18 +1150,18 @@ extension JSController {
     /// Resume an MP4 download
     func resumeMP4Download(_ downloadID: UUID) {
         guard let index = activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
-            print("MP4 Download not found for resuming: \(downloadID)")
+            Logger.shared.log("MP4 Download not found for resuming: \(downloadID)", type: "Download")
             return
         }
         
         let download = activeDownloads[index]
         guard let urlTask = download.urlSessionTask else {
-            print("No URL session task found for MP4 download: \(downloadID)")
+            Logger.shared.log("No URL session task found for MP4 download: \(downloadID)", type: "Download")
             return
         }
         
         urlTask.resume()
-        print("Resumed MP4 download: \(download.title ?? download.originalURL.lastPathComponent)")
+        Logger.shared.log("Resumed MP4 download: \(download.title ?? download.originalURL.lastPathComponent)", type: "Download")
         
         // Notify UI of status change
         postDownloadNotification(.statusChange)
@@ -1178,13 +1175,13 @@ extension JSController: AVAssetDownloadDelegate {
     func urlSession(_ session: URLSession, assetDownloadTask: AVAssetDownloadTask, didFinishDownloadingTo location: URL) {
         guard let downloadID = activeDownloadMap[assetDownloadTask],
               let downloadIndex = activeDownloads.firstIndex(where: { $0.id == downloadID }) else {
-            print("Download task finished but couldn't find associated download")
+            Logger.shared.log("Download task finished but couldn't find associated download", type: "Download")
             return
         }
         
         // Check if this download was cancelled - if so, don't process completion
         if cancelledDownloadIDs.contains(downloadID) {
-            print("Ignoring completion for cancelled download: \(downloadID)")
+            Logger.shared.log("Ignoring completion for cancelled download: \(downloadID)", type: "Download")
             // Delete any temporary files that may have been created
             try? FileManager.default.removeItem(at: location)
             return
@@ -1194,7 +1191,7 @@ extension JSController: AVAssetDownloadDelegate {
 
         // Move the downloaded file to Application Support directory for persistence
         guard let persistentURL = moveToApplicationSupportDirectory(from: location, filename: download.title ?? download.originalURL.lastPathComponent, originalURL: download.originalURL) else {
-            print("Failed to move downloaded file to persistent storage")
+            Logger.shared.log("Failed to move downloaded file to persistent storage", type: "Download")
             return
         }
         
@@ -1221,9 +1218,9 @@ extension JSController: AVAssetDownloadDelegate {
         if download.metadata?.episode != nil && download.type == .episode {
             fetchSkipTimestampsFor(request: download, persistentURL: persistentURL) { ok in
                 if ok {
-                    print("[SkipSidecar] Saved OP/ED sidecar for episode \(download.metadata?.episode ?? -1) at: \(persistentURL.path)")
+                    Logger.shared.log("[SkipSidecar] Saved OP/ED sidecar for episode \(download.metadata?.episode ?? -1) at: \(persistentURL.path)", type: "Download")
                 } else {
-                    print("[SkipSidecar] Failed to save sidecar for episode \(download.metadata?.episode ?? -1)")
+                    Logger.shared.log("[SkipSidecar] Failed to save sidecar for episode \(download.metadata?.episode ?? -1)", type: "Download")
                 }
             }
         }
@@ -1248,7 +1245,7 @@ extension JSController: AVAssetDownloadDelegate {
         // Clean up the download task
         cleanupDownloadTask(assetDownloadTask)
         
-        print("Download completed and moved to persistent storage: \(newAsset.name)")
+        Logger.shared.log("Download completed and moved to persistent storage: \(newAsset.name)", type: "Download")
     }
     
     /// Moves a downloaded file to Application Support directory to preserve it across app updates
@@ -1262,7 +1259,7 @@ extension JSController: AVAssetDownloadDelegate {
         
         // Get Application Support directory 
         guard let appSupportDir = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
-            print("Cannot access Application Support directory")
+            Logger.shared.log("Cannot access Application Support directory", type: "Download")
             return nil
         }
         
@@ -1272,7 +1269,7 @@ extension JSController: AVAssetDownloadDelegate {
         do {
             if !fileManager.fileExists(atPath: downloadDir.path) {
                 try fileManager.createDirectory(at: downloadDir, withIntermediateDirectories: true)
-                print("Created persistent download directory at \(downloadDir.path)")
+                Logger.shared.log("Created persistent download directory at \(downloadDir.path)", type: "Download")
             }
             
             // Generate unique filename with UUID to avoid conflicts
@@ -1290,34 +1287,34 @@ extension JSController: AVAssetDownloadDelegate {
             if originalURLString.contains(".m3u8") || originalURLString.contains("/hls/") || originalURLString.contains("m3u8") {
                 // This was an HLS stream, keep as .movpkg
                 fileExtension = "movpkg"
-                print("Using .movpkg extension for HLS download: \(safeFilename)")
+                Logger.shared.log("Using .movpkg extension for HLS download: \(safeFilename)", type: "Download")
             } else if originalPathExtension == "mp4" || originalURLString.contains(".mp4") || originalURLString.contains("download") {
                 // This was a direct MP4 download, use .mp4 extension regardless of what AVAssetDownloadTask created
                 fileExtension = "mp4"
-                print("Using .mp4 extension for direct MP4 download: \(safeFilename)")
+                Logger.shared.log("Using .mp4 extension for direct MP4 download: \(safeFilename)", type: "Download")
             } else {
                 // Fallback: check the downloaded file extension
                 let sourceExtension = location.pathExtension.lowercased()
                 if sourceExtension == "movpkg" && originalURLString.contains("m3u8") {
                     fileExtension = "movpkg"
-                    print("Using .movpkg extension for HLS stream: \(safeFilename)")
+                    Logger.shared.log("Using .movpkg extension for HLS stream: \(safeFilename)", type: "Download")
                 } else {
                     fileExtension = "mp4"
-                    print("Using .mp4 extension as fallback: \(safeFilename)")
+                    Logger.shared.log("Using .mp4 extension as fallback: \(safeFilename)", type: "Download")
                 }
             }
             
-            print("Final destination will be: \(safeFilename)-\(uniqueID).\(fileExtension)")
+            Logger.shared.log("Final destination will be: \(safeFilename)-\(uniqueID).\(fileExtension)", type: "Download")
             
             let destinationURL = downloadDir.appendingPathComponent("\(safeFilename)-\(uniqueID).\(fileExtension)")
             
             // Move the file to the persistent location
             try fileManager.moveItem(at: location, to: destinationURL)
-            print("Successfully moved download to persistent storage: \(destinationURL.path)")
+            Logger.shared.log("Successfully moved download to persistent storage: \(destinationURL.path)", type: "Download")
             
             return destinationURL
         } catch {
-            print("Error moving download to persistent storage: \(error.localizedDescription)")
+            Logger.shared.log("Error moving download to persistent storage: \(error.localizedDescription)", type: "Download")
             return nil
         }
     }
@@ -1326,37 +1323,37 @@ extension JSController: AVAssetDownloadDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error = error {
             // Enhanced error logging
-            print("Download error: \(error.localizedDescription)")
+            Logger.shared.log("Download error: \(error.localizedDescription)", type: "Download")
             
             // Extract and log the underlying error details
             let nsError = error as NSError
-            print("Error domain: \(nsError.domain), code: \(nsError.code)")
+            Logger.shared.log("Error domain: \(nsError.domain), code: \(nsError.code)", type: "Download")
             
             if let underlyingError = nsError.userInfo["NSUnderlyingError"] as? NSError {
-                print("Underlying error: \(underlyingError)")
+                Logger.shared.log("Underlying error: \(underlyingError)", type: "Download")
             }
             
             for (key, value) in nsError.userInfo {
-                print("Error info - \(key): \(value)")
+                Logger.shared.log("Error info - \(key): \(value)", type: "Download")
             }
             
             // Check if there's a system network error 
             if let urlError = error as? URLError {
-                print("URLError code: \(urlError.code.rawValue)")
+                Logger.shared.log("URLError code: \(urlError.code.rawValue)", type: "Download")
                 
                 // Handle cancellation specifically
                 if urlError.code == .cancelled {
-                    print("Download was cancelled by user")
+                    Logger.shared.log("Download was cancelled by user", type: "Download")
                     handleDownloadCancellation(task)
                     return
                 } else if urlError.code == .notConnectedToInternet || urlError.code == .networkConnectionLost {
-                    print("Network error: \(urlError.localizedDescription)")
+                    Logger.shared.log("Network error: \(urlError.localizedDescription)", type: "Download")
                     
                     DispatchQueue.main.async {
                         DropManager.shared.error("Network error: \(urlError.localizedDescription)")
                     }
                 } else if urlError.code == .userAuthenticationRequired || urlError.code == .userCancelledAuthentication {
-                    print("Authentication error: \(urlError.localizedDescription)")
+                    Logger.shared.log("Authentication error: \(urlError.localizedDescription)", type: "Download")
                     
                     DispatchQueue.main.async {
                         DropManager.shared.error("Authentication error: Check headers")
@@ -1364,8 +1361,7 @@ extension JSController: AVAssetDownloadDelegate {
                 }
             } else if error.localizedDescription.contains("403") {
                 // Specific handling for 403 Forbidden errors
-                print("403 Forbidden error - Server rejected the request")
-                
+                Logger.shared.log("403 Forbidden error - Server rejected the request", type: "Download")
                 DispatchQueue.main.async {
                     DropManager.shared.error("Access denied (403): The server refused access to this content")
                 }
@@ -1382,7 +1378,7 @@ extension JSController: AVAssetDownloadDelegate {
     /// Handle download cancellation - clean up without treating as completion
     private func handleDownloadCancellation(_ task: URLSessionTask) {
         guard let downloadID = activeDownloadMap[task] else {
-            print("Cancelled download task not found in active downloads")
+            Logger.shared.log("Cancelled download task not found in active downloads", type: "Download")
             cleanupDownloadTask(task)
             return
         }
@@ -1409,7 +1405,7 @@ extension JSController: AVAssetDownloadDelegate {
         // Notify observers of cancellation (no cache clearing needed)
         postDownloadNotification(.statusChange)
         
-        print("Successfully handled cancellation for: \(downloadTitle)")
+        Logger.shared.log("Successfully handled cancellation for: \(downloadTitle)", type: "Download")
     }
     
     /// Delete any partially downloaded assets for a cancelled download
@@ -1424,15 +1420,15 @@ extension JSController: AVAssetDownloadDelegate {
             return wasRecentlyAdded
         }) {
             let assetToDelete = savedAssets[savedAssetIndex]
-            print("Removing cancelled download from saved assets: \(assetToDelete.name)")
+            Logger.shared.log("Removing cancelled download from saved assets: \(assetToDelete.name)", type: "Download")
             
             // Delete the actual file if it exists
             if FileManager.default.fileExists(atPath: assetToDelete.localURL.path) {
                 do {
                     try FileManager.default.removeItem(at: assetToDelete.localURL)
-                    print("Deleted partially downloaded file: \(assetToDelete.localURL.path)")
+                    Logger.shared.log("Deleted partially downloaded file: \(assetToDelete.localURL.path)", type: "Download")
                 } catch {
-                    print("Error deleting partially downloaded file: \(error.localizedDescription)")
+                    Logger.shared.log("Error deleting partially downloaded file: \(error.localizedDescription)", type: "Download")
                 }
             }
             
@@ -1454,7 +1450,7 @@ extension JSController: AVAssetDownloadDelegate {
         
         // Do a quick check to see if task is still registered
         guard let downloadID = activeDownloadMap[assetDownloadTask] else {
-            print("Received progress for unknown download task")
+            Logger.shared.log("Received progress for unknown download task", type: "Download")
             return
         }
         
@@ -1486,14 +1482,14 @@ extension JSController: URLSessionTaskDelegate {
     /// Called when a redirect is received
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
         // Log information about the redirect
-        print("==== REDIRECT DETECTED ====")
-        print("Redirecting to: \(request.url?.absoluteString ?? "unknown")")
-        print("Redirect status code: \(response.statusCode)")
+        Logger.shared.log("==== REDIRECT DETECTED ====", type: "Download")
+        Logger.shared.log("Redirecting to: \(request.url?.absoluteString ?? "unknown")", type: "Download")
+        Logger.shared.log("Redirect status code: \(response.statusCode)", type: "Download")
         
         // Don't try to access originalRequest for AVAssetDownloadTask
         if !(task is AVAssetDownloadTask), let originalRequest = task.originalRequest {
-            print("Original URL: \(originalRequest.url?.absoluteString ?? "unknown")")
-            print("Original Headers: \(originalRequest.allHTTPHeaderFields ?? [:])")
+            Logger.shared.log("Original URL: \(originalRequest.url?.absoluteString ?? "unknown")", type: "Download")
+            Logger.shared.log("Original Headers: \(originalRequest.allHTTPHeaderFields ?? [:])", type: "Download")
             
             // Create a modified request that preserves ALL original headers
             var modifiedRequest = request
@@ -1502,40 +1498,40 @@ extension JSController: URLSessionTaskDelegate {
             for (key, value) in originalRequest.allHTTPHeaderFields ?? [:] {
                 // Only add if not already present in the redirect request
                 if modifiedRequest.value(forHTTPHeaderField: key) == nil {
-                    print("Adding missing header: \(key): \(value)")
+                    Logger.shared.log("Adding missing header: \(key): \(value)", type: "Download")
                     modifiedRequest.addValue(value, forHTTPHeaderField: key)
                 }
             }
             
-            print("Final redirect headers: \(modifiedRequest.allHTTPHeaderFields ?? [:])")
+            Logger.shared.log("Final redirect headers: \(modifiedRequest.allHTTPHeaderFields ?? [:])", type: "Download")
             
             // Allow the redirect with our modified request
             completionHandler(modifiedRequest)
         } else {
             // For AVAssetDownloadTask, just accept the redirect as is
-            print("Accepting redirect for AVAssetDownloadTask without header modification")
+            Logger.shared.log("Accepting redirect for AVAssetDownloadTask without header modification", type: "Download")
             completionHandler(request)
         }
     }
     
     /// Handle authentication challenges
     func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        print("==== AUTH CHALLENGE ====")
-        print("Authentication method: \(challenge.protectionSpace.authenticationMethod)")
-        print("Host: \(challenge.protectionSpace.host)")
+        Logger.shared.log("==== AUTH CHALLENGE ====", type: "Download")
+        Logger.shared.log("Authentication method: \(challenge.protectionSpace.authenticationMethod)", type: "Download")
+        Logger.shared.log("Host: \(challenge.protectionSpace.host)", type: "Download")
         
         if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
             // Handle SSL/TLS certificate validation
             if let serverTrust = challenge.protectionSpace.serverTrust {
                 let credential = URLCredential(trust: serverTrust)
-                print("Accepting server trust for host: \(challenge.protectionSpace.host)")
+                Logger.shared.log("Accepting server trust for host: \(challenge.protectionSpace.host)", type: "Download")
                 completionHandler(.useCredential, credential)
                 return
             }
         }
         
         // Default to performing authentication without credentials
-        print("Using default handling for authentication challenge")
+        Logger.shared.log("Using default handling for authentication challenge", type: "Download")
         completionHandler(.performDefaultHandling, nil)
     }
 }
@@ -1669,103 +1665,39 @@ enum DownloadQueueStatus: Equatable {
     case downloading
     /// Download has been completed
     case completed
-
-    // MARK: - Skip Sidecar (OP/ED) Fetch
-    /// Fetches OP & ED skip timestamps (AniSkip) and writes a minimal sidecar JSON next to the persisted video.
-    /// Uses MAL id for fillers when available; falls back to AniList otherwise.
-    private func fetchSkipTimestampsFor(request: JSActiveDownload, persistentURL: URL, completion: @escaping (Bool)->Void) 
-{
-        // Determine preferred ID
-        let epNumber = request.metadata?.episode ?? 0
-        let useMAL = (request.isFiller == true) && (request.malID != nil)
-        let idType = useMAL ? "mal" : "anilist"
-        guard let seriesID = useMAL ? request.malID : request.aniListID else {
-            print("[SkipSidecar] Missing series ID for AniSkip (MAL/AniList)")
-            completion(false)
-            return
-        }
-        // Single AniSkip v1 call for both OP/ED
-        let url = URL(string: "https://api.aniskip.com/v1/skip-times/\(seriesID)/\(epNumber)?types=op&types=ed")!
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            if let e = error {
-                print("[SkipSidecar] AniSkip fetch error: \(e.localizedDescription)")
-                completion(false)
-                return
-            }
-            guard let data = data else { completion(false); return }
-            struct Resp: Decodable { let found: Bool; let results: [Res]? }
-            struct Res: Decodable { let skip_type: String; let interval: Interval }
-            struct Interval: Decodable { let start_time: Double; let end_time: Double }
-            var opRange: (Double, Double)? = nil
-            var edRange: (Double, Double)? = nil
-            if let r = try? JSONDecoder().decode(Resp.self, from: data), r.found, let arr = r.results {
-                for item in arr {
-                    if item.skip_type == "op" { opRange = (item.interval.start_time, item.interval.end_time) }
-                    if item.skip_type == "ed" { edRange = (item.interval.start_time, item.interval.end_time) }
-                }
-            }
-            if opRange == nil && edRange == nil { completion(false); return }
-            // Determine sidecar path
-            let fm = FileManager.default
-            var dir = persistentURL.deletingLastPathComponent()
-            var baseName = persistentURL.deletingPathExtension().lastPathComponent
-            var isDir: ObjCBool = false
-            if fm.fileExists(atPath: persistentURL.path, isDirectory: &isDir), isDir.boolValue {
-                dir = persistentURL.deletingLastPathComponent()
-                baseName = persistentURL.lastPathComponent
-            }
-            let sidecar = dir.appendingPathComponent(baseName + ".skip.json")
-            var payload: [String: Any] = [
-                "source": "aniskip",
-                "idType": idType,
-                "episode": epNumber,
-                "createdAt": ISO8601DateFormatter().string(from: Date())
-            ]
-            if let aid = request.aniListID { payload["anilistId"] = aid }
-            if let mid = request.malID { payload["malId"] = mid }
-            if let op = opRange { payload["op"] = ["start": op.0, "end": op.1] }
-            if let ed = edRange { payload["ed"] = ["start": ed.0, "end": ed.1] }
-            do {
-                let data = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
-                try data.write(to: sidecar, options: .atomic)
-                print("[SkipSidecar] Wrote sidecar at: \(sidecar.path)")
-                completion(true)
-            } catch {
-                print("[SkipSidecar] Sidecar write error: \(error.localizedDescription)")
-                completion(false)
-            }
-        }.resume()
-    }
-
-    
 }
 
 // MARK: - AniSkip Sidecar (OP/ED) Fetch
 extension JSController {
     /// Fetches OP & ED skip timestamps (AniSkip) and writes a minimal sidecar JSON next to the persisted video.
-    /// Uses MAL id for fillers when available; falls back to AniList otherwise.
+    /// Uses MAL ID only (AniList is not used).
     func fetchSkipTimestampsFor(request: JSActiveDownload,
                                 persistentURL: URL,
                                 completion: @escaping (Bool) -> Void) {
-        // Determine preferred ID
-        let epNumber = request.metadata?.episode ?? 0
-        let useMAL = (request.isFiller == true) && (request.malID != nil)
-        let idType = useMAL ? "mal" : "anilist"
-        guard let seriesID = useMAL ? request.malID : request.aniListID else {
-            print("[SkipSidecar] Missing series ID for AniSkip (MAL/AniList)")
+        // Use MAL ID only
+        guard let malID = request.malID else {
+            Logger.shared.log("[SkipSidecar] No MAL ID available for AniSkip v2 request", type: "Download")
             completion(false)
             return
         }
-
-        // Single AniSkip v1 call for both OP/ED
-        guard let url = URL(string: "https://api.aniskip.com/v1/skip-times/\(seriesID)/\(epNumber)?types=op&types=ed") else {
+        guard let episodeNumber = request.metadata?.episode else {
+            Logger.shared.log("[SkipSidecar] Missing episode number for AniSkip v2 request", type: "Download")
             completion(false)
             return
         }
-
+        
+        // Build v2 URL (op,ed only)
+        let mal = malID
+        let type = "op,ed"
+        
+        guard let url = URL(string: "https://api.aniskip.com/v2/skip-times/\(mal)/\(episodeNumber)?types=\(type)&episodeLength=0") else {
+            completion(false)
+            return
+        }
+        
         URLSession.shared.dataTask(with: url) { data, _, error in
             if let e = error {
-                print("[SkipSidecar] AniSkip fetch error: \(e.localizedDescription)")
+                Logger.shared.log("[SkipSidecar] AniSkip v2 (MAL) fetch error: \(e.localizedDescription)", type: "Download")
                 completion(false)
                 return
             }
@@ -1773,49 +1705,51 @@ extension JSController {
                 completion(false)
                 return
             }
-
+            
             struct Resp: Decodable { let found: Bool; let results: [Res]? }
             struct Res: Decodable { let skip_type: String; let interval: Interval }
             struct Interval: Decodable { let start_time: Double; let end_time: Double }
-
+            
             var opRange: (Double, Double)? = nil
             var edRange: (Double, Double)? = nil
-
+            
             if let r = try? JSONDecoder().decode(Resp.self, from: data), r.found, let arr = r.results {
                 for item in arr {
-                    if item.skip_type == "op" { opRange = (item.interval.start_time, item.interval.end_time) }
-                    if item.skip_type == "ed" { edRange = (item.interval.start_time, item.interval.end_time) }
+                    switch item.skip_type.lowercased() {
+                    case "op": opRange = (item.interval.start_time, item.interval.end_time)
+                    case "ed": edRange = (item.interval.start_time, item.interval.end_time)
+                    default: break
+                    }
                 }
             }
-
+            
             if opRange == nil && edRange == nil {
                 completion(false)
                 return
             }
-
-            // Determine sidecar path next to the persisted video file
+            
+            // Sidecar path: next to the persisted video file
             let dir = persistentURL.deletingLastPathComponent()
             let baseName = persistentURL.deletingPathExtension().lastPathComponent
             let sidecar = dir.appendingPathComponent(baseName + ".skip.json")
-
+            
             var payload: [String: Any] = [
                 "source": "aniskip",
-                "idType": idType,
-                "episode": epNumber,
+                "idType": "mal",
+                "malId": mal,
+                "episode": episodeNumber,
                 "createdAt": ISO8601DateFormatter().string(from: Date())
             ]
-            if let aid = request.aniListID { payload["anilistId"] = aid }
-            if let mid = request.malID { payload["malId"] = mid }
             if let op = opRange { payload["op"] = ["start": op.0, "end": op.1] }
             if let ed = edRange { payload["ed"] = ["start": ed.0, "end": ed.1] }
-
+            
             do {
                 let json = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
                 try json.write(to: sidecar, options: .atomic)
-                print("[SkipSidecar] Wrote sidecar at: \(sidecar.path)")
+                Logger.shared.log("[SkipSidecar] Wrote sidecar at: \(sidecar.path)", type: "Download")
                 completion(true)
             } catch {
-                print("[SkipSidecar] Sidecar write error: \(error.localizedDescription)")
+                Logger.shared.log("[SkipSidecar] Sidecar write error: \(error.localizedDescription)", type: "Download")
                 completion(false)
             }
         }.resume()

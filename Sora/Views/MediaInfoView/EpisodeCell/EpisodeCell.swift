@@ -657,12 +657,10 @@ private extension EpisodeCell {
         guard isDownloading else { return }
         
         if let sources = result.sources, !sources.isEmpty {
-            Logger.shared.log("Download: received \(sources.count) source option(s)", type: "Download")
             if sources.count > 1 {
                 showDownloadStreamSelectionAlert(streams: sources, downloadID: downloadID, subtitleURL: result.subtitles?.first)
                 return
             } else if let streamUrl = sources[0]["streamUrl"] as? String, let url = URL(string: streamUrl) {
-                Logger.shared.log("Download: auto-selecting first source", type: "Download")
                 let subtitleURLString = sources[0]["subtitle"] as? String
                 let subtitleURL = subtitleURLString.flatMap { URL(string: $0) }
                 startActualDownload(url: url, streamUrl: streamUrl, downloadID: downloadID, subtitleURL: subtitleURL)
@@ -671,14 +669,12 @@ private extension EpisodeCell {
         }
         
         if let streams = result.streams, !streams.isEmpty {
-            Logger.shared.log("Download: received \(streams.count) stream URL(s)", type: "Download")
             if streams[0] == "[object Promise]" {
                 tryNextDownloadMethod(methodIndex: methodIndex + 1, downloadID: downloadID, softsub: softsub)
                 return
             }
             
             if streams.count > 1 {
-                Logger.shared.log("Download: user selection required among multiple streams", type: "Download")
                 showDownloadStreamSelectionAlert(streams: streams, downloadID: downloadID, subtitleURL: result.subtitles?.first)
                 return
             } else if let url = URL(string: streams[0]) {
@@ -692,8 +688,6 @@ private extension EpisodeCell {
     }
     
     func startActualDownload(url: URL, streamUrl: String, downloadID: UUID, subtitleURL: URL? = nil) {
-        
-
         let headers = createDownloadHeaders(for: url)
         let episodeThumbnailURL = URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl)
         let showPosterImageURL = URL(string: showPosterURL ?? defaultBannerImage)
@@ -702,8 +696,6 @@ private extension EpisodeCell {
         let fullEpisodeTitle = episodeTitle.isEmpty ? baseTitle : "\(baseTitle): \(episodeTitle)"
         let animeTitle = parentTitle.isEmpty ? "Unknown Anime" : parentTitle
         
-        Logger.shared.log("Download kickoff → show=\(animeTitle), ep=\(self.episodeID + 1), malID=\(String(describing: self.malID)), streamUrl=\(streamUrl)", type: "Download")
-        Logger.shared.log("Starting downloadWithStreamTypeSupport (MAL id pass-through) → mal=\(String(describing: malIDFromParent)), anilist=\(itemID), title=\(fullEpisodeTitle)", type: "Download");
         jsController.downloadWithStreamTypeSupport(
             url: url,
             headers: headers,
@@ -720,7 +712,6 @@ private extension EpisodeCell {
             malID: malIDFromParent,
             isFiller: isFiller
         ) { success, message in
-            Logger.shared.log("downloadWithStreamTypeSupport completed → success=\(success), message=\(message)", type: "Download")
             if success {
                 Logger.shared.log("Started download for Episode \(self.episodeID + 1): \(self.episode)", type: "Download")
                 AnalyticsManager.shared.sendEvent(

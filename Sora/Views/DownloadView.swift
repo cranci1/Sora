@@ -1011,6 +1011,7 @@ struct EnhancedShowEpisodesView: View {
     @EnvironmentObject var jsController: JSController
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
+    private var fillerBadgeOpacity: Double { colorScheme == .dark ? 0.18 : 0.12 }
     
     @State private var episodeSortOption: EpisodeSortOption = .episodeOrder
     @State private var showFullSynopsis = false

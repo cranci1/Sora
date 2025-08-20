@@ -1398,10 +1398,7 @@ struct EnhancedEpisodeRow: View {
                             .font(.system(size: 12, weight: .semibold))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(
-                                (self.colorScheme == .dark ? Color.red.opacity(0.20) : Color.red.opacity(0.10))
-                                    .clipShape(Capsule())
-                            )
+                            .background(Color.red.opacity(fillerBadgeOpacity), in: Capsule())
                             .overlay(
                                 Capsule()
                                     .stroke(Color.red.opacity(0.24), lineWidth: 0.6)

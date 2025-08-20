@@ -1265,7 +1265,7 @@ extension JSController: AVAssetDownloadDelegate {
                         }
                     case .failure(let error):
                         Logger.shared.log("Unable to fetch MAL ID: \(error)", type: "Error")
-                        Logger.shared.log("[SkipSidecar] Missing MAL ID for AniSkip v2 request", type: "Download")
+                        Logger.shared.log("[SkipSidecar] Missing MAL ID for AniSkip request", type: "Download")
                     }
                 }
             } else {
@@ -1728,84 +1728,169 @@ extension JSController {
     func fetchSkipTimestampsFor(request: JSActiveDownload,
                                 persistentURL: URL,
                                 completion: @escaping (Bool) -> Void) {
-        // Use MAL ID only
-        guard let malID = request.malID else {
-            Logger.shared.log("[SkipSidecar] No MAL ID available for AniSkip v2 request", type: "Download")
-            completion(false)
-            return
-        }
-        guard let episodeNumber = request.metadata?.episode else {
-            Logger.shared.log("[SkipSidecar] Missing episode number for AniSkip v2 request", type: "Download")
-            completion(false)
-            return
-        }
-        
-        // Build v2 URL (op,ed only)
-        let mal = malID
-        let type = "op,ed"
-        
-        guard let url = URL(string: "https://api.aniskip.com/v2/skip-times/\(mal)/\(episodeNumber)?types=\(type)&episodeLength=0") else {
-            completion(false)
-            return
-        }
-        
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            if let e = error {
-                Logger.shared.log("[SkipSidecar] AniSkip v2 (MAL) fetch error: \(e.localizedDescription)", type: "Download")
+        // Attempt to obtain the MAL ID. If it's not present on the request but an AniList ID is,
+        // use AniListMutation to fetch it. This mirrors the logic used by CustomMediaPlayer.
+        func proceed(with malID: Int) {
+            // Ensure the episode number is available before making the AniSkip request
+            guard let episodeNumber = request.metadata?.episode else {
+                Logger.shared.log("[SkipSidecar] Missing episode number for AniSkip request", type: "Download")
                 completion(false)
                 return
             }
-            guard let data = data else {
+
+            // Build v2 URL and include separate query items for each type. The AniSkip API expects
+            // repeated `types` parameters, not a comma-separated list. Using URLComponents ensures
+            // proper encoding of the query items.
+            var components = URLComponents()
+            components.scheme = "https"
+            components.host = "api.aniskip.com"
+            components.path = "/v2/skip-times/\(malID)/\(episodeNumber)"
+            components.queryItems = [
+                URLQueryItem(name: "types", value: "op"),
+                URLQueryItem(name: "types", value: "ed"),
+                URLQueryItem(name: "episodeLength", value: "0")
+            ]
+            guard let url = components.url else {
+                Logger.shared.log("[SkipSidecar] Failed to construct AniSkip URL", type: "Download")
                 completion(false)
                 return
             }
-            
-            struct Resp: Decodable { let found: Bool; let results: [Res]? }
-            struct Res: Decodable { let skip_type: String; let interval: Interval }
-            struct Interval: Decodable { let start_time: Double; let end_time: Double }
-            
-            var opRange: (Double, Double)? = nil
-            var edRange: (Double, Double)? = nil
-            
-            if let r = try? JSONDecoder().decode(Resp.self, from: data), r.found, let arr = r.results {
-                for item in arr {
-                    switch item.skip_type.lowercased() {
-                    case "op": opRange = (item.interval.start_time, item.interval.end_time)
-                    case "ed": edRange = (item.interval.start_time, item.interval.end_time)
-                    default: break
+            // Log the exact URL being fetched to aid debugging
+            Logger.shared.log("[SkipSidecar] Fetching AniSkip: \(url.absoluteString)", type: "Download")
+
+            // Perform the request and capture the response object so we can log status codes
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let e = error {
+                    Logger.shared.log("[SkipSidecar] AniSkip (MAL) fetch error: \(e.localizedDescription)", type: "Download")
+                    completion(false)
+                    return
+                }
+                if let http = response as? HTTPURLResponse {
+                    Logger.shared.log("[SkipSidecar] AniSkip response status: \(http.statusCode)", type: "Download")
+                }
+                guard let data = data else {
+                    Logger.shared.log("[SkipSidecar] AniSkip returned empty body", type: "Download")
+                    completion(false)
+                    return
+                }
+                
+                // Flexible decoder: supports both camelCase (skipType, startTime) and snake_case (skip_type, start_time)
+                struct AniSkipV2Response: Decodable {
+                    struct Result: Decodable {
+                        struct Interval: Decodable {
+                            let startTime: Double
+                            let endTime: Double
+                            init(from decoder: Decoder) throws {
+                                let c = try decoder.container(keyedBy: CodingKeys.self)
+                                if let start = try? c.decode(Double.self, forKey: .startTime),
+                                   let end   = try? c.decode(Double.self, forKey: .endTime) {
+                                    startTime = start
+                                    endTime   = end
+                                } else {
+                                    startTime = try c.decode(Double.self, forKey: .start_time)
+                                    endTime   = try c.decode(Double.self, forKey: .end_time)
+                                }
+                            }
+                            private enum CodingKeys: String, CodingKey {
+                                case startTime
+                                case endTime
+                                case start_time
+                                case end_time
+                            }
+                        }
+                        let skipType: String
+                        let interval: Interval
+                        init(from decoder: Decoder) throws {
+                            let c = try decoder.container(keyedBy: CodingKeys.self)
+                            if let st = try? c.decode(String.self, forKey: .skipType) {
+                                skipType = st
+                            } else {
+                                skipType = try c.decode(String.self, forKey: .skip_type)
+                            }
+                            interval = try c.decode(Interval.self, forKey: .interval)
+                        }
+                        private enum CodingKeys: String, CodingKey {
+                            case skipType
+                            case skip_type
+                            case interval
+                        }
                     }
+                    let found: Bool
+                    let results: [Result]?
+                }
+                
+                var opRange: (Double, Double)? = nil
+                var edRange: (Double, Double)? = nil
+                
+                if let resp = try? JSONDecoder().decode(AniSkipV2Response.self, from: data), resp.found, let arr = resp.results {
+                    for item in arr {
+                        switch item.skipType.lowercased() {
+                        case "op": opRange = (item.interval.startTime, item.interval.endTime)
+                        case "ed": edRange = (item.interval.startTime, item.interval.endTime)
+                        default: break
+                        }
+                    }
+                } else {
+                    // Log a small preview of the response to help debugging
+                    let preview = String(data: data, encoding: .utf8) ?? "<non-utf8>"
+                    Logger.shared.log("[SkipSidecar] AniSkip decode failed or not found. Body: \(preview.prefix(200))", type: "Download")
+                }
+                
+                // If no ranges were found, gracefully return without writing a sidecar
+                if opRange == nil && edRange == nil {
+                    completion(false)
+                    return
+                }
+                
+                // Sidecar path: next to the persisted video file
+                let dir = persistentURL.deletingLastPathComponent()
+                let baseName = persistentURL.deletingPathExtension().lastPathComponent
+                let sidecar = dir.appendingPathComponent(baseName + ".skip.json")
+                
+                var payload: [String: Any] = [
+                    "source": "aniskip",
+                    "idType": "mal",
+                    "malId": malID,
+                    "episode": episodeNumber,
+                    "createdAt": ISO8601DateFormatter().string(from: Date())
+                ]
+                if let op = opRange { payload["op"] = ["start": op.0, "end": op.1] }
+                if let ed = edRange { payload["ed"] = ["start": ed.0, "end": ed.1] }
+                
+                do {
+                    let json = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
+                    try json.write(to: sidecar, options: .atomic)
+                    Logger.shared.log("[SkipSidecar] Wrote sidecar at: \(sidecar.path)", type: "Download")
+                    completion(true)
+                } catch {
+                    Logger.shared.log("[SkipSidecar] Sidecar write error: \(error.localizedDescription)", type: "Download")
+                    completion(false)
+                }
+            }.resume()
+        }
+
+        if let existingMalID = request.malID {
+            // Already have the MAL ID; proceed directly
+            proceed(with: existingMalID)
+            return
+        }
+        // Attempt to fetch MAL ID using AniList ID if available
+        if let aniListId = request.aniListID {
+            AniListMutation().fetchMalID(animeId: aniListId) { result in
+                switch result {
+                case .success(let mal):
+                    // Save the fetched MAL ID to the download object if possible (JSActiveDownload is a struct so we cannot mutate here)
+                    // but we can proceed using the fetched value. It is logged by CustomMediaPlayer too.
+                    proceed(with: mal)
+                case .failure(let error):
+                    Logger.shared.log("Unable to fetch MAL ID: \(error)", type: "Error")
+                    completion(false)
                 }
             }
-            
-            if opRange == nil && edRange == nil {
-                completion(false)
-                return
-            }
-            
-            // Sidecar path: next to the persisted video file
-            let dir = persistentURL.deletingLastPathComponent()
-            let baseName = persistentURL.deletingPathExtension().lastPathComponent
-            let sidecar = dir.appendingPathComponent(baseName + ".skip.json")
-            
-            var payload: [String: Any] = [
-                "source": "aniskip",
-                "idType": "mal",
-                "malId": mal,
-                "episode": episodeNumber,
-                "createdAt": ISO8601DateFormatter().string(from: Date())
-            ]
-            if let op = opRange { payload["op"] = ["start": op.0, "end": op.1] }
-            if let ed = edRange { payload["ed"] = ["start": ed.0, "end": ed.1] }
-            
-            do {
-                let json = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
-                try json.write(to: sidecar, options: .atomic)
-                Logger.shared.log("[SkipSidecar] Wrote sidecar at: \(sidecar.path)", type: "Download")
-                completion(true)
-            } catch {
-                Logger.shared.log("[SkipSidecar] Sidecar write error: \(error.localizedDescription)", type: "Download")
-                completion(false)
-            }
-        }.resume()
+            return
+        }
+        // No MAL ID or AniList ID available; cannot proceed
+        Logger.shared.log("[SkipSidecar] No MAL ID or AniList ID available for AniSkip request", type: "Download")
+        completion(false)
     }
 }

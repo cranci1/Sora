@@ -116,6 +116,8 @@ extension JSController {
         module: ScrapingModule? = nil,
         completionHandler: ((Bool, String) -> Void)? = nil
     ) {
+        Logger.shared.log("Start download | title: \(title ?? "-") | isEpisode: \(isEpisode) | showTitle: \(showTitle ?? "-") | season: \(season?.description ?? "-") | episode: \(episode?.description ?? "-")", type: "Download")
+
         // If a module is provided, use the stream type aware download
         if let module = module {
             // Use the stream type aware download method
@@ -1219,7 +1221,8 @@ extension JSController: AVAssetDownloadDelegate {
         // If there's a subtitle URL, download it now that the video is saved
         // Also fetch OP/ED skip timestamps in parallel and save simple sidecar JSON next to the video
         if download.metadata?.episode != nil && download.type == .episode {
-            fetchSkipTimestampsFor(request: download, persistentURL: persistentURL) { ok in
+            Logger.shared.log("OP/ED: fetching skip timestamps after download save", type: "Download")
+            self.fetchSkipTimestampsFor(request: download, persistentURL: persistentURL) { ok in
                 if ok {
                     print("[SkipSidecar] Saved OP/ED sidecar for episode \(download.metadata?.episode ?? -1) at: \(persistentURL.path)")
                 } else {
@@ -1674,126 +1677,125 @@ enum DownloadQueueStatus: Equatable {
     /// Fetches OP & ED skip timestamps (AniSkip) and writes a minimal sidecar JSON next to the persisted video.
     /// Uses MAL id for fillers when available; falls back to AniList otherwise.
     private 
-/// Fetch OP/ED skip timestamps for a finished download using **MAL** only.
-/// - Parameters:
-///   - request: The active download metadata (must contain `malID` and `metadata?.episode`)
-///   - persistentURL: Final URL where the video was persisted
-///   - completion: Called with `true` on success, `false` on failure
-func fetchSkipTimestampsFor(request: JSActiveDownload, persistentURL: URL, completion: @escaping (Bool) -> Void) {
-    // Validate MAL ID and Episode
-    guard let malID = request.malID else {
-        Logger.shared.log("[SkipSidecar] No MAL ID on request → skipping OP/ED fetching", type: "Download")
+func self.fetchSkipTimestampsFor(request: JSActiveDownload, persistentURL: URL, completion: @escaping (Bool) -> Void) {
+    let ep = request.episode ?? 0
+    let ani = request.metadata?.aniListID
+    let mal = request.metadata?.malID
+
+    Logger.shared.log("OP/ED: preparing fetch | anilistID: \(ani?.description ?? "nil") | malID: \(mal?.description ?? "nil") | episode: \(ep)", type: "Download")
+
+    var urls: [URL] = []
+    if let anilistID = ani, let url = URL(string: "https://api.aniskip.com/v2/skip-times/anilist/\(anilistID)/\(ep)?types[]=op&types[]=ed") {
+        urls.append(url)
+    }
+    if let malID = mal, let url = URL(string: "https://api.aniskip.com/v2/skip-times/mal/\(malID)/\(ep)?types[]=op&types[]=ed") {
+        urls.append(url)
+    }
+    if let anilistID = ani, let url = URL(string: "https://api.aniskip.com/v1/skip-times/\(anilistID)/\(ep)?types=op&types=ed") {
+        urls.append(url)
+    }
+    if let malID = mal, let url = URL(string: "https://api.aniskip.com/v1/skip-times/\(malID)/\(ep)?types=op&types=ed") {
+        urls.append(url)
+    }
+
+    if urls.isEmpty {
+        Logger.shared.log("OP/ED: no IDs available to fetch skip timestamps.", type: "Download")
         completion(false)
         return
     }
-    guard let episodeNumber = request.metadata?.episode else {
-        Logger.shared.log("[SkipSidecar] Missing episode number on request → skipping OP/ED fetching", type: "Download")
-        completion(false)
-        return
-    }
 
-    // Log that we are about to fetch
-    Logger.shared.log("[SkipSidecar] Starting fetch for MAL=\(malID) episode=\(episodeNumber)", type: "Download")
-
-    // Build AniSkip v2 endpoint (MAL provider only)
-    // Example: https://api.aniskip.com/v2/skip-times/mal/{malID}/{episode}?types=op,ed
-    guard let url = URL(string: "https://api.aniskip.com/v2/skip-times/mal/\(malID)/\(episodeNumber)?types=op,ed") else {
-        Logger.shared.log("[SkipSidecar] Failed to build AniSkip URL for malID=\(malID) ep=\(episodeNumber)", type: "Error")
-        completion(false)
-        return
-    }
-
-    var req = URLRequest(url: url)
-    req.timeoutInterval = 15
-
-    let task = URLSession.shared.dataTask(with: req) { data, response, error in
-        // Handle networking errors
-        if let error = error {
-            Logger.shared.log("[SkipSidecar] Network error while fetching skip-times: \(error.localizedDescription)", type: "Error")
+    func attempt(_ idx: Int) {
+        if idx >= urls.count {
+            Logger.shared.log("OP/ED: no skip timestamps found after trying all endpoints.", type: "Download")
             completion(false)
             return
         }
-        guard let http = response as? HTTPURLResponse else {
-            Logger.shared.log("[SkipSidecar] No HTTP response while fetching skip-times", type: "Error")
-            completion(false)
-            return
-        }
-        guard (200...299).contains(http.statusCode), let data = data else {
-            let size = data?.count ?? 0
-            Logger.shared.log("[SkipSidecar] Bad status \(http.statusCode). Body bytes=\(size)", type: "Error")
-            completion(false)
-            return
-        }
+        let url = urls[idx]
+        Logger.shared.log("OP/ED: fetching from \(url.absoluteString)", type: "Download")
 
-        // Parse response
-        do {
-            let json = try JSONSerialization.jsonObject(with: data, options: [])
-            guard
-                let dict = json as? [String: Any],
-                let found = dict["found"] as? Bool,
-                found == true,
-                let results = dict["results"] as? [[String: Any]]
-            else {
-                Logger.shared.log("[SkipSidecar] AniSkip returned empty results for malID=\(malID) ep=\(episodeNumber)", type: "Download")
-                completion(false)
+        var req = URLRequest(url: url)
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+        req.setValue("Sora/1.0 (skip-fetch)", forHTTPHeaderField: "User-Agent")
+
+        URLSession.shared.dataTask(with: req) { data, response, error in
+            if let error = error {
+                Logger.shared.log("OP/ED: request error: \(error.localizedDescription)", type: "Error")
+                DispatchQueue.main.async { attempt(idx + 1) }
+                return
+            }
+            if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+                Logger.shared.log("OP/ED: HTTP \(http.statusCode) from AniSkip", type: "Error")
+                DispatchQueue.main.async { attempt(idx + 1) }
+                return
+            }
+            guard let data = data else {
+                Logger.shared.log("OP/ED: empty response", type: "Error")
+                DispatchQueue.main.async { attempt(idx + 1) }
                 return
             }
 
-            var opStart: Double? = nil
-            var opEnd: Double? = nil
-            var edStart: Double? = nil
-            var edEnd: Double? = nil
-
-            for entry in results {
-                guard
-                    let interval = entry["interval"] as? [String: Any],
-                    let start = interval["start_time"] as? Double,
-                    let end = interval["end_time"] as? Double,
-                    let type = entry["skip_type"] as? String
-                else { continue }
-
-                if type.lowercased() == "op" {
-                    opStart = start; opEnd = end
-                } else if type.lowercased() == "ed" {
-                    edStart = start; edEnd = end
-                }
-            }
-
-            if opStart == nil && edStart == nil {
-                Logger.shared.log("[SkipSidecar] No OP/ED entries found in results for malID=\(malID) ep=\(episodeNumber)", type: "Download")
-                completion(false)
-                return
-            }
-
-            // Build sidecar JSON to store next to the video file
-            let baseURL = persistentURL.deletingPathExtension()
-            let sidecarURL = baseURL.appendingPathExtension("skip.json")
-
-            var payload: [String: Any] = [
-                "malID": malID,
-                "episode": episodeNumber,
-                "source": "AniSkip",
-                "version": 2
-            ]
-            if let s = opStart, let e = opEnd { payload["op"] = ["start": s, "end": e] }
-            if let s = edStart, let e = edEnd { payload["ed"] = ["start": s, "end": e] }
+            var opStart: Double?
+            var opEnd: Double?
+            var edStart: Double?
+            var edEnd: Double?
 
             do {
-                let sidecarData = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
-                try sidecarData.write(to: sidecarURL, options: [.atomic])
-                Logger.shared.log("[SkipSidecar] Saved skip sidecar → \(sidecarURL.lastPathComponent)", type: "Download")
+                let obj = try JSONSerialization.jsonObject(with: data, options: [])
+                if let dict = obj as? [String: Any] {
+                    if let results = dict["results"] as? [[String: Any]] {
+                        for entry in results {
+                            guard let type = entry["skipType"] as? String,
+                                  let interval = entry["interval"] as? [String: Any],
+                                  let s = interval["startTime"] as? Double,
+                                  let e = interval["endTime"] as? Double
+                            else { continue }
+                            if type.lowercased() == "op" { opStart = s; opEnd = e }
+                            else if type.lowercased() == "ed" { edStart = s; edEnd = e }
+                        }
+                    } else if let found = dict["found"] as? Bool, found, let results = dict["results"] as? [[String: Any]] {
+                        for entry in results {
+                            guard let type = entry["skipType"] as? String,
+                                  let interval = entry["interval"] as? [String: Any],
+                                  let s = interval["startTime"] as? Double,
+                                  let e = interval["endTime"] as? Double
+                            else { continue }
+                            if type.lowercased() == "op" { opStart = s; opEnd = e }
+                            else if type.lowercased() == "ed" { edStart = s; edEnd = e }
+                        }
+                    }
+                }
+            } catch {
+                Logger.shared.log("OP/ED: JSON parse error: \(error.localizedDescription)", type: "Error")
+            }
+
+            let hasAny = (opStart != nil && opEnd != nil) || (edStart != nil && edEnd != nil)
+            if !hasAny {
+                Logger.shared.log("OP/ED: no intervals in response, trying next endpoint...", type: "Download")
+                DispatchQueue.main.async { attempt(idx + 1) }
+                return
+            }
+
+            var payload: [String: Any] = [:]
+            if let s = opStart, let e = opEnd { payload["op"] = ["start": s, "end": e] }
+            if let s = edStart, let e = edEnd { payload["ed"] = ["start": s, "end": e] }
+            if let anilistID = ani { payload["anilistId"] = anilistID }
+            if let malID = mal { payload["malId"] = malID }
+            payload["episode"] = ep
+
+            let sidecarURL = persistentURL.deletingPathExtension().appendingPathExtension("skips.json")
+            do {
+                let out = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
+                try out.write(to: sidecarURL, options: .atomic)
+                Logger.shared.log("OP/ED: saved sidecar at \(sidecarURL.lastPathComponent)", type: "Download")
                 completion(true)
             } catch {
-                Logger.shared.log("[SkipSidecar] Failed to save sidecar \(sidecarURL.lastPathComponent): \(error.localizedDescription)", type: "Error")
+                Logger.shared.log("OP/ED: failed to save sidecar: \(error.localizedDescription)", type: "Error")
                 completion(false)
             }
-        } catch {
-            Logger.shared.log("[SkipSidecar] JSON parse error: \(error.localizedDescription)", type: "Error")
-            completion(false)
-        }
+        }.resume()
     }
 
-    task.resume()
+    attempt(0)
 }
 
 

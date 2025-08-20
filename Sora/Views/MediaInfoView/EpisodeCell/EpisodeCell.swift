@@ -588,6 +588,8 @@ private extension EpisodeCell {
         }
         
         isDownloading = true
+        let animeTitle = parentTitle.isEmpty ? "Unknown Anime" : parentTitle
+        Logger.shared.log("Download kickoff → show=\(animeTitle), ep=\(self.episodeID + 1), malID=\(String(describing: self.malID)))", type: "Download")
         let downloadID = UUID()
         
         DropManager.shared.downloadStarted(episodeNumber: episodeID + 1)
@@ -616,6 +618,8 @@ private extension EpisodeCell {
     }
     
     func tryNextDownloadMethod(methodIndex: Int, downloadID: UUID, softsub: Bool) {
+        Logger.shared.log("Trying download method index=\(methodIndex) for ep=\(self.episodeID + 1)", type: "Download")
+
         guard isDownloading else { return }
         
         switch methodIndex {
@@ -654,6 +658,8 @@ private extension EpisodeCell {
         methodIndex: Int,
         softsub: Bool
     ) {
+        Logger.shared.log("handleDownloadResult received: sources=\(result.sources?.count ?? 0), streams=\(result.streams?.count ?? 0)", type: "Download")
+
         guard isDownloading else { return }
         
         if let sources = result.sources, !sources.isEmpty {
@@ -692,8 +698,7 @@ private extension EpisodeCell {
     }
     
     func startActualDownload(url: URL, streamUrl: String, downloadID: UUID, subtitleURL: URL? = nil) {
-        
-Logger.shared.log("Download kickoff → show=\(animeTitle), ep=\(self.episodeID + 1), malID=\(String(describing: self.malID))", type: "Download")
+        Logger.shared.log("Preparing actual download (streamUrl=\(streamUrl))", type: "Download")
 
         let headers = createDownloadHeaders(for: url)
         let episodeThumbnailURL = URL(string: episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl)

@@ -1331,6 +1331,8 @@ struct EnhancedEpisodeRow: View {
         }
     }
     
+    @Environment(\.colorScheme) private var colorScheme
+    private var fillerBadgeOpacity: Double { colorScheme == .dark ? 0.18 : 0.12 }
     var body: some View {
         ZStack {
             actionButtonsBackground

@@ -1393,9 +1393,9 @@ struct EnhancedEpisodeRow: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
             
             VStack(alignment: .leading) {
-                Text("Episode \(asset.metadata?.episode ?? 0)")
-                    .font(.system(size: 15))
-
+                HStack(spacing: 8) {
+                    Text("Episode \(asset.metadata?.episode ?? 0)")
+                        .font(.system(size: 15))
                     if asset.metadata?.isFiller == true {
                         Text("Filler")
                             .font(.system(size: 12, weight: .semibold))
@@ -1408,6 +1408,7 @@ struct EnhancedEpisodeRow: View {
                             )
                             .foregroundColor(.red)
                     }
+                }
                 if let title = asset.metadata?.title {
                     Text(title)
                         .font(.system(size: 13))

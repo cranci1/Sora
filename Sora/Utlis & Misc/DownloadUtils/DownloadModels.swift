@@ -413,6 +413,8 @@ struct AssetMetadata: Codable {
     let showPosterURL: URL? // Main show poster URL (distinct from episode-specific images)
     let episodeTitle: String?
     let seasonNumber: Int?
+    /// Indicates whether this episode is a filler (derived from metadata at download time)
+    let isFiller: Bool?
     
     init(
         title: String,
@@ -425,7 +427,8 @@ struct AssetMetadata: Codable {
         episode: Int? = nil,
         showPosterURL: URL? = nil,
         episodeTitle: String? = nil,
-        seasonNumber: Int? = nil
+        seasonNumber: Int? = nil,
+        isFiller: Bool? = nil
     ) {
         self.title = title
         self.overview = overview
@@ -438,6 +441,7 @@ struct AssetMetadata: Codable {
         self.showPosterURL = showPosterURL
         self.episodeTitle = episodeTitle
         self.seasonNumber = seasonNumber
+        self.isFiller = isFiller
     }
 }
 

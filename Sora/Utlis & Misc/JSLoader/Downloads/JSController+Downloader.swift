@@ -379,7 +379,10 @@ extension JSController {
             showTitle: request.showTitle,
             season: request.season,
             episode: request.episode,
-            showPosterURL: request.showPosterURL ?? request.imageURL
+            showPosterURL: request.showPosterURL ?? request.imageURL,
+            episodeTitle: nil,
+            seasonNumber: nil,
+            isFiller: request.isFiller
         )
     }
     

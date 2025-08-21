@@ -248,13 +248,11 @@ private extension EpisodeCell {
     var episodeInfo: some View {
         VStack(alignment: .leading) {
             HStack(spacing: 8) {
-                // Episode number uses default color now (no red)
                 Text("Episode \(episodeID + 1)")
                     .font(.system(size: 15))
                     .foregroundColor(.primary)
                 
                 if isFiller {
-                    // Modern capsule badge that matches subtle UI (unchanged)
                     Text("Filler")
                         .font(.system(size: 12, weight: .semibold))
                         .padding(.horizontal, 8)
@@ -561,7 +559,6 @@ private extension EpisodeCell {
             } else {
                 fetchAnimeEpisodeDetails()
             }
-            // NOTE: filler info is now handled by MediaInfoView and passed in via `fillerEpisodes`.
         }
     }
     
@@ -984,7 +981,6 @@ private extension EpisodeCell {
         }.resume()
     }
 
-    // Removed Jikan fetching from EpisodeCell. All filler/Jikan handling is now in MediaInfoView and passed in via `fillerEpisodes`.
     
     func handleFetchFailure(error: Error) {
         Logger.shared.log("Episode details fetch error: \(error.localizedDescription)", type: "Error")

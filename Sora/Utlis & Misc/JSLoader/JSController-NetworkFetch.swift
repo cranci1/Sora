@@ -5,20 +5,36 @@
 //  Created by paul on 17/08/2025.
 //
 
-import WebKit
+import SoraCore
 import JavaScriptCore
+import WebKit
+import SwiftUI
 
 struct NetworkFetchOptions {
     let timeoutSeconds: Int
     let headers: [String: String]
     let cutoff: String?
     let returnHTML: Bool
+    let clickSelectors: [String]
+    let waitForSelectors: [String]
+    let maxWaitTime: Int
     
-    init(timeoutSeconds: Int = 10, headers: [String: String] = [:], cutoff: String? = nil, returnHTML: Bool = false) {
+    init(
+        timeoutSeconds: Int = 10,
+        headers: [String: String] = [:],
+        cutoff: String? = nil,
+        returnHTML: Bool = false,
+        clickSelectors: [String] = [],
+        waitForSelectors: [String] = [],
+        maxWaitTime: Int = 5
+    ) {
         self.timeoutSeconds = timeoutSeconds
         self.headers = headers
         self.cutoff = cutoff
         self.returnHTML = returnHTML
+        self.clickSelectors = clickSelectors
+        self.waitForSelectors = waitForSelectors
+        self.maxWaitTime = maxWaitTime
     }
 }
 
@@ -33,12 +49,18 @@ extension JSContext {
                     let headers = optionsDict["headers"] as? [String: String] ?? [:]
                     let cutoff = optionsDict["cutoff"] as? String
                     let returnHTML = optionsDict["returnHTML"] as? Bool ?? false
+                    let clickSelectors = optionsDict["clickSelectors"] as? [String] ?? []
+                    let waitForSelectors = optionsDict["waitForSelectors"] as? [String] ?? []
+                    let maxWaitTime = optionsDict["maxWaitTime"] as? Int ?? 5
                     
                     options = NetworkFetchOptions(
                         timeoutSeconds: timeoutSeconds,
                         headers: headers,
                         cutoff: cutoff,
-                        returnHTML: returnHTML
+                        returnHTML: returnHTML,
+                        clickSelectors: clickSelectors,
+                        waitForSelectors: waitForSelectors,
+                        maxWaitTime: maxWaitTime
                     )
                 }
                 
@@ -66,7 +88,10 @@ extension JSContext {
                     timeoutSeconds: options.timeoutSeconds || 10,
                     headers: options.headers || {},
                     cutoff: options.cutoff || null,
-                    returnHTML: options.returnHTML || false
+                    returnHTML: options.returnHTML || false,
+                    clickSelectors: options.clickSelectors || [],
+                    waitForSelectors: options.waitForSelectors || [],
+                    maxWaitTime: options.maxWaitTime || 5
                 };
                 
                 return new Promise(function(resolve, reject) {
@@ -80,7 +105,9 @@ extension JSContext {
                             totalRequests: result.requests.length,
                             cutoffTriggered: result.cutoffTriggered || false,
                             cutoffUrl: result.cutoffUrl || null,
-                            htmlCaptured: result.htmlCaptured || false
+                            htmlCaptured: result.htmlCaptured || false,
+                            elementsClicked: result.elementsClicked || [],
+                            waitResults: result.waitResults || {}
                         });
                     }, reject);
                 });
@@ -99,6 +126,30 @@ extension JSContext {
                     cutoff: cutoff
                 });
             }
+            
+            function networkFetchWithClicks(url, clickSelectors, options = {}) {
+                return networkFetch(url, {
+                    timeoutSeconds: options.timeoutSeconds || 10,
+                    headers: options.headers || {},
+                    cutoff: options.cutoff || null,
+                    returnHTML: options.returnHTML || false,
+                    clickSelectors: Array.isArray(clickSelectors) ? clickSelectors : [clickSelectors],
+                    waitForSelectors: options.waitForSelectors || [],
+                    maxWaitTime: options.maxWaitTime || 5
+                });
+            }
+            
+            function networkFetchWithWaitAndClick(url, waitForSelectors, clickSelectors, options = {}) {
+                return networkFetch(url, {
+                    timeoutSeconds: options.timeoutSeconds || 10,
+                    headers: options.headers || {},
+                    cutoff: options.cutoff || null,
+                    returnHTML: options.returnHTML || false,
+                    clickSelectors: Array.isArray(clickSelectors) ? clickSelectors : [clickSelectors],
+                    waitForSelectors: Array.isArray(waitForSelectors) ? waitForSelectors : [waitForSelectors],
+                    maxWaitTime: options.maxWaitTime || 5
+                });
+            }
             """
         
         self.evaluateScript(networkFetchDefinition)
@@ -115,7 +166,7 @@ class NetworkFetchManager: NSObject, ObservableObject {
     }
     
     func performNetworkFetch(urlString: String, options: NetworkFetchOptions, resolve: JSValue, reject: JSValue) {
-        Logger.shared.log("NetworkFetchManager: Starting fetch for \(urlString) with options: returnHTML=\(options.returnHTML)", type: "Debug")
+        Logger.shared.log("NetworkFetchManager: Starting fetch for \(urlString) with options: returnHTML=\(options.returnHTML), clicks=\(options.clickSelectors), waitFor=\(options.waitForSelectors)", type: "Debug")
         
         let monitorId = UUID().uuidString
         let monitor = NetworkFetchMonitor()
@@ -146,6 +197,8 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
     private var completionHandler: (([String: Any]) -> Void)?
     private var timer: Timer?
     private var options: NetworkFetchOptions?
+    private var elementsClicked: [String] = []
+    private var waitResults: [String: Bool] = [:]
     
     @Published private(set) var networkRequests: [String] = []
     @Published private(set) var statusMessage = "Initializing..."
@@ -162,21 +215,31 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         cutoffUrl = nil
         htmlContent = nil
         htmlCaptured = false
+        elementsClicked.removeAll()
+        waitResults.removeAll()
         
-        if options.returnHTML {
-            statusMessage = "Loading URL for \(options.timeoutSeconds) seconds, will capture HTML at end..."
-        } else {
-            statusMessage = "Loading URL for \(options.timeoutSeconds) seconds..."
+        var statusParts = ["Loading URL for \(options.timeoutSeconds) seconds"]
+        if !options.waitForSelectors.isEmpty {
+            statusParts.append("waiting for elements")
         }
+        if !options.clickSelectors.isEmpty {
+            statusParts.append("will click elements")
+        }
+        if options.returnHTML {
+            statusParts.append("will capture HTML")
+        }
+        statusMessage = statusParts.joined(separator: ", ") + "..."
         
         guard let url = URL(string: urlString) else {
             completion([
                 "originalUrl": urlString,
                 "requests": [],
-                "html": NSNull(),
+                "html": nil,
                 "success": false,
                 "error": "Invalid URL format",
-                "htmlCaptured": false
+                "htmlCaptured": false,
+                "elementsClicked": [],
+                "waitResults": [:]
             ])
             return
         }
@@ -192,7 +255,7 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             }
         }
         
-        Logger.shared.log("NetworkFetch started for: \(urlString) (timeout: \(options.timeoutSeconds)s, returnHTML: \(options.returnHTML))", type: "Debug")
+        Logger.shared.log("NetworkFetch started for: \(urlString) (timeout: \(options.timeoutSeconds)s, returnHTML: \(options.returnHTML), clicks: \(options.clickSelectors), waitFor: \(options.waitForSelectors))", type: "Debug")
     }
     
     private func captureHTMLThenComplete() {
@@ -424,6 +487,96 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             
             aggressiveJWHook();
             
+            window.waitForElementAndClick = function(waitSelectors, clickSelectors, maxWaitTime) {
+                return new Promise(function(resolve) {
+                    const results = {
+                        waitResults: {},
+                        clickResults: []
+                    };
+                    
+                    waitSelectors.forEach(function(selector) {
+                        results.waitResults[selector] = false;
+                    });
+                    
+                    const startTime = Date.now();
+                    const checkInterval = 100; 
+                    
+                    const checkAndClick = function() {
+                        const elapsed = (Date.now() - startTime) / 1000;
+                        
+                        let allFound = waitSelectors.length === 0; 
+                        
+                        waitSelectors.forEach(function(selector) {
+                            const element = document.querySelector(selector);
+                            if (element && element.offsetParent !== null) { 
+                                results.waitResults[selector] = true;
+                                console.log('Element found and visible:', selector);
+                            }
+                        });
+                        
+                        allFound = waitSelectors.every(function(selector) {
+                            return results.waitResults[selector];
+                        });
+                        
+                        if (allFound || elapsed >= maxWaitTime) {
+                            clickSelectors.forEach(function(selector) {
+                                try {
+                                    const elements = document.querySelectorAll(selector);
+                                    let clicked = false;
+                                    
+                                    elements.forEach(function(element) {
+                                        if (element && element.offsetParent !== null) {
+                                            try {
+                                                element.click();
+                                                clicked = true;
+                                                console.log('Successfully clicked:', selector);
+                                            } catch(e1) {
+                                                try {
+                                                    const event = new MouseEvent('click', {
+                                                        view: window,
+                                                        bubbles: true,
+                                                        cancelable: true
+                                                    });
+                                                    element.dispatchEvent(event);
+                                                    clicked = true;
+                                                    console.log('Successfully dispatched click:', selector);
+                                                } catch(e2) {
+                                                    console.log('Failed to click element:', selector, e2);
+                                                }
+                                            }
+                                        }
+                                    });
+                                    
+                                    results.clickResults.push({
+                                        selector: selector,
+                                        success: clicked,
+                                        elementsFound: elements.length
+                                    });
+                                } catch(e) {
+                                    console.log('Error clicking selector:', selector, e);
+                                    results.clickResults.push({
+                                        selector: selector,
+                                        success: false,
+                                        error: e.message
+                                    });
+                                }
+                            });
+                            
+                            window.webkit.messageHandlers.networkLogger.postMessage({
+                                type: 'click-results',
+                                results: results
+                            });
+                            
+                            resolve(results);
+                        } else if (elapsed < maxWaitTime) {
+                            setTimeout(checkAndClick, checkInterval);
+                        }
+                    };
+                    
+                    checkAndClick();
+                });
+            };
+            
             const nuclearScan = function() {
                 console.log('Nuclear scan initiated');
                 
@@ -455,23 +608,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                             });
                         }
                     }
-                });
-                
-                const clickableSelectors = [
-                    'button', '.play', '.play-button', '[data-play]', '.video-play',
-                    '.jwplayer', '.player', '[id*="player"]', '[class*="play"]',
-                    'div[onclick]', 'span[onclick]', 'a[onclick]'
-                ];
-                
-                clickableSelectors.forEach(function(selector) {
-                    document.querySelectorAll(selector).forEach(function(el) {
-                        try {
-                            el.click();
-                            console.log('Force clicked:', selector);
-                        } catch(e) {
-                            console.log('Click failed:', e);
-                        }
-                    });
                 });
             };
             
@@ -511,7 +647,7 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         
         for (key, value) in headers {
             request.setValue(value, forHTTPHeaderField: key)
-            Logger.shared.log("Custom header set: \(key): \(value)")
+            print("Custom header set: \(key): \(value)")
         }
         
         if request.value(forHTTPHeaderField: "Referer") == nil {
@@ -524,15 +660,48 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             ]
             let defaultReferer = randomReferers.randomElement() ?? "https://www.google.com/"
             request.setValue(defaultReferer, forHTTPHeaderField: "Referer")
+            print("Using default referer: \(defaultReferer)")
         }
         
         webView.load(request)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.simulateUserInteraction()
+            self.performCustomInteractions()
         }
         
-        Logger.shared.log("Started loading: \(url.absoluteString)")
+        print("Started loading: \(url.absoluteString)")
+    }
+    
+    private func performCustomInteractions() {
+        guard let webView = webView, let options = options else { return }
+        
+        if !options.waitForSelectors.isEmpty || !options.clickSelectors.isEmpty {
+            let waitSelectorsJS = options.waitForSelectors.map { "'\($0)'" }.joined(separator: ", ")
+            let clickSelectorsJS = options.clickSelectors.map { "'\($0)'" }.joined(separator: ", ")
+            
+            let customInteractionJS = """
+            window.waitForElementAndClick(
+                [\(waitSelectorsJS)],
+                [\(clickSelectorsJS)],
+                \(options.maxWaitTime)
+            ).then(function(results) {
+                console.log('Custom interaction completed:', results);
+            });
+            """
+            
+            statusMessage = "Performing custom interactions..."
+            Logger.shared.log("NetworkFetch: Starting custom interactions - wait for: \(options.waitForSelectors), click: \(options.clickSelectors)", type: "Debug")
+            
+            webView.evaluateJavaScript(customInteractionJS) { result, error in
+                if let error = error {
+                    Logger.shared.log("NetworkFetch: Custom interaction error: \(error)", type: "Error")
+                } else {
+                    Logger.shared.log("NetworkFetch: Custom interaction JavaScript executed successfully", type: "Debug")
+                }
+            }
+        } else {
+            simulateUserInteraction()
+        }
     }
     
     private func simulateUserInteraction() {
@@ -540,18 +709,25 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         
         let jsInteraction = """
         setTimeout(function() {
-            const playButtons = document.querySelectorAll('button, div, span, a').filter(function(el) {
+            const playButtons = document.querySelectorAll('button, div, span, a');
+            const filteredButtons = Array.from(playButtons).filter(function(el) {
                 const text = el.textContent || el.innerText || '';
                 const classes = el.className || '';
-                return text.toLowerCase().includes('play') ||
+                const id = el.id || '';
+                return text.toLowerCase().includes('play') || 
                        classes.toLowerCase().includes('play') ||
+                       id.toLowerCase().includes('play') ||
                        el.getAttribute('aria-label')?.toLowerCase().includes('play');
             });
             
-            playButtons.forEach(function(btn, index) {
+            filteredButtons.forEach(function(btn, index) {
                 setTimeout(function() {
-                    btn.click();
-                    console.log('Clicked play button:', btn);
+                    try {
+                        btn.click();
+                        console.log('Clicked play button:', btn);
+                    } catch(e) {
+                        console.log('Failed to click button:', e);
+                    }
                 }, index * 200);
             });
             
@@ -597,7 +773,7 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         
         webView.evaluateJavaScript(jsInteraction) { result, error in
             if let error = error {
-                Logger.shared.log("JavaScript interaction error: \(error)", type: "Error")
+                print("JavaScript interaction error: \(error)")
             }
         }
     }
@@ -609,14 +785,16 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         webView?.stopLoading()
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "networkLogger")
         
-        let result: [String: Any?] = [
+        let result: [String: Any] = [
             "originalUrl": webView?.url?.absoluteString ?? "",
             "requests": networkRequests,
-            "html": htmlContent,
+            "html": htmlContent as Any,
             "success": true,
             "cutoffTriggered": cutoffTriggered,
-            "cutoffUrl": cutoffUrl,
-            "htmlCaptured": htmlCaptured
+            "cutoffUrl": cutoffUrl as Any,
+            "htmlCaptured": htmlCaptured,
+            "elementsClicked": elementsClicked,
+            "waitResults": waitResults
         ]
         
         webView = nil
@@ -625,26 +803,26 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             statusMessage = "Cutoff triggered! Found \(networkRequests.count) requests"
             Logger.shared.log("NetworkFetch stopped early due to cutoff: \(cutoffUrl ?? "unknown")", type: "Debug")
         } else if htmlCaptured {
-            statusMessage = "HTML captured! Found \(networkRequests.count) requests"
+            statusMessage = "HTML captured! Found \(networkRequests.count) requests, clicked \(elementsClicked.count) elements"
         } else {
-            statusMessage = "Completed! Found \(networkRequests.count) requests"
+            statusMessage = "Completed! Found \(networkRequests.count) requests, clicked \(elementsClicked.count) elements"
         }
         
-        completionHandler?(result as [String : Any])
+        completionHandler?(result)
         completionHandler = nil
         
-        Logger.shared.log("Monitoring stopped (\(reason)). Total requests: \(networkRequests.count), HTML captured: \(htmlCaptured)", type: "Debug")
+        print("Monitoring stopped (\(reason)). Total requests: \(networkRequests.count), HTML captured: \(htmlCaptured), Elements clicked: \(elementsClicked.count)")
     }
     
     private func addRequest(_ urlString: String) {
         DispatchQueue.main.async {
             if !self.networkRequests.contains(urlString) {
                 self.networkRequests.append(urlString)
-                Logger.shared.log("Captured: \(urlString)", type: "Debug")
+                print("Captured: \(urlString)")
                 
                 if let cutoff = self.options?.cutoff, !cutoff.isEmpty {
                     if urlString.lowercased().contains(cutoff.lowercased()) {
-                        Logger.shared.log("Cutoff triggered by: \(urlString)", type: "Debug")
+                        print("Cutoff triggered by: \(urlString)")
                         self.cutoffTriggered = true
                         self.cutoffUrl = urlString
                         self.stopMonitoring(reason: "cutoff")
@@ -657,11 +835,15 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
 }
 
 extension NetworkFetchMonitor: WKNavigationDelegate {
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        Logger.shared.log("WebView failed: \(error.localizedDescription)", type: "Error")
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        print("WebView finished loading main document")
     }
     
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        print("WebView failed: \(error.localizedDescription)")
+    }
+    
+    func webView(_ webView: WKNavigationAction, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if let url = navigationAction.request.url {
             addRequest(url.absoluteString)
         }
@@ -672,9 +854,31 @@ extension NetworkFetchMonitor: WKNavigationDelegate {
 extension NetworkFetchMonitor: WKScriptMessageHandler {
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if message.name == "networkLogger" {
-            if let messageBody = message.body as? [String: Any],
-               let url = messageBody["url"] as? String {
-                addRequest(url)
+            if let messageBody = message.body as? [String: Any] {
+                if let url = messageBody["url"] as? String {
+                    addRequest(url)
+                } else if let type = messageBody["type"] as? String, type == "click-results" {
+                    if let results = messageBody["results"] as? [String: Any] {
+                        if let clickResults = results["clickResults"] as? [[String: Any]] {
+                            DispatchQueue.main.async {
+                                for clickResult in clickResults {
+                                    if let selector = clickResult["selector"] as? String,
+                                       let success = clickResult["success"] as? Bool, success {
+                                        self.elementsClicked.append(selector)
+                                        Logger.shared.log("NetworkFetch: Successfully clicked element: \(selector)", type: "Debug")
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if let waitResults = results["waitResults"] as? [String: Bool] {
+                            DispatchQueue.main.async {
+                                self.waitResults = waitResults
+                                Logger.shared.log("NetworkFetch: Wait results: \(waitResults)", type: "Debug")
+                            }
+                        }
+                    }
+                }
             }
         }
     }

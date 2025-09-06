@@ -5,10 +5,8 @@
 //  Created by paul on 17/08/2025.
 //
 
-import SoraCore
-import JavaScriptCore
 import WebKit
-import SwiftUI
+import JavaScriptCore
 
 struct NetworkFetchOptions {
     let timeoutSeconds: Int
@@ -234,7 +232,7 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             completion([
                 "originalUrl": urlString,
                 "requests": [],
-                "html": nil,
+                "html": NSNull(),
                 "success": false,
                 "error": "Invalid URL format",
                 "htmlCaptured": false,
@@ -647,7 +645,7 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         
         for (key, value) in headers {
             request.setValue(value, forHTTPHeaderField: key)
-            print("Custom header set: \(key): \(value)")
+            Logger.shared.log("Custom header set: \(key): \(value)", type: "Debug")
         }
         
         if request.value(forHTTPHeaderField: "Referer") == nil {
@@ -660,7 +658,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             ]
             let defaultReferer = randomReferers.randomElement() ?? "https://www.google.com/"
             request.setValue(defaultReferer, forHTTPHeaderField: "Referer")
-            print("Using default referer: \(defaultReferer)")
         }
         
         webView.load(request)
@@ -669,7 +666,7 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             self.performCustomInteractions()
         }
         
-        print("Started loading: \(url.absoluteString)")
+        Logger.shared.log("Started loading: \(url.absoluteString)", type: "Debug")
     }
     
     private func performCustomInteractions() {
@@ -773,7 +770,7 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         
         webView.evaluateJavaScript(jsInteraction) { result, error in
             if let error = error {
-                print("JavaScript interaction error: \(error)")
+                Logger.shared.log("JavaScript interaction error: \(error)", type: "Error")
             }
         }
     }
@@ -811,18 +808,18 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         completionHandler?(result)
         completionHandler = nil
         
-        print("Monitoring stopped (\(reason)). Total requests: \(networkRequests.count), HTML captured: \(htmlCaptured), Elements clicked: \(elementsClicked.count)")
+        Logger.shared.log("Monitoring stopped (\(reason)). Total requests: \(networkRequests.count), HTML captured: \(htmlCaptured), Elements clicked: \(elementsClicked.count)", type: "Debug")
     }
     
     private func addRequest(_ urlString: String) {
         DispatchQueue.main.async {
             if !self.networkRequests.contains(urlString) {
                 self.networkRequests.append(urlString)
-                print("Captured: \(urlString)")
+                Logger.shared.log("Captured: \(urlString)", type: "Debug")
                 
                 if let cutoff = self.options?.cutoff, !cutoff.isEmpty {
                     if urlString.lowercased().contains(cutoff.lowercased()) {
-                        print("Cutoff triggered by: \(urlString)")
+                        Logger.shared.log("Cutoff triggered by: \(urlString)", type: "Debug")
                         self.cutoffTriggered = true
                         self.cutoffUrl = urlString
                         self.stopMonitoring(reason: "cutoff")
@@ -835,15 +832,11 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
 }
 
 extension NetworkFetchMonitor: WKNavigationDelegate {
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        print("WebView finished loading main document")
-    }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {}
     
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        print("WebView failed: \(error.localizedDescription)")
-    }
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {}
     
-    func webView(_ webView: WKNavigationAction, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+    private func webView(_ webView: WKNavigationAction, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if let url = navigationAction.request.url {
             addRequest(url.absoluteString)
         }

@@ -64,6 +64,10 @@ struct TabBar: View {
         return white > 0.5 ? 0.5 : 0.3
     }
     
+    private var shouldSlideUp: Bool {
+        return keyboardFocus && keyboardHeight > 100
+    }
+    
     @Namespace private var animation
     
     private let tabWidth: CGFloat = 70
@@ -280,9 +284,8 @@ struct TabBar: View {
                 .padding(.bottom, -100)
                 .padding(.top, -10)
         }
-        .offset(y: keyboardFocus ? -keyboardHeight + 40 : 0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: keyboardHeight)
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: keyboardFocus)
+        .offset(y: shouldSlideUp ? -keyboardHeight + 40 : 0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: shouldSlideUp)
         .onChange(of: keyboardHeight) { newValue in
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
             }

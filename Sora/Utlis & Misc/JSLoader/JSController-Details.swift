@@ -128,6 +128,7 @@ extension JSController {
                                     airdate: item["airdate"] as? String ?? ""
                                 )
                             }
+                            Logger.shared.log("Successfully extracted \(resultItems.count) details", type: "Info")
                         } else {
                             Logger.shared.log("Failed to parse JSON of extractDetails", type: "Error")
                         }
@@ -161,27 +162,12 @@ extension JSController {
         promiseDetails.invokeMethod("catch", withArguments: [catchFunctionDetails as Any])
         
         dispatchGroup.enter()
-        let promiseValueEpisodes = extractEpisodesFunction.call(withArguments: [url.absoluteString])
-        
         var hasLeftEpisodesGroup = false
         let episodesGroupQueue = DispatchQueue(label: "episodes.group")
         
-        let timeoutWorkItem = DispatchWorkItem {
-            Logger.shared.log("Timeout for extractEpisodes", type: "Warning")
-            episodesGroupQueue.sync {
-                guard !hasLeftEpisodesGroup else {
-                    Logger.shared.log("extractEpisodes: timeout called but group already left", type: "Debug")
-                    return
-                }
-                hasLeftEpisodesGroup = true
-                dispatchGroup.leave()
-            }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: timeoutWorkItem)
-        
+        let promiseValueEpisodes = extractEpisodesFunction.call(withArguments: [url.absoluteString])
         guard let promiseEpisodes = promiseValueEpisodes else {
             Logger.shared.log("extractEpisodes did not return a Promise", type: "Error")
-            timeoutWorkItem.cancel()
             episodesGroupQueue.sync {
                 guard !hasLeftEpisodesGroup else { return }
                 hasLeftEpisodesGroup = true
@@ -192,7 +178,6 @@ extension JSController {
         }
         
         let thenBlockEpisodes: @convention(block) (JSValue) -> Void = { result in
-            timeoutWorkItem.cancel()
             episodesGroupQueue.sync {
                 guard !hasLeftEpisodesGroup else {
                     Logger.shared.log("extractEpisodes: thenBlock called but group already left", type: "Debug")
@@ -212,6 +197,7 @@ extension JSController {
                                     duration: nil
                                 )
                             }
+                            Logger.shared.log("Successfully extracted \(episodeLinks.count) episodes", type: "Info")
                         } else {
                             Logger.shared.log("Failed to parse JSON of extractEpisodes", type: "Error")
                         }
@@ -226,7 +212,6 @@ extension JSController {
         }
         
         let catchBlockEpisodes: @convention(block) (JSValue) -> Void = { error in
-            timeoutWorkItem.cancel()
             episodesGroupQueue.sync {
                 guard !hasLeftEpisodesGroup else {
                     Logger.shared.log("extractEpisodes: catchBlock called but group already left", type: "Debug")

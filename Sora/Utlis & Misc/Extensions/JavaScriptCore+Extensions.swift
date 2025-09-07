@@ -134,8 +134,6 @@ extension JSContext {
             var request = URLRequest(url: url)
             request.httpMethod = httpMethod
             
-            Logger.shared.log("FetchV2 Request: URL=\(url), Method=\(httpMethod), Body=\(body ?? "nil"), Encoding=\(encoding ?? "utf-8")", type: "Debug")
-            
             func getEncoding(from encodingString: String?) -> String.Encoding {
                 guard let encodingString = encodingString?.lowercased() else {
                     return .utf8
@@ -187,7 +185,6 @@ extension JSContext {
                 }
             }
             
-            Logger.shared.log("Redirect value is \(redirect.boolValue)", type: "Debug")
             let session = URLSession.fetchData(allowRedirects: redirect.boolValue)
             
             let task = session.downloadTask(with: request) { tempFileURL, response, error in

@@ -14,8 +14,6 @@ class FetchDelegate: NSObject, URLSessionTaskDelegate {
     init(allowRedirects: Bool) {
         self.allowRedirects = allowRedirects
     }
-    deinit { Logger.shared.log("FetchDelegate deallocated", type: "Debug")
-    }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
         if(allowRedirects) {

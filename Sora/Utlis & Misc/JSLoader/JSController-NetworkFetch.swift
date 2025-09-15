@@ -255,12 +255,6 @@ class NetworkFetchSimpleManager: NSObject, ObservableObject {
     }
     
     func performNetworkFetch(urlString: String, timeoutSeconds: Int, htmlContent: String? = nil, resolve: JSValue, reject: JSValue) {
-        if let htmlContent = htmlContent, !htmlContent.isEmpty {
-            Logger.shared.log("NetworkFetchSimpleManager: Starting simple fetch for HTML content (timeout: \(timeoutSeconds)s)", type: "Debug")
-        } else {
-            Logger.shared.log("NetworkFetchSimpleManager: Starting simple fetch for \(urlString) (timeout: \(timeoutSeconds)s)", type: "Debug")
-        }
-        
         let monitorId = UUID().uuidString
         let monitor = NetworkFetchSimpleMonitor()
         activeMonitors[monitorId] = monitor
@@ -270,20 +264,11 @@ class NetworkFetchSimpleManager: NSObject, ObservableObject {
             timeoutSeconds: timeoutSeconds,
             htmlContent: htmlContent
         ) { [weak self] result in
-            if let htmlContent = htmlContent, !htmlContent.isEmpty {
-                Logger.shared.log("NetworkFetchSimpleManager: Simple fetch completed for HTML content", type: "Debug")
-            } else {
-                Logger.shared.log("NetworkFetchSimpleManager: Simple fetch completed for \(urlString)", type: "Debug")
-            }
-            
             self?.activeMonitors.removeValue(forKey: monitorId)
             
             DispatchQueue.main.async {
                 if !resolve.isUndefined {
-                    Logger.shared.log("NetworkFetchSimpleManager: Calling resolve with result", type: "Debug")
                     resolve.call(withArguments: [result])
-                } else {
-                    Logger.shared.log("NetworkFetchSimpleManager: Resolve callback is undefined!", type: "Error")
                 }
             }
         }
@@ -296,7 +281,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
     private var timer: Timer?
     
     @Published private(set) var networkRequests: [String] = []
-    @Published private(set) var statusMessage = "Ready to load URL"
     
     private var originalUrlString: String = ""
     
@@ -305,11 +289,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
         completionHandler = completion
         networkRequests.removeAll()
         
-        if let htmlContent = htmlContent, !htmlContent.isEmpty {
-            statusMessage = "Loading HTML content for \(timeoutSeconds) seconds..."
-        } else {
-            statusMessage = "Loading URL for \(timeoutSeconds) seconds..."
-        }
         
         if let htmlContent = htmlContent, !htmlContent.isEmpty {
             setupWebView()
@@ -332,12 +311,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
         timer = Timer.scheduledTimer(withTimeInterval: TimeInterval(timeoutSeconds), repeats: false) { [weak self] _ in
             self?.stopMonitoring()
         }
-        
-        if let htmlContent = htmlContent, !htmlContent.isEmpty {
-            Logger.shared.log("NetworkFetchSimple started for HTML content (timeout: \(timeoutSeconds)s)", type: "Debug")
-        } else {
-            Logger.shared.log("NetworkFetchSimple started for: \(urlString) (timeout: \(timeoutSeconds)s)", type: "Debug")
-        }
     }
     
     private func loadHTMLContent(_ htmlContent: String) {
@@ -350,8 +323,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             self.simulateUserInteraction()
         }
-        
-        Logger.shared.log("Started loading HTML content (\(htmlContent.count) characters)", type: "Debug")
     }
     
     private func setupWebView() {
@@ -361,8 +332,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
         
         let jsCode = """
         (function() {
-            console.log('Advanced network interceptor loaded');
-            
             Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
             Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
             Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
@@ -381,13 +350,11 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
                 
                 try {
                     const fullUrl = new URL(url, window.location.href).href;
-                    console.log('FETCH INTERCEPTED:', fullUrl);
                     window.webkit.messageHandlers.networkLogger.postMessage({
                         type: 'fetch',
                         url: fullUrl
                     });
                 } catch(e) {
-                    console.log('FETCH INTERCEPTED (fallback):', url);
                     window.webkit.messageHandlers.networkLogger.postMessage({
                         type: 'fetch',
                         url: url.toString()
@@ -406,7 +373,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
                     this._url = url;
                 }
                 
-                console.log('XHR OPEN:', this._url);
                 window.webkit.messageHandlers.networkLogger.postMessage({
                     type: 'xhr-open',
                     url: this._url
@@ -418,7 +384,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
                 this.onreadystatechange = function() {
                     if (this.readyState === 4) {
                         if (this.responseURL) {
-                            console.log('XHR RESPONSE URL:', this.responseURL);
                             window.webkit.messageHandlers.networkLogger.postMessage({
                                 type: 'xhr-response',
                                 url: this.responseURL
@@ -432,7 +397,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
                                 const matches = responseText.match(urlRegex);
                                 if (matches) {
                                     matches.forEach(function(match) {
-                                        console.log('URL IN RESPONSE:', match);
                                         window.webkit.messageHandlers.networkLogger.postMessage({
                                             type: 'response-content',
                                             url: match
@@ -441,7 +405,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
                                 }
                             }
                         } catch(e) {
-                            console.log('Response text check failed:', e);
                         }
                     }
                     
@@ -455,7 +418,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
             
             XMLHttpRequest.prototype.send = function() {
                 if (this._url) {
-                    console.log('XHR SEND:', this._url);
                     window.webkit.messageHandlers.networkLogger.postMessage({
                         type: 'xhr-send',
                         url: this._url
@@ -466,7 +428,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
             
             const originalWebSocket = window.WebSocket;
             window.WebSocket = function(url, protocols) {
-                console.log('WEBSOCKET:', url);
                 window.webkit.messageHandlers.networkLogger.postMessage({
                     type: 'websocket',
                     url: url
@@ -484,7 +445,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
                             Object.defineProperty(obj.prototype, prop, {
                                 set: function(value) {
                                     if (typeof value === 'string' && (value.includes('http') || value.includes('.m3u8') || value.includes('.ts'))) {
-                                        console.log('URL PROPERTY SET:', prop, value);
                                         window.webkit.messageHandlers.networkLogger.postMessage({
                                             type: 'property-set',
                                             url: value
@@ -508,26 +468,19 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
             let jwHookAttempts = 0;
             const aggressiveJWHook = function() {
                 jwHookAttempts++;
-                console.log('JWPlayer hook attempt:', jwHookAttempts);
                 
                 if (window.jwplayer) {
-                    console.log('JWPlayer detected!');
-                    
                     const originalJWPlayer = window.jwplayer;
                     window.jwplayer = function(id) {
-                        console.log('JWPlayer called with ID:', id);
                         const player = originalJWPlayer.apply(this, arguments);
                         
                         if (player && player.setup) {
                             const originalSetup = player.setup;
                             player.setup = function(config) {
-                                console.log('JWPlayer setup config:', config);
-                                
                                 const extractUrls = function(obj, path = '') {
                                     if (!obj) return;
                                     
                                     if (typeof obj === 'string' && (obj.includes('http') || obj.includes('.m3u8') || obj.includes('.ts'))) {
-                                        console.log('JWPlayer URL found at', path + ':', obj);
                                         window.webkit.messageHandlers.networkLogger.postMessage({
                                             type: 'jwplayer-config',
                                             url: obj
@@ -560,13 +513,10 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
             aggressiveJWHook();
             
             const nuclearScan = function() {
-                console.log('Nuclear scan initiated');
-                
                 Object.keys(window).forEach(function(key) {
                     try {
                         const value = window[key];
                         if (typeof value === 'string' && (value.includes('.m3u8') || value.includes('.ts') || (value.includes('http') && value.includes('.')))) {
-                            console.log('Global URL found:', key, value);
                             window.webkit.messageHandlers.networkLogger.postMessage({
                                 type: 'global-variable',
                                 url: value
@@ -582,7 +532,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
                         const matches = script.textContent.match(urlRegex);
                         if (matches) {
                             matches.forEach(function(match) {
-                                console.log('URL in script:', match);
                                 window.webkit.messageHandlers.networkLogger.postMessage({
                                     type: 'script-content',
                                     url: match
@@ -602,9 +551,7 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
                     document.querySelectorAll(selector).forEach(function(el) {
                         try {
                             el.click();
-                            console.log('Force clicked:', selector);
                         } catch(e) {
-                            console.log('Click failed:', e);
                         }
                     });
                 });
@@ -613,8 +560,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
             setTimeout(nuclearScan, 500);
             setTimeout(nuclearScan, 1500);
             setTimeout(nuclearScan, 3000);
-            
-            console.log('Advanced interceptor setup complete');
         })();
         """
         
@@ -653,15 +598,11 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
         let randomReferer = randomReferers.randomElement() ?? "https://www.google.com/"
         request.setValue(randomReferer, forHTTPHeaderField: "Referer")
         
-        print("Loading with referer: \(randomReferer)")
-        
         webView.load(request)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             self.simulateUserInteraction()
         }
-        
-        print("Started loading: \(url.absoluteString)")
     }
     
     private func simulateUserInteraction() {
@@ -676,27 +617,21 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
                        classes.toLowerCase().includes('play') ||
                        el.getAttribute('aria-label')?.toLowerCase().includes('play');
             });
-            
             playButtons.forEach(function(btn, index) {
                 setTimeout(function() {
                     btn.click();
-                    console.log('Clicked play button:', btn);
                 }, index * 200);
             });
-            
             window.scrollTo(0, document.body.scrollHeight / 2);
             setTimeout(function() {
                 window.scrollTo(0, 0);
             }, 500);
-            
             document.querySelectorAll('video').forEach(function(video) {
                 if (video.play && typeof video.play === 'function') {
                     video.play().catch(function(e) {
-                        console.log('Could not autoplay video:', e);
                     });
                 }
             });
-            
             if (window.jwplayer) {
                 try {
                     const players = window.jwplayer().getInstances?.() || [];
@@ -705,11 +640,8 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
                             player.play();
                         }
                     });
-                } catch(e) {
-                    console.log('JW Player interaction failed:', e);
-                }
+                } catch(e) {}
             }
-            
             if (window.videojs) {
                 try {
                     window.videojs.getAllPlayers?.().forEach(function(player) {
@@ -717,18 +649,11 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
                             player.play();
                         }
                     });
-                } catch(e) {
-                    console.log('Video.js interaction failed:', e);
-                }
+                } catch(e) {}
             }
         }, 1000);
         """
-        
-        webView.evaluateJavaScript(jsInteraction) { result, error in
-            if let error = error {
-                print("JavaScript interaction error: \(error)")
-            }
-        }
+        webView.evaluateJavaScript(jsInteraction, completionHandler: nil)
     }
     
     private func stopMonitoring() {
@@ -749,19 +674,15 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
         ]
         
         webView = nil
-        statusMessage = "Completed! Found \(networkRequests.count) requests."
         
         completionHandler?(result)
         completionHandler = nil
-        
-        print("Simple monitoring stopped. Total requests: \(networkRequests.count)")
     }
     
     private func addRequest(_ urlString: String) {
         DispatchQueue.main.async {
             if !self.networkRequests.contains(urlString) {
                 self.networkRequests.append(urlString)
-                print("Captured: \(urlString)")
             }
         }
     }
@@ -769,11 +690,9 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
 
 extension NetworkFetchSimpleMonitor: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        print("WebView finished loading main document")
     }
     
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        print("WebView failed: \(error.localizedDescription)")
     }
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -805,8 +724,6 @@ class NetworkFetchManager: NSObject, ObservableObject {
     }
     
     func performNetworkFetch(urlString: String, options: NetworkFetchOptions, resolve: JSValue, reject: JSValue) {
-        Logger.shared.log("NetworkFetchManager: Starting fetch for \(urlString) with options: returnHTML=\(options.returnHTML), returnCookies=\(options.returnCookies), clicks=\(options.clickSelectors), waitFor=\(options.waitForSelectors)", type: "Debug")
-        
         let monitorId = UUID().uuidString
         let monitor = NetworkFetchMonitor()
         activeMonitors[monitorId] = monitor
@@ -815,16 +732,11 @@ class NetworkFetchManager: NSObject, ObservableObject {
             urlString: urlString,
             options: options
         ) { [weak self] result in
-            Logger.shared.log("NetworkFetchManager: Fetch completed for \(urlString)", type: "Debug")
-            
             self?.activeMonitors.removeValue(forKey: monitorId)
             
             DispatchQueue.main.async {
                 if !resolve.isUndefined {
-                    Logger.shared.log("NetworkFetchManager: Calling resolve with result", type: "Debug")
                     resolve.call(withArguments: [result])
-                } else {
-                    Logger.shared.log("NetworkFetchManager: Resolve callback is undefined!", type: "Error")
                 }
             }
         }
@@ -841,7 +753,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
     private var cookies: [String: String] = [:]
     
     @Published private(set) var networkRequests: [String] = []
-    @Published private(set) var statusMessage = "Initializing..."
     @Published private(set) var cutoffTriggered = false
     @Published private(set) var cutoffUrl: String? = nil
     @Published private(set) var htmlContent: String? = nil
@@ -861,23 +772,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         waitResults.removeAll()
         cookies.removeAll()
 
-        var statusParts = ["Loading for \(options.timeoutSeconds) seconds"]
-        if !options.waitForSelectors.isEmpty {
-            statusParts.append("waiting for elements")
-        }
-        if !options.clickSelectors.isEmpty {
-            statusParts.append("will click elements")
-        }
-        if options.returnHTML {
-            statusParts.append("will capture HTML")
-        }
-        if options.returnCookies {
-            statusParts.append("will capture cookies")
-        }
-        if options.htmlContent != nil {
-            statusParts.append("rendering HTML content")
-        }
-        statusMessage = statusParts.joined(separator: ", ") + "..."
 
         if let htmlContent = options.htmlContent, !htmlContent.isEmpty {
             setupWebView()
@@ -910,8 +804,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                 self?.stopMonitoring(reason: "timeout")
             }
         }
-        
-        Logger.shared.log("NetworkFetch started for: \(options.htmlContent != nil ? "HTML content" : urlString) (timeout: \(options.timeoutSeconds)s, returnHTML: \(options.returnHTML), returnCookies: \(options.returnCookies), clicks: \(options.clickSelectors), waitFor: \(options.waitForSelectors))", type: "Debug")
     }
     
     private func captureDataThenComplete() {
@@ -938,8 +830,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             }
         }
         
-        statusMessage = "Capturing data before timeout..."
-        Logger.shared.log("NetworkFetch: Capturing data at timeout (HTML: \(shouldCaptureHTML), Cookies: \(shouldCaptureCookies))", type: "Debug")
         
         if shouldCaptureHTML {
             webView.evaluateJavaScript("document.documentElement.outerHTML") { [weak self] result, error in
@@ -947,9 +837,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                     if let html = result as? String, error == nil {
                         self?.htmlContent = html
                         self?.htmlCaptured = true
-                        Logger.shared.log("NetworkFetch: HTML captured successfully (\(html.count) characters)", type: "Debug")
-                    } else {
-                        Logger.shared.log("NetworkFetch: Failed to capture HTML: \(error?.localizedDescription ?? "Unknown error")", type: "Error")
                     }
                     checkCompletion()
                 }
@@ -983,7 +870,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                 self?.cookies = cookieDict
                 self?.cookiesCaptured = !cookieDict.isEmpty
                 
-                Logger.shared.log("NetworkFetch: Cookies captured successfully (\(cookieDict.count) cookies)", type: "Debug")
                 completion()
             }
         }
@@ -996,8 +882,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         
         let jsCode = """
         (function() {
-            console.log('Advanced network interceptor loaded');
-            
             Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
             Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
             Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
@@ -1016,13 +900,11 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                 
                 try {
                     const fullUrl = new URL(url, window.location.href).href;
-                    console.log('FETCH INTERCEPTED:', fullUrl);
                     window.webkit.messageHandlers.networkLogger.postMessage({
                         type: 'fetch',
                         url: fullUrl
                     });
                 } catch(e) {
-                    console.log('FETCH INTERCEPTED (fallback):', url);
                     window.webkit.messageHandlers.networkLogger.postMessage({
                         type: 'fetch',
                         url: url.toString()
@@ -1041,7 +923,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                     this._url = url;
                 }
                 
-                console.log('XHR OPEN:', this._url);
                 window.webkit.messageHandlers.networkLogger.postMessage({
                     type: 'xhr-open',
                     url: this._url
@@ -1053,7 +934,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                 this.onreadystatechange = function() {
                     if (this.readyState === 4) {
                         if (this.responseURL) {
-                            console.log('XHR RESPONSE URL:', this.responseURL);
                             window.webkit.messageHandlers.networkLogger.postMessage({
                                 type: 'xhr-response',
                                 url: this.responseURL
@@ -1067,7 +947,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                                 const matches = responseText.match(urlRegex);
                                 if (matches) {
                                     matches.forEach(function(match) {
-                                        console.log('URL IN RESPONSE:', match);
                                         window.webkit.messageHandlers.networkLogger.postMessage({
                                             type: 'response-content',
                                             url: match
@@ -1076,7 +955,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                                 }
                             }
                         } catch(e) {
-                            console.log('Response text check failed:', e);
                         }
                     }
                     
@@ -1090,7 +968,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             
             XMLHttpRequest.prototype.send = function() {
                 if (this._url) {
-                    console.log('XHR SEND:', this._url);
                     window.webkit.messageHandlers.networkLogger.postMessage({
                         type: 'xhr-send',
                         url: this._url
@@ -1101,7 +978,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             
             const originalWebSocket = window.WebSocket;
             window.WebSocket = function(url, protocols) {
-                console.log('WEBSOCKET:', url);
                 window.webkit.messageHandlers.networkLogger.postMessage({
                     type: 'websocket',
                     url: url
@@ -1119,7 +995,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                             Object.defineProperty(obj.prototype, prop, {
                                 set: function(value) {
                                     if (typeof value === 'string' && (value.includes('http') || value.includes('.m3u8') || value.includes('.ts'))) {
-                                        console.log('URL PROPERTY SET:', prop, value);
                                         window.webkit.messageHandlers.networkLogger.postMessage({
                                             type: 'property-set',
                                             url: value
@@ -1143,26 +1018,19 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             let jwHookAttempts = 0;
             const aggressiveJWHook = function() {
                 jwHookAttempts++;
-                console.log('JWPlayer hook attempt:', jwHookAttempts);
                 
                 if (window.jwplayer) {
-                    console.log('JWPlayer detected!');
-                    
                     const originalJWPlayer = window.jwplayer;
                     window.jwplayer = function(id) {
-                        console.log('JWPlayer called with ID:', id);
                         const player = originalJWPlayer.apply(this, arguments);
                         
                         if (player && player.setup) {
                             const originalSetup = player.setup;
                             player.setup = function(config) {
-                                console.log('JWPlayer setup config:', config);
-                                
                                 const extractUrls = function(obj, path = '') {
                                     if (!obj) return;
                                     
                                     if (typeof obj === 'string' && (obj.includes('http') || obj.includes('.m3u8') || obj.includes('.ts'))) {
-                                        console.log('JWPlayer URL found at', path + ':', obj);
                                         window.webkit.messageHandlers.networkLogger.postMessage({
                                             type: 'jwplayer-config',
                                             url: obj
@@ -1217,7 +1085,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                             const element = document.querySelector(selector);
                             if (element && element.offsetParent !== null) { 
                                 results.waitResults[selector] = true;
-                                console.log('Element found and visible:', selector);
                             }
                         });
                         
@@ -1236,7 +1103,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                                             try {
                                                 element.click();
                                                 clicked = true;
-                                                console.log('Successfully clicked:', selector);
                                             } catch(e1) {
                                                 try {
                                                     const event = new MouseEvent('click', {
@@ -1246,9 +1112,7 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                                                     });
                                                     element.dispatchEvent(event);
                                                     clicked = true;
-                                                    console.log('Successfully dispatched click:', selector);
                                                 } catch(e2) {
-                                                    console.log('Failed to click element:', selector, e2);
                                                 }
                                             }
                                         }
@@ -1260,7 +1124,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                                         elementsFound: elements.length
                                     });
                                 } catch(e) {
-                                    console.log('Error clicking selector:', selector, e);
                                     results.clickResults.push({
                                         selector: selector,
                                         success: false,
@@ -1285,13 +1148,10 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             };
             
             const nuclearScan = function() {
-                console.log('Nuclear scan initiated');
-                
                 Object.keys(window).forEach(function(key) {
                     try {
                         const value = window[key];
                         if (typeof value === 'string' && (value.includes('.m3u8') || value.includes('.ts') || (value.includes('http') && value.includes('.')))) {
-                            console.log('Global URL found:', key, value);
                             window.webkit.messageHandlers.networkLogger.postMessage({
                                 type: 'global-variable',
                                 url: value
@@ -1307,7 +1167,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                         const matches = script.textContent.match(urlRegex);
                         if (matches) {
                             matches.forEach(function(match) {
-                                console.log('URL in script:', match);
                                 window.webkit.messageHandlers.networkLogger.postMessage({
                                     type: 'script-content',
                                     url: match
@@ -1332,7 +1191,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                 });
                 
                 if (Object.keys(cookies).length > 0) {
-                    console.log('JavaScript cookies captured:', cookies);
                     window.webkit.messageHandlers.networkLogger.postMessage({
                         type: 'cookies',
                         cookies: cookies
@@ -1345,8 +1203,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
             setTimeout(window.captureCookies, 1000);
             setTimeout(window.captureCookies, 3000);
             setTimeout(window.captureCookies, 5000);
-            
-            console.log('Advanced interceptor setup complete');
         })();
         """
         
@@ -1375,8 +1231,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                 }
             }
         }
-        
-        Logger.shared.log("Started loading HTML content (\(htmlContent.count) characters)", type: "Debug")
     }
     
     private func loadURL(url: URL, headers: [String: String]) {
@@ -1397,7 +1251,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         
         for (key, value) in headers {
             request.setValue(value, forHTTPHeaderField: key)
-            Logger.shared.log("Custom header set: \(key): \(value)", type: "Debug")
         }
         
         if request.value(forHTTPHeaderField: "Referer") == nil {
@@ -1422,8 +1275,6 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                 }
             }
         }
-        
-        Logger.shared.log("Started loading: \(url.absoluteString)", type: "Debug")
     }
     
     private func performCustomInteractions() {
@@ -1438,21 +1289,9 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                 [\(waitSelectorsJS)],
                 [\(clickSelectorsJS)],
                 \(options.maxWaitTime)
-            ).then(function(results) {
-                console.log('Custom interaction completed:', results);
-            });
+            );
             """
-            
-            statusMessage = "Performing custom interactions..."
-            Logger.shared.log("NetworkFetch: Starting custom interactions - wait for: \(options.waitForSelectors), click: \(options.clickSelectors)", type: "Debug")
-            
-            webView.evaluateJavaScript(customInteractionJS) { result, error in
-                if let error = error {
-                    Logger.shared.log("NetworkFetch: Custom interaction error: \(error)", type: "Error")
-                } else {
-                    Logger.shared.log("NetworkFetch: Custom interaction JavaScript executed successfully", type: "Debug")
-                }
-            }
+            webView.evaluateJavaScript(customInteractionJS, completionHandler: nil)
         } else {
             simulateUserInteraction()
         }
@@ -1473,31 +1312,23 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                        id.toLowerCase().includes('play') ||
                        el.getAttribute('aria-label')?.toLowerCase().includes('play');
             });
-            
             filteredButtons.forEach(function(btn, index) {
                 setTimeout(function() {
                     try {
                         btn.click();
-                        console.log('Clicked play button:', btn);
-                    } catch(e) {
-                        console.log('Failed to click button:', e);
-                    }
+                    } catch(e) {}
                 }, index * 200);
             });
-            
             window.scrollTo(0, document.body.scrollHeight / 2);
             setTimeout(function() {
                 window.scrollTo(0, 0);
             }, 500);
-            
             document.querySelectorAll('video').forEach(function(video) {
                 if (video.play && typeof video.play === 'function') {
                     video.play().catch(function(e) {
-                        console.log('Could not autoplay video:', e);
                     });
                 }
             });
-            
             if (window.jwplayer) {
                 try {
                     const players = window.jwplayer().getInstances?.() || [];
@@ -1506,11 +1337,8 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                             player.play();
                         }
                     });
-                } catch(e) {
-                    console.log('JW Player interaction failed:', e);
-                }
+                } catch(e) {}
             }
-            
             if (window.videojs) {
                 try {
                     window.videojs.getAllPlayers?.().forEach(function(player) {
@@ -1518,18 +1346,11 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
                             player.play();
                         }
                     });
-                } catch(e) {
-                    console.log('Video.js interaction failed:', e);
-                }
+                } catch(e) {}
             }
         }, 1000);
         """
-        
-        webView.evaluateJavaScript(jsInteraction) { result, error in
-            if let error = error {
-                Logger.shared.log("JavaScript interaction error: \(error)", type: "Error")
-            }
-        }
+        webView.evaluateJavaScript(jsInteraction, completionHandler: nil)
     }
     
     private func stopMonitoring(reason: String = "completed") {
@@ -1557,30 +1378,18 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         
         webView = nil
         
-        if cutoffTriggered {
-            statusMessage = "Cutoff triggered! Found \(networkRequests.count) requests"
-            Logger.shared.log("NetworkFetch stopped early due to cutoff: \(cutoffUrl ?? "unknown")", type: "Debug")
-        } else if htmlCaptured || cookiesCaptured {
-            statusMessage = "Data captured! Found \(networkRequests.count) requests, clicked \(elementsClicked.count) elements, cookies: \(cookies.count)"
-        } else {
-            statusMessage = "Completed! Found \(networkRequests.count) requests, clicked \(elementsClicked.count) elements"
-        }
         
         completionHandler?(result)
         completionHandler = nil
-        
-        Logger.shared.log("Monitoring stopped (\(reason)). Total requests: \(networkRequests.count), HTML captured: \(htmlCaptured), Cookies captured: \(cookiesCaptured) (\(cookies.count) cookies), Elements clicked: \(elementsClicked.count)", type: "Debug")
     }
     
     private func addRequest(_ urlString: String) {
         DispatchQueue.main.async {
             if !self.networkRequests.contains(urlString) {
                 self.networkRequests.append(urlString)
-                Logger.shared.log("Captured: \(urlString)", type: "Debug")
                 
                 if let cutoff = self.options?.cutoff, !cutoff.isEmpty {
                     if urlString.lowercased().contains(cutoff.lowercased()) {
-                        Logger.shared.log("Cutoff triggered by: \(urlString)", type: "Debug")
                         self.cutoffTriggered = true
                         self.cutoffUrl = urlString
                         self.stopMonitoring(reason: "cutoff")
@@ -1620,7 +1429,6 @@ extension NetworkFetchMonitor: WKScriptMessageHandler {
                                         if let selector = clickResult["selector"] as? String,
                                            let success = clickResult["success"] as? Bool, success {
                                             self.elementsClicked.append(selector)
-                                            Logger.shared.log("NetworkFetch: Successfully clicked element: \(selector)", type: "Debug")
                                         }
                                     }
                                 }
@@ -1629,7 +1437,6 @@ extension NetworkFetchMonitor: WKScriptMessageHandler {
                             if let waitResults = results["waitResults"] as? [String: Bool] {
                                 DispatchQueue.main.async {
                                     self.waitResults = waitResults
-                                    Logger.shared.log("NetworkFetch: Wait results: \(waitResults)", type: "Debug")
                                 }
                             }
                         }
@@ -1640,7 +1447,6 @@ extension NetworkFetchMonitor: WKScriptMessageHandler {
                                     self.cookies[key] = value
                                 }
                                 self.cookiesCaptured = !self.cookies.isEmpty
-                                Logger.shared.log("NetworkFetch: JavaScript cookies captured/updated (\(cookiesData.count) new, \(self.cookies.count) total)", type: "Debug")
                             }
                         }
                     }

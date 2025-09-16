@@ -190,36 +190,34 @@ extension JSContext {
             DispatchQueue.main.async {
                 var timeoutSeconds = 5
                 var htmlContent: String? = nil
-                
+                var headers: [String: String] = [:]
                 if let optionsDict = optionsValue?.toDictionary() {
                     timeoutSeconds = optionsDict["timeoutSeconds"] as? Int ?? 5
                     htmlContent = optionsDict["htmlContent"] as? String
+                    headers = optionsDict["headers"] as? [String: String] ?? [:]
                 }
-                
                 NetworkFetchSimpleManager.shared.performNetworkFetch(
                     urlString: urlString,
                     timeoutSeconds: timeoutSeconds,
                     htmlContent: htmlContent,
+                    headers: headers,
                     resolve: resolve,
                     reject: reject
                 )
             }
         }
-        
         self.setObject(networkFetchSimpleNativeFunction, forKeyedSubscript: "networkFetchSimpleNative" as NSString)
-        
         let networkFetchSimpleDefinition = """
             function networkFetchSimple(url, options = {}) {
                 if (typeof options === 'number') {
                     const timeoutSeconds = options;
                     options = { timeoutSeconds };
                 }
-                
                 const finalOptions = {
                     timeoutSeconds: options.timeoutSeconds || 5,
-                    htmlContent: options.htmlContent || null
+                    htmlContent: options.htmlContent || null,
+                    headers: options.headers || {}
                 };
-                
                 return new Promise(function(resolve, reject) {
                     networkFetchSimpleNative(url, finalOptions, function(result) {
                         resolve({
@@ -232,15 +230,14 @@ extension JSContext {
                     }, reject);
                 });
             }
-            
             function networkFetchSimpleFromHTML(htmlContent, options = {}) {
                 return networkFetchSimple('', {
                     timeoutSeconds: options.timeoutSeconds || 5,
-                    htmlContent: htmlContent
+                    htmlContent: htmlContent,
+                    headers: options.headers || {}
                 });
             }
             """
-        
         self.evaluateScript(networkFetchSimpleDefinition)
     }
 }
@@ -254,18 +251,17 @@ class NetworkFetchSimpleManager: NSObject, ObservableObject {
         super.init()
     }
     
-    func performNetworkFetch(urlString: String, timeoutSeconds: Int, htmlContent: String? = nil, resolve: JSValue, reject: JSValue) {
+    func performNetworkFetch(urlString: String, timeoutSeconds: Int, htmlContent: String? = nil, headers: [String: String] = [:], resolve: JSValue, reject: JSValue) {
         let monitorId = UUID().uuidString
         let monitor = NetworkFetchSimpleMonitor()
         activeMonitors[monitorId] = monitor
-        
         monitor.startMonitoring(
             urlString: urlString,
             timeoutSeconds: timeoutSeconds,
-            htmlContent: htmlContent
+            htmlContent: htmlContent,
+            headers: headers
         ) { [weak self] result in
             self?.activeMonitors.removeValue(forKey: monitorId)
-            
             DispatchQueue.main.async {
                 if !resolve.isUndefined {
                     resolve.call(withArguments: [result])
@@ -284,12 +280,10 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
     
     private var originalUrlString: String = ""
     
-    func startMonitoring(urlString: String, timeoutSeconds: Int, htmlContent: String? = nil, completion: @escaping ([String: Any]) -> Void) {
+    func startMonitoring(urlString: String, timeoutSeconds: Int, htmlContent: String? = nil, headers: [String: String] = [:], completion: @escaping ([String: Any]) -> Void) {
         originalUrlString = urlString
         completionHandler = completion
         networkRequests.removeAll()
-        
-        
         if let htmlContent = htmlContent, !htmlContent.isEmpty {
             setupWebView()
             loadHTMLContent(htmlContent)
@@ -303,11 +297,9 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
                 ])
                 return
             }
-            
             setupWebView()
-            loadURL(url: url)
+            loadURL(url: url, headers: headers)
         }
-        
         timer = Timer.scheduledTimer(withTimeInterval: TimeInterval(timeoutSeconds), repeats: false) { [weak self] _ in
             self?.stopMonitoring()
         }
@@ -573,11 +565,9 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
         webView?.customUserAgent = URLSession.randomUserAgent
     }
     
-    private func loadURL(url: URL) {
+    private func loadURL(url: URL, headers: [String: String] = [:]) {
         guard let webView = webView else { return }
-        
         addRequest(url.absoluteString)
-        
         var request = URLRequest(url: url)
         request.setValue(URLSession.randomUserAgent, forHTTPHeaderField: "User-Agent")
         request.setValue("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8", forHTTPHeaderField: "Accept")
@@ -587,7 +577,9 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
         request.setValue("upgrade-insecure-requests", forHTTPHeaderField: "Upgrade-Insecure-Requests")
         request.setValue("same-origin", forHTTPHeaderField: "Sec-Fetch-Site")
         request.setValue("navigate", forHTTPHeaderField: "Sec-Fetch-Mode")
-        
+        for (key, value) in headers {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
         let randomReferers = [
             "https://www.google.com/",
             "https://www.youtube.com/",
@@ -596,10 +588,10 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
             "https://www.facebook.com/"
         ]
         let randomReferer = randomReferers.randomElement() ?? "https://www.google.com/"
-        request.setValue(randomReferer, forHTTPHeaderField: "Referer")
-        
+        if request.value(forHTTPHeaderField: "Referer") == nil {
+            request.setValue(randomReferer, forHTTPHeaderField: "Referer")
+        }
         webView.load(request)
-        
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             self.simulateUserInteraction()
         }

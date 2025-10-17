@@ -3604,7 +3604,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private func showVolumeOverlay() {
         volumeOverlay?.isHidden = false
         UIView.animate(withDuration: 0.2) {
-            self.volumeOverlay?.alpha = 0.5
+            self.volumeOverlay?.alpha = 0.8
         }
     }
 
@@ -3624,7 +3624,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private func showBrightnessOverlay() {
         brightnessOverlay?.isHidden = false
         UIView.animate(withDuration: 0.2) {
-            self.brightnessOverlay?.alpha = 0.5
+            self.brightnessOverlay?.alpha = 0.8
         }
     }
 

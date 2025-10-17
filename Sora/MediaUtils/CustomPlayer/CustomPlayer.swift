@@ -53,6 +53,10 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var isHoldPauseEnabled: Bool {
         UserDefaults.standard.bool(forKey: "holdForPauseEnabled")
     }
+
+    private var isChatGesturesEnabled: Bool {
+        UserDefaults.standard.bool(forKey: "chatGesturesEnabled")
+    }
     
     private var isSkip85Visible: Bool {
         if UserDefaults.standard.object(forKey: "skip85Visible") == nil {
@@ -228,9 +232,20 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     private var endTimeIcon: UIImageView?
     private var endTimeSeparator: UIView?
     private var isEndTimeVisible: Bool = false
-    
+
     private var titleStackAboveSkipButtonConstraints: [NSLayoutConstraint] = []
     private var titleStackAboveSliderConstraints: [NSLayoutConstraint] = []
+
+    private var volumeOverlay: UIView?
+    private var volumeLabel: UILabel?
+    private var volumeIcon: UIImageView?
+    private var brightnessOverlay: UIView?
+    private var brightnessLabel: UILabel?
+    private var brightnessIcon: UIImageView?
+    private var volumePanGesture: UIPanGestureRecognizer?
+    private var brightnessPanGesture: UIPanGestureRecognizer?
+    private var initialVolume: Float = 0.0
+    private var initialBrightness: CGFloat = 0.0
     
     var episodeNumberLabel: UILabel!
     var titleLabel: MarqueeLabel!
@@ -358,6 +373,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         setupTimeBatteryIndicator()
         setupTopRowLayout()
         updateSkipButtonsVisibility()
+
+        if isChatGesturesEnabled {
+            setupVolumeOverlay()
+            setupBrightnessOverlay()
+        }
         
         if !isSkip85Visible {
             skip85Button.isHidden = true
@@ -1062,7 +1082,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
             doubleTapGesture.numberOfTapsRequired = 2
             view.addGestureRecognizer(doubleTapGesture)
-            
+
             if let gestures = view.gestureRecognizers {
                 for gesture in gestures {
                     if let tapGesture = gesture as? UITapGestureRecognizer, tapGesture.numberOfTapsRequired == 1 {
@@ -1071,19 +1091,34 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 }
             }
         }
-        
+
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
         if let introSwipe = skipIntroButton.gestureRecognizers?.first(
             where: { $0 is UISwipeGestureRecognizer && ($0 as! UISwipeGestureRecognizer).direction == .left }
         ),
-           let outroSwipe = skipOutroButton.gestureRecognizers?.first(
-            where: { $0 is UISwipeGestureRecognizer && ($0 as! UISwipeGestureRecognizer).direction == .left }
-           ) {
+            let outroSwipe = skipOutroButton.gestureRecognizers?.first(
+                where: { $0 is UISwipeGestureRecognizer && ($0 as! UISwipeGestureRecognizer).direction == .left }
+            ) {
             panGesture.require(toFail: introSwipe)
             panGesture.require(toFail: outroSwipe)
         }
-        
+
         view.addGestureRecognizer(panGesture)
+
+        // Add volume and brightness pan gestures if enabled
+        if isChatGesturesEnabled {
+            volumePanGesture = UIPanGestureRecognizer(target: self, action: #selector(handleVolumePan(_:)))
+            volumePanGesture?.delegate = self
+            if let volumePanGesture = volumePanGesture {
+                view.addGestureRecognizer(volumePanGesture)
+            }
+
+            brightnessPanGesture = UIPanGestureRecognizer(target: self, action: #selector(handleBrightnessPan(_:)))
+            brightnessPanGesture?.delegate = self
+            if let brightnessPanGesture = brightnessPanGesture {
+                view.addGestureRecognizer(brightnessPanGesture)
+            }
+        }
     }
     
     func showSkipFeedback(direction: String) {
@@ -3073,7 +3108,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     
     @objc private func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
         let translation = gesture.translation(in: view)
-        
+
         switch gesture.state {
         case .began:
             resetControlsInactivityTimer()
@@ -3085,6 +3120,74 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             break
         }
     }
+
+    @objc private func handleVolumePan(_ gesture: UIPanGestureRecognizer) {
+    let translation = gesture.translation(in: view)
+    let location = gesture.location(in: view)
+    let screenWidth = view.bounds.width
+
+    let rightZone = CGRect(
+        x: screenWidth * 0.8,
+        y: 0,
+        width: screenWidth * 0.2,
+        height: view.bounds.height
+    )
+    
+    guard rightZone.contains(location) else {
+        return
+    }
+
+    switch gesture.state {
+    case .began:
+        initialVolume = audioSession.outputVolume
+        showVolumeOverlay()
+    case .changed:
+        let deltaY = -translation.y
+        let sensitivity: Float = 0.005
+        let volumeChange = Float(deltaY) * sensitivity
+        let newVolume = max(0, min(1, initialVolume + volumeChange))
+        systemVolumeSlider?.value = newVolume
+        updateVolumeOverlay(volume: newVolume)
+    case .ended:
+        hideVolumeOverlay()
+    default:
+        break
+    }
+}
+
+@objc private func handleBrightnessPan(_ gesture: UIPanGestureRecognizer) {
+    let translation = gesture.translation(in: view)
+    let location = gesture.location(in: view)
+    let screenWidth = view.bounds.width
+    
+    let leftZone = CGRect(
+        x: 0,
+        y: 0,
+        width: screenWidth * 0.2,
+        height: view.bounds.height
+    )
+    
+    guard leftZone.contains(location) else {
+        return
+    }
+
+    switch gesture.state {
+    case .began:
+        initialBrightness = UIScreen.main.brightness
+        showBrightnessOverlay()
+    case .changed:
+        let deltaY = -translation.y
+        let sensitivity: CGFloat = 0.005
+        let brightnessChange = deltaY * sensitivity
+        let newBrightness = max(0, min(1, initialBrightness + brightnessChange))
+        UIScreen.main.brightness = newBrightness
+        updateBrightnessOverlay(brightness: newBrightness)
+    case .ended:
+        hideBrightnessOverlay()
+    default:
+        break
+    }
+}
     
     private func beginHoldSpeed() {
         guard let player = player else { return }
@@ -3396,6 +3499,146 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         } else {
             batteryLabel?.text = "N/A"
         }
+    }
+
+    private func setupVolumeOverlay() {
+        volumeOverlay = UIView()
+        volumeOverlay?.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        volumeOverlay?.layer.cornerRadius = 20
+        volumeOverlay?.isHidden = true
+        volumeOverlay?.alpha = 0
+        volumeOverlay?.translatesAutoresizingMaskIntoConstraints = false
+
+        if let volumeOverlay = volumeOverlay {
+            view.addSubview(volumeOverlay)
+
+            NSLayoutConstraint.activate([
+                volumeOverlay.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                volumeOverlay.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+                volumeOverlay.widthAnchor.constraint(equalToConstant: 120),
+                volumeOverlay.heightAnchor.constraint(equalToConstant: 120)
+            ])
+
+            volumeIcon = UIImageView(image: UIImage(systemName: "speaker.wave.2.fill"))
+            volumeIcon?.tintColor = .white
+            volumeIcon?.contentMode = .scaleAspectFit
+            volumeIcon?.translatesAutoresizingMaskIntoConstraints = false
+
+            if let volumeIcon = volumeIcon {
+                volumeOverlay.addSubview(volumeIcon)
+                NSLayoutConstraint.activate([
+                    volumeIcon.topAnchor.constraint(equalTo: volumeOverlay.topAnchor, constant: 20),
+                    volumeIcon.centerXAnchor.constraint(equalTo: volumeOverlay.centerXAnchor),
+                    volumeIcon.widthAnchor.constraint(equalToConstant: 40),
+                    volumeIcon.heightAnchor.constraint(equalToConstant: 40)
+                ])
+            }
+
+            volumeLabel = UILabel()
+            volumeLabel?.textColor = .white
+            volumeLabel?.font = UIFont.systemFont(ofSize: 24, weight: .bold)
+            volumeLabel?.textAlignment = .center
+            volumeLabel?.translatesAutoresizingMaskIntoConstraints = false
+
+            if let volumeLabel = volumeLabel {
+                volumeOverlay.addSubview(volumeLabel)
+                NSLayoutConstraint.activate([
+                    volumeLabel.topAnchor.constraint(equalTo: volumeIcon?.bottomAnchor ?? volumeOverlay.topAnchor, constant: 10),
+                    volumeLabel.centerXAnchor.constraint(equalTo: volumeOverlay.centerXAnchor),
+                    volumeLabel.bottomAnchor.constraint(equalTo: volumeOverlay.bottomAnchor, constant: -20)
+                ])
+            }
+        }
+    }
+
+    private func setupBrightnessOverlay() {
+        brightnessOverlay = UIView()
+        brightnessOverlay?.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        brightnessOverlay?.layer.cornerRadius = 20
+        brightnessOverlay?.isHidden = true
+        brightnessOverlay?.alpha = 0
+        brightnessOverlay?.translatesAutoresizingMaskIntoConstraints = false
+
+        if let brightnessOverlay = brightnessOverlay {
+            view.addSubview(brightnessOverlay)
+
+            NSLayoutConstraint.activate([
+                brightnessOverlay.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                brightnessOverlay.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+                brightnessOverlay.widthAnchor.constraint(equalToConstant: 120),
+                brightnessOverlay.heightAnchor.constraint(equalToConstant: 120)
+            ])
+
+            brightnessIcon = UIImageView(image: UIImage(systemName: "sun.max.fill"))
+            brightnessIcon?.tintColor = .white
+            brightnessIcon?.contentMode = .scaleAspectFit
+            brightnessIcon?.translatesAutoresizingMaskIntoConstraints = false
+
+            if let brightnessIcon = brightnessIcon {
+                brightnessOverlay.addSubview(brightnessIcon)
+                NSLayoutConstraint.activate([
+                    brightnessIcon.topAnchor.constraint(equalTo: brightnessOverlay.topAnchor, constant: 20),
+                    brightnessIcon.centerXAnchor.constraint(equalTo: brightnessOverlay.centerXAnchor),
+                    brightnessIcon.widthAnchor.constraint(equalToConstant: 40),
+                    brightnessIcon.heightAnchor.constraint(equalToConstant: 40)
+                ])
+            }
+
+            brightnessLabel = UILabel()
+            brightnessLabel?.textColor = .white
+            brightnessLabel?.font = UIFont.systemFont(ofSize: 24, weight: .bold)
+            brightnessLabel?.textAlignment = .center
+            brightnessLabel?.translatesAutoresizingMaskIntoConstraints = false
+
+            if let brightnessLabel = brightnessLabel {
+                brightnessOverlay.addSubview(brightnessLabel)
+                NSLayoutConstraint.activate([
+                    brightnessLabel.topAnchor.constraint(equalTo: brightnessIcon?.bottomAnchor ?? brightnessOverlay.topAnchor, constant: 10),
+                    brightnessLabel.centerXAnchor.constraint(equalTo: brightnessOverlay.centerXAnchor),
+                    brightnessLabel.bottomAnchor.constraint(equalTo: brightnessOverlay.bottomAnchor, constant: -20)
+                ])
+            }
+        }
+    }
+
+    private func showVolumeOverlay() {
+        volumeOverlay?.isHidden = false
+        UIView.animate(withDuration: 0.2) {
+            self.volumeOverlay?.alpha = 0.5
+        }
+    }
+
+    private func hideVolumeOverlay() {
+        UIView.animate(withDuration: 0.2, animations: {
+            self.volumeOverlay?.alpha = 0.0
+        }) { _ in
+            self.volumeOverlay?.isHidden = true
+        }
+    }
+
+    private func updateVolumeOverlay(volume: Float) {
+        let percentage = Int(volume * 100)
+        volumeLabel?.text = "\(percentage)%"
+    }
+
+    private func showBrightnessOverlay() {
+        brightnessOverlay?.isHidden = false
+        UIView.animate(withDuration: 0.2) {
+            self.brightnessOverlay?.alpha = 0.5
+        }
+    }
+
+    private func hideBrightnessOverlay() {
+        UIView.animate(withDuration: 0.2, animations: {
+            self.brightnessOverlay?.alpha = 0.0
+        }) { _ in
+            self.brightnessOverlay?.isHidden = true
+        }
+    }
+
+    private func updateBrightnessOverlay(brightness: CGFloat) {
+        let percentage = Int(brightness * 100)
+        brightnessLabel?.text = "\(percentage)%"
     }
     
     @objc private func handlePlaybackEnded() {
@@ -3709,6 +3952,20 @@ extension CustomMediaPlayerViewController {
 
 extension CustomMediaPlayerViewController {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
+
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        let location = touch.location(in: view)
+
+        if isChatGesturesEnabled {
+            if gestureRecognizer == volumePanGesture {
+                return location.x > view.bounds.width / 2
+            } else if gestureRecognizer == brightnessPanGesture {
+                return location.x <= view.bounds.width / 2
+            }
+        } // can add a setting for which side manipulates which setting - Mousica.dev
+
         return true
     }
 }

@@ -302,7 +302,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
             
             asset = AVURLAsset(url: url)
-            // Try to load OP/ED skip sidecar for local files
             self.loadLocalSkipSidecar(for: url)
         } else {
             Logger.shared.log("Loading remote URL: \(url.absoluteString)", type: "Debug")
@@ -1105,7 +1104,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
 
         view.addGestureRecognizer(panGesture)
 
-        // Add volume and brightness pan gestures if enabled
         if isChatGesturesEnabled {
             volumePanGesture = UIPanGestureRecognizer(target: self, action: #selector(handleVolumePan(_:)))
             volumePanGesture?.delegate = self
@@ -2666,7 +2664,6 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             }
             
             asset = AVURLAsset(url: url)
-            // Try to load OP/ED skip sidecar for local files
             self.loadLocalSkipSidecar(for: url)
         } else {
             Logger.shared.log("Switching to remote URL: \(url.absoluteString)", type: "Debug")
@@ -3964,7 +3961,7 @@ extension CustomMediaPlayerViewController {
             } else if gestureRecognizer == brightnessPanGesture {
                 return location.x <= view.bounds.width / 2
             }
-        } // can add a setting for which side manipulates which setting - Mousica.dev
+        }
 
         return true
     }
@@ -4104,8 +4101,6 @@ class GradientBlurButton: UIButton {
     }
 }
 
-
-    /// Load OP/ED skip data from a simple sidecar JSON saved next to the local video (if present)
 extension CustomMediaPlayerViewController {
 
     private struct SkipSidecar: Decodable {

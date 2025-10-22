@@ -53,7 +53,8 @@ struct EpisodeCell: View {
     @EnvironmentObject var moduleManager: ModuleManager
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
-    
+    @AppStorage("remainingTimePercentage") private var remainingTimePercentage: Double = 90.0
+
     // Filler state (derived from passed-in fillerEpisodes)
     @State private var isFiller: Bool = false
     
@@ -182,8 +183,7 @@ private extension EpisodeCell {
             }
             .tint(.blue)
 
-            // cranci idk if the 90% is right, check this
-            if progress <= 0.9 {
+            if progress >= (remainingTimePercentage / 100.0) {
                 Button(action: { markAsWatched() }) {
                     Label("Watched", systemImage: "checkmark.circle")
                 }
@@ -285,7 +285,7 @@ private extension EpisodeCell {
     
     var contextMenuContent: some View {
         Group {
-            if progress <= 0.9 {
+            if progress >= (remainingTimePercentage / 100.0) {
                 Button(action: markAsWatched) {
                     Label("Mark Episode as Watched", systemImage: "checkmark.circle")
                 }

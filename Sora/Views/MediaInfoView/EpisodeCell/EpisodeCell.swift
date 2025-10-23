@@ -24,7 +24,6 @@ struct EpisodeCell: View {
     let tmdbID: Int?
     let seasonNumber: Int?
     
-    //receives the set of filler episode numbers (from MediaInfoView)
     let fillerEpisodes: Set<Int>?
     
     let isMultiSelectMode: Bool
@@ -43,9 +42,8 @@ struct EpisodeCell: View {
     @State private var downloadAnimationScale: CGFloat = 1.0
     @State private var activeDownloadTask: AVAssetDownloadTask?
     
-    
     @State private var retryAttempts: Int = 0
-        private var malIDFromParent: Int? { malID }
+    private var malIDFromParent: Int? { malID }
     private let maxRetryAttempts: Int = 3
     private let initialBackoffDelay: TimeInterval = 1.0
     
@@ -54,8 +52,7 @@ struct EpisodeCell: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("selectedAppearance") private var selectedAppearance: Appearance = .system
     @AppStorage("remainingTimePercentage") private var remainingTimePercentage: Double = 90.0
-
-    // Filler state (derived from passed-in fillerEpisodes)
+    
     @State private var isFiller: Bool = false
     
     init(
@@ -79,7 +76,7 @@ struct EpisodeCell: View {
         seasonNumber: Int? = nil,
         fillerEpisodes: Set<Int>? = nil
     ) {
-    
+        
         self.episodeIndex = episodeIndex
         self.episode = episode
         self.episodeID = episodeID
@@ -112,44 +109,43 @@ struct EpisodeCell: View {
     
     var body: some View {
         episodeCellContent
-        .onAppear {
-            setupOnAppear()
-            // set filler state based on passed-in set (if available)
-            let epNum = episodeID + 1
-            if let set = fillerEpisodes {
-                self.isFiller = set.contains(epNum)
+            .onAppear {
+                setupOnAppear()
+                let epNum = episodeID + 1
+                if let set = fillerEpisodes {
+                    self.isFiller = set.contains(epNum)
+                }
             }
-        }
-        .onChange(of: progress) { _ in updateProgress() }
-        .onChange(of: itemID) { _ in handleItemIDChange() }
-        .onChange(of: tmdbID) { _ in
-            isLoading = true
-            retryAttempts = 0
-            fetchEpisodeDetails()
-        }
-        .onChange(of: fillerEpisodes) { newValue in
-            let epNum = episodeID + 1
-            if let set = newValue {
-                self.isFiller = set.contains(epNum)
-            } else {
-                self.isFiller = false
+            .onChange(of: progress) { _ in updateProgress() }
+            .onChange(of: itemID) { _ in handleItemIDChange() }
+            .onChange(of: tmdbID) { _ in
+                isLoading = true
+                retryAttempts = 0
+                fetchEpisodeDetails()
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadProgressChanged"))) { _ in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            .onChange(of: fillerEpisodes) { newValue in
+                let epNum = episodeID + 1
+                if let set = newValue {
+                    self.isFiller = set.contains(epNum)
+                } else {
+                    self.isFiller = false
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadProgressChanged"))) { _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    updateDownloadStatus()
+                    updateProgress()
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadStatusChanged"))) { _ in
                 updateDownloadStatus()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadCompleted"))) { _ in
+                updateDownloadStatus()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("episodeProgressChanged"))) { _ in
                 updateProgress()
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadStatusChanged"))) { _ in
-            updateDownloadStatus()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("downloadCompleted"))) { _ in
-            updateDownloadStatus()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("episodeProgressChanged"))) { _ in
-            updateProgress()
-        }
     }
 }
 
@@ -177,26 +173,26 @@ private extension EpisodeCell {
         .clipShape(RoundedRectangle(cornerRadius: 15))
         .contextMenu { contextMenuContent }
         .swipeActions(edge: .trailing) {
-
+            
             Button(action: { downloadEpisode() }) {
                 Label("Download", systemImage: "arrow.down.circle")
             }
             .tint(.blue)
-
-            if progress >= (remainingTimePercentage / 100.0) {
+            
+            if progress <= remainingTimePercentage {
                 Button(action: { markAsWatched() }) {
                     Label("Watched", systemImage: "checkmark.circle")
                 }
                 .tint(.green)
             }
-
+            
             if progress != 0 {
                 Button(action: { resetProgress() }) {
                     Label("Reset", systemImage: "arrow.counterclockwise")
                 }
                 .tint(.orange)
             }
-
+            
             if episodeIndex > 0 {
                 Button(action: { onMarkAllPrevious() }) {
                     Label("All Prev", systemImage: "checkmark.circle.fill")
@@ -285,7 +281,7 @@ private extension EpisodeCell {
     
     var contextMenuContent: some View {
         Group {
-            if progress >= (remainingTimePercentage / 100.0) {
+            if progress <= remainingTimePercentage {
                 Button(action: markAsWatched) {
                     Label("Mark Episode as Watched", systemImage: "checkmark.circle")
                 }
@@ -312,7 +308,6 @@ private extension EpisodeCell {
 }
 
 private extension EpisodeCell {
-
     func handleTap() {
         if isMultiSelectMode {
             onSelectionChanged?(!isSelected)
@@ -321,11 +316,10 @@ private extension EpisodeCell {
             onTap(imageUrl)
         }
     }
-
+    
 }
+
 private extension EpisodeCell {
-    
-    
     func markAsWatched() {
         let defaults = UserDefaults.standard
         let totalTime = 1000.0
@@ -350,7 +344,6 @@ private extension EpisodeCell {
             }
         }
     }
-
     
     func resetProgress() {
         let userDefaults = UserDefaults.standard
@@ -810,7 +803,6 @@ private extension EpisodeCell {
             }
         }.resume()
     }
-
     
     func handleFetchFailure(error: Error) {
         Logger.shared.log("Episode details fetch error: \(error.localizedDescription)", type: "Error")

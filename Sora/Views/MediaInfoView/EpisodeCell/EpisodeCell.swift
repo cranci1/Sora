@@ -43,6 +43,11 @@ struct EpisodeCell: View {
     @State private var downloadAnimationScale: CGFloat = 1.0
     @State private var activeDownloadTask: AVAssetDownloadTask?
     
+    @State private var swipeOffset: CGFloat = 0
+    @State private var isShowingActions: Bool = false
+    @State private var actionButtonWidth: CGFloat = 60
+    @State private var dragState: DragState = .inactive
+    @State private var dragStart: CGPoint?
     
     @State private var retryAttempts: Int = 0
         private var malIDFromParent: Int? { malID }
@@ -155,56 +160,64 @@ struct EpisodeCell: View {
 
 private extension EpisodeCell {
     
+    var actionButtonsBackground: some View {
+        HStack {
+            Spacer()
+            actionButtons
+        }
+        .zIndex(0)
+    }
     
     var episodeCellContent: some View {
-        HStack {
-            episodeThumbnail
-            episodeInfo
-            Spacer()
-            if case .downloaded = downloadStatus {
-                downloadedIndicator
-                    .padding(.trailing, 8)
+        ZStack {
+            HStack {
+                episodeThumbnail
+                episodeInfo
+                Spacer()
+                if case .downloaded = downloadStatus {
+                    downloadedIndicator
+                        .padding(.trailing, 8)
+                }
+                CircularProgressBar(progress: currentProgress)
+                    .frame(width: 40, height: 40)
+                    .padding(.trailing, 4)
             }
-            CircularProgressBar(progress: currentProgress)
-                .frame(width: 40, height: 40)
-                .padding(.trailing, 4)
+            .contentShape(Rectangle())
+            .padding(.horizontal, 8)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .background(cellBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 15))
+            .offset(x: swipeOffset + dragState.translation.width)
+            .zIndex(1)
+            .scaleEffect(dragState.isActive ? 0.98 : 1.0)
+            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: swipeOffset)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: dragState.isActive)
+            .contextMenu { contextMenuContent }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                    .onChanged { value in
+                        let translation = value.translation
+                        if abs(translation.width) > abs(translation.height) * 2.0 && abs(translation.width) > 30 {
+                            handleDragChanged(value)
+                        }
+                    }
+                    .onEnded { value in
+                        let translation = value.translation
+                        if abs(translation.width) > abs(translation.height) * 2.0 && abs(translation.width) > 30 {
+                            handleDragEnded(value)
+                        } else {
+                            dragStart = nil
+                            dragState = .inactive
+                        }
+                    }
+            )
+            .onTapGesture {
+                handleTap()
+            }
+
+            actionButtonsBackground
         }
-        .contentShape(Rectangle())
-        .padding(.horizontal, 8)
-        .padding(.vertical, 8)
-        .frame(maxWidth: .infinity)
-        .background(cellBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 15))
-        .contextMenu { contextMenuContent }
-        .swipeActions(edge: .trailing) {
-
-            Button(action: { downloadEpisode() }) {
-                Label("Download", systemImage: "arrow.down.circle")
-            }
-            .tint(.blue)
-
-            if progress >= (remainingTimePercentage / 100.0) {
-                Button(action: { markAsWatched() }) {
-                    Label("Watched", systemImage: "checkmark.circle")
-                }
-                .tint(.green)
-            }
-
-            if progress != 0 {
-                Button(action: { resetProgress() }) {
-                    Label("Reset", systemImage: "arrow.counterclockwise")
-                }
-                .tint(.orange)
-            }
-
-            if episodeIndex > 0 {
-                Button(action: { onMarkAllPrevious() }) {
-                    Label("All Prev", systemImage: "checkmark.circle.fill")
-                }
-                .tint(.purple)
-            }
-        }
-        .onTapGesture { handleTap() }
     }
     
     var cellBackground: some View {
@@ -309,22 +322,192 @@ private extension EpisodeCell {
         }
     }
     
+    var actionButtons: some View {
+        HStack(spacing: 8) {
+            ActionButton(
+                icon: "arrow.down.circle",
+                label: "Download",
+                color: .blue,
+                width: actionButtonWidth
+            ) {
+                closeActionsAndPerform { downloadEpisode() }
+            }
+            
+            if progress >= (remainingTimePercentage / 100.0) {
+                ActionButton(
+                    icon: "checkmark.circle",
+                    label: "Watched",
+                    color: .green,
+                    width: actionButtonWidth
+                ) {
+                    closeActionsAndPerform { markAsWatched() }
+                }
+            }
+            
+            if progress != 0 {
+                ActionButton(
+                    icon: "arrow.counterclockwise",
+                    label: "Reset",
+                    color: .orange,
+                    width: actionButtonWidth
+                ) {
+                    closeActionsAndPerform { resetProgress() }
+                }
+            }
+            
+            if episodeIndex > 0 {
+                ActionButton(
+                    icon: "checkmark.circle.fill",
+                    label: "All Prev",
+                    color: .purple,
+                    width: actionButtonWidth
+                ) {
+                    closeActionsAndPerform { onMarkAllPrevious() }
+                }
+            }
+        }
+        .padding(.horizontal, 8)
+    }
 }
 
 private extension EpisodeCell {
-
+    
+    enum DragState {
+        case inactive
+        case pressing
+        case dragging(translation: CGSize)
+        
+        var translation: CGSize {
+            switch self {
+            case .inactive, .pressing:
+                return .zero
+            case .dragging(let translation):
+                return translation
+            }
+        }
+        
+        var isActive: Bool {
+            switch self {
+            case .inactive:
+                return false
+            case .pressing, .dragging:
+                return true
+            }
+        }
+        
+        var isDragging: Bool {
+            switch self {
+            case .dragging:
+                return true
+            default:
+                return false
+            }
+        }
+    }
+    
+    func handleDragChanged(_ value: DragGesture.Value) {
+        let translation = value.translation
+        let velocity = value.velocity
+        
+        let isHorizontalGesture = abs(translation.width) > abs(translation.height)
+        let hasSignificantHorizontalMovement = abs(translation.width) > 10
+        
+        if isHorizontalGesture && hasSignificantHorizontalMovement {
+            dragState = .dragging(translation: .zero)
+            
+            let proposedOffset = swipeOffset + translation.width
+            let maxSwipe = calculateMaxSwipeDistance()
+            
+            if translation.width < 0 {
+                let newOffset = max(proposedOffset, -maxSwipe)
+                if proposedOffset < -maxSwipe {
+                    let resistance = abs(proposedOffset + maxSwipe) * 0.15
+                    swipeOffset = -maxSwipe - resistance
+                } else {
+                    swipeOffset = newOffset
+                }
+            } else if isShowingActions {
+                swipeOffset = min(max(proposedOffset, -maxSwipe), maxSwipe * 0.2)
+            }
+        } else if !hasSignificantHorizontalMovement {
+            dragState = .inactive
+        }
+    }
+    
+    func handleDragEnded(_ value: DragGesture.Value) {
+        let translation = value.translation
+        let velocity = value.velocity
+        
+        dragState = .inactive
+        
+        let isHorizontalGesture = abs(translation.width) > abs(translation.height)
+        let hasSignificantHorizontalMovement = abs(translation.width) > 10
+        
+        if isHorizontalGesture && hasSignificantHorizontalMovement {
+            let maxSwipe = calculateMaxSwipeDistance()
+            let threshold = maxSwipe * 0.3
+            let velocityThreshold: CGFloat = 500
+            
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                if translation.width < -threshold || velocity.width < -velocityThreshold {
+                    swipeOffset = -maxSwipe
+                    isShowingActions = true
+                } else if translation.width > threshold || velocity.width > velocityThreshold {
+                    swipeOffset = 0
+                    isShowingActions = false
+                } else {
+                    swipeOffset = isShowingActions ? -maxSwipe : 0
+                }
+            }
+        } else {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                swipeOffset = isShowingActions ? -calculateMaxSwipeDistance() : 0
+            }
+        }
+    }
+    
     func handleTap() {
-        if isMultiSelectMode {
+        if isShowingActions {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                swipeOffset = 0
+                isShowingActions = false
+            }
+        } else if isMultiSelectMode {
             onSelectionChanged?(!isSelected)
         } else {
             let imageUrl = episodeImageUrl.isEmpty ? defaultBannerImage : episodeImageUrl
             onTap(imageUrl)
         }
     }
-
+    
+    func calculateMaxSwipeDistance() -> CGFloat {
+        var buttonCount = 1
+        
+        if progress >= (remainingTimePercentage / 100.0) { buttonCount += 1 }
+        if progress != 0 { buttonCount += 1 }
+        if episodeIndex > 0 { buttonCount += 1 }
+        
+        var swipeDistance = CGFloat(buttonCount) * actionButtonWidth + 16
+        
+        if buttonCount == 3 { swipeDistance += 12 }
+        else if buttonCount == 4 { swipeDistance += 24 }
+        
+        return swipeDistance
+    }
 }
+
 private extension EpisodeCell {
     
+    func closeActionsAndPerform(action: @escaping () -> Void) {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            isShowingActions = false
+            swipeOffset = 0
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            action()
+        }
+    }
     
     func markAsWatched() {
         let defaults = UserDefaults.standard
@@ -848,6 +1031,26 @@ private enum NetworkError: Error {
     }
 }
 
+private struct ActionButton: View {
+    let icon: String
+    let label: String
+    let color: Color
+    let width: CGFloat
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 2) {
+                Image(systemName: icon)
+                    .font(.title3)
+                Text(label)
+                    .font(.caption2)
+            }
+        }
+        .foregroundColor(color)
+        .frame(width: width)
+    }
+}
 
 private struct AsyncImageView: View {
     let url: String

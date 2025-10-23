@@ -42,15 +42,12 @@ struct EpisodeCell: View {
     @State private var downloadAnimationScale: CGFloat = 1.0
     @State private var activeDownloadTask: AVAssetDownloadTask?
     
-<<<<<<< HEAD
     @State private var swipeOffset: CGFloat = 0
     @State private var isShowingActions: Bool = false
     @State private var actionButtonWidth: CGFloat = 60
     @State private var dragState: DragState = .inactive
     @State private var dragStart: CGPoint?
     
-=======
->>>>>>> f53cc505fc93609c8cfee2e1306c57094bd93de5
     @State private var retryAttempts: Int = 0
     private var malIDFromParent: Int? { malID }
     private let maxRetryAttempts: Int = 3
@@ -218,8 +215,6 @@ private extension EpisodeCell {
 
             actionButtonsBackground
         }
-<<<<<<< HEAD
-=======
         .contentShape(Rectangle())
         .padding(.horizontal, 8)
         .padding(.vertical, 8)
@@ -256,7 +251,6 @@ private extension EpisodeCell {
             }
         }
         .onTapGesture { handleTap() }
->>>>>>> f53cc505fc93609c8cfee2e1306c57094bd93de5
     }
     
     var cellBackground: some View {
@@ -410,7 +404,6 @@ private extension EpisodeCell {
 }
 
 private extension EpisodeCell {
-<<<<<<< HEAD
     
     enum DragState {
         case inactive
@@ -506,8 +499,6 @@ private extension EpisodeCell {
         }
     }
     
-=======
->>>>>>> f53cc505fc93609c8cfee2e1306c57094bd93de5
     func handleTap() {
         if isShowingActions {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -522,7 +513,6 @@ private extension EpisodeCell {
         }
     }
     
-<<<<<<< HEAD
     func calculateMaxSwipeDistance() -> CGFloat {
         var buttonCount = 1
         
@@ -551,12 +541,9 @@ private extension EpisodeCell {
             action()
         }
     }
-    
-=======
 }
 
 private extension EpisodeCell {
->>>>>>> f53cc505fc93609c8cfee2e1306c57094bd93de5
     func markAsWatched() {
         let defaults = UserDefaults.standard
         let totalTime = 1000.0

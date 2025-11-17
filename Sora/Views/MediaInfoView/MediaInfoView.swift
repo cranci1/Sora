@@ -65,6 +65,7 @@ struct MediaInfoView: View {
     @State private var isBulkDownloading: Bool = false
     @State private var bulkDownloadProgress: String = ""
     @State private var isSingleEpisodeDownloading: Bool = false
+    @State private var bulkTask: Task<Void, Never>? = nil
     
     @State private var isModuleSelectorPresented = false
     @State private var isMatchingPresented = false
@@ -233,6 +234,7 @@ struct MediaInfoView: View {
             }
             .onDisappear {
                 currentFetchTask?.cancel()
+                bulkTask?.cancel()
                 activeFetchID = nil
                 UserDefaults.standard.set(false, forKey: "isMediaInfoActive")
                 UIScrollView.appearance().bounces = true
@@ -890,7 +892,6 @@ struct MediaInfoView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
-            
             if activeProvider == "AniList" {
                 Button("Match with AniList") {
                     isMatchingPresented = true
@@ -898,7 +899,6 @@ struct MediaInfoView: View {
                 Button(action: { resetAniListID() }) {
                     Label("Reset AniList ID", systemImage: "arrow.clockwise")
                 }
-                
                 Button(action: { openAniListPage(id: itemID ?? 0) }) {
                     Label("Open in AniList", systemImage: "link")
                 }
@@ -908,11 +908,17 @@ struct MediaInfoView: View {
                     isTMDBMatchingPresented = true
                 }
             }
-            
+
             posterMenuOptions
-            
+
             Divider()
-            
+
+            if !(module.metadata.novel ?? false) {
+                Button(action: { downloadAllEpisodes() }) {
+                    Label("Download All Episodes", systemImage: "arrow.down.circle")
+                }
+            }
+
             Button(action: { logDebugInfo() }) {
                 Label("Log Debug Info", systemImage: "terminal")
             }
@@ -2466,11 +2472,217 @@ struct MediaInfoView: View {
         }.resume()
     }
     
+    private func downloadAllEpisodes() {
+        bulkTask = Task {
+            await MainActor.run {
+                isBulkDownloading = true
+                bulkDownloadProgress = "Starting bulk download..."
+            }
+
+            let originalLimit = jsController.maxConcurrentDownloads
+            jsController.updateMaxConcurrentDownloads(Int.max)
+
+            let episodesToDownload = getEpisodesToDownload()
+            let total = episodesToDownload.count
+
+            if total == 0 {
+                await MainActor.run {
+                    jsController.updateMaxConcurrentDownloads(originalLimit)
+                    isBulkDownloading = false
+                    bulkDownloadProgress = ""
+                }
+                return
+            }
+
+            var completed = 0
+
+            await withTaskGroup(of: Bool.self) { group in
+                for (ep, season) in episodesToDownload {
+                    group.addTask {
+                        await self.downloadEpisodeIfNeeded(ep, season: season)
+                    }
+                }
+
+                for await success in group {
+                    do {
+                        try Task.checkCancellation()
+                        await MainActor.run {
+                            completed += 1
+                            bulkDownloadProgress = "Downloaded \(completed)/\(total) episodes"
+                        }
+                    } catch {
+                        break
+                    }
+                }
+            }
+
+            jsController.updateMaxConcurrentDownloads(originalLimit)
+
+            await MainActor.run {
+                isBulkDownloading = false
+                bulkDownloadProgress = ""
+                DropManager.shared.showDrop(
+                    title: "Bulk downloading started",
+                    subtitle: "",
+                    duration: 2.0,
+                    icon: UIImage(systemName: "checkmark.circle")
+                )
+            }
+        }
+    }
+
+    private func getEpisodesToDownload() -> [(EpisodeLink, Int)] {
+        let seasonGroups = groupedEpisodes()
+        var episodesToDownload: [(EpisodeLink, Int)] = []
+
+        for (seasonIndex, episodesInSeason) in seasonGroups.enumerated() {
+            let seasonNumber = seasonIndex + 1
+            for ep in episodesInSeason {
+                let downloadStatus = jsController.isEpisodeDownloadedOrInProgress(
+                    showTitle: title,
+                    episodeNumber: ep.number,
+                    season: seasonNumber
+                )
+                if !downloadStatus.isDownloadedOrInProgress {
+                    episodesToDownload.append((ep, seasonNumber))
+                }
+            }
+        }
+
+        return episodesToDownload
+    }
+
+    private func downloadEpisodeIfNeeded(_ ep: EpisodeLink, season: Int) async -> Bool {
+        return await withCheckedContinuation { continuation in
+            downloadEpisodeForBulk(ep, season: season) { success in
+                continuation.resume(returning: success)
+            }
+        }
+    }
+
+    private func downloadEpisodeForBulk(_ ep: EpisodeLink, season: Int, completion: @escaping (Bool) -> Void) {
+        Task {
+            do {
+                let jsContent = try moduleManager.getModuleContent(module)
+                jsController.loadScript(jsContent)
+                tryNextDownloadMethodForBulk(episode: ep, season: season, methodIndex: 0, completion: completion)
+            } catch {
+                completion(false)
+            }
+        }
+    }
+
+    private func tryNextDownloadMethodForBulk(episode: EpisodeLink, season: Int, methodIndex: Int, completion: @escaping (Bool) -> Void) {
+        switch methodIndex {
+        case 0:
+            if module.metadata.asyncJS == true {
+                jsController.fetchStreamUrlJS(episodeUrl: episode.href, softsub: module.metadata.softsub == true, module: module) { result in
+                    self.handleBulkDownloadResult(result, episode: episode, season: season, methodIndex: methodIndex, completion: completion)
+                }
+            } else {
+                tryNextDownloadMethodForBulk(episode: episode, season: season, methodIndex: methodIndex + 1, completion: completion)
+            }
+        case 1:
+            if module.metadata.streamAsyncJS == true {
+                jsController.fetchStreamUrlJSSecond(episodeUrl: episode.href, softsub: module.metadata.softsub == true, module: module) { result in
+                    self.handleBulkDownloadResult(result, episode: episode, season: season, methodIndex: methodIndex, completion: completion)
+                }
+            } else {
+                tryNextDownloadMethodForBulk(episode: episode, season: season, methodIndex: methodIndex + 1, completion: completion)
+            }
+        case 2:
+            jsController.fetchStreamUrl(episodeUrl: episode.href, softsub: module.metadata.softsub == true, module: module) { result in
+                self.handleBulkDownloadResult(result, episode: episode, season: season, methodIndex: methodIndex, completion: completion)
+            }
+        default:
+            completion(false)
+        }
+    }
+
+    private func handleBulkDownloadResult(_ result: (streams: [String]?, subtitles: [String]?, sources: [[String:Any]]?), episode: EpisodeLink, season: Int, methodIndex: Int, completion: @escaping (Bool) -> Void) {
+        if let sources = result.sources, !sources.isEmpty {
+            if sources.count > 1 {
+                if let streamUrl = sources[0]["streamUrl"] as? String ?? sources[0]["url"] as? String, let url = URL(string: streamUrl) {
+                    let subtitleURLString = sources[0]["subtitle"] as? String
+                    let subtitleURL = subtitleURLString.flatMap { URL(string: $0) }
+                    startBulkEpisodeDownload(episode: episode, url: url, streamUrl: streamUrl, subtitleURL: subtitleURL, season: season, completion: completion)
+                    return
+                }
+            } else if let streamUrl = sources[0]["streamUrl"] as? String, let url = URL(string: streamUrl) {
+                let subtitleURLString = sources[0]["subtitle"] as? String
+                let subtitleURL = subtitleURLString.flatMap { URL(string: $0) }
+                startBulkEpisodeDownload(episode: episode, url: url, streamUrl: streamUrl, subtitleURL: subtitleURL, season: season, completion: completion)
+                return
+            }
+        }
+
+        if let streams = result.streams, !streams.isEmpty {
+            if streams[0] == "[object Promise]" {
+                tryNextDownloadMethodForBulk(episode: episode, season: season, methodIndex: methodIndex + 1, completion: completion)
+                return
+            }
+
+            if streams.count > 1 {
+                if let url = URL(string: streams[0]) {
+                    let subtitleURL = result.subtitles?.first.flatMap { URL(string: $0) }
+                    startBulkEpisodeDownload(episode: episode, url: url, streamUrl: streams[0], subtitleURL: subtitleURL, season: season, completion: completion)
+                    return
+                }
+            } else if let url = URL(string: streams[0]) {
+                let subtitleURL = result.subtitles?.first.flatMap { URL(string: $0) }
+                startBulkEpisodeDownload(episode: episode, url: url, streamUrl: streams[0], subtitleURL: subtitleURL, season: season, completion: completion)
+                return
+            }
+        }
+
+        tryNextDownloadMethodForBulk(episode: episode, season: season, methodIndex: methodIndex + 1, completion: completion)
+    }
+
+    private func startBulkEpisodeDownload(episode: EpisodeLink, url: URL, streamUrl: String, subtitleURL: URL? = nil, season: Int, completion: @escaping (Bool) -> Void) {
+        let headers = generateDownloadHeaders(for: url)
+
+        fetchEpisodeMetadataForDownload(episode: episode) { metadata in
+            let episodeTitle = metadata?.title["en"] ?? "Episode \(episode.number)"
+            let episodeImageUrl = metadata?.imageUrl ?? ""
+
+            let episodeThumbnailURL: URL?
+            if !episodeImageUrl.isEmpty {
+                episodeThumbnailURL = URL(string: episodeImageUrl)
+            } else {
+                episodeThumbnailURL = URL(string: self.getBannerImageBasedOnAppearance())
+            }
+
+            let showPosterImageURL = URL(string: self.imageUrl)
+
+            self.jsController.downloadWithStreamTypeSupport(
+                url: url,
+                headers: headers,
+                title: episodeTitle,
+                imageURL: episodeThumbnailURL,
+                module: self.module,
+                isEpisode: true,
+                showTitle: self.title,
+                season: season,
+                episode: episode.number,
+                subtitleURL: subtitleURL,
+                showPosterURL: showPosterImageURL,
+                completionHandler: { success, message in
+                    if success {
+                        Logger.shared.log("Started bulk download for Episode \(episode.number): \(episode.href)", type: "Download")
+                    } else {
+                        Logger.shared.log("Bulk download failed for Episode \(episode.number): \(message)", type: "Download")
+                    }
+                    completion(success)
+                }
+            )
+        }
+    }
+    
     private func presentAlert(_ alert: UIAlertController) {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first,
-           let rootVC = window.rootViewController {
-            
+            let window = windowScene.windows.first,
+            let rootVC = window.rootViewController {
+
             if UIDevice.current.userInterfaceIdiom == .pad {
                 if let popover = alert.popoverPresentationController {
                     popover.sourceView = window
@@ -2483,7 +2695,6 @@ struct MediaInfoView: View {
                     popover.permittedArrowDirections = []
                 }
             }
-            
             findTopViewController.findViewController(rootVC).present(alert, animated: true)
         }
     }

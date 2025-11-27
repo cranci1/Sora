@@ -2021,12 +2021,12 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 let remainingPercentage = (self.duration - self.currentTimeVal) / self.duration
                 let remainingTimePercentage = UserDefaults.standard.object(forKey: "remainingTimePercentage") != nil ? UserDefaults.standard.double(forKey: "remainingTimePercentage") : 90.0
                 let threshold = (100.0 - remainingTimePercentage) / 100.0
-                
+
                 if remainingPercentage <= threshold {
                     if self.aniListID != 0 && !self.aniListUpdatedSuccessfully && !self.aniListUpdateImpossible {
                         self.tryAniListUpdate()
                     }
-                    
+
                     if let tmdbId = self.tmdbID, tmdbId > 0, !self.traktUpdateSent {
                         self.sendTraktUpdate(tmdbId: tmdbId)
                     }

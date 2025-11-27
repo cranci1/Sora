@@ -223,7 +223,7 @@ private extension EpisodeCell {
             }
             .tint(.blue)
             
-            if progress <= remainingTimePercentage {
+            if progress >= remainingTimePercentage / 100.0 {
                 Button(action: { markAsWatched() }) {
                     Label("Watched", systemImage: "checkmark.circle")
                 }
@@ -325,7 +325,7 @@ private extension EpisodeCell {
     
     var contextMenuContent: some View {
         Group {
-            if progress <= remainingTimePercentage {
+            if progress >= remainingTimePercentage / 100.0 {
                 Button(action: markAsWatched) {
                     Label("Mark Episode as Watched", systemImage: "checkmark.circle")
                 }

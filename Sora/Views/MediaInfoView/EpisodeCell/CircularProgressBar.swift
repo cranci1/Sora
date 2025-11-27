@@ -25,8 +25,8 @@ struct CircularProgressBar: View {
                 .animation(.linear, value: progress)
             
             let remainingTimePercentage = UserDefaults.standard.object(forKey: "remainingTimePercentage") != nil ? UserDefaults.standard.double(forKey: "remainingTimePercentage") : 90.0
-            let threshold = (100.0 - remainingTimePercentage) / 100.0
-            
+            let threshold = remainingTimePercentage / 100.0
+
             if progress >= threshold {
                 Image(systemName: "checkmark")
                     .font(.system(size: 12))

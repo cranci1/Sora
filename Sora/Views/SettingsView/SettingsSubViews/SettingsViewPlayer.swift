@@ -156,7 +156,7 @@ fileprivate struct SettingsStepperRow: View {
     let step: Double
     var formatter: (Double) -> String = { "\(Int($0))" }
     var showDivider: Bool = true
-    
+
     init(icon: String, title: String, value: Binding<Double>, range: ClosedRange<Double>, step: Double, formatter: @escaping (Double) -> String = { "\(Int($0))" }, showDivider: Bool = true) {
         self.icon = icon
         self.title = title
@@ -166,24 +166,77 @@ fileprivate struct SettingsStepperRow: View {
         self.formatter = formatter
         self.showDivider = showDivider
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             HStack {
                 Image(systemName: icon)
                     .frame(width: 24, height: 24)
                     .foregroundStyle(.primary)
-                
+
                 Text(title)
                     .foregroundStyle(.primary)
-                
+
                 Spacer()
-                
+
                 Stepper(formatter(value), value: $value, in: range, step: step)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            
+
+            if showDivider {
+                Divider()
+                    .padding(.horizontal, 16)
+            }
+        }
+    }
+}
+
+fileprivate struct SettingsTextFieldRow: View {
+    let icon: String
+    let title: String
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    var showDivider: Bool = true
+
+    init(icon: String, title: String, value: Binding<Double>, range: ClosedRange<Double>, showDivider: Bool = true) {
+        self.icon = icon
+        self.title = title
+        self._value = value
+        self.range = range
+        self.showDivider = showDivider
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Image(systemName: icon)
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(.primary)
+
+                Text(title)
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                TextField("", value: $value, format: .number)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .frame(width: 60)
+                    .onChange(of: value) { newValue in
+                        if newValue < range.lowerBound {
+                            value = range.lowerBound
+                        } else if newValue > range.upperBound {
+                            value = range.upperBound
+                        }
+                    }
+
+                Text("%")
+                    .foregroundStyle(.gray)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
             if showDivider {
                 Divider()
                     .padding(.horizontal, 16)
@@ -247,12 +300,11 @@ struct SettingsViewPlayer: View {
                         showDivider: true
                     )
                     
-                    SettingsPickerRow(
+                    SettingsTextFieldRow(
                         icon: "timer",
                         title: NSLocalizedString("Completion Percentage", comment: ""),
-                        options: [60.0, 70.0, 80.0, 90.0, 95.0, 100.0],
-                        optionToString: { "\(Int($0))%" },
-                        selection: $remainingTimePercentage,
+                        value: $remainingTimePercentage,
+                        range: 0...100,
                         showDivider: false
                     )
                 }

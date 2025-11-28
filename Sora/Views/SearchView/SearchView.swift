@@ -40,6 +40,7 @@ struct SearchView: View {
     @State private var saveDebounceTimer: Timer?
     @State private var searchDebounceTimer: Timer?
     @State private var isActive: Bool = false
+    @State private var currentSearchTask: Task<Void, Never>?
     
     init(searchQuery: Binding<String>) {
         self._searchQuery = searchQuery
@@ -244,40 +245,60 @@ struct SearchView: View {
             hasNoResults = false
             return
         }
-        
+
         isSearchFieldFocused = false
-        
+
+        currentSearchTask?.cancel()
+        currentSearchTask = nil
+
         isSearching = true
         hasNoResults = false
         searchItems = []
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            Task {
-                do {
-                    let jsContent = try moduleManager.getModuleContent(module)
-                    jsController.loadScript(jsContent)
-                    if module.metadata.asyncJS == true {
-                        jsController.fetchJsSearchResults(keyword: searchQuery, module: module) { items in
-                            DispatchQueue.main.async {
-                                searchItems = items
-                                hasNoResults = items.isEmpty
-                                isSearching = false
-                            }
-                        }
-                    } else {
-                        jsController.fetchSearchResults(keyword: searchQuery, module: module) { items in
-                            DispatchQueue.main.async {
-                                searchItems = items
-                                hasNoResults = items.isEmpty
-                                isSearching = false
-                            }
+
+        currentSearchTask = Task {
+            do {
+                try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                guard !Task.isCancelled else { return }
+
+                let jsContent = try moduleManager.getModuleContent(module)
+                jsController.loadScript(jsContent)
+
+                guard !Task.isCancelled else { return }
+
+                if module.metadata.asyncJS == true {
+                    jsController.fetchJsSearchResults(keyword: searchQuery, module: module) { items in
+                        guard !Task.isCancelled else { return }
+                        DispatchQueue.main.async {
+                            let uniqueItems = items.reduce(into: [String: SearchItem]()) { dict, item in
+                                dict[item.href] = item
+                            }.values
+                            searchItems = Array(uniqueItems)
+                            hasNoResults = uniqueItems.isEmpty
+                            isSearching = false
+                            currentSearchTask = nil
                         }
                     }
-                } catch {
+                } else {
+                    jsController.fetchSearchResults(keyword: searchQuery, module: module) { items in
+                        guard !Task.isCancelled else { return }
+                        DispatchQueue.main.async {
+                            let uniqueItems = items.reduce(into: [String: SearchItem]()) { dict, item in
+                                dict[item.href] = item
+                            }.values
+                            searchItems = Array(uniqueItems)
+                            hasNoResults = uniqueItems.isEmpty
+                            isSearching = false
+                            currentSearchTask = nil
+                        }
+                    }
+                }
+            } catch {
+                if !Task.isCancelled {
                     Logger.shared.log("Error loading module: \(error)", type: "Error")
                     DispatchQueue.main.async {
                         isSearching = false
                         hasNoResults = true
+                        currentSearchTask = nil
                     }
                 }
             }

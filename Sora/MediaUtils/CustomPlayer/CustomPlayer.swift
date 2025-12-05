@@ -49,6 +49,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
     var currentTimeVal: Double = 0.0
     var duration: Double = 0.0
     var isVideoLoaded = false
+    private var hasSeekedToLastTime = false
     
     private var isHoldPauseEnabled: Bool {
         UserDefaults.standard.bool(forKey: "holdForPauseEnabled")
@@ -323,14 +324,8 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         let playerItem = AVPlayerItem(asset: asset)
         self.player = AVPlayer(playerItem: playerItem)
         playerItem.addObserver(self, forKeyPath: "status", options: [.new], context: &playerItemKVOContext)
-        
+
         Logger.shared.log("Created AVPlayerItem with status: \(playerItem.status.rawValue)", type: "Debug")
-        
-        let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(fullUrl)")
-        if lastPlayedTime > 0 {
-            let seekTime = CMTime(seconds: lastPlayedTime, preferredTimescale: 1)
-            self.player.seek(to: seekTime)
-        }
     }
     
     required init?(coder: NSCoder) {
@@ -657,18 +652,22 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
         if let playbackSpeed = player?.rate {
             UserDefaults.standard.set(playbackSpeed, forKey: "lastPlaybackSpeed")
         }
-        
+
+        // Save current playback time when leaving the player
+        UserDefaults.standard.set(self.currentTimeVal, forKey: "lastPlayedTime_\(self.fullUrl)")
+        UserDefaults.standard.set(self.duration, forKey: "totalTime_\(self.fullUrl)")
+
         if let token = timeObserverToken {
             player.removeTimeObserver(token)
             timeObserverToken = nil
         }
-        
+
         loadedTimeRangesObservation?.invalidate()
         loadedTimeRangesObservation = nil
-        
+
         updateTimer?.invalidate()
         inactivityTimer?.invalidate()
-        
+
         player.pause()
     }
     
@@ -762,6 +761,17 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 switch playerItem.status {
                 case .readyToPlay:
                     Logger.shared.log("AVPlayerItem status: Ready to play", type: "Debug")
+                    if !hasSeekedToLastTime {
+                        let lastPlayedTime = UserDefaults.standard.double(forKey: "lastPlayedTime_\(fullUrl)")
+                        if lastPlayedTime > 0 {
+                            let seekTime = CMTime(seconds: lastPlayedTime, preferredTimescale: 600)
+                            self.player.seek(to: seekTime) { [weak self] _ in
+                                self?.hasSeekedToLastTime = true
+                            }
+                        } else {
+                            hasSeekedToLastTime = true
+                        }
+                    }
                 case .failed:
                     if let error = playerItem.error {
                         Logger.shared.log("AVPlayerItem failed with error: \(error.localizedDescription)", type: "Error")

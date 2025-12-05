@@ -1274,13 +1274,30 @@ struct MediaInfoView: View {
     
     private func cleanTitle(_ title: String?) -> String {
         guard let title = title else { return "Unknown" }
-        
-        let cleaned = title.replacingOccurrences(
-            of: "\\s*\\([^\\)]*\\)",
+
+        var cleaned = title
+
+        cleaned = cleaned.replacingOccurrences(
+            of: "\\s*[\\[\\(][^\\]\\)]*[\\]\\)]",
             with: "",
             options: .regularExpression
+        )
+        cleaned = cleaned.replacingOccurrences(
+            of: "\\s*(?i)(season|s)\\s*\\d+",
+            with: "",
+            options: .regularExpression
+        )
+        cleaned = cleaned.replacingOccurrences(
+            of: "\\s*(?i)(dub|sub|eng|jpn|raw)\\s*$",
+            with: "",
+            options: .regularExpression
+        )
+        cleaned = cleaned.replacingOccurrences(
+            of: "\\s+",
+            with: " ",
+            options: .regularExpression
         ).trimmingCharacters(in: .whitespaces)
-        
+
         return cleaned.isEmpty ? "Unknown" : cleaned
     }
     
@@ -1609,23 +1626,23 @@ struct MediaInfoView: View {
     
     func fetchMetadataIDIfNeeded() {
         let order = metadataProvidersOrder
-        let cleanedTitle = cleanTitle(title)
-        
+        let titlesToTry = [cleanTitle(title), title] // Try cleaned first, then original
+
         itemID = nil
         tmdbID = nil
         activeProvider = nil
         isError = false
-        
+
         var aniListCompleted = false
         var tmdbCompleted = false
         var aniListSuccess = false
         var tmdbSuccess = false
-        
+
         func checkCompletion() {
             guard aniListCompleted && tmdbCompleted else { return }
-            
+
             let primaryProvider = order.first ?? "TMDB"
-            
+
             if primaryProvider == "AniList" && aniListSuccess {
                 activeProvider = "AniList"
                 UserDefaults.standard.set("AniList", forKey: "metadataProviders")
@@ -1642,26 +1659,41 @@ struct MediaInfoView: View {
                 isError = true
             }
         }
-        
-        fetchItemID(byTitle: cleanedTitle) { result in
-            DispatchQueue.main.async {
-                aniListCompleted = true
+
+        func tryAniListTitles(index: Int) {
+            if index >= titlesToTry.count {
+                // All failed
+                DispatchQueue.main.async {
+                    aniListCompleted = true
+                    Logger.shared.log("Failed to fetch AniList ID for all title variations", type: "Debug")
+                    checkCompletion()
+                }
+                return
+            }
+            let currentTitle = titlesToTry[index]
+            fetchItemID(byTitle: currentTitle) { result in
                 switch result {
                 case .success(let id):
-                    self.itemID = id
-                    aniListSuccess = true
-                    Logger.shared.log("Successfully fetched AniList ID: \(id)", type: "Debug")
-                    self.fetchMalIDFromAniList(anilistID: id) { fetchedMalID in
-                        self.matchedMalID = fetchedMalID
+                    DispatchQueue.main.async {
+                        self.itemID = id
+                        aniListSuccess = true
+                        Logger.shared.log("Successfully fetched AniList ID: \(id) using title: \(currentTitle)", type: "Debug")
+                        self.fetchMalIDFromAniList(anilistID: id) { fetchedMalID in
+                            self.matchedMalID = fetchedMalID
+                        }
+                        aniListCompleted = true
+                        checkCompletion()
                     }
-                case .failure(let error):
-                    Logger.shared.log("Failed to fetch AniList ID: \(error)", type: "Debug")
+                case .failure:
+                    Logger.shared.log("Failed to fetch AniList ID with title: \(currentTitle), trying next variation", type: "Debug")
+                    tryAniListTitles(index: index + 1)
                 }
-                checkCompletion()
             }
         }
-        
-        tmdbFetcher.fetchBestMatchID(for: cleanedTitle) { id, type in
+
+        tryAniListTitles(index: 0)
+
+        tmdbFetcher.fetchBestMatchID(for: titlesToTry.first ?? title) { id, type in
             DispatchQueue.main.async {
                 tmdbCompleted = true
                 if let id = id, let type = type {
@@ -1678,45 +1710,55 @@ struct MediaInfoView: View {
     }
     
     private func fetchItemID(byTitle title: String, completion: @escaping (Result<Int, Error>) -> Void) {
+        Logger.shared.log("Searching AniList for title: \(title)", type: "Debug")
         let query = """
         query {
-            Media(search: "\(title)", type: ANIME) {
-                id
+          Page(page: 1, perPage: 1) {
+            media(search: "\(title)", type: ANIME) {
+              id
+              idMal
+              title {
+                romaji
+                english
+              }
             }
+          }
         }
         """
-        
+
         guard let url = URL(string: "https://graphql.anilist.co") else {
             completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let parameters: [String: Any] = ["query": query]
-        request.httpBody = try? JSONSerialization.data(withJSONObject: parameters)
-        
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["query": query])
+
         URLSession.custom.dataTask(with: request) { data, _, error in
             if let error = error {
                 completion(.failure(error))
                 return
             }
-            
+
             guard let data = data else {
                 completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
                 return
             }
-            
+
             do {
                 if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                   let data = json["data"] as? [String: Any],
-                   let media = data["Media"] as? [String: Any],
-                   let id = media["id"] as? Int {
+                   let dataDict = json["data"] as? [String: Any],
+                   let page = dataDict["Page"] as? [String: Any],
+                   let mediaList = page["media"] as? [[String: Any]],
+                   let firstMedia = mediaList.first,
+                   let id = firstMedia["id"] as? Int {
+                    Logger.shared.log("AniList match found: ID \(id)", type: "Debug")
                     completion(.success(id))
                 } else {
-                    let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+                    Logger.shared.log("No AniList matches found for title: \(title)", type: "Debug")
+                    let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response or no matches"])
                     completion(.failure(error))
                 }
             } catch {

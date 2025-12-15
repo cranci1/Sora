@@ -117,7 +117,7 @@ struct DownloadView: View {
                             totalEpisodes: filteredAndSortedAssets.count,
                             totalSize: filteredAndSortedAssets.reduce(0) { $0 + $1.fileSize }
                         )
-                        
+
                         DownloadedSection(
                             groups: groupedAssets,
                             onDelete: { asset in
@@ -129,6 +129,12 @@ struct DownloadView: View {
                     }
                     .padding(.top, 20)
                     .scrollViewBottomPadding()
+                }
+                .onAppear {
+                    UIScrollView.appearance().bounces = false
+                }
+                .onDisappear {
+                    UIScrollView.appearance().bounces = true
                 }
             }
         }

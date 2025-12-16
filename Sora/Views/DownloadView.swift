@@ -37,27 +37,28 @@ struct DownloadView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                Spacer()
-                    .frame(height: 20)
-                CustomDownloadHeader(
-                    selectedTab: $selectedTab,
-                    searchText: $searchText,
-                    isSearchActive: $isSearchActive,
-                    sortOption: $sortOption,
-                    showSortMenu: selectedTab == 1 && !jsController.savedAssets.isEmpty
-                )
-                
+            Group {
                 if selectedTab == 0 {
                     activeDownloadsView
-                        .transition(.opacity)
                 } else {
                     downloadedContentView
-                        .transition(.opacity)
                 }
             }
-            .animation(.easeInOut(duration: 0.2), value: selectedTab)
+            .safeAreaInset(edge: .top) {
+                VStack(spacing: 0) {
+                    CustomDownloadHeader(
+                        selectedTab: $selectedTab,
+                        searchText: $searchText,
+                        isSearchActive: $isSearchActive,
+                        sortOption: $sortOption,
+                        showSortMenu: selectedTab == 1 && !jsController.savedAssets.isEmpty
+                    )
+                    Divider()
+                }
+                .background(.ultraThinMaterial)
+            }
             .navigationBarHidden(true)
+            .animation(.easeInOut(duration: 0.2), value: selectedTab)
             .alert(NSLocalizedString("Delete Download", comment: ""), isPresented: $showDeleteAlert) {
                 Button(NSLocalizedString("Delete", comment: ""), role: .destructive) {
                     if let asset = assetToDelete {

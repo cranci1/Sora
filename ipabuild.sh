@@ -17,7 +17,7 @@ xcodebuild -project "$WORKING_LOCATION/$APPLICATION_NAME.xcodeproj" \
     -scheme "$APPLICATION_NAME" \
     -configuration Release \
     -derivedDataPath "$WORKING_LOCATION/build/DerivedDataApp" \
-    -destination 'generic/platform=iOS' \
+    -destination 'generic/platform=tvos' \
     clean build \
     CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED="NO"
 

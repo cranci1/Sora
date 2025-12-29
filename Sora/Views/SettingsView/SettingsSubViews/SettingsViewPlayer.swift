@@ -258,7 +258,8 @@ struct SettingsViewPlayer: View {
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
     @AppStorage("autoplayNext") private var autoplayNext: Bool = true
-    
+    @AppStorage("introDBEnabled") private var introDBEnabled: Bool = true
+
     @AppStorage("videoQualityWiFi") private var wifiQuality: String = VideoQualityPreference.defaultWiFiPreference.rawValue
     @AppStorage("videoQualityCellular") private var cellularQuality: String = VideoQualityPreference.defaultCellularPreference.rawValue
     
@@ -408,7 +409,13 @@ struct SettingsViewPlayer: View {
                     SettingsToggleRow(
                         icon: "forward.frame",
                         title: NSLocalizedString("Show Skip Intro / Outro Buttons", comment: ""),
-                        isOn: $skipIntroOutroVisible,
+                        isOn: $skipIntroOutroVisible
+                    )
+
+                    SettingsToggleRow(
+                        icon: "film",
+                        title: NSLocalizedString("IntroDB", comment: ""),
+                        isOn: $introDBEnabled,
                         showDivider: false
                     )
                 }

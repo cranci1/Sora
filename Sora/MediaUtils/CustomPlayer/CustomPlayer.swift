@@ -12,6 +12,9 @@ import MediaPlayer
 import AVFoundation
 import MarqueeLabel
 
+private let introDBFetcher = IntroDBFetcher()
+private let tmdbFetcher = TMDBFetcher()
+
 class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDelegate, AVPlayerViewControllerDelegate {
     private var airplayButton: AVRoutePickerView!
     let module: ScrapingModule
@@ -77,6 +80,12 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             return true
         }
         return UserDefaults.standard.bool(forKey: "autoplayNext")
+    }
+    private var isIntroDBEnabled: Bool {
+        if UserDefaults.standard.object(forKey: "introDBEnabled") == nil {
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: "introDBEnabled")
     }
     private var pipController: AVPictureInPictureController?
     
@@ -410,6 +419,11 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
             case .failure(let error):
                 Logger.shared.log("Unable to fetch MAL ID: \(error)",type:"Error")
             }
+        }
+
+        // Fetch IntroDB data for TV shows
+        if !isMovie, let tmdbId = tmdbID, isIntroDBEnabled {
+            fetchIntroDBData(tmdbId: tmdbId)
         }
         
         for control in controlsToHide {
@@ -1697,7 +1711,7 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                   let resp = try? JSONDecoder().decode(AniSkipResponse.self, from: d),
                   resp.found,
                   let interval = resp.results.first?.interval else { return }
-            
+
             let range = CMTimeRange(
                 start: CMTime(seconds: interval.startTime, preferredTimescale: 600),
                 end: CMTime(seconds: interval.endTime, preferredTimescale: 600)
@@ -1713,6 +1727,35 @@ class CustomMediaPlayerViewController: UIViewController, UIGestureRecognizerDele
                 }
             }
         }.resume()
+    }
+
+    private func fetchIntroDBData(tmdbId: Int) {
+        tmdbFetcher.fetchExternalIDs(for: tmdbId, type: .tv) { [weak self] imdbId in
+            guard let self = self, let imdbId = imdbId else {
+                Logger.shared.log("Failed to fetch IMDB ID for TMDB ID: \(tmdbId)", type: "Debug")
+                return
+            }
+
+            introDBFetcher.fetchIntro(imdbId: imdbId, season: self.seasonNumber, episode: self.episodeNumber) { introResponse in
+                guard let intro = introResponse else {
+                    Logger.shared.log("No intro data available for IMDB: \(imdbId), S\(self.seasonNumber)E\(self.episodeNumber)", type: "Debug")
+                    return
+                }
+
+                let range = CMTimeRange(
+                    start: CMTime(seconds: intro.start_sec, preferredTimescale: 600),
+                    end: CMTime(seconds: intro.end_sec, preferredTimescale: 600)
+                )
+
+                DispatchQueue.main.async {
+                    self.skipIntervals.op = range  // Use op for intro
+                    if self.duration > 0 {
+                        self.updateSegments()
+                    }
+                    Logger.shared.log("Loaded IntroDB data: start \(intro.start_sec)s, end \(intro.end_sec)s, confidence \(intro.confidence)", type: "Debug")
+                }
+            }
+        }
     }
     
     func setupSkipButtons() {

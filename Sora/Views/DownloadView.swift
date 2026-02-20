@@ -1050,7 +1050,6 @@ struct EnhancedShowEpisodesView: View {
     
     var body: some View {
         ZStack {
-            heroImageSection
             mainScrollView
                 .navigationBarHidden(true)
                 .ignoresSafeArea(.container, edges: .top)
@@ -1099,7 +1098,10 @@ struct EnhancedShowEpisodesView: View {
     @ViewBuilder
     private var mainScrollView: some View {
         ScrollView(showsIndicators: false) {
-            contentContainer
+            ZStack(alignment: .top) {
+                heroImageSection
+                contentContainer
+            }
         }
         .onAppear {
             UIScrollView.appearance().bounces = false
@@ -1108,27 +1110,22 @@ struct EnhancedShowEpisodesView: View {
     
     @ViewBuilder
     private var heroImageSection: some View {
-        VStack(spacing: 0) {
+        Group {
             if let posterURL = group.posterURL {
-                LazyImage(url: posterURL) { state in
+                LazyImage(url: posterURL) { @MainActor state in
                     if let uiImage = state.imageContainer?.image {
                         Image(uiImage: uiImage)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
+                            .frame(width: UIScreen.main.bounds.width, height: 700)
+                            .clipped()
                     } else {
                         placeholderGradient
                     }
                 }
-                .ignoresSafeArea(.all)
-                .frame(maxWidth: .infinity, maxHeight: 400)
-                .clipped()
             } else {
                 placeholderGradient
-                    .ignoresSafeArea(.all)
-                    .frame(maxWidth: .infinity, maxHeight: 400)
-                    .clipped()
             }
-            Spacer()
         }
     }
     
@@ -1145,6 +1142,8 @@ struct EnhancedShowEpisodesView: View {
                     endPoint: .bottomTrailing
                 )
             )
+            .frame(width: UIScreen.main.bounds.width, height: 700)
+            .clipped()
     }
     
     @ViewBuilder

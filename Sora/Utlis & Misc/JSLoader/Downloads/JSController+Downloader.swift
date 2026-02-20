@@ -23,10 +23,11 @@ struct DownloadRequest {
     let aniListID: Int?
     let malID: Int?
     let isFiller: Bool?
+    let totalEpisodes: Int?
     
     init(url: URL, headers: [String: String], title: String? = nil, imageURL: URL? = nil, 
          isEpisode: Bool = false, showTitle: String? = nil, season: Int? = nil, 
-         episode: Int? = nil, subtitleURL: URL? = nil, showPosterURL: URL? = nil, aniListID: Int? = nil, malID: Int? = nil, isFiller: Bool? = nil) {
+         episode: Int? = nil, subtitleURL: URL? = nil, showPosterURL: URL? = nil, aniListID: Int? = nil, malID: Int? = nil, isFiller: Bool? = nil, totalEpisodes: Int? = nil) {
         self.url = url
         self.headers = headers
         self.title = title
@@ -40,6 +41,7 @@ struct DownloadRequest {
         self.aniListID = aniListID
         self.malID = malID
         self.isFiller = isFiller
+        self.totalEpisodes = totalEpisodes
     }
 }
 
@@ -62,6 +64,7 @@ extension JSController {
                                 showTitle: String? = nil, season: Int? = nil, episode: Int? = nil,
                                 subtitleURL: URL? = nil, showPosterURL: URL? = nil,
                                 aniListID: Int? = nil, malID: Int? = nil, isFiller: Bool? = nil,
+                                totalEpisodes: Int? = nil,
                                 completionHandler: ((Bool, String) -> Void)? = nil) {
 
         
@@ -69,7 +72,7 @@ extension JSController {
             url: url, headers: headers, title: title, imageURL: imageURL,
             isEpisode: isEpisode, showTitle: showTitle, season: season, 
             episode: episode, subtitleURL: subtitleURL, showPosterURL: showPosterURL,
-            aniListID: aniListID, malID: malID, isFiller: isFiller
+            aniListID: aniListID, malID: malID, isFiller: isFiller, totalEpisodes: totalEpisodes
         )
         
         logDownloadStart(request: request)
@@ -114,7 +117,8 @@ extension JSController {
                         showPosterURL: request.showPosterURL,
                         aniListID: request.aniListID,
                         malID: request.malID,
-                        isFiller: request.isFiller
+                        isFiller: request.isFiller,
+                        totalEpisodes: request.totalEpisodes
                     )
                     self.downloadWithOriginalMethod(request: qualityRequest, completionHandler: completionHandler)
                 } else {
@@ -142,6 +146,7 @@ extension JSController {
                     imageURL: URL? = nil, isEpisode: Bool = false, showTitle: String? = nil,
                     season: Int? = nil, episode: Int? = nil, subtitleURL: URL? = nil,
                     showPosterURL: URL? = nil, aniListID: Int? = nil, malID: Int? = nil, isFiller: Bool? = nil,
+                    totalEpisodes: Int? = nil,
                     completionHandler: ((Bool, String) -> Void)? = nil) {
 
         
@@ -149,7 +154,7 @@ extension JSController {
             url: url, headers: headers, title: title, imageURL: imageURL,
             isEpisode: isEpisode, showTitle: showTitle, season: season,
             episode: episode, subtitleURL: subtitleURL, showPosterURL: showPosterURL,
-            aniListID: aniListID, malID: malID, isFiller: isFiller
+            aniListID: aniListID, malID: malID, isFiller: isFiller, totalEpisodes: totalEpisodes
         )
         
         downloadMP4(request: request, completionHandler: completionHandler)
@@ -382,7 +387,9 @@ extension JSController {
             showPosterURL: request.showPosterURL ?? request.imageURL,
             episodeTitle: nil,
             seasonNumber: nil,
-            isFiller: request.isFiller
+            isFiller: request.isFiller,
+            aniListID: request.aniListID,
+            totalEpisodes: request.totalEpisodes
         )
     }
     
@@ -436,6 +443,7 @@ extension JSController {
             aniListID: request.aniListID,
             malID: request.malID,
             isFiller: request.isFiller,
+            totalEpisodes: request.totalEpisodes,
             completionHandler: completionHandler
         )
     }

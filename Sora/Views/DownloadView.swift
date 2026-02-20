@@ -1108,24 +1108,27 @@ struct EnhancedShowEpisodesView: View {
     
     @ViewBuilder
     private var heroImageSection: some View {
-        if let posterURL = group.posterURL {
-            LazyImage(url: posterURL) { state in
-                if let uiImage = state.imageContainer?.image {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } else {
-                    placeholderGradient
+        VStack(spacing: 0) {
+            if let posterURL = group.posterURL {
+                LazyImage(url: posterURL) { state in
+                    if let uiImage = state.imageContainer?.image {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } else {
+                        placeholderGradient
+                    }
                 }
-            }
-            .ignoresSafeArea(.all)
-            .frame(maxWidth: .infinity, maxHeight: 400)
-            .clipped()
-        } else {
-            placeholderGradient
                 .ignoresSafeArea(.all)
                 .frame(maxWidth: .infinity, maxHeight: 400)
                 .clipped()
+            } else {
+                placeholderGradient
+                    .ignoresSafeArea(.all)
+                    .frame(maxWidth: .infinity, maxHeight: 400)
+                    .clipped()
+            }
+            Spacer()
         }
     }
     

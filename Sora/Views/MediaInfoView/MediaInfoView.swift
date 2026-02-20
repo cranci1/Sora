@@ -1373,7 +1373,21 @@ struct MediaInfoView: View {
             return
         }
         
-        let nextEpisode = episodeLinks[currentIndex + 1]
+        let autoSkipFillers = UserDefaults.standard.bool(forKey: "autoSkipFillers")
+        var nextIndex = currentIndex + 1
+        
+        if autoSkipFillers, let fillerSet = jikanFillerSet {
+            while nextIndex < episodeLinks.count, fillerSet.contains(episodeLinks[nextIndex].number) {
+                Logger.shared.log("Skipping filler episode \(episodeLinks[nextIndex].number)", type: "Debug")
+                nextIndex += 1
+            }
+            guard nextIndex < episodeLinks.count else {
+                Logger.shared.log("No more non-filler episodes to play", type: "Info")
+                return
+            }
+        }
+        
+        let nextEpisode = episodeLinks[nextIndex]
         selectedEpisodeNumber = nextEpisode.number
         fetchStream(href: nextEpisode.href)
         DropManager.shared.showDrop(

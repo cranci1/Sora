@@ -302,6 +302,7 @@ struct SettingsViewBackup: View {
             "skipIntroOutroVisible",
             "pipButtonVisible",
             "autoplayNext",
+            "autoSkipFillers",
             "videoQualityWiFi",
             "videoQualityCellular",
             "subtitlesEnabled",

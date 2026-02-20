@@ -156,14 +156,15 @@ extension JSController {
         let assetMetadata = AssetMetadata(
             title: downloadTitle,
             overview: nil,
-            posterURL: imageURL, // Episode thumbnail
+            posterURL: imageURL,
             backdropURL: imageURL,
             releaseDate: nil,
             showTitle: animeTitle,
             season: season,
             episode: episode,
-            showPosterURL: showPosterURL, // Main show poster
-            isFiller: isFiller
+            showPosterURL: showPosterURL,
+            isFiller: isFiller,
+            aniListID: aniListID
         )
         
         // Create the download ID now so we can use it for notifications

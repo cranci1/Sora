@@ -382,7 +382,8 @@ extension JSController {
             showPosterURL: request.showPosterURL ?? request.imageURL,
             episodeTitle: nil,
             seasonNumber: nil,
-            isFiller: request.isFiller
+            isFiller: request.isFiller,
+            aniListID: request.aniListID
         )
     }
     

@@ -415,6 +415,7 @@ struct AssetMetadata: Codable {
     let seasonNumber: Int?
     /// Indicates whether this episode is a filler (derived from metadata at download time)
     let isFiller: Bool?
+    let aniListID: Int?
     
     init(
         title: String,
@@ -428,7 +429,8 @@ struct AssetMetadata: Codable {
         showPosterURL: URL? = nil,
         episodeTitle: String? = nil,
         seasonNumber: Int? = nil,
-        isFiller: Bool? = nil
+        isFiller: Bool? = nil,
+        aniListID: Int? = nil
     ) {
         self.title = title
         self.overview = overview
@@ -442,6 +444,7 @@ struct AssetMetadata: Codable {
         self.episodeTitle = episodeTitle
         self.seasonNumber = seasonNumber
         self.isFiller = isFiller
+        self.aniListID = aniListID
     }
 }
 

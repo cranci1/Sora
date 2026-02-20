@@ -258,6 +258,7 @@ struct SettingsViewPlayer: View {
     @AppStorage("doubleTapSeekEnabled") private var doubleTapSeekEnabled: Bool = false
     @AppStorage("skipIntroOutroVisible") private var skipIntroOutroVisible: Bool = true
     @AppStorage("autoplayNext") private var autoplayNext: Bool = true
+    @AppStorage("autoSkipFillers") private var autoSkipFillers: Bool = false
     @AppStorage("introDBEnabled") private var introDBEnabled: Bool = true
 
     @AppStorage("videoQualityWiFi") private var wifiQuality: String = VideoQualityPreference.defaultWiFiPreference.rawValue
@@ -298,6 +299,13 @@ struct SettingsViewPlayer: View {
                         icon: "play.circle.fill",
                         title: NSLocalizedString("Autoplay Next", comment: ""),
                         isOn: $autoplayNext,
+                        showDivider: true
+                    )
+                    
+                    SettingsToggleRow(
+                        icon: "forward.fill",
+                        title: NSLocalizedString("Auto Skip Filler Episodes", comment: ""),
+                        isOn: $autoSkipFillers,
                         showDivider: true
                     )
                     

@@ -747,7 +747,8 @@ private extension EpisodeCell {
             showPosterURL: showPosterImageURL,
             aniListID: itemID,
             malID: malIDFromParent,
-            isFiller: isFiller
+            isFiller: isFiller,
+            totalEpisodes: totalEpisodes
         ) { success, message in
             if success {
                 Logger.shared.log("Started download for Episode \(self.episodeID + 1): \(self.episode)", type: "Download")

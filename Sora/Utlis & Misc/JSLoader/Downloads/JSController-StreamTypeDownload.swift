@@ -39,6 +39,7 @@ extension JSController {
         aniListID: Int? = nil,
         malID: Int? = nil,
         isFiller: Bool? = nil,
+        totalEpisodes: Int? = nil,
         completionHandler: ((Bool, String) -> Void)? = nil
     ) {
         let streamType = module.metadata.streamType.lowercased()
@@ -59,6 +60,7 @@ extension JSController {
                 aniListID: aniListID,
                 malID: malID,
                 isFiller: isFiller,
+                totalEpisodes: totalEpisodes,
                 completionHandler: completionHandler
             )
         }else {
@@ -77,6 +79,7 @@ extension JSController {
                 aniListID: aniListID,
                 malID: malID,
                 isFiller: isFiller,
+                totalEpisodes: totalEpisodes,
                 completionHandler: completionHandler
             )
         }

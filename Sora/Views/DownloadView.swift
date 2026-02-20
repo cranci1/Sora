@@ -282,7 +282,7 @@ struct DownloadView: View {
             },
             subtitlesURL: asset.localSubtitleURL?.absoluteString,
             aniListID: asset.metadata?.aniListID ?? 0,
-            totalEpisodes: asset.metadata?.episode ?? 0,
+            totalEpisodes: 0,
             episodeImageUrl: asset.metadata?.posterURL?.absoluteString ?? "",
             headers: nil
         )

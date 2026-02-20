@@ -156,13 +156,13 @@ extension JSController {
         let assetMetadata = AssetMetadata(
             title: downloadTitle,
             overview: nil,
-            posterURL: imageURL,
+            posterURL: imageURL, // Episode thumbnail
             backdropURL: imageURL,
             releaseDate: nil,
             showTitle: animeTitle,
             season: season,
             episode: episode,
-            showPosterURL: showPosterURL,
+            showPosterURL: showPosterURL, // Main show poster
             isFiller: isFiller,
             aniListID: aniListID
         )

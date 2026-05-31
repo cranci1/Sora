@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build
 on:
   push:
     branches:
@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Set up Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: maxim-lobanov/setup-xcode@v1.7.0
         with:
           xcode-version: latest-stable
 
@@ -33,11 +33,10 @@ jobs:
           zip -r Sulfur.zip Sulfur.ipa
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: Sulfur-iOS-Build
           path: build/Sulfur.zip
-          retention-days: 30
 
   build-macos:
     name: Build macOS App
@@ -45,10 +44,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Set up Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: maxim-lobanov/setup-xcode@v1.7.0
         with:
           xcode-version: latest-stable
 
@@ -62,8 +61,7 @@ jobs:
         run: hdiutil create -volname "Sulfur" -srcfolder build/Sulfur.app -ov -format UDZO build/Sulfur.dmg
 
       - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: Sulfur-macOS-Build
           path: build/Sulfur.dmg
-          retention-days: 30

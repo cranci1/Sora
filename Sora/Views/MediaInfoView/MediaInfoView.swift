@@ -908,17 +908,17 @@ struct MediaInfoView: View {
                     isTMDBMatchingPresented = true
                 }
             }
-
+            
             posterMenuOptions
-
+            
             Divider()
-
+            
             if !(module.metadata.novel ?? false) {
                 Button(action: { downloadAllEpisodes() }) {
                     Label("Download All Episodes", systemImage: "arrow.down.circle")
                 }
             }
-
+            
             Button(action: { logDebugInfo() }) {
                 Label("Log Debug Info", systemImage: "terminal")
             }
@@ -1367,8 +1367,16 @@ struct MediaInfoView: View {
     }
     
     private func selectNextEpisode() {
-        guard let currentIndex = episodeLinks.firstIndex(where: { $0.number == selectedEpisodeNumber }),
-              currentIndex + 1 < episodeLinks.count else {
+        let episodeList: [EpisodeLink]
+        if isGroupedBySeasons {
+            let seasons = groupedEpisodes()
+            episodeList = selectedSeason < seasons.count ? seasons[selectedSeason] : []
+        } else {
+            episodeList = episodeLinks
+        }
+        
+        guard let currentIndex = episodeList.firstIndex(where: { $0.number == selectedEpisodeNumber }),
+              currentIndex + 1 < episodeList.count else {
             Logger.shared.log("No more episodes to play", type: "Info")
             return
         }
@@ -1377,17 +1385,17 @@ struct MediaInfoView: View {
         var nextIndex = currentIndex + 1
         
         if autoSkipFillers, let fillerSet = jikanFillerSet {
-            while nextIndex < episodeLinks.count, fillerSet.contains(episodeLinks[nextIndex].number) {
-                Logger.shared.log("Skipping filler episode \(episodeLinks[nextIndex].number)", type: "Debug")
+            while nextIndex < episodeList.count, fillerSet.contains(episodeList[nextIndex].number) {
+                Logger.shared.log("Skipping filler episode \(episodeList[nextIndex].number)", type: "Debug")
                 nextIndex += 1
             }
-            guard nextIndex < episodeLinks.count else {
+            guard nextIndex < episodeList.count else {
                 Logger.shared.log("No more non-filler episodes to play", type: "Info")
                 return
             }
         }
         
-        let nextEpisode = episodeLinks[nextIndex]
+        let nextEpisode = episodeList[nextIndex]
         selectedEpisodeNumber = nextEpisode.number
         fetchStream(href: nextEpisode.href)
         DropManager.shared.showDrop(
@@ -2492,13 +2500,13 @@ struct MediaInfoView: View {
                 isBulkDownloading = true
                 bulkDownloadProgress = "Starting bulk download..."
             }
-
+            
             let originalLimit = jsController.maxConcurrentDownloads
             jsController.updateMaxConcurrentDownloads(Int.max)
-
+            
             let episodesToDownload = getEpisodesToDownload()
             let total = episodesToDownload.count
-
+            
             if total == 0 {
                 await MainActor.run {
                     jsController.updateMaxConcurrentDownloads(originalLimit)
@@ -2507,16 +2515,16 @@ struct MediaInfoView: View {
                 }
                 return
             }
-
+            
             var completed = 0
-
+            
             await withTaskGroup(of: Bool.self) { group in
                 for (ep, season) in episodesToDownload {
                     group.addTask {
                         await self.downloadEpisodeIfNeeded(ep, season: season)
                     }
                 }
-
+                
                 for await success in group {
                     do {
                         try Task.checkCancellation()
@@ -2529,9 +2537,9 @@ struct MediaInfoView: View {
                     }
                 }
             }
-
+            
             jsController.updateMaxConcurrentDownloads(originalLimit)
-
+            
             await MainActor.run {
                 isBulkDownloading = false
                 bulkDownloadProgress = ""
@@ -2544,11 +2552,11 @@ struct MediaInfoView: View {
             }
         }
     }
-
+    
     private func getEpisodesToDownload() -> [(EpisodeLink, Int)] {
         let seasonGroups = groupedEpisodes()
         var episodesToDownload: [(EpisodeLink, Int)] = []
-
+        
         for (seasonIndex, episodesInSeason) in seasonGroups.enumerated() {
             let seasonNumber = seasonIndex + 1
             for ep in episodesInSeason {
@@ -2562,10 +2570,10 @@ struct MediaInfoView: View {
                 }
             }
         }
-
+        
         return episodesToDownload
     }
-
+    
     private func downloadEpisodeIfNeeded(_ ep: EpisodeLink, season: Int) async -> Bool {
         return await withCheckedContinuation { continuation in
             downloadEpisodeForBulk(ep, season: season) { success in
@@ -2573,7 +2581,7 @@ struct MediaInfoView: View {
             }
         }
     }
-
+    
     private func downloadEpisodeForBulk(_ ep: EpisodeLink, season: Int, completion: @escaping (Bool) -> Void) {
         Task {
             do {
@@ -2585,7 +2593,7 @@ struct MediaInfoView: View {
             }
         }
     }
-
+    
     private func tryNextDownloadMethodForBulk(episode: EpisodeLink, season: Int, methodIndex: Int, completion: @escaping (Bool) -> Void) {
         switch methodIndex {
         case 0:
@@ -2612,7 +2620,7 @@ struct MediaInfoView: View {
             completion(false)
         }
     }
-
+    
     private func handleBulkDownloadResult(_ result: (streams: [String]?, subtitles: [String]?, sources: [[String:Any]]?), episode: EpisodeLink, season: Int, methodIndex: Int, completion: @escaping (Bool) -> Void) {
         if let sources = result.sources, !sources.isEmpty {
             if sources.count > 1 {
@@ -2629,13 +2637,13 @@ struct MediaInfoView: View {
                 return
             }
         }
-
+        
         if let streams = result.streams, !streams.isEmpty {
             if streams[0] == "[object Promise]" {
                 tryNextDownloadMethodForBulk(episode: episode, season: season, methodIndex: methodIndex + 1, completion: completion)
                 return
             }
-
+            
             if streams.count > 1 {
                 if let url = URL(string: streams[0]) {
                     let subtitleURL = result.subtitles?.first.flatMap { URL(string: $0) }
@@ -2648,26 +2656,26 @@ struct MediaInfoView: View {
                 return
             }
         }
-
+        
         tryNextDownloadMethodForBulk(episode: episode, season: season, methodIndex: methodIndex + 1, completion: completion)
     }
-
+    
     private func startBulkEpisodeDownload(episode: EpisodeLink, url: URL, streamUrl: String, subtitleURL: URL? = nil, season: Int, completion: @escaping (Bool) -> Void) {
         let headers = generateDownloadHeaders(for: url)
-
+        
         fetchEpisodeMetadataForDownload(episode: episode) { metadata in
             let episodeTitle = metadata?.title["en"] ?? "Episode \(episode.number)"
             let episodeImageUrl = metadata?.imageUrl ?? ""
-
+            
             let episodeThumbnailURL: URL?
             if !episodeImageUrl.isEmpty {
                 episodeThumbnailURL = URL(string: episodeImageUrl)
             } else {
                 episodeThumbnailURL = URL(string: self.getBannerImageBasedOnAppearance())
             }
-
+            
             let showPosterImageURL = URL(string: self.imageUrl)
-
+            
             self.jsController.downloadWithStreamTypeSupport(
                 url: url,
                 headers: headers,
@@ -2694,9 +2702,9 @@ struct MediaInfoView: View {
     
     private func presentAlert(_ alert: UIAlertController) {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-            let window = windowScene.windows.first,
-            let rootVC = window.rootViewController {
-
+           let window = windowScene.windows.first,
+           let rootVC = window.rootViewController {
+            
             if UIDevice.current.userInterfaceIdiom == .pad {
                 if let popover = alert.popoverPresentationController {
                     popover.sourceView = window

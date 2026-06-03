@@ -3,7 +3,7 @@
 
 <div align="center"> 
 
-<img src="https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/Sulfur.png" width="750px">
+<img src="https://raw.githubusercontent.com/cranci1/Sora/refs/heads/main/assets/Sulfur.jpg" width="750px">
 
 [![Build and Release IPA](https://github.com/cranci1/Sora/actions/workflows/build.yml/badge.svg)](https://github.com/cranci1/Sora/actions/workflows/build.yml) [![Discord](https://img.shields.io/discord/1293430817841741899.svg?logo=discord&color=blue)](https://discord.gg/XR3SrmUbpd) [![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20iPadOS%2015.0%2B%20%26%20macOS%2012.0%2B-red?logo=apple&logoColor=white)](https://img.shields.io/badge/Platform-iOS%20%7C%20iPadOS%2015.0%2B%20%26%20macOS%2012.0%2B-red?logo=apple&logoColor=white)
 

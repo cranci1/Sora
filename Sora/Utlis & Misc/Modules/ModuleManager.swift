@@ -243,6 +243,8 @@ class ModuleManager: ObservableObject {
                     )
                     
                     updatedModules.append((index, updatedModule))
+                    try jsContent.write(to: localUrl, atomically: true, encoding: .utf8)
+                    try? writeSettingsToFile(for: updatedModule)
                     Logger.shared.log("Prepared update for module: \(module.metadata.sourceName) to version \(newMetadata.version)")
                 }
             } catch {
@@ -259,5 +261,31 @@ class ModuleManager: ObservableObject {
             saveModules()
             Logger.shared.log("Successfully updated \(updatedModules.count) modules")
         }
+    }
+    
+    func writeSettingsToFile(for module: ScrapingModule) throws {
+        let url = getDocumentsDirectory().appendingPathComponent(module.localPath)
+        var content = try String(contentsOf: url, encoding: .utf8)
+        let overrides = loadSettingOverrides(for: module)
+        guard !overrides.isEmpty else { return }
+        
+        for (key, value) in overrides {
+            let pattern = #"^(\s*)const\s+\#(key)\s*=\s*.*?;(.*)$"#
+            let regex = try NSRegularExpression(pattern: pattern, options: .anchorsMatchLines)
+            let range = NSRange(location: 0, length: content.utf16.count)
+            let newLine = "$1const \(key) = \(formatForJS(value));$2"
+            content = regex.stringByReplacingMatches(in: content, options: [], range: range, withTemplate: newLine)
+        }
+
+        try content.write(to: url, atomically: true, encoding: .utf8)
+    }
+
+    private func formatForJS(_ value: String) -> String {
+        if let _ = Int(value) { return value }
+        if let _ = Double(value) { return value }
+        if value.lowercased() == "true" || value.lowercased() == "false" { return value.lowercased() }
+        
+        let escaped = value.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
+        return "\"\(escaped)\""
     }
 }

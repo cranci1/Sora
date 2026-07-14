@@ -84,14 +84,19 @@ extension ModuleManager {
         for setting in settings {
             overrides[setting.key] = setting.value
         }
-        
         guard let data = try? JSONEncoder().encode(overrides) else {
-            Logger.shared.log("Failed to encode settings for module: \(module.metadata.sourceName)", type: "Error")
+            Logger.shared.log("Failed to encode settings", type: "Error")
             return false
         }
-        
         UserDefaults.standard.set(data, forKey: settingsStorageKey(for: module))
-        Logger.shared.log("Updated settings for module: \(module.metadata.sourceName)")
+        
+        do {
+            try writeSettingsToFile(for: module)
+            Logger.shared.log("File updated with new settings")
+        } catch {
+            Logger.shared.log("Failed to write settings to file: \(error)", type: "Error")
+            return false
+        }
         return true
     }
     
@@ -99,7 +104,7 @@ extension ModuleManager {
         "moduleSettings_\(module.id.uuidString)"
     }
     
-    private func loadSettingOverrides(for module: ScrapingModule) -> [String: String] {
+    func loadSettingOverrides(for module: ScrapingModule) -> [String: String] {
         guard
             let data = UserDefaults.standard.data(forKey: settingsStorageKey(for: module)),
             let dict = try? JSONDecoder().decode([String: String].self, from: data)
@@ -108,19 +113,55 @@ extension ModuleManager {
     }
     
     fileprivate static func parseSettingsSchema(from script: String) -> [ModuleSettingSchemaEntry] {
-        guard
-            let markerRange = script.range(of: "SETTINGS_SCHEMA:"),
-            let lineEnd = script[markerRange.upperBound...].firstIndex(of: "\n")
-        else { return [] }
-        
-        let jsonString = String(script[markerRange.upperBound..<lineEnd]).trimmingCharacters(in: .whitespaces)
-        guard let data = jsonString.data(using: .utf8) else { return [] }
-        
-        do {
-            return try JSONDecoder().decode([ModuleSettingSchemaEntry].self, from: data)
-        } catch {
-            Logger.shared.log("Failed to parse SETTINGS_SCHEMA: \(error.localizedDescription)", type: "Error")
+        guard let start = script.range(of: "// Settings start"),
+              let end = script.range(of: "// Settings end", range: start.upperBound..<script.endIndex) else {
             return []
         }
+
+        let block = String(script[start.upperBound..<end.lowerBound])
+        let lines = block.split(separator: "\n", omittingEmptySubsequences: false)
+        var entries: [ModuleSettingSchemaEntry] = []
+
+        let pattern = #"^const\s+(\w+)\s*=\s*(.+?);(?:\s*//\s*(.*))?$"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty && !trimmed.hasPrefix("//") else { continue }
+
+            let nsLine = trimmed as NSString
+            guard let match = regex.firstMatch(in: trimmed, range: NSRange(location: 0, length: nsLine.length)) else { continue }
+
+            let key = nsLine.substring(with: match.range(at: 1))
+            let rawValue = nsLine.substring(with: match.range(at: 2)).trimmingCharacters(in: .whitespaces)
+            let comment = match.range(at: 3).location != NSNotFound ? nsLine.substring(with: match.range(at: 3)).trimmingCharacters(in: .whitespaces) : nil
+
+            var defaultValue = rawValue
+            if (rawValue.hasPrefix("\"") && rawValue.hasSuffix("\"")) ||
+               (rawValue.hasPrefix("'") && rawValue.hasSuffix("'")) {
+                defaultValue = String(rawValue.dropFirst().dropLast())
+            }
+
+            let type: String
+            if let _ = Int(defaultValue) {
+                type = "int"
+            } else if let _ = Double(defaultValue), defaultValue.contains(".") {
+                type = "float"
+            } else if defaultValue.lowercased() == "true" || defaultValue.lowercased() == "false" {
+                type = "bool"
+            } else {
+                type = "string"
+            }
+
+            let entry = ModuleSettingSchemaEntry(
+                key: key,
+                type: type,
+                comment: comment,
+                defaultValue: defaultValue,
+                options: nil
+            )
+            entries.append(entry)
+        }
+        return entries
     }
 }

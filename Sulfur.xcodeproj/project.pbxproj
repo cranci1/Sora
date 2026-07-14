@@ -62,6 +62,8 @@
 		132AF1212D99951700A0140B /* JSController-Streams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132AF1202D99951700A0140B /* JSController-Streams.swift */; };
 		132AF1232D9995C300A0140B /* JSController-Details.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132AF1222D9995C300A0140B /* JSController-Details.swift */; };
 		132AF1252D9995F900A0140B /* JSController-Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132AF1242D9995F900A0140B /* JSController-Search.swift */; };
+		132C590F30067E590049A742 /* ModuleSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132C590E30067E590049A742 /* ModuleSettings.swift */; };
+		132C591130067EAF0049A742 /* ModuleSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132C591030067EAF0049A742 /* ModuleSettingsView.swift */; };
 		13367ECC2DF70698009CB33F /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = 13367ECB2DF70698009CB33F /* Nuke */; };
 		13367ECE2DF70698009CB33F /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 13367ECD2DF70698009CB33F /* NukeUI */; };
 		133CF6A62DFEBE9000BD13F9 /* VideoWatchingActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CF6A32DFEBE8F00BD13F9 /* VideoWatchingActivity.swift */; };
@@ -195,6 +197,8 @@
 		132AF1202D99951700A0140B /* JSController-Streams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Streams.swift"; sourceTree = "<group>"; };
 		132AF1222D9995C300A0140B /* JSController-Details.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Details.swift"; sourceTree = "<group>"; };
 		132AF1242D9995F900A0140B /* JSController-Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-Search.swift"; sourceTree = "<group>"; };
+		132C590E30067E590049A742 /* ModuleSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleSettings.swift; sourceTree = "<group>"; };
+		132C591030067EAF0049A742 /* ModuleSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleSettingsView.swift; sourceTree = "<group>"; };
 		133CF6A32DFEBE8F00BD13F9 /* VideoWatchingActivity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoWatchingActivity.swift; sourceTree = "<group>"; };
 		133D7C6A2D2BE2500075467E /* Sulfur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sulfur.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		133D7C6D2D2BE2500075467E /* SoraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoraApp.swift; sourceTree = "<group>"; };
@@ -688,6 +692,8 @@
 				139935652D468C450065CEFF /* ModuleManager.swift */,
 				1EF5C3A82DB988D70032BF07 /* CommunityLib.swift */,
 				133D7C892D2BE2640075467E /* Modules.swift */,
+				132C590E30067E590049A742 /* ModuleSettings.swift */,
+				132C591030067EAF0049A742 /* ModuleSettingsView.swift */,
 			);
 			path = Modules;
 			sourceTree = "<group>";
@@ -1140,6 +1146,7 @@
 				0402DA132DE7B5EC003BB42C /* SearchStateView.swift in Sources */,
 				0414ECFE2E32D6EF00A7E76A /* Bundle+Language.swift in Sources */,
 				0414ECFF2E32D6EF00A7E76A /* LocalizationManager.swift in Sources */,
+				132C590F30067E590049A742 /* ModuleSettings.swift in Sources */,
 				7273F0402E26B19700DF083D /* DownloadPersistence.swift in Sources */,
 				0402DA142DE7B5EC003BB42C /* SearchResultsGrid.swift in Sources */,
 				72D546DB2DFC5E950044C567 /* JSController+Downloader.swift in Sources */,
@@ -1153,6 +1160,7 @@
 				13C0E5EA2D5F85EA00E7F619 /* ContinueWatchingManager.swift in Sources */,
 				13637B8A2DE0EA1100BDA2FC /* UserDefaults.swift in Sources */,
 				7260B66D2E32A8CB00365CDA /* OrphanedDownloadsView.swift in Sources */,
+				132C591130067EAF0049A742 /* ModuleSettingsView.swift in Sources */,
 				146A48DE2F02F1980017D145 /* IntroDB-FetchIntro.swift in Sources */,
 				0457C59D2DE78267000AFBD9 /* BookmarkGridView.swift in Sources */,
 				0457C59E2DE78267000AFBD9 /* BookmarkLink.swift in Sources */,
@@ -1465,7 +1473,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Sora/Preview Content\"";
-				DEVELOPMENT_TEAM = 399LMK6Q2Y;
+				DEVELOPMENT_TEAM = USF65A4WGS;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1482,7 +1490,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1507,7 +1515,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Sora/Preview Content\"";
-				DEVELOPMENT_TEAM = 399LMK6Q2Y;
+				DEVELOPMENT_TEAM = USF65A4WGS;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1524,7 +1532,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = me.cranci.sulfur;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1574,8 +1582,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/cranci1/SoraCore";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = revision;
+				revision = 50ddc160fd606e9708adefc1d9fc7003b574446b;
 			};
 		};
 		13637B8E2DE0ECD200BDA2FC /* XCRemoteSwiftPackageReference "Drops" */ = {

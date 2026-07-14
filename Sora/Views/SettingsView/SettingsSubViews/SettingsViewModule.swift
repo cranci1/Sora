@@ -101,8 +101,10 @@ fileprivate struct SettingsToggleRow: View {
 fileprivate struct ModuleListItemView: View {
     let module: Module
     let selectedModuleId: String?
+    let hasSettings: Bool
     let onDelete: () -> Void
     let onSelect: () -> Void
+    let onEditSettings: () -> Void
     
     var body: some View {
         VStack(spacing: 0) {
@@ -147,6 +149,16 @@ fileprivate struct ModuleListItemView: View {
                 }
                 
                 Spacer()
+                
+                if hasSettings {
+                    Button(action: onEditSettings) {
+                        Image(systemName: "pencil.circle")
+                            .foregroundStyle(.gray)
+                            .frame(width: 20, height: 20)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .padding(.trailing, module.id.uuidString == selectedModuleId ? 12 : 0)
+                }
                 
                 if module.id.uuidString == selectedModuleId {
                     Image(systemName: "checkmark.circle.fill")
@@ -237,12 +249,16 @@ struct SettingsViewModule: View {
                             ModuleListItemView(
                                 module: module,
                                 selectedModuleId: selectedModuleId,
+                                hasSettings: moduleManager.hasSettings(module),
                                 onDelete: {
                                     moduleManager.deleteModule(module)
                                     DropManager.shared.showDrop(title: NSLocalizedString("Module Removed", comment: ""), subtitle: "", duration: 1.0, icon: UIImage(systemName: "trash"))
                                 },
                                 onSelect: {
                                     selectedModuleId = module.id.uuidString
+                                },
+                                onEditSettings: {
+                                    showModuleSettings(module)
                                 }
                             )
                             
@@ -387,6 +403,19 @@ struct SettingsViewModule: View {
             let addModuleView = ModuleAdditionSettingsView(moduleUrl: url)
                 .environmentObject(self.moduleManager)
             let hostingController = UIHostingController(rootView: addModuleView)
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first {
+                window.rootViewController?.present(hostingController, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    func showModuleSettings(_ module: Module) {
+        DispatchQueue.main.async {
+            let settingsView = ModuleSettingsView(module: module)
+                .environmentObject(self.moduleManager)
+            let hostingController = UIHostingController(rootView: settingsView)
             
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first {

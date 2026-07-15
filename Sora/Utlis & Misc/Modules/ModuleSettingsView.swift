@@ -163,27 +163,14 @@ struct ModuleSettingsView: View {
 private struct ModuleSettingRow: View {
     @Binding var setting: ModuleSetting
     
-    private var icon: String {
-        switch setting.type {
-        case .bool: return "switch.2"
-        case .int, .float: return "number"
-        case .string: return "textformat"
-        }
-    }
-    
     var body: some View {
         HStack(alignment: .top) {
-            Image(systemName: icon)
-                .frame(width: 24, height: 24)
-                .foregroundStyle(.primary)
-                .padding(.top, 2)
-            
             VStack(alignment: .leading, spacing: 2) {
-                Text(setting.comment ?? setting.key)
+                Text(setting.key)
                     .foregroundStyle(.primary)
                 
                 if setting.comment != nil {
-                    Text(setting.key)
+                    Text(setting.comment!)
                         .font(.caption2)
                         .foregroundStyle(.gray)
                 }

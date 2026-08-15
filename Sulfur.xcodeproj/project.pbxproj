@@ -721,8 +721,8 @@
 			children = (
 				0457C59C2DE78267000AFBD9 /* BookmarkComponents */,
 				137D63B33030C1AC0067034A /* AniListLibraryMatchView.swift */,
-				047F17082E0C93E10081B5FB /* AllReading.swift */,
 				047F17092E0C93E10081B5FB /* ContinueReadingSection.swift */,
+				047F17082E0C93E10081B5FB /* AllReading.swift */,
 				04CD76DA2DE20F2200733536 /* AllWatching.swift */,
 				133F55BA2D33B55100E08EEA /* LibraryManager.swift */,
 				133D7C7E2D2BE2630075467E /* LibraryView.swift */,

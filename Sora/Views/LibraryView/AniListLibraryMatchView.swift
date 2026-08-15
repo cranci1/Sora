@@ -20,8 +20,16 @@ struct AniListLibraryMatchView: View {
     @State private var results: [SearchItem] = []
     @State private var isLoading = true
     @State private var showingError = false
+    @State private var searchQuery: String
     
     @Environment(\.dismiss) private var dismiss
+    @FocusState private var isSearchFieldFocused: Bool
+    
+    init(item: LibraryItem, collectionId: UUID) {
+        self.item = item
+        self.collectionId = collectionId
+        self._searchQuery = State(initialValue: item.title)
+    }
     
     private var selectedModule: ScrapingModule? {
         guard let id = selectedModuleId else { return nil }
@@ -32,6 +40,8 @@ struct AniListLibraryMatchView: View {
         NavigationView {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
+                    searchBar
+                    
                     if selectedModule == nil {
                         Text("Select a source in Search first")
                             .font(.subheadline)
@@ -119,8 +129,59 @@ struct AniListLibraryMatchView: View {
         .onAppear(perform: fetchMatches)
     }
     
+    private var searchBar: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "magnifyingglass")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16, height: 16)
+                .foregroundColor(.secondary)
+            
+            TextField("Search title...", text: $searchQuery)
+                .textFieldStyle(PlainTextFieldStyle())
+                .foregroundColor(.primary)
+                .focused($isSearchFieldFocused)
+                .submitLabel(.search)
+                .onSubmit(fetchMatches)
+            
+            if !searchQuery.isEmpty {
+                Button(action: { searchQuery = "" }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 16, height: 16)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(
+                    LinearGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: Color.accentColor.opacity(0.25), location: 0),
+                            .init(color: Color.accentColor.opacity(0), location: 1)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 1.5
+                )
+        )
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
+    }
+    
     private func fetchMatches() {
-        guard let module = selectedModule else {
+        isSearchFieldFocused = false
+        
+        let query = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let module = selectedModule, !query.isEmpty else {
             isLoading = false
             return
         }
@@ -142,9 +203,9 @@ struct AniListLibraryMatchView: View {
             }
             
             if module.metadata.asyncJS == true {
-                jsController.fetchJsSearchResults(keyword: item.title, module: module, completion: handleResults)
+                jsController.fetchJsSearchResults(keyword: query, module: module, completion: handleResults)
             } else {
-                jsController.fetchSearchResults(keyword: item.title, module: module, completion: handleResults)
+                jsController.fetchSearchResults(keyword: query, module: module, completion: handleResults)
             }
         } catch {
             Logger.shared.log("Failed to load module for AniList match: \(error)", type: "Error")
@@ -174,41 +235,65 @@ struct AniListPlaceholderGridItemView: View {
     let item: LibraryItem
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            ZStack(alignment: .bottomLeading) {
-                if let url = URL(string: item.imageUrl) {
-                    LazyImage(url: url) { state in
-                        if let image = state.imageContainer?.image {
-                            Image(uiImage: image)
-                                .resizable()
-                                .aspectRatio(2/3, contentMode: .fill)
-                        } else {
-                            Rectangle().fill(.tertiary)
-                        }
-                    }
+        ZStack {
+            LazyImage(url: URL(string: item.imageUrl)) { state in
+                if let uiImage = state.imageContainer?.image {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(0.72, contentMode: .fill)
+                        .frame(width: 162, height: 243)
+                        .cornerRadius(12)
+                        .clipped()
                 } else {
-                    Rectangle().fill(.tertiary)
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.gray.opacity(0.3))
+                        .aspectRatio(2/3, contentMode: .fit)
+                        .redacted(reason: .placeholder)
                 }
-                
-                Text("Unmatched")
-                    .font(.caption2)
-                    .fontWeight(.semibold)
+            }
+            .overlay(
+                HStack(spacing: 4) {
+                    Image(systemName: "questionmark.circle.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 12, height: 12)
+                    Text("Unmatched")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                }
+                    .foregroundColor(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(.ultraThinMaterial, in: Capsule())
-                    .padding(6)
-            }
-            .aspectRatio(2/3, contentMode: .fit)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.accentColor.opacity(0.5), lineWidth: 0.5)
+                    )
+                    .padding(8),
+                alignment: .topLeading
             )
             
-            Text(item.title)
-                .font(.caption)
-                .foregroundStyle(.primary)
-                .lineLimit(2)
+            VStack {
+                Spacer()
+                Text(item.title)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .lineLimit(2)
+                    .foregroundColor(.white)
+                    .padding(12)
+                    .background(
+                        LinearGradient(
+                            colors: [
+                                .black.opacity(0.7),
+                                .black.opacity(0.0)
+                            ],
+                            startPoint: .bottom,
+                            endPoint: .top
+                        )
+                        .shadow(color: .black, radius: 4, x: 0, y: 2)
+                    )
+            }
         }
+        .frame(width: 162, height: 243)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

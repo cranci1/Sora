@@ -12,7 +12,7 @@ struct CollectionDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
-
+    
     
     let collection: BookmarkCollection
     @State private var sortOption: SortOption = .dateAdded
@@ -21,6 +21,7 @@ struct CollectionDetailView: View {
     @State private var isSelecting: Bool = false
     @State private var selectedBookmarks: Set<LibraryItem.ID> = []
     @State private var isActive: Bool = false
+    @State private var placeholderToMatch: LibraryItem?
     
     enum SortOption: String, CaseIterable {
         case dateAdded = "Date Added"
@@ -30,6 +31,7 @@ struct CollectionDetailView: View {
     
     private var filteredAndSortedBookmarks: [LibraryItem] {
         let validBookmarks = collection.bookmarks.filter { bookmark in
+            bookmark.isAniListPlaceholder ||
             moduleManager.modules.contains { $0.id.uuidString == bookmark.moduleId }
         }
         
@@ -221,7 +223,9 @@ struct CollectionDetailView: View {
                 ScrollView(showsIndicators: false) {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))], spacing: 16) {
                         ForEach(filteredAndSortedBookmarks) { bookmark in
-                            if let module = moduleManager.modules.first(where: { $0.id.uuidString == bookmark.moduleId }) {
+                            if bookmark.isAniListPlaceholder {
+                                placeholderCell(for: bookmark)
+                            } else if let module = moduleManager.modules.first(where: { $0.id.uuidString == bookmark.moduleId }) {
                                 if isSelecting {
                                     Button(action: {
                                         if selectedBookmarks.contains(bookmark.id) {
@@ -243,7 +247,7 @@ struct CollectionDetailView: View {
                                                         .frame(width: 18, height: 18)
                                                         .foregroundColor(.black)
                                                 }
-                                                .padding(8)
+                                                    .padding(8)
                                                 : nil,
                                                 alignment: .topTrailing
                                             )
@@ -283,6 +287,11 @@ struct CollectionDetailView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $placeholderToMatch) { bookmark in
+            AniListLibraryMatchView(item: bookmark, collectionId: collection.id)
+                .environmentObject(libraryManager)
+                .environmentObject(moduleManager)
+        }
         .onAppear {
             isActive = true
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -321,4 +330,61 @@ struct CollectionDetailView: View {
             }
         }
     }
-} 
+    
+    @ViewBuilder
+    private func placeholderCell(for bookmark: LibraryItem) -> some View {
+        if isSelecting {
+            Button(action: {
+                if selectedBookmarks.contains(bookmark.id) {
+                    selectedBookmarks.remove(bookmark.id)
+                } else {
+                    selectedBookmarks.insert(bookmark.id)
+                }
+            }) {
+                AniListPlaceholderGridItemView(item: bookmark)
+                    .overlay(
+                        selectedBookmarks.contains(bookmark.id) ?
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 32, height: 32)
+                            Image(systemName: "checkmark")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 18, height: 18)
+                                .foregroundColor(.black)
+                        }
+                            .padding(8)
+                        : nil,
+                        alignment: .topTrailing
+                    )
+            }
+            .contextMenu {
+                Button(role: .destructive) {
+                    libraryManager.removeBookmarkFromCollection(bookmarkId: bookmark.id, collectionId: collection.id)
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+        } else {
+            Button {
+                placeholderToMatch = bookmark
+            } label: {
+                AniListPlaceholderGridItemView(item: bookmark)
+            }
+            .buttonStyle(.plain)
+            .contextMenu {
+                Button {
+                    placeholderToMatch = bookmark
+                } label: {
+                    Label("Match Source", systemImage: "link")
+                }
+                Button(role: .destructive) {
+                    libraryManager.removeBookmarkFromCollection(bookmarkId: bookmark.id, collectionId: collection.id)
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+        }
+    }
+}

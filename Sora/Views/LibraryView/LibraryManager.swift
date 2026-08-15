@@ -26,14 +26,24 @@ struct BookmarkCollection: Codable, Identifiable {
 
 struct LibraryItem: Codable, Identifiable {
     let id: UUID
-    let title: String
-    let imageUrl: String
-    let href: String
-    let moduleId: String
-    let moduleName: String
+    var title: String
+    var imageUrl: String
+    var href: String
+    var moduleId: String
+    var moduleName: String
     let dateAdded: Date
+    var anilistId: Int? = nil
+    var isAniListPlaceholder: Bool = false
     
-    init(title: String, imageUrl: String, href: String, moduleId: String, moduleName: String) {
+    init(
+        title: String,
+        imageUrl: String,
+        href: String,
+        moduleId: String,
+        moduleName: String,
+        anilistId: Int? = nil,
+        isAniListPlaceholder: Bool = false
+    ) {
         self.id = UUID()
         self.title = title
         self.imageUrl = imageUrl
@@ -41,6 +51,25 @@ struct LibraryItem: Codable, Identifiable {
         self.moduleId = moduleId
         self.moduleName = moduleName
         self.dateAdded = Date()
+        self.anilistId = anilistId
+        self.isAniListPlaceholder = isAniListPlaceholder
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id, title, imageUrl, href, moduleId, moduleName, dateAdded, anilistId, isAniListPlaceholder
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        imageUrl = try container.decode(String.self, forKey: .imageUrl)
+        href = try container.decode(String.self, forKey: .href)
+        moduleId = try container.decode(String.self, forKey: .moduleId)
+        moduleName = try container.decode(String.self, forKey: .moduleName)
+        dateAdded = try container.decode(Date.self, forKey: .dateAdded)
+        anilistId = try container.decodeIfPresent(Int.self, forKey: .anilistId)
+        isAniListPlaceholder = try container.decodeIfPresent(Bool.self, forKey: .isAniListPlaceholder) ?? false
     }
 }
 
@@ -195,6 +224,73 @@ class LibraryManager: ObservableObject {
             updated = BookmarkCollection(name: newName, bookmarks: updated.bookmarks)
             collections[index] = BookmarkCollection(name: newName, bookmarks: updated.bookmarks)
             saveCollections()
+        }
+    }
+    
+    // MARK: - AniList sync
+    
+    func getOrCreateCollection(named name: String) -> UUID {
+        if let existing = collections.first(where: { $0.name == name }) {
+            return existing.id
+        }
+        let newCollection = BookmarkCollection(name: name)
+        collections.append(newCollection)
+        saveCollections()
+        return newCollection.id
+    }
+    
+    func syncAniListItems(_ items: [AniListSyncItem], toCollectionNamed name: String) {
+        let collectionId = getOrCreateCollection(named: name)
+        guard let index = collections.firstIndex(where: { $0.id == collectionId }) else { return }
+        
+        let existingIds = Set(collections[index].bookmarks.compactMap { $0.anilistId })
+        var didChange = false
+        
+        for item in items where !existingIds.contains(item.anilistId) {
+            let placeholder = LibraryItem(
+                title: item.title,
+                imageUrl: item.coverImageUrl ?? "",
+                href: "anilist-unmatched://\(item.anilistId)",
+                moduleId: "",
+                moduleName: "Unmatched",
+                anilistId: item.anilistId,
+                isAniListPlaceholder: true
+            )
+            collections[index].bookmarks.insert(placeholder, at: 0)
+            didChange = true
+        }
+        
+        if didChange { saveCollections() }
+    }
+    
+    func resolveAniListPlaceholder(
+        itemId: UUID,
+        collectionId: UUID,
+        matchedHref: String,
+        moduleId: String,
+        moduleName: String,
+        matchedTitle: String,
+        matchedImageUrl: String
+    ) {
+        guard let collectionIndex = collections.firstIndex(where: { $0.id == collectionId }),
+              let itemIndex = collections[collectionIndex].bookmarks.firstIndex(where: { $0.id == itemId })
+        else { return }
+        
+        var item = collections[collectionIndex].bookmarks[itemIndex]
+        let anilistId = item.anilistId
+        
+        item.href = matchedHref
+        item.moduleId = moduleId
+        item.moduleName = moduleName
+        item.title = matchedTitle
+        item.imageUrl = matchedImageUrl
+        item.isAniListPlaceholder = false
+        
+        collections[collectionIndex].bookmarks[itemIndex] = item
+        saveCollections()
+        
+        if let anilistId {
+            UserDefaults.standard.set(anilistId, forKey: "custom_anilist_id_\(matchedHref)")
         }
     }
 }

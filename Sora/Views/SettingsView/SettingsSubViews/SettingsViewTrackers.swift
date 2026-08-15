@@ -101,7 +101,10 @@ fileprivate struct SettingsToggleRow: View {
 }
 
 struct SettingsViewTrackers: View {
+    @EnvironmentObject private var libraryManager: LibraryManager
+    
     @AppStorage("sendPushUpdates") private var isSendPushUpdates = true
+    @AppStorage("aniListLibrarySyncEnabled") private var isAniListLibrarySyncEnabled = false
     @State private var anilistStatus: String = "You are not logged in"
     @State private var isAnilistLoggedIn: Bool = false
     @State private var anilistUsername: String = ""
@@ -179,6 +182,16 @@ struct SettingsViewTrackers: View {
                                 icon: "arrow.triangle.2.circlepath",
                                 title: NSLocalizedString("Sync anime progress", comment: ""),
                                 isOn: $isSendPushUpdates,
+                                showDivider: false
+                            )
+                            
+                            Divider()
+                                .padding(.horizontal, 16)
+                            
+                            SettingsToggleRow(
+                                icon: "books.vertical",
+                                title: NSLocalizedString("Sync Watching/Planning to Library", comment: ""),
+                                isOn: $isAniListLibrarySyncEnabled,
                                 showDivider: false
                             )
                         }
@@ -320,6 +333,10 @@ struct SettingsViewTrackers: View {
         .onDisappear {
             removeNotificationObservers()
         }
+        .onChange(of: isAniListLibrarySyncEnabled) { enabled in
+            guard enabled else { return }
+            AniListLibrarySyncManager.shared.sync(libraryManager: libraryManager)
+        }
     }
     
     func removeNotificationObservers() {
@@ -334,6 +351,9 @@ struct SettingsViewTrackers: View {
         NotificationCenter.default.addObserver(forName: AniListToken.authSuccessNotification, object: nil, queue: .main) { _ in
             self.anilistStatus = "Authentication successful!"
             self.updateAniListStatus()
+            if self.isAniListLibrarySyncEnabled {
+                AniListLibrarySyncManager.shared.sync(libraryManager: self.libraryManager)
+            }
         }
         
         NotificationCenter.default.addObserver(forName: AniListToken.authFailureNotification, object: nil, queue: .main) { notification in
@@ -436,8 +456,8 @@ struct SettingsViewTrackers: View {
         guard status == errSecSuccess,
               let tokenData = item as? Data,
               let token = String(data: tokenData, encoding: .utf8) else {
-                  return nil
-              }
+            return nil
+        }
         return token
     }
     

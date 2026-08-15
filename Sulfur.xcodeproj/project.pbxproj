@@ -90,6 +90,8 @@
 		13637B902DE0ECD200BDA2FC /* Drops in Frameworks */ = {isa = PBXBuildFile; productRef = 13637B8F2DE0ECD200BDA2FC /* Drops */; };
 		13637B932DE0ECDB00BDA2FC /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = 13637B922DE0ECDB00BDA2FC /* MarqueeLabel */; };
 		136BBE802DB1038000906B5E /* Notification+Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136BBE7F2DB1038000906B5E /* Notification+Name.swift */; };
+		137D63B43030C1AC0067034A /* AniListLibraryMatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137D63B33030C1AC0067034A /* AniListLibraryMatchView.swift */; };
+		137D63B63030C1FD0067034A /* AniListLibrarySync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137D63B53030C1FC0067034A /* AniListLibrarySync.swift */; };
 		138AA1B82D2D66FD0021F9DF /* EpisodeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138AA1B62D2D66FD0021F9DF /* EpisodeCell.swift */; };
 		138AA1B92D2D66FD0021F9DF /* CircularProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138AA1B72D2D66FD0021F9DF /* CircularProgressBar.swift */; };
 		138B66A02E0BEA52009BE8D9 /* WebAuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138B669F2E0BEA52009BE8D9 /* WebAuthenticationManager.swift */; };
@@ -221,6 +223,8 @@
 		13627FE22E6894970062CAD5 /* JSController-NetworkFetch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "JSController-NetworkFetch.swift"; sourceTree = "<group>"; };
 		13637B892DE0EA1100BDA2FC /* UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaults.swift; sourceTree = "<group>"; };
 		136BBE7F2DB1038000906B5E /* Notification+Name.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification+Name.swift"; sourceTree = "<group>"; };
+		137D63B33030C1AC0067034A /* AniListLibraryMatchView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AniListLibraryMatchView.swift; sourceTree = "<group>"; };
+		137D63B53030C1FC0067034A /* AniListLibrarySync.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AniListLibrarySync.swift; sourceTree = "<group>"; };
 		138AA1B62D2D66FD0021F9DF /* EpisodeCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EpisodeCell.swift; sourceTree = "<group>"; };
 		138AA1B72D2D66FD0021F9DF /* CircularProgressBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularProgressBar.swift; sourceTree = "<group>"; };
 		138B669F2E0BEA52009BE8D9 /* WebAuthenticationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebAuthenticationManager.swift; sourceTree = "<group>"; };
@@ -715,9 +719,10 @@
 		133F55B92D33B53E00E08EEA /* LibraryView */ = {
 			isa = PBXGroup;
 			children = (
+				0457C59C2DE78267000AFBD9 /* BookmarkComponents */,
+				137D63B33030C1AC0067034A /* AniListLibraryMatchView.swift */,
 				047F17082E0C93E10081B5FB /* AllReading.swift */,
 				047F17092E0C93E10081B5FB /* ContinueReadingSection.swift */,
-				0457C59C2DE78267000AFBD9 /* BookmarkComponents */,
 				04CD76DA2DE20F2200733536 /* AllWatching.swift */,
 				133F55BA2D33B55100E08EEA /* LibraryManager.swift */,
 				133D7C7E2D2BE2630075467E /* LibraryView.swift */,
@@ -833,6 +838,7 @@
 		13B77E1E2DA4577D00126FDF /* Mutations */ = {
 			isa = PBXGroup;
 			children = (
+				137D63B53030C1FC0067034A /* AniListLibrarySync.swift */,
 				13B77E1F2DA457AA00126FDF /* AniListPushUpdates.swift */,
 			);
 			path = Mutations;
@@ -1139,6 +1145,8 @@
 				138AA1B92D2D66FD0021F9DF /* CircularProgressBar.swift in Sources */,
 				13DB468D2D90093A008CBC03 /* Anilist-Login.swift in Sources */,
 				73D164D52D8B5B470011A360 /* JavaScriptCore+Extensions.swift in Sources */,
+				137D63B63030C1FD0067034A /* AniListLibrarySync.swift in Sources */,
+				137D63B43030C1AC0067034A /* AniListLibraryMatchView.swift in Sources */,
 				132AF1232D9995C300A0140B /* JSController-Details.swift in Sources */,
 				13B77E202DA457AA00126FDF /* AniListPushUpdates.swift in Sources */,
 				13EA2BD52D32D97400C1EBD7 /* CustomPlayer.swift in Sources */,

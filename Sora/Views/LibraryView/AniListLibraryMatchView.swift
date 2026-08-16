@@ -137,7 +137,6 @@ struct AniListLibraryMatchView: View {
                     }
                 }
             }
-            .navigationTitle("Match")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

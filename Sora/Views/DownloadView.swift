@@ -416,7 +416,7 @@ struct CustomDownloadHeader: View {
                     )
                 }
                 .padding(.horizontal, 20)
-                .padding(.bottom, 16)
+                .padding(.bottom, 8)
                 .transition(.asymmetric(
                     insertion: .move(edge: .top).combined(with: .opacity),
                     removal: .move(edge: .top).combined(with: .opacity)

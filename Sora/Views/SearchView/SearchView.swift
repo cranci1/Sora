@@ -24,7 +24,7 @@ struct SearchView: View {
     
     @StateObject private var jsController = JSController.shared
     @EnvironmentObject var moduleManager: ModuleManager
-
+    
     @Environment(\.verticalSizeClass) var verticalSizeClass
     
     @Binding public var searchQuery: String
@@ -76,64 +76,57 @@ struct SearchView: View {
     }
     
     private var mainContent: some View {
-            VStack(alignment: .leading) {
-                HStack {
-                    Text(LocalizedStringKey("Search"))
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Spacer()
-                    
-                    ModuleSelectorMenu(
-                        selectedModule: selectedModule,
-                        moduleGroups: getModuleLanguageGroups(),
-                        modulesByLanguage: getModulesByLanguage(),
-                        selectedModuleId: selectedModuleId,
-                        onModuleSelected: { moduleId in
-                            selectedModuleId = moduleId
-                        }
-                    )
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
+        VStack(alignment: .leading) {
+            HStack {
+                Text(LocalizedStringKey("Search"))
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
                 
-                if useNativeTabBar {
-                    SearchBar(text: $searchQuery, isSearching: $isSearching)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 10)
-                }
+                Spacer()
                 
-                ScrollView(showsIndicators: false) {
-                    SearchContent(
-                        selectedModule: selectedModule,
-                        searchQuery: searchQuery,
-                        searchHistory: searchHistory,
-                        searchItems: searchItems,
-                        isSearching: isSearching,
-                        hasNoResults: hasNoResults,
-                        columns: columns,
-                        columnsCount: columnsCount,
-                        cellWidth: cellWidth,
-                        onHistoryItemSelected: { query in
-                            searchQuery = query
-                            searchDebounceTimer?.invalidate()
-                            
-                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                            NotificationCenter.default.post(name: .tabBarSearchQueryUpdated, object: nil, userInfo: ["searchQuery": query])
-                            
-                            performSearch()
-                        },
-                        onHistoryItemDeleted: { index in
-                            removeFromHistory(at: index)
-                        },
-                        onClearHistory: clearSearchHistory
-                    )
-                }
-                .scrollViewBottomPadding()
-                .simultaneousGesture(
-                    DragGesture().onChanged { _ in
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                ModuleSelectorMenu(
+                    selectedModule: selectedModule,
+                    moduleGroups: getModuleLanguageGroups(),
+                    modulesByLanguage: getModulesByLanguage(),
+                    selectedModuleId: selectedModuleId,
+                    onModuleSelected: { moduleId in
+                        selectedModuleId = moduleId
                     }
+                )
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            
+            if useNativeTabBar {
+                SearchBar(text: $searchQuery, isSearching: $isSearching)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+            }
+            
+            ScrollView(showsIndicators: false) {
+                SearchContent(
+                    selectedModule: selectedModule,
+                    searchQuery: searchQuery,
+                    searchHistory: searchHistory,
+                    searchItems: searchItems,
+                    isSearching: isSearching,
+                    hasNoResults: hasNoResults,
+                    columns: columns,
+                    columnsCount: columnsCount,
+                    cellWidth: cellWidth,
+                    onHistoryItemSelected: { query in
+                        searchQuery = query
+                        searchDebounceTimer?.invalidate()
+                        
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        NotificationCenter.default.post(name: .tabBarSearchQueryUpdated, object: nil, userInfo: ["searchQuery": query])
+                        
+                        performSearch()
+                    },
+                    onHistoryItemDeleted: { index in
+                        removeFromHistory(at: index)
+                    },
+                    onClearHistory: clearSearchHistory
                 )
             }
             .scrollViewBottomPadding()
@@ -143,6 +136,13 @@ struct SearchView: View {
                 }
             )
         }
+        .scrollViewBottomPadding()
+        .simultaneousGesture(
+            DragGesture().onChanged { _ in
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            }
+        )
+    }
     
     var body: some View {
         Group {
@@ -245,26 +245,26 @@ struct SearchView: View {
             hasNoResults = false
             return
         }
-
+        
         isSearchFieldFocused = false
-
+        
         currentSearchTask?.cancel()
         currentSearchTask = nil
-
+        
         isSearching = true
         hasNoResults = false
         searchItems = []
-
+        
         currentSearchTask = Task {
             do {
                 try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
                 guard !Task.isCancelled else { return }
-
+                
                 let jsContent = try moduleManager.getModuleContent(module)
                 jsController.loadScript(jsContent)
-
+                
                 guard !Task.isCancelled else { return }
-
+                
                 if module.metadata.asyncJS == true {
                     jsController.fetchJsSearchResults(keyword: searchQuery, module: module) { items in
                         guard !Task.isCancelled else { return }
@@ -348,7 +348,6 @@ struct SearchView: View {
     
     private func cleanLanguageName(_ language: String?) -> String {
         guard let language = language else { return "Unknown" }
-        
         let cleaned = language.replacingOccurrences(
             of: "\\s*\\([^\\)]*\\)",
             with: "",
@@ -360,24 +359,14 @@ struct SearchView: View {
     
     private func getModulesByLanguage() -> [String: [ScrapingModule]] {
         var result = [String: [ScrapingModule]]()
-        
         for module in moduleManager.modules {
             let language = cleanLanguageName(module.metadata.language)
-            if result[language] == nil {
-                result[language] = [module]
-            } else {
-                result[language]?.append(module)
-            }
+            result[language, default: []].append(module)
         }
-        
         return result
     }
     
     private func getModuleLanguageGroups() -> [String] {
         return getModulesByLanguage().keys.sorted()
-    }
-    
-    private func getModulesForLanguage(_ language: String) -> [ScrapingModule] {
-        return getModulesByLanguage()[language] ?? []
     }
 }

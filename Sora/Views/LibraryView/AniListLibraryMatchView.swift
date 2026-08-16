@@ -36,6 +36,30 @@ struct AniListLibraryMatchView: View {
         return moduleManager.modules.first { $0.id.uuidString == id }
     }
     
+    private func cleanLanguageName(_ language: String?) -> String {
+        guard let language = language else { return "Unknown" }
+        let cleaned = language.replacingOccurrences(
+            of: "\\s*\\([^\\)]*\\)",
+            with: "",
+            options: .regularExpression
+        ).trimmingCharacters(in: .whitespaces)
+        
+        return cleaned.isEmpty ? "Unknown" : cleaned
+    }
+    
+    private func getModulesByLanguage() -> [String: [ScrapingModule]] {
+        var result = [String: [ScrapingModule]]()
+        for module in moduleManager.modules {
+            let language = cleanLanguageName(module.metadata.language)
+            result[language, default: []].append(module)
+        }
+        return result
+    }
+    
+    private func getModuleLanguageGroups() -> [String] {
+        getModulesByLanguage().keys.sorted()
+    }
+    
     var body: some View {
         NavigationView {
             ScrollView(showsIndicators: false) {
@@ -119,6 +143,17 @@ struct AniListLibraryMatchView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    ModuleSelectorMenu(
+                        selectedModule: selectedModule,
+                        moduleGroups: getModuleLanguageGroups(),
+                        modulesByLanguage: getModulesByLanguage(),
+                        selectedModuleId: selectedModuleId,
+                        onModuleSelected: { moduleId in
+                            selectedModuleId = moduleId
+                        }
+                    )
+                }
             }
             .alert("Error Searching Source", isPresented: $showingError) {
                 Button("OK", role: .cancel) { }
@@ -127,6 +162,9 @@ struct AniListLibraryMatchView: View {
             }
         }
         .onAppear(perform: fetchMatches)
+        .onChange(of: selectedModuleId) { _ in
+            fetchMatches()
+        }
     }
     
     private var searchBar: some View {

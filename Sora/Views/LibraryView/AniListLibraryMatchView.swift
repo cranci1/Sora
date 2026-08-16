@@ -137,13 +137,13 @@ struct AniListLibraryMatchView: View {
                     }
                 }
             }
-            .navigationTitle("Match Source")
+            .navigationTitle("Match")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     ModuleSelectorMenu(
                         selectedModule: selectedModule,
                         moduleGroups: getModuleLanguageGroups(),

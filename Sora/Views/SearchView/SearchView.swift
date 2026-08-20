@@ -269,10 +269,9 @@ struct SearchView: View {
                     jsController.fetchJsSearchResults(keyword: searchQuery, module: module) { items in
                         guard !Task.isCancelled else { return }
                         DispatchQueue.main.async {
-                            let uniqueItems = items.reduce(into: [String: SearchItem]()) { dict, item in
-                                dict[item.href] = item
-                            }.values
-                            searchItems = Array(uniqueItems)
+                            var seenHrefs = Set<String>()
+                            let uniqueItems = items.filter { seenHrefs.insert($0.href).inserted }
+                            searchItems = uniqueItems
                             hasNoResults = uniqueItems.isEmpty
                             isSearching = false
                             currentSearchTask = nil
@@ -282,10 +281,9 @@ struct SearchView: View {
                     jsController.fetchSearchResults(keyword: searchQuery, module: module) { items in
                         guard !Task.isCancelled else { return }
                         DispatchQueue.main.async {
-                            let uniqueItems = items.reduce(into: [String: SearchItem]()) { dict, item in
-                                dict[item.href] = item
-                            }.values
-                            searchItems = Array(uniqueItems)
+                            var seenHrefs = Set<String>()
+                            let uniqueItems = items.filter { seenHrefs.insert($0.href).inserted }
+                            searchItems = uniqueItems
                             hasNoResults = uniqueItems.isEmpty
                             isSearching = false
                             currentSearchTask = nil

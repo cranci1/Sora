@@ -211,7 +211,7 @@ private extension EpisodeCell {
             .onTapGesture {
                 handleTap()
             }
-
+            
             actionButtonsBackground
         }
         .contentShape(Rectangle())
@@ -223,7 +223,7 @@ private extension EpisodeCell {
             }
             .tint(.blue)
             
-            if progress >= remainingTimePercentage / 100.0 {
+            if progress < remainingTimePercentage / 100.0 {
                 Button(action: { markAsWatched() }) {
                     Label("Watched", systemImage: "checkmark.circle")
                 }
@@ -325,7 +325,7 @@ private extension EpisodeCell {
     
     var contextMenuContent: some View {
         Group {
-            if progress >= remainingTimePercentage / 100.0 {
+            if progress < remainingTimePercentage / 100.0 {
                 Button(action: markAsWatched) {
                     Label("Mark Episode as Watched", systemImage: "checkmark.circle")
                 }
@@ -360,7 +360,7 @@ private extension EpisodeCell {
                 closeActionsAndPerform { downloadEpisode() }
             }
             
-            if progress >= (remainingTimePercentage / 100.0) {
+            if progress < (remainingTimePercentage / 100.0) {
                 ActionButton(
                     icon: "checkmark.circle",
                     label: "Watched",
@@ -510,7 +510,7 @@ private extension EpisodeCell {
     func calculateMaxSwipeDistance() -> CGFloat {
         var buttonCount = 1
         
-        if progress >= (remainingTimePercentage / 100.0) { buttonCount += 1 }
+        if progress < (remainingTimePercentage / 100.0) { buttonCount += 1 }
         if progress != 0 { buttonCount += 1 }
         if episodeIndex > 0 { buttonCount += 1 }
         

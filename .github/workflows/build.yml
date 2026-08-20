@@ -27,16 +27,11 @@ jobs:
       - name: Build IPA
         run: ./ipabuild.sh
 
-      - name: Compress IPA
-        run: |
-          cd build
-          zip -r Sulfur.zip Sulfur.ipa
-
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v7.0.1
         with:
           name: Sulfur-iOS-Build
-          path: build/Sulfur.zip
+          path: build/Sulfur.ipa
 
   build-macos:
     name: Build macOS App

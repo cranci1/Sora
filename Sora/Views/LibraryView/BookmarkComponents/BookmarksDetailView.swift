@@ -248,7 +248,7 @@ struct BookmarksDetailView: View {
                                                     .frame(width: 18, height: 18)
                                                     .foregroundColor(.black)
                                             }
-                                            .padding(8)
+                                                .padding(8)
                                             : nil,
                                             alignment: .topTrailing
                                         )
@@ -318,14 +318,14 @@ struct BookmarksDetailView: View {
                 }
             }
         } message: { _ in EmptyView() }
-        .onAppear {
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let window = windowScene.windows.first,
-               let navigationController = window.rootViewController?.children.first as? UINavigationController {
-                navigationController.interactivePopGestureRecognizer?.isEnabled = true
-                navigationController.interactivePopGestureRecognizer?.delegate = nil
+            .onAppear {
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let window = windowScene.windows.first,
+                   let navigationController = window.rootViewController?.children.first as? UINavigationController {
+                    navigationController.interactivePopGestureRecognizer?.isEnabled = true
+                    navigationController.interactivePopGestureRecognizer?.delegate = nil
+                }
             }
-        }
     }
 }
 
@@ -384,6 +384,7 @@ private struct BookmarksDetailGridCell: View {
     let moduleManager: ModuleManager
     let isSelecting: Bool
     @Binding var selectedBookmarks: Set<LibraryItem.ID>
+    @State private var navigate = false
     
     var isSelected: Bool {
         selectedBookmarks.contains(bookmark.id)
@@ -417,15 +418,24 @@ private struct BookmarksDetailGridCell: View {
                     }
                 }
             } else {
-                NavigationLink(destination: MediaInfoView(
-                    title: bookmark.title,
-                    imageUrl: bookmark.imageUrl,
-                    href: bookmark.href,
-                    module: module
-                )) {
+                Button {
+                    navigate = true
+                } label: {
                     BookmarkCell(bookmark: bookmark)
                 }
+                .buttonStyle(.plain)
+                .background(
+                    NavigationLink(
+                        destination: MediaInfoView(
+                            title: bookmark.title,
+                            imageUrl: bookmark.imageUrl,
+                            href: bookmark.href,
+                            module: module
+                        ),
+                        isActive: $navigate
+                    ) { EmptyView() }
+                )
             }
         }
     }
-} 
+}

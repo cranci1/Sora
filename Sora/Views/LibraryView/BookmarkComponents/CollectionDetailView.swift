@@ -13,6 +13,12 @@ struct CollectionDetailView: View {
     @EnvironmentObject private var libraryManager: LibraryManager
     @EnvironmentObject private var moduleManager: ModuleManager
     
+    private struct MediaInfoTarget {
+        let bookmark: LibraryItem
+        let module: ScrapingModule
+    }
+    
+    @State private var mediaInfoTarget: MediaInfoTarget?
     
     let collection: BookmarkCollection
     @State private var sortOption: SortOption = .dateAdded
@@ -260,15 +266,12 @@ struct CollectionDetailView: View {
                                         }
                                     }
                                 } else {
-                                    NavigationLink(destination: MediaInfoView(
-                                        title: bookmark.title,
-                                        imageUrl: bookmark.imageUrl,
-                                        href: bookmark.href,
-                                        module: module
-                                    )) {
+                                    Button {
+                                        mediaInfoTarget = MediaInfoTarget(bookmark: bookmark, module: module)
+                                    } label: {
                                         BookmarkGridItemView(item: bookmark, module: module)
                                     }
-                                    .isDetailLink(true)
+                                    .buttonStyle(.plain)
                                     .contextMenu {
                                         Button(role: .destructive) {
                                             libraryManager.removeBookmarkFromCollection(bookmarkId: bookmark.id, collectionId: collection.id)
@@ -287,6 +290,25 @@ struct CollectionDetailView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
+        .background(
+            NavigationLink(
+                destination: Group {
+                    if let target = mediaInfoTarget {
+                        MediaInfoView(
+                            title: target.bookmark.title,
+                            imageUrl: target.bookmark.imageUrl,
+                            href: target.bookmark.href,
+                            module: target.module
+                        )
+                    }
+                },
+                isActive: Binding(
+                    get: { mediaInfoTarget != nil },
+                    set: { active in if !active { mediaInfoTarget = nil } }
+                )
+            ) { EmptyView() }
+                .isDetailLink(true)
+        )
         .sheet(item: $placeholderToMatch) { bookmark in
             AniListLibraryMatchView(item: bookmark, collectionId: collection.id)
                 .environmentObject(libraryManager)
